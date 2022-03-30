@@ -1,19 +1,29 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import sys
-import  getopt
+import getopt
 import requests
+
+def help(error = ""):
+    if error:
+        print("Error: %s", error)
+    print('satori-cli --run-playbook <example.yml> --set-token <my_token>')
+    sys.exit(2)
 
 def main(argv):
     headers = None
     files = None
     try:
         options = "rut:"
-        long_options = ["run-playbook=", "upload=", "set-token="]
+        # TO-DO
+        # Creo que estaria bueno poder definir verbos de acciones, como se usa aws-cli. Por ejemplo para hacer las siguientes ejecuciones:
+        # ./satorici-cli run --playbook "playbooks/devops/GitHub.yml" --token "mytoken"
+        # ./satorici-cli run --file "file.zip" --token "mytoken"
+        # ./satorici-cli report --report_uuid "report_uuid" --token "mytoken"
+        long_options = ["report_uuid=", "run-playbook=", "upload=", "set-token="]
         opts, args = getopt.getopt(argv, options, long_options)
     except getopt.GetoptError:
-        print('satori-cli --run-playbook <example.yml> --set-token <outputfile>')
-        sys.exit(2)
+        help()
     for opt, arg in opts:
         if opt in ("-t", "--set-token"):
             print(f"{arg = }")
@@ -24,12 +34,19 @@ def main(argv):
                 'playbook': open(arg,'rb'),
                 #'code': open("./playbooks/devops/GitHub.tar.gz",'rb')
             }
+        elif opt in ("-R", "--report_uuid"):
+            endpoint = "/api/v1/get-status"
+            report_uuid = arg
+            # Incompleto
         elif opt in ("-u", "--upload"):
             # TO DO
             sys.exit()
+
     if headers is not None and files is not None:
         response = requests.post(f"https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/", files=files, headers=headers)
         print(f"{response.status_code = }\n{response.text = }")
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    if sys.version_info[0] != 3:
+        help()
+    main(sys.argv[1:])
