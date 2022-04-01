@@ -1,0 +1,19 @@
+[project]
+name = "satori-cli"
+version = ""
+description = ""
+authors = [
+    {name = "Satori CI", email = ""},
+]
+dependencies = [
+    "requests>=2.27.1",
+]
+requires-python = ">=3.9"
+
+[project.urls]
+Homepage = ""
+[tool.pdm]
+
+[build-system]
+requires = ["pdm-pep517>=0.12.0"]
+build-backend = "pdm.pep517.api"
