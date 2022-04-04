@@ -1,52 +1,42 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+import argparse
 import sys
-import getopt
 import requests
 
-def help(error = ""):
-    if error:
-        print("Error: %s", error)
-    print('satori-cli --run-playbook <example.yml> --set-token <my_token>')
-    sys.exit(2)
 
-def main(argv):
-    headers = None
-    files = None
-    try:
-        options = "rut:"
-        # TO-DO
-        # Creo que estaria bueno poder definir verbos de acciones, como se usa aws-cli. Por ejemplo para hacer las siguientes ejecuciones:
-        # ./satorici-cli run --playbook "playbooks/devops/GitHub.yml" --token "mytoken"
-        # ./satorici-cli run --file "file.zip" --token "mytoken"
-        # ./satorici-cli report --report_uuid "report_uuid" --token "mytoken"
-        long_options = ["report_uuid=", "run-playbook=", "upload=", "set-token="]
-        opts, args = getopt.getopt(argv, options, long_options)
-    except getopt.GetoptError:
-        help()
-    for opt, arg in opts:
-        if opt in ("-t", "--set-token"):
-            print(f"{arg = }")
-            headers = {'Authorization': f"token {arg}"}
-        elif opt in ("-r", "--run-playbook"):
-            print(f"{arg = }")
-            files = {
-                'playbook': open(arg,'rb'),
-                #'code': open("./playbooks/devops/GitHub.tar.gz",'rb')
-            }
-        elif opt in ("-R", "--report_uuid"):
-            endpoint = "/api/v1/get-status"
-            report_uuid = arg
-            # Incompleto
-        elif opt in ("-u", "--upload"):
-            # TO DO
-            sys.exit()
+def run(playbook, token):
+    response = requests.post(
+        f"https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/",
+        files={"playbook": playbook},
+        headers={"Authorization": f"token {token}"})
+    print(f"{response.status_code = }\n{response.text = }")
 
-    if headers is not None and files is not None:
-        response = requests.post(f"https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/", files=files, headers=headers)
-        print(f"{response.status_code = }\n{response.text = }")
+
+def report(uuid):
+    pass # TODO
+
 
 if __name__ == "__main__":
-    if sys.version_info[0] != 3:
-        help()
-    main(sys.argv[1:])
+    parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
+
+    sub_parsers = parser.add_subparsers(dest="subcommand")
+
+    run_cmd = sub_parsers.add_parser("run")
+    run_cmd.add_argument("token", metavar="TOKEN")
+    run_cmd.add_argument("-p", "--playbook", type=argparse.FileType("rb"))
+
+    report_cmd = sub_parsers.add_parser("report")
+    report_cmd.add_argument("token", metavar="TOKEN")
+    report_cmd.add_argument("uuid", metavar="REPORT_UUID")
+
+    args = parser.parse_args()
+
+    if len(sys.argv) <= 1:
+        parser.print_help()
+        sys.exit(0)
+
+    if args.subcommand == "run":
+        run(args.playbook, args.token)
+    elif args.subcommand == "report":
+        report(args.uuid)
