@@ -3,19 +3,40 @@
 import argparse
 import sys
 import requests
-
+import mimetypes
+import os
+import io
 
 def run(playbook, token):
+    print(f"{playbook=}")
+    with open(playbook, 'rb') as f:
+        data = f.read()
+
+    # Get mime type
+    mime_type = None
+    file_name = os.path.splitext(playbook)
+    # file_name[0] = name, file_name[1] = extension
+    if file_name[1] == '.yml':
+        mime_type = 'application/x-yaml'
+    # print(f"{data=}")
+    if mime_type is None:
+        mt = mimetypes.guess_type(playbook)
+        mime_type = mt[0]
+    print(f"{mime_type=}")
+
+    headers = {
+        "Authorization": f"token {token}",
+        "Content-Type": mime_type,
+        "X-File-Name": os.path.basename(playbook)
+    }
     response = requests.post(
         f"https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/",
-        files={"playbook": playbook},
-        headers={"Authorization": f"token {token}"})
+        data=data,
+        headers=headers)
     print(f"{response.status_code = }\n{response.text = }")
-
 
 def report(uuid):
     pass # TODO
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
@@ -24,7 +45,7 @@ if __name__ == "__main__":
 
     run_cmd = sub_parsers.add_parser("run")
     run_cmd.add_argument("token", metavar="TOKEN")
-    run_cmd.add_argument("-p", "--playbook", type=argparse.FileType("rb"))
+    run_cmd.add_argument("-p", "--playbook")
 
     report_cmd = sub_parsers.add_parser("report")
     report_cmd.add_argument("token", metavar="TOKEN")

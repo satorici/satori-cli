@@ -132,3 +132,6 @@ dmypy.json
 playbooks/
 .pdm.toml
 .vscode
+*.tar.gz
+*.zip
+*.yml
