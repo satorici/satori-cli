@@ -38,6 +38,9 @@ def run(playbook, token):
 def report(uuid):
     pass # TODO
 
+def list_playbooks():
+    pass # TODO
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
 
@@ -51,6 +54,8 @@ if __name__ == "__main__":
     report_cmd.add_argument("token", metavar="TOKEN")
     report_cmd.add_argument("uuid", metavar="REPORT_UUID")
 
+    list_cmd = sub_parsers.add_parser("list")
+    list_cmd.add_argument("playbook", metavar="PLAYBOOK")
     args = parser.parse_args()
 
     if len(sys.argv) <= 1:
@@ -61,3 +66,5 @@ if __name__ == "__main__":
         run(args.playbook, args.token)
     elif args.subcommand == "report":
         report(args.uuid)
+    elif args.subcommand == "list":
+        list_playbooks()

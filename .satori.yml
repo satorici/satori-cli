@@ -1,0 +1,5 @@
+# Seria posible pasarle desde algun lado (Github Action, Github Apps o desde AWS Code Deployments) un secreto a la invocacion de Satori para que a nosotros nos llegue un parametro?
+install:
+    - [git clone https://github.com/satorici/satori-cli.git]
+tests:
+    - [./satori-cli/satori-cli --upload ./ --token $(TOKEN)]
