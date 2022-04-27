@@ -129,9 +129,9 @@ dmypy.json
 .pyre/
 
 # Custom
-playbooks/
+# playbooks/
 .pdm.toml
 .vscode
 *.tar.gz
 *.zip
-*.yml
+# *.yml
