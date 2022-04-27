@@ -8,3 +8,4 @@
 5. `pip3 install requests` # Optional step, you may have it installed already
 6. `python3 satori-cli run --playbook "../playbooks/devops/GitHub.yml" "{user_token}"`
 7. Open the URL to check the report
+ 
