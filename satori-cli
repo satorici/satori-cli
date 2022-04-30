@@ -6,8 +6,43 @@ import requests
 import mimetypes
 import os
 import io
+from pathlib import Path
+import json
 
-def run(playbook, token):
+config_data = {}
+user_home = Path.home()
+config_path = f"{user_home}/.satori.json"
+
+
+def load_config():
+    global config_data, config_path
+    config_file = Path(config_path)
+    if config_file.exists():
+        with config_file.open() as f:
+            config = f.read()
+        config_data = json.loads(config)
+
+
+def save_config(key: str, value: str):
+    global config_data, config_path
+    if key in ('token'):  # filter config key
+        config_data[key] = value
+        config_json = json.dumps(config_data)
+        file = open(config_path, 'w')
+        file.write(config_json)
+        file.close()
+        print('Config updated')
+    else:
+        print('Unknown config type')
+
+
+def run(playbook):
+    global config_data
+    # Check if user token exist
+    if 'token' not in config_data:
+        print("Set a token with:\nsatori-cli config token \"your_user_token\"")
+        return False
+    token = config_data['token']
     print(f"{playbook=}")
     with open(playbook, 'rb') as f:
         data = f.read()
@@ -35,19 +70,29 @@ def run(playbook, token):
         headers=headers)
     print(f"{response.status_code = }\n{response.text = }")
 
+
 def report(uuid):
-    pass # TODO
+    pass  # TODO
+
 
 def list_playbooks():
-    pass # TODO
+    pass  # TODO
+
 
 if __name__ == "__main__":
+    load_config()
+
     parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
 
     sub_parsers = parser.add_subparsers(dest="subcommand")
 
+    # config token "user_token"
+    config_cmd = sub_parsers.add_parser("config")
+    config_cmd.add_argument("key")
+    config_cmd.add_argument("value")
+
+    # run --playbook .playbook.yml
     run_cmd = sub_parsers.add_parser("run")
-    run_cmd.add_argument("token", metavar="TOKEN")
     run_cmd.add_argument("-p", "--playbook")
 
     report_cmd = sub_parsers.add_parser("report")
@@ -56,14 +101,17 @@ if __name__ == "__main__":
 
     list_cmd = sub_parsers.add_parser("list")
     list_cmd.add_argument("playbook", metavar="PLAYBOOK")
+
     args = parser.parse_args()
 
     if len(sys.argv) <= 1:
         parser.print_help()
         sys.exit(0)
 
-    if args.subcommand == "run":
-        run(args.playbook, args.token)
+    if args.subcommand == "config":
+        save_config(args.key, args.value)
+    elif args.subcommand == "run":
+        run(args.playbook)
     elif args.subcommand == "report":
         report(args.uuid)
     elif args.subcommand == "list":
