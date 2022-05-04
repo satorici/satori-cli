@@ -14,7 +14,8 @@ class Satori(object):
     """TBC"""
     def __init__(self):
         self.config_data = {}
-        self.config_path = "~/.satori.json"
+        user_home = Path.home()
+        self.config_path = f"{user_home}/.satori_credentials.json"
         self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/" # TODO: api.satori-ci.com
         
     def load_config(self):
@@ -26,11 +27,10 @@ class Satori(object):
                 self.config_data = json.loads(config)
         except FileNotFoundError:
             print(f"Config file not found: {config_file}")
-            return False
         # Check if user token exist
         if 'token' not in self.config_data:
             print(f"Set a token with:\n{sys.argv[0]} config token \"your_user_token\"")
-            return False
+            sys.exit(1)
 
     def save_config(self, key: str, value: str):
         """TBC"""
@@ -40,7 +40,7 @@ class Satori(object):
         if key in ('token'):  # filter config key
             self.config_data[key] = value
             config_json = json.dumps(self.config_data)
-            file = open(self.config_path, 'w')
+            file = open(self.config_path, 'w', 0o700)
             file.write(config_json)
             file.close()
             print('Config token updated')
@@ -68,14 +68,13 @@ class Satori(object):
             return False
 
         if os.path.isfile(playbook):
-            print("1")
             with open(playbook, 'rb') as f:
                 data = f.read()
         else:
             print(f"Playbook not found: {playbook}")
             return False
 
-        self.connect(endpoint="/run", playbook=playbook, data)
+        self.connect(endpoint="/run", playbook=playbook, data=data)
 
     def upload(self, directory):
         """Upload directory and run"""
@@ -92,11 +91,13 @@ class Satori(object):
             print(f"Directory not found: {directory}")
             return False
 
-        self.connect(endpoint="/upload", playbook=playbook, data)
+        self.connect(endpoint="/upload", playbook=playbook, data=data)
 
     def connect(self, endpoint, playbook=None, data=None):
         """Connect to Satori API"""
-
+        endpoint = "" # TODO: tenemos que crear los endpoints para dejar de pisarlo
+        self.load_config()
+        print(self.config_data['token'])
         if playbook and data:
             headers = {
                 "Authorization": f"token {self.config_data['token']}",
@@ -119,12 +120,16 @@ class Satori(object):
 
     def list_playbooks(self):
         """List Satori playbooks"""
-        self.connect(endpoint="/list-playbooks", data)
+        self.connect(endpoint="/list-playbooks")
 
 
 def main():
+    if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
+        print("Minimum Python version 3.9 required, the current version is")
+        print(sys.version_info)
+        sys.exit(0)
+
     instance = Satori()
-    instance.load_config()
 
     parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
 
@@ -140,11 +145,11 @@ def main():
     run_cmd.add_argument("playbook")
 
     # upload ./directory
-    upload_cmd = sub_parsers.add_parser("run")
+    upload_cmd = sub_parsers.add_parser("upload")
     upload_cmd.add_argument("directory")
 
     # list-playbooks
-    list_cmd = sub_parsers.add_parser("list")
+    list_cmd = sub_parsers.add_parser("list-playbooks")
 
     args = parser.parse_args()
 
