@@ -128,9 +128,6 @@ def main():
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
         print(f"Minimum Python version 3.9 required, the current version is {sys.version_info.major}.{sys.version_info.minor}")
         sys.exit(0)
-    if len(sys.argv) <= 1:
-        parser.print_help()
-        sys.exit(0)
 
     parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
     sub_parsers = parser.add_subparsers(dest="subcommand")
@@ -150,6 +147,10 @@ def main():
 
     # list-playbooks
     list_cmd = sub_parsers.add_parser("list-playbooks")
+    
+    if len(sys.argv) <= 1:
+        parser.print_help()
+        sys.exit(0)
 
     instance = Satori()
     args = parser.parse_args()
