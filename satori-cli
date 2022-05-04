@@ -64,41 +64,65 @@ class Satori(object):
     def run(self, playbook):
         """Just run"""
         if playbook is None:
-            print(f"Define the playbook file or directory:\n{sys.argv[0]} run -p playbook.yml\n{sys.argv[0]} run -p ./directory_with_playbook")
+            print(f"Define the Satori playbook file:\n{sys.argv[0]} run -p playbook.yml")
             return False
 
         if os.path.isfile(playbook):
             print("1")
             with open(playbook, 'rb') as f:
                 data = f.read()
-        elif os.path.isdir(playbook):
-            print("10")
+        else:
+            print(f"Playbook not found: {playbook}")
+            return False
+
+        self.connect(endpoint="/run", playbook=playbook, data)
+
+    def upload(self, directory):
+        """Upload directory and run"""
+        if directory is None:
+            print(f"Define the directory with the Satori playbook:\n{sys.argv[0]} run -p ./directory_with_playbook")
+            return False
+        
+        if os.path.isdir(playbook):
             shutil.make_archive('playbook', 'zip', playbook)
-    
             with open('playbook.zip', 'rb') as f:
                 data = f.read()
             os.remove('playbook.zip')
         else:
-            print(f"Playbook not found: {playbook}")
+            print(f"Directory not found: {directory}")
             return False
-        headers = {
-            "Authorization": f"token {self.config_data['token']}",
-            "Content-Type": self.mime_type(playbook),
-            "X-File-Name": os.path.basename(playbook)
-        }
-        response = requests.post(
-            self.host,
-            data=data,
-            headers=headers)
-        print(f"{response.status_code = }\n{response.text = }")
 
+        self.connect(endpoint="/upload", playbook=playbook, data)
+
+    def connect(self, endpoint, playbook=None, data=None):
+        """Connect to Satori API"""
+
+        if playbook and data:
+            headers = {
+                "Authorization": f"token {self.config_data['token']}",
+                "Content-Type": self.mime_type(playbook),
+                "X-File-Name": os.path.basename(playbook)
+            }
+            response = requests.post(
+                self.host + endpoint,
+                data=data,
+                headers=headers)
+        elif not playbook and not data:
+            headers = {
+                "Authorization": f"token {self.config_data['token']}",
+            }
+            response = requests.get(
+                self.host + endpoint,
+                headers=headers)
+
+        print(f"{response.status_code = }\n{response.text = }")
 
     def list_playbooks(self):
         """List Satori playbooks"""
-        pass  # TODO
+        self.connect(endpoint="/list-playbooks", data)
 
 
-if __name__ == "__main__":
+def main():
     instance = Satori()
     instance.load_config()
 
@@ -111,10 +135,15 @@ if __name__ == "__main__":
     config_cmd.add_argument("key")
     config_cmd.add_argument("value")
 
-    # run --playbook .playbook.yml
+    # run playbook.yml
     run_cmd = sub_parsers.add_parser("run")
-    run_cmd.add_argument("-p", "--playbook")
+    run_cmd.add_argument("playbook")
 
+    # upload ./directory
+    upload_cmd = sub_parsers.add_parser("run")
+    upload_cmd.add_argument("directory")
+
+    # list-playbooks
     list_cmd = sub_parsers.add_parser("list")
 
     args = parser.parse_args()
@@ -127,5 +156,10 @@ if __name__ == "__main__":
         instance.save_config(args.key, args.value)
     elif args.subcommand == "run":
         instance.run(args.playbook)
-    elif args.subcommand == "list":
+    elif args.subcommand == "upload":
+        instance.upload(args.directory)
+    elif args.subcommand == "list-playbooks":
         instance.list_playbooks()
+
+if __name__ == "__main__":
+    main()
