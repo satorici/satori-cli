@@ -8,79 +8,99 @@ import os
 import io
 from pathlib import Path
 import json
+import shutil
 
-config_data = {}
-user_home = Path.home()
-config_path = f"{user_home}/.satori.json"
+class Satori(object):
+    """TBC"""
+    def __init__(self):
+        self.config_data = {}
+        self.config_path = "~/.satori.json"
+        self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/" # TODO: api.satori-ci.com
+        
+    def load_config(self):
+        """TBC"""
+        config_file = Path(self.config_path)
+        try:
+            with config_file.open() as f:
+                config = f.read()
+                self.config_data = json.loads(config)
+        except FileNotFoundError:
+            print(f"Config file not found: {config_file}")
+            return False
+        # Check if user token exist
+        if 'token' not in self.config_data:
+            print(f"Set a token with:\n{sys.argv[0]} config token \"your_user_token\"")
+            return False
 
-
-def load_config():
-    global config_data, config_path
-    config_file = Path(config_path)
-    if config_file.exists():
-        with config_file.open() as f:
-            config = f.read()
-        config_data = json.loads(config)
-
-
-def save_config(key: str, value: str):
-    global config_data, config_path
-    if key in ('token'):  # filter config key
-        config_data[key] = value
-        config_json = json.dumps(config_data)
-        file = open(config_path, 'w')
-        file.write(config_json)
-        file.close()
-        print('Config updated')
-    else:
-        print('Unknown config type')
-
-
-def run(playbook):
-    global config_data
-    # Check if user token exist
-    if 'token' not in config_data:
-        print("Set a token with:\nsatori-cli config token \"your_user_token\"")
-        return False
-    token = config_data['token']
-    print(f"{playbook=}")
-    with open(playbook, 'rb') as f:
-        data = f.read()
-
-    # Get mime type
-    mime_type = None
-    file_name = os.path.splitext(playbook)
-    # file_name[0] = name, file_name[1] = extension
-    if file_name[1] == '.yml':
-        mime_type = 'application/x-yaml'
-    # print(f"{data=}")
-    if mime_type is None:
-        mt = mimetypes.guess_type(playbook)
-        mime_type = mt[0]
-    print(f"{mime_type=}")
-
-    headers = {
-        "Authorization": f"token {token}",
-        "Content-Type": mime_type,
-        "X-File-Name": os.path.basename(playbook)
-    }
-    response = requests.post(
-        f"https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/",
-        data=data,
-        headers=headers)
-    print(f"{response.status_code = }\n{response.text = }")
+    def save_config(self, key: str, value: str):
+        """TBC"""
+        if value == "":
+            print("Value not defined")
+            return False
+        if key in ('token'):  # filter config key
+            self.config_data[key] = value
+            config_json = json.dumps(self.config_data)
+            file = open(self.config_path, 'w')
+            file.write(config_json)
+            file.close()
+            print('Config token updated')
+        else:
+            print('Unknown config setting')
+            return False
 
 
-def report(uuid):
-    pass  # TODO
+    def mime_type(self, playbook):
+        """Get mime type"""
+        mime_type = None
+        file_name = os.path.splitext(playbook)
+        if file_name[1] == '.yml':
+            mime_type = 'application/x-yaml'
+        if mime_type is None:
+            mt = mimetypes.guess_type('playbook.zip')
+            mime_type = mt[0]
+        print(f"{mime_type=}")
+        return mime_type
+        
+    def run(self, playbook):
+        """Just run"""
+        if playbook is None:
+            print(f"Define the playbook file or directory:\n{sys.argv[0]} run -p playbook.yml\n{sys.argv[0]} run -p ./directory_with_playbook")
+            return False
+
+        if os.path.isfile(playbook):
+            print("1")
+            with open(playbook, 'rb') as f:
+                data = f.read()
+        elif os.path.isdir(playbook):
+            print("10")
+            shutil.make_archive('playbook', 'zip', playbook)
+    
+            with open('playbook.zip', 'rb') as f:
+                data = f.read()
+            os.remove('playbook.zip')
+        else:
+            print(f"Playbook not found: {playbook}")
+            return False
+        headers = {
+            "Authorization": f"token {self.config_data['token']}",
+            "Content-Type": self.mime_type(playbook),
+            "X-File-Name": os.path.basename(playbook)
+        }
+        response = requests.post(
+            self.host,
+            data=data,
+            headers=headers)
+        print(f"{response.status_code = }\n{response.text = }")
 
 
-def list_playbooks():
-    pass  # TODO
+    def list_playbooks(self):
+        """List Satori playbooks"""
+        pass  # TODO
 
 
 if __name__ == "__main__":
-    load_config()
+    instance = Satori()
+    instance.load_config()
 
     parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
 
@@ -95,12 +115,7 @@ if __name__ == "__main__":
     run_cmd = sub_parsers.add_parser("run")
     run_cmd.add_argument("-p", "--playbook")
 
-    report_cmd = sub_parsers.add_parser("report")
-    report_cmd.add_argument("token", metavar="TOKEN")
-    report_cmd.add_argument("uuid", metavar="REPORT_UUID")
-
     list_cmd = sub_parsers.add_parser("list")
-    list_cmd.add_argument("playbook", metavar="PLAYBOOK")
 
     args = parser.parse_args()
 
@@ -109,10 +124,8 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if args.subcommand == "config":
-        save_config(args.key, args.value)
+        instance.save_config(args.key, args.value)
     elif args.subcommand == "run":
-        run(args.playbook)
-    elif args.subcommand == "report":
-        report(args.uuid)
+        instance.run(args.playbook)
     elif args.subcommand == "list":
-        list_playbooks()
+        instance.list_playbooks()
