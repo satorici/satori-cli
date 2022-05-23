@@ -7,9 +7,12 @@ import mimetypes
 import os
 import io
 from pathlib import Path
+from zipfile import ZipFile
 import json
 import shutil
 import uuid
+
+from classes.resolver import get_local_imports
 
 class Satori(object):
     """TBC"""
@@ -17,9 +20,9 @@ class Satori(object):
         self.config_data = {}
         user_home = Path.home()
         self.config_path = f"{user_home}/.satori_credentials.json"
-        self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/" 
+        self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"
         # self.host = "https://api.satori-ci.com/staging/" # TODO: api.satori-ci.com
-        
+
     def load_config(self):
         """TBC"""
         config_file = Path(self.config_path)
@@ -61,7 +64,7 @@ class Satori(object):
             mime_type = mt[0]
         print(f"{mime_type=}")
         return mime_type
-        
+
     def run(self, playbook):
         """Just run"""
         if playbook is None:
@@ -69,8 +72,13 @@ class Satori(object):
             return False
 
         if os.path.isfile(playbook):
-            with open(playbook, 'rb') as f:
+            bundle = io.BytesIO()
+            with open(playbook, 'rb') as f, ZipFile(bundle, "x") as zip:
                 data = f.read()
+                refs = get_local_imports(data)
+                zip.write(playbook, str(uuid.uuid4()) + ".yml")
+                for ref in refs:
+                    zip.write(ref, str(uuid.uuid4()) + ".yml")
         else:
             print(f"Playbook not found: {playbook}")
             return False
@@ -83,7 +91,7 @@ class Satori(object):
         if directory is None:
             print(f"Define the directory with the Satori playbook:\n{sys.argv[0]} run -p ./directory_with_playbook")
             return False
-        
+
         if os.path.isdir(directory):
             shutil.make_archive(temp_file, 'zip', directory)
             with open(temp_file + '.zip', 'rb') as f:
@@ -147,7 +155,7 @@ def main():
 
     # list-playbooks
     list_cmd = sub_parsers.add_parser("list-playbooks")
-    
+
     if len(sys.argv) <= 1:
         parser.print_help()
         sys.exit(0)
