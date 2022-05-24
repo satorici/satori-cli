@@ -76,9 +76,9 @@ class Satori(object):
             with open(playbook, 'rb') as f, ZipFile(bundle, "x") as zip:
                 data = f.read()
                 refs = get_local_imports(data)
-                zip.write(playbook, str(uuid.uuid4()) + ".yml")
+                zip.write(playbook, playbook.replace("/", "-").replace("\\", "-"))
                 for ref in refs:
-                    zip.write(ref, str(uuid.uuid4()) + ".yml")
+                    zip.write(ref, ref.replace("/", "-").replace("\\", "-"))
         else:
             print(f"Playbook not found: {playbook}")
             return False
