@@ -83,7 +83,7 @@ class Satori(object):
             print(f"Playbook not found: {playbook}")
             return False
 
-        self.connect(endpoint="/run", playbook=playbook, data=data)
+        self.connect(endpoint="/run", playbook="SatoriBundle.zip", data=bundle)
 
     def upload(self, directory):
         """Upload directory and run"""
