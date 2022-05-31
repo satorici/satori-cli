@@ -78,6 +78,7 @@ class Satori(object):
                 refs = get_local_imports(data)
                 zip.write(playbook, playbook.replace("/", "-").replace("\\", "-"))
                 for ref in refs:
+                    ref = ref + ".yml"
                     zip.write(ref, ref.replace("/", "-"))
         else:
             print(f"Playbook not found: {playbook}")

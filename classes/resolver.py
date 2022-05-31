@@ -16,7 +16,9 @@ def get_local_imports(playbook):
         raise Exception("Imports must use / as path separator")
 
     for ref in [i for i in ret if not i.startswith("satori://")]:
-        if not os.path.isfile(ref) or not os.path.isdir(ref):
+        if os.path.isfile(ref + ".yml"):
+            continue
+        else:
             raise Exception("Can't find local import")
 
     return ret
