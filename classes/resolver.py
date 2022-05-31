@@ -4,7 +4,7 @@ import os
 
 def get_local_imports(playbook):
     obj = yaml.safe_load(playbook)
-    ret: list[str] = obj.get("imports", [])
+    ret: list[str] = obj.get("import", [])
 
     if not ret:
         return ret
