@@ -1,8 +1,0 @@
-import:
-  - import-playbook
-  - satori://test/satori-ci/hola_mundo
-
-root-test:
-  assertStdoutEqual: Python
-  execute:
-    - [python3 --version]
