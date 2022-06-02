@@ -1,6 +1,6 @@
 import:
   - import-playbook
-  - satori://dummy/hello
+  - satori://test/satori-ci/hello_world
 
 root-test:
   assertStdoutEqual: Python
