@@ -1,0 +1,8 @@
+import:
+  - import-playbook
+  - satori://dummy/hello
+
+root-test:
+  assertStdoutEqual: Python
+  execute:
+    - [python3 --version]
