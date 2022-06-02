@@ -75,7 +75,7 @@ class Satori(object):
             bundle = io.BytesIO()
             with open(playbook, 'rb') as f, ZipFile(bundle, "x") as zip:
                 data = f.read()
-                refs = get_local_imports(data)
+                refs = get_local_imports(data, path=playbook)
                 zip.write(playbook, playbook.replace("/", "-").replace("\\", "-"))
                 for ref in refs:
                     ref = ref + ".yml"

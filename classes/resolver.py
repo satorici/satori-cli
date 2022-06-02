@@ -2,9 +2,12 @@ import yaml
 import os
 
 
-def get_local_imports(playbook):
+def get_local_imports(playbook, path):
     imports = yaml.safe_load(playbook).get("import", [])
-    ret: list[str] = [i for i in imports if not i.startswith("satori://")]
+    ret: list[str] = [
+        f"{os.path.dirname(path)}/{i}" for i in imports
+        if not i.startswith("satori://")
+    ]
 
     if not ret:
         return ret
