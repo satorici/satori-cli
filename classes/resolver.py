@@ -3,8 +3,8 @@ import os
 
 
 def get_local_imports(playbook):
-    obj = yaml.safe_load(playbook)
-    ret: list[str] = obj.get("import", [])
+    imports = yaml.safe_load(playbook).get("import", [])
+    ret: list[str] = [i for i in imports if not i.startswith("satori://")]
 
     if not ret:
         return ret
@@ -15,7 +15,7 @@ def get_local_imports(playbook):
     if any(i for i in ret if "\\" in i):
         raise Exception("Imports must use / as path separator")
 
-    for ref in [i for i in ret if not i.startswith("satori://")]:
+    for ref in ret:
         if os.path.isfile(ref + ".yml"):
             continue
         else:
