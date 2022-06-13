@@ -80,7 +80,7 @@ class Satori(object):
         with open(playbook) as f, ZipFile(bundle, "x") as zip:
             refs = get_local_imports(f.read(), playbook)
             zip.write(
-                playbook, "999" + playbook.replace("/", "-").replace("\\", "-")
+                playbook, "satori.yml"
             )
             for ref in refs:
                 if ref == "PLACEHOLDER":
