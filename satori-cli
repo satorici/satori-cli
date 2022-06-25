@@ -136,11 +136,17 @@ class Satori(object):
         self.connect(endpoint="/list-playbooks")
 
     def list_reports(self, state):
+        self.load_config()
         headers = {"Authorization": f"token {self.config_data['token']}"}
         response = requests.get(f"https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/report/list/{state}",headers=headers)
-        print(f"{response.text = }")
+        if response.status_code == 200:
+            for report in response.json():
+                print(f"{report['uuid']} | {report['status']}")
+        else:
+            print(f"{response.text = }")
 
     def stop_report(self, id):
+        self.load_config()
         headers = {"Authorization": f"token {self.config_data['token']}"}
         response = requests.get(f"https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/report/stop/{id}",headers=headers)
         print(f"{response.text = }")
