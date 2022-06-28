@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import argparse
+import logging
 import sys
 import requests
 import mimetypes
@@ -77,15 +78,21 @@ class Satori(object):
 
         bundle = io.BytesIO()
 
-        with open(playbook) as f, ZipFile(bundle, "x") as zip:
-            refs = get_local_imports(f.read(), playbook)
-            zip.write(
-                playbook, "satori.yml"
-            )
-            for ref in refs:
-                if ref == "PLACEHOLDER":
-                    continue
-                zip.write(ref, f'{refs.index(ref):03d}{ref.replace("/", "-")}')
+        try:
+            with open(playbook) as f, ZipFile(bundle, "x") as zip:
+                refs = get_local_imports(f.read(), playbook)
+                zip.write(
+                    playbook, "satori.yml"
+                )
+                for ref in refs:
+                    if ref == "PLACEHOLDER":
+                        continue
+                    zip.write(
+                        ref, f'{refs.index(ref):03d}{ref.replace("/", "-")}'
+                    )
+        except Exception as e:
+            logging.error(e)
+            return False
 
         self.connect(endpoint="/run", playbook="SatoriBundle.zip", data=bundle.getvalue())
 
