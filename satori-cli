@@ -151,6 +151,15 @@ class Satori(object):
         response = requests.get(f"https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/report/stop/{id}",headers=headers)
         print(f"{response.text = }")
 
+    def report_status(self, id):
+        self.load_config()
+        headers = {"Authorization": f"token {self.config_data['token']}"}
+        response = requests.get(f"https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/report/status/{id}",headers=headers)
+        print(f"{response.text = }")
+
+    def cron_action(self, action, id):
+        return None
+
 def main():
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
         print(f"Minimum Python version 3.9 required, the current version is {sys.version_info.major}.{sys.version_info.minor}")
@@ -176,12 +185,21 @@ def main():
     list_cmd = sub_parsers.add_parser("list-playbooks")
 
     # list-reports state
-    upload_cmd = sub_parsers.add_parser("list-reports")
-    upload_cmd.add_argument("state")
+    list_report_cmd = sub_parsers.add_parser("list-reports")
+    list_report_cmd.add_argument("state")
 
     # stop-report id
-    upload_cmd = sub_parsers.add_parser("stop-report")
-    upload_cmd.add_argument("id")
+    stop_report_cmd = sub_parsers.add_parser("stop-report")
+    stop_report_cmd.add_argument("id")
+
+    # status id
+    status_cmd = sub_parsers.add_parser("status")
+    status_cmd.add_argument("id")
+
+    # cron list|stop <report_uuid>|stopall
+    cron_cmd = sub_parsers.add_parser("cron")
+    cron_cmd.add_argument("action")
+    cron_cmd.add_argument("id")
 
     if len(sys.argv) <= 1:
         parser.print_help()
@@ -201,6 +219,10 @@ def main():
         instance.list_reports(args.state)
     elif args.subcommand == "stop-report":
         instance.stop_report(args.id)
+    elif args.subcommand == "status":
+        instance.report_status(args.id)
+    elif args.subcommand == "cron":
+        instance.cron_action(args.action, args.id)
 
 if __name__ == "__main__":
     main()
