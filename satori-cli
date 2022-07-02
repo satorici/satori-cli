@@ -157,8 +157,18 @@ class Satori(object):
         response = requests.get(f"https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/report/status/{id}",headers=headers)
         print(f"{response.text = }")
 
-    def cron_action(self, action, id):
-        return None
+    def cron_action(self, action, param):
+        self.load_config()
+        headers = {"Authorization": f"token {self.config_data['token']}"}
+        response = requests.get(f"https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/cron/{action}/{param}",headers=headers)
+        if response.status_code == 200:
+            if action == 'list':
+                for cron in response.json():
+                    print(f"ID: {cron['ID']} | Name: {cron['display_name']}")
+            elif action == 'stop':
+                print(f"{response.text = }")
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
 
 def main():
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
@@ -186,7 +196,7 @@ def main():
 
     # list-reports state
     list_report_cmd = sub_parsers.add_parser("list-reports")
-    list_report_cmd.add_argument("state")
+    list_report_cmd.add_argument("state", default='all', nargs='?')
 
     # stop-report id
     stop_report_cmd = sub_parsers.add_parser("stop-report")
@@ -199,7 +209,7 @@ def main():
     # cron list|stop <report_uuid>|stopall
     cron_cmd = sub_parsers.add_parser("cron")
     cron_cmd.add_argument("action")
-    cron_cmd.add_argument("id")
+    cron_cmd.add_argument("param", default='all', nargs='?')
 
     if len(sys.argv) <= 1:
         parser.print_help()
@@ -222,7 +232,7 @@ def main():
     elif args.subcommand == "status":
         instance.report_status(args.id)
     elif args.subcommand == "cron":
-        instance.cron_action(args.action, args.id)
+        instance.cron_action(args.action, args.param)
 
 if __name__ == "__main__":
     main()
