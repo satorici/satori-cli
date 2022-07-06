@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import argparse
+import logging
 import sys
 import requests
 import mimetypes
@@ -21,6 +22,7 @@ class Satori(object):
         user_home = Path.home()
         self.config_path = f"{user_home}/.satori_credentials.json"
         self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"
+        self.api_host = "https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/"
         # self.host = "https://api.satori-ci.com/staging/" # TODO: api.satori-ci.com
 
     def load_config(self):
@@ -62,7 +64,7 @@ class Satori(object):
         if mime_type is None:
             mt = mimetypes.guess_type('playbook.zip')
             mime_type = mt[0]
-        print(f"{mime_type=}")
+        #print(f"{mime_type=}")
         return mime_type
 
     def run(self, playbook):
@@ -77,15 +79,21 @@ class Satori(object):
 
         bundle = io.BytesIO()
 
-        with open(playbook) as f, ZipFile(bundle, "x") as zip:
-            refs = get_local_imports(f.read(), playbook)
-            zip.write(
-                playbook, "satori.yml"
-            )
-            for ref in refs:
-                if ref == "PLACEHOLDER":
-                    continue
-                zip.write(ref, f'{refs.index(ref):03d}{ref.replace("/", "-")}')
+        try:
+            with open(playbook) as f, ZipFile(bundle, "x") as zip:
+                refs = get_local_imports(f.read(), playbook)
+                zip.write(
+                    playbook, "satori.yml"
+                )
+                for ref in refs:
+                    if ref == "PLACEHOLDER":
+                        continue
+                    zip.write(
+                        ref, f'{refs.index(ref):03d}{ref.replace("/", "-")}'
+                    )
+        except Exception as e:
+            logging.error(e)
+            return False
 
         self.connect(endpoint="/run", playbook="SatoriBundle.zip", data=bundle.getvalue())
 
@@ -128,8 +136,11 @@ class Satori(object):
             response = requests.get(
                 self.host + endpoint,
                 headers=headers)
-
-        print(f"{response.status_code = }\n{response.text = }")
+        if response.status_code == 200:
+            status = response.json()
+            print(f"UUID: {status['uuid']} | URL: {status['report_url']}")
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
 
     def list_playbooks(self):
         """List Satori playbooks"""
@@ -138,7 +149,7 @@ class Satori(object):
     def list_reports(self, state):
         self.load_config()
         headers = {"Authorization": f"token {self.config_data['token']}"}
-        response = requests.get(f"https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/report/list/{state}",headers=headers)
+        response = requests.get(f"{self.api_host}report/list/{state}",headers=headers)
         if response.status_code == 200:
             for report in response.json():
                 print(f"{report['uuid']} | {report['status']}")
@@ -148,25 +159,34 @@ class Satori(object):
     def stop_report(self, id):
         self.load_config()
         headers = {"Authorization": f"token {self.config_data['token']}"}
-        response = requests.get(f"https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/report/stop/{id}",headers=headers)
-        print(f"{response.text = }")
+        response = requests.get(f"{self.api_host}report/stop/{id}",headers=headers)
+        if response.status_code == 200:
+            status = response.json()
+            print(f"Stopped status: {status['status']}")
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
 
     def report_status(self, id):
         self.load_config()
         headers = {"Authorization": f"token {self.config_data['token']}"}
-        response = requests.get(f"https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/report/status/{id}",headers=headers)
-        print(f"{response.text = }")
+        response = requests.get(f"{self.api_host}report/status/{id}",headers=headers)
+        if response.status_code == 200:
+            status = response.json()
+            print(f"Status: {status['status']} | Fails: {status['fails']}")
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
 
     def cron_action(self, action, param):
         self.load_config()
         headers = {"Authorization": f"token {self.config_data['token']}"}
-        response = requests.get(f"https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/cron/{action}/{param}",headers=headers)
+        response = requests.get(f"{self.api_host}cron/{action}/{param}",headers=headers)
         if response.status_code == 200:
             if action == 'list':
                 for cron in response.json():
                     print(f"ID: {cron['ID']} | Name: {cron['display_name']}")
             elif action == 'stop':
-                print(f"{response.text = }")
+                for cron in response.json():
+                    print(f"Stopped {cron['id']}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
