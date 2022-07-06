@@ -186,7 +186,7 @@ class Satori(object):
                     print(f"ID: {cron['ID']} | Name: {cron['display_name']}")
             elif action == 'stop':
                 for cron in response.json():
-                    print(f"Stopped {cron['id']}")
+                    print(f"Stopped {cron['ID']}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
