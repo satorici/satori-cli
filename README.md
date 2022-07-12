@@ -1,7 +1,8 @@
 # Install satori-cli
 1. `git clone git@github.com:satorici/satori-cli.git`
 2. `cd satori-cli/`
-3. `pip3 install requests` # Optional step, you may have it installed already
+3. `apt install python3.9` # Optional step
+3. `pip3 install requests pyyaml` # Optional step
 
 # [Get some Satori Playbooks]
 4. git clone git@github.com:satorici/playbooks.git

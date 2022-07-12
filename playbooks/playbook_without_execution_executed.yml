@@ -1,8 +1,0 @@
-# ./satori-cli  -p  playbook_without_execution_executed.yml --data "{'token':'TBC'}"
-
-install:
-  - [ pip install satori-cli]
-
-playbook_without_execution:
-  assertStdoutNotContains: "report_uuid"
-  - [ ./satori-cli -p playbook_without_execution.yml $(token)]
