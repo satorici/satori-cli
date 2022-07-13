@@ -80,17 +80,12 @@ class Satori(object):
         bundle = io.BytesIO()
 
         try:
-            with open(playbook) as f, ZipFile(bundle, "x") as zip:
-                refs = get_local_imports(f.read(), playbook)
-                zip.write(
-                    playbook, "satori.yml"
-                )
+            with open(playbook) as f, ZipFile("out.zip", "x") as zip:
+                playbook_dir = os.path.dirname(playbook)
+                refs = get_local_imports(f.read(), playbook_dir)
+                zip.write(playbook, "satori.yml")
                 for ref in refs:
-                    if ref == "PLACEHOLDER":
-                        continue
-                    zip.write(
-                        ref, f'{refs.index(ref):03d}{ref.replace("/", "-")}'
-                    )
+                    zip.write(os.path.join(playbook_dir, ref), ref)
         except Exception as e:
             logging.error(e)
             return False
