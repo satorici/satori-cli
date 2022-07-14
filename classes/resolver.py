@@ -4,7 +4,7 @@ import re
 import yaml
 
 
-IMPORT_REGEX = re.compile(r"^file:\/\/\/?(\w\/?)+\.(ya?ml)$")
+IMPORT_REGEX = re.compile(r"^file:\/\/\/?([\w-]*\/?)+\.(ya?ml)$")
 
 
 def is_import(value):
