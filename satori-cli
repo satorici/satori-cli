@@ -191,11 +191,14 @@ class Satori(object):
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def scan(self, repo_url, coverage):
+    def scan(self, action, repo_url, coverage):
         self.load_config()
+        if action not in ("start","stop","check"):
+            print("Scan command not recognized")
+            return
         params = urlencode({'repo':repo_url,'coverage':coverage}, quote_via=quote_plus)
         headers = {"Authorization": f"token {self.config_data['token']}"}
-        response = requests.get(f"{self.api_host}scan/start?{params}",headers=headers)
+        response = requests.get(f"{self.api_host}scan/{action}?{params}",headers=headers)
         print(f"{response.status_code = }\n{response.text = }")
 
 def main():
@@ -241,6 +244,7 @@ def main():
 
     # scan <repo_url>
     scan_cmd = sub_parsers.add_parser("scan")
+    scan_cmd.add_argument("action")
     scan_cmd.add_argument("repo_url")
     scan_cmd.add_argument('-c', type=int, default=1, help="coverage")
     
@@ -267,7 +271,7 @@ def main():
     elif args.subcommand == "cron":
         instance.cron_action(args.action, args.param)
     elif args.subcommand == "scan":
-        instance.scan(args.repo_url,args.c)
+        instance.scan(args.repo_url,args.action,args.c)
 
 if __name__ == "__main__":
     main()
