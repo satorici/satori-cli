@@ -271,7 +271,7 @@ def main():
     elif args.subcommand == "cron":
         instance.cron_action(args.action, args.param)
     elif args.subcommand == "scan":
-        instance.scan(args.repo_url,args.action,args.c)
+        instance.scan(args.action,args.repo_url,args.c)
 
 if __name__ == "__main__":
     main()
