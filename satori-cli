@@ -80,7 +80,7 @@ class Satori(object):
         bundle = io.BytesIO()
 
         try:
-            with open(playbook) as f, ZipFile("out.zip", "x") as zip:
+            with open(playbook) as f, ZipFile(bundle, "x") as zip:
                 playbook_dir = os.path.dirname(playbook)
                 refs = get_local_imports(f.read(), playbook_dir)
                 zip.write(playbook, "satori.yml")
