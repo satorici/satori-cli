@@ -1,28 +1,33 @@
-import yaml
 import os
+import re
+
+import yaml
 
 
-def get_local_imports(playbook, filename):
-    imports = yaml.safe_load(playbook).get("import", [])
-    path = os.path.dirname(filename)
-    ret: list[str] = [
-        os.path.join(path, i + ".yml") if not i.startswith("satori://")
-        else "PLACEHOLDER" for i in imports
-    ]
+IMPORT_REGEX = re.compile(r"^(satori|file):\/\/\/?([\w-]*\/?)+\.(ya?ml)$")
 
-    if not ret:
-        return ret
 
-    if not isinstance(ret, list) and not all(isinstance(i, str) for i in ret):
-        raise Exception("Invalid imports")
+def is_import(value):
+    return isinstance(value, list) and (
+        all(isinstance(e, str) and IMPORT_REGEX.fullmatch(e) for e in value)
+    )
 
-    if any(i for i in ret if "\\" in i):
-        raise Exception("Imports must use / as path separator")
 
-    for ref in ret:
-        if ref == "PLACEHOLDER" or os.path.isfile(ref):
-            continue
-        else:
-            raise Exception("Can't find local import")
+def get_local_files(config: dict):
+    paths = set()
+    for value in config.values():
+        if is_import(value):
+            paths.update([p[7:] for p in value if p.startswith("file")])
+        elif isinstance(value, dict):
+            paths.update(get_local_files(value))
+    return paths
 
-    return ret
+
+def get_local_imports(stream, dir):
+    file_list = get_local_files(yaml.safe_load(stream))
+    print(file_list)
+    for path in file_list:
+        if not os.path.isfile(os.path.join(dir, path)):
+            raise Exception(f"{path} is not a file")
+
+    return file_list
