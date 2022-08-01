@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import argparse
+import io
+import json
 import logging
-import sys
-import requests
 import mimetypes
 import os
-import io
+import shutil
+import sys
+import uuid
 from pathlib import Path
 from zipfile import ZipFile
-import json
-import shutil
-import uuid
 from urllib.parse import urlencode, quote_plus
 
-from classes.resolver import get_local_imports
+import requests
+
+from classes.resolver import get_references
+
 
 class Satori(object):
     """TBC"""
@@ -83,10 +85,14 @@ class Satori(object):
         try:
             with open(playbook) as f, ZipFile(bundle, "x") as zip:
                 playbook_dir = os.path.dirname(playbook)
-                refs = get_local_imports(f.read(), playbook_dir)
+                references = get_references(f.read(), playbook_dir)
                 zip.write(playbook, "satori.yml")
-                for ref in refs:
-                    zip.write(os.path.join(playbook_dir, ref), ref)
+                for key, paths in references.items():
+                    for path in paths:
+                        zip.write(
+                            os.path.join(playbook_dir, path),
+                            os.path.join(key, path),
+                        )
         except Exception as e:
             logging.error(e)
             return False
@@ -242,7 +248,7 @@ def main():
     scan_cmd.add_argument("action")
     scan_cmd.add_argument("repo_url")
     scan_cmd.add_argument('-c', type=int, default=1, help="coverage")
-    
+
     if len(sys.argv) <= 1:
         parser.print_help()
         sys.exit(0)

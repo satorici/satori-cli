@@ -13,21 +13,35 @@ def is_import(value):
     )
 
 
+def is_input(value):
+    return isinstance(value, list) and (
+        all(isinstance(e, (str, dict)) for e in value)
+    )
+
+
 def get_local_files(config: dict):
-    paths = set()
+    paths = {"imports": set(), "inputs": set()}
     for value in config.values():
         if is_import(value):
-            paths.update([p[7:] for p in value if p.startswith("file")])
+            paths["imports"].update([
+                p[7:] for p in value if p.startswith("file")
+            ])
+        elif is_input(value):
+            paths["inputs"].update([
+                p.get("file") for p in value
+                if isinstance(p, dict) and p.get("file")
+            ])
         elif isinstance(value, dict):
             paths.update(get_local_files(value))
     return paths
 
 
-def get_local_imports(stream, dir):
+def get_references(stream, dir):
     file_list = get_local_files(yaml.safe_load(stream))
-    print(file_list)
-    for path in file_list:
-        if not os.path.isfile(os.path.join(dir, path)):
-            raise Exception(f"{path} is not a file")
+
+    for key, files in file_list.items():
+        for path in files:
+            if not os.path.isfile(os.path.join(dir, path)):
+                raise Exception(f"{key}: {path} is not a file")
 
     return file_list
