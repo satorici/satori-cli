@@ -50,7 +50,11 @@ class Satori(object):
         if key in ('token'):  # filter config key
             self.config_data[key] = value
             config_json = json.dumps(self.config_data)
-            file = open(self.config_path, 'w', 0o700)
+            try:
+                file = open(self.config_path, 'w', 0o700)
+            except PermissionError:
+                print("Warning: the token file permissions could not be set")
+                file = open(self.config_path, 'w')
             file.write(config_json)
             file.close()
             print('Config token updated')
