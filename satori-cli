@@ -31,9 +31,9 @@ class Satori(object):
     def load_config(self):
         """TBC"""
         config_file = None
-        if os.exists(self.config_path[0]):
+        if os.path.isfile(self.config_path[0]):
             config_file = Path(self.config_path[0])
-        elif os.exists(self.config_path[0]):
+        elif os.path.isfile(self.config_path[0]):
             config_file = Path(self.config_path[1])
         else:
             print("Config file not found")
