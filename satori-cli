@@ -23,6 +23,7 @@ class Satori(object):
     def __init__(self):
         self.config_data = {}
         user_home = Path.home()
+        self.config_path = []
         self.config_path[0] = f"{user_home}/.satori_credentials.json"
         self.config_path[1] = ".satori_credentials.json"
         self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"
