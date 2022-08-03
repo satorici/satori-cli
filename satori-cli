@@ -39,10 +39,9 @@ class Satori(object):
         else:
             print("Config file not found")
         if config_file:
-            try:
-                with config_file.open() as f:
-                    config = f.read()
-                    self.config_data = json.loads(config)
+            with config_file.open() as f:
+                config = f.read()
+                self.config_data = json.loads(config)
         # Check if user token exist
         if 'token' not in self.config_data:
             print(f"Set a token with:\n{sys.argv[0]} config token \"your_user_token\"")
