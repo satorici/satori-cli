@@ -23,20 +23,26 @@ class Satori(object):
     def __init__(self):
         self.config_data = {}
         user_home = Path.home()
-        self.config_path = f"{user_home}/.satori_credentials.json"
+        self.config_path[0] = f"{user_home}/.satori_credentials.json"
+        self.config_path[1] = ".satori_credentials.json"
         self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"
         self.api_host = "https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/"
         # self.host = "https://api.satori-ci.com/staging/" # TODO: api.satori-ci.com
 
     def load_config(self):
         """TBC"""
-        config_file = Path(self.config_path)
-        try:
-            with config_file.open() as f:
-                config = f.read()
-                self.config_data = json.loads(config)
-        except FileNotFoundError:
-            print(f"Config file not found: {config_file}")
+        config_file = None
+        if os.exists(self.config_path[0]):
+            config_file = Path(self.config_path[0])
+        elif os.exists(self.config_path[0]):
+            config_file = Path(self.config_path[1])
+        else:
+            print("Config file not found")
+        if config_file:
+            try:
+                with config_file.open() as f:
+                    config = f.read()
+                    self.config_data = json.loads(config)
         # Check if user token exist
         if 'token' not in self.config_data:
             print(f"Set a token with:\n{sys.argv[0]} config token \"your_user_token\"")
@@ -51,10 +57,10 @@ class Satori(object):
             self.config_data[key] = value
             config_json = json.dumps(self.config_data)
             try:
-                file = open(self.config_path, 'w', 0o700)
+                file = open(self.config_path[0], 'w', 0o700)
             except PermissionError:
-                print("Warning: the token file permissions could not be set")
-                file = open(self.config_path, 'w')
+                print("Warning: the token file could not be saved in $HOME, using current directory")
+                file = open(self.config_path[1], 'w', 0o700)
             file.write(config_json)
             file.close()
             print('Config token updated')
