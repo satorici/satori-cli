@@ -33,7 +33,7 @@ class Satori(object):
         config_file = None
         if os.path.isfile(self.config_path[0]):
             config_file = Path(self.config_path[0])
-        elif os.path.isfile(self.config_path[0]):
+        elif os.path.isfile(self.config_path[1]):
             config_file = Path(self.config_path[1])
         else:
             print("Config file not found")
