@@ -202,7 +202,7 @@ class Satori(object):
 
     def scan(self, action, repo_url, coverage):
         self.load_config()
-        if action not in ("start","stop","check"):
+        if action not in ("start","stop","check","clean"):
             print("Scan command not recognized")
             return
         params = urlencode({'repo':repo_url,'coverage':coverage}, quote_via=quote_plus)
