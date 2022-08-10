@@ -45,6 +45,7 @@ class Satori(object):
         if 'token' not in self.config_data:
             print(f"Set a token with:\n{sys.argv[0]} config token \"your_user_token\"")
             sys.exit(1)
+        self.headers = {"Authorization": f"token {self.config_data['token']}"}
 
     def save_config(self, key: str, value: str):
         """TBC"""
@@ -140,12 +141,7 @@ class Satori(object):
                 data=data,
                 headers=headers)
         elif not playbook and not data:
-            headers = {
-                "Authorization": f"token {self.config_data['token']}",
-            }
-            response = requests.get(
-                self.host + endpoint,
-                headers=headers)
+            response = requests.get(self.host + endpoint, headers=self.headers)
         if response.status_code == 200:
             status = response.json()
             print(f"UUID: {status['uuid']} | URL: {status['report_url']}")
@@ -158,8 +154,7 @@ class Satori(object):
 
     def list_reports(self, state):
         self.load_config()
-        headers = {"Authorization": f"token {self.config_data['token']}"}
-        response = requests.get(f"{self.api_host}report/list/{state}",headers=headers)
+        response = requests.get(f"{self.api_host}report/list/{state}", headers=self.headers)
         if response.status_code == 200:
             for report in response.json():
                 print(f"{report['uuid']} | {report['status']}")
@@ -168,8 +163,7 @@ class Satori(object):
 
     def stop_report(self, id):
         self.load_config()
-        headers = {"Authorization": f"token {self.config_data['token']}"}
-        response = requests.get(f"{self.api_host}report/stop/{id}",headers=headers)
+        response = requests.get(f"{self.api_host}report/stop/{id}", headers=self.headers)
         if response.status_code == 200:
             status = response.json()
             print(f"Stopped status: {status['status']}")
@@ -178,8 +172,7 @@ class Satori(object):
 
     def report_status(self, id):
         self.load_config()
-        headers = {"Authorization": f"token {self.config_data['token']}"}
-        response = requests.get(f"{self.api_host}report/status/{id}",headers=headers)
+        response = requests.get(f"{self.api_host}report/status/{id}", headers=self.headers)
         if response.status_code == 200:
             status = response.json()
             print(f"Status: {status['status']} | Fails: {status['fails']}")
@@ -188,8 +181,7 @@ class Satori(object):
 
     def cron_action(self, action, param):
         self.load_config()
-        headers = {"Authorization": f"token {self.config_data['token']}"}
-        response = requests.get(f"{self.api_host}cron/{action}/{param}",headers=headers)
+        response = requests.get(f"{self.api_host}cron/{action}/{param}", headers=self.headers)
         if response.status_code == 200:
             if action == 'list':
                 for cron in response.json():
@@ -206,9 +198,25 @@ class Satori(object):
             print("Scan command not recognized")
             return
         params = urlencode({'repo':repo_url,'coverage':coverage}, quote_via=quote_plus)
-        headers = {"Authorization": f"token {self.config_data['token']}"}
-        response = requests.get(f"{self.api_host}scan/{action}?{params}",headers=headers)
+        response = requests.get(f"{self.api_host}scan/{action}?{params}", headers=self.headers)
         print(f"{response.status_code = }\n{response.text = }")
+
+    def stop(self, id):
+        self.load_config()
+        params = urlencode({'id':id}, quote_via=quote_plus)
+        response = requests.get(f"{self.api_host}stop?{params}", headers=self.headers)
+        print(f"{response.status_code = }\n{response.text = }")
+
+    def info(self, repo):
+        self.load_config()
+        params = urlencode({'repo':repo}, quote_via=quote_plus)
+        response = requests.get(f"{self.api_host}info?{params}", headers=self.headers)
+        if response.status_code == 200:
+            info = response.json()
+            for key in info:
+                print(f"{key}:{info[key]}\n")
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
 
 def main():
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
@@ -257,6 +265,14 @@ def main():
     scan_cmd.add_argument("repo_url")
     scan_cmd.add_argument('-c', type=int, default=1, help="coverage")
 
+    # stop <report_id|repo_name|repo_url>
+    stop_cmd = sub_parsers.add_parser("stop")
+    stop_cmd.add_argument("id")
+
+    # info <repo_name|repo_url>
+    info_cmd = sub_parsers.add_parser("info")
+    info_cmd.add_argument("repo")
+
     if len(sys.argv) <= 1:
         parser.print_help()
         sys.exit(0)
@@ -281,6 +297,10 @@ def main():
         instance.cron_action(args.action, args.param)
     elif args.subcommand == "scan":
         instance.scan(args.action,args.repo_url,args.c)
+    elif args.subcommand == "stop":
+        instance.stop(args.id)
+    elif args.subcommand == "info":
+        instance.info(args.repo)
 
 if __name__ == "__main__":
     main()
