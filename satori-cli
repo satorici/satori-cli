@@ -214,7 +214,7 @@ class Satori(object):
         if response.status_code == 200:
             info = response.json()
             for key in info:
-                print(f"{key}:{info[key]}\n")
+                print(f"{key.capitalize()}: {info[key]}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
