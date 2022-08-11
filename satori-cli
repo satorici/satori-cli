@@ -265,7 +265,7 @@ def main():
     scan_cmd = sub_parsers.add_parser("scan")
     scan_cmd.add_argument("repo_url")
     scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=int, default=1, help="coverage")
-    scan_cmd.add_argument('-s','--skip-check', dest='skip_check', default=True, action=argparse.BooleanOptionalAction)
+    scan_cmd.add_argument('-s','--skip-check', dest='skip_check', default=False, action=argparse.BooleanOptionalAction)
 
     # stop <report_id|repo_name|repo_url>
     stop_cmd = sub_parsers.add_parser("stop")
