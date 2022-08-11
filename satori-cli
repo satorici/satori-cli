@@ -192,14 +192,16 @@ class Satori(object):
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def scan(self, action, repo_url, coverage):
+    def scan(self, repo_url, coverage, skip_check):
         self.load_config()
-        if action not in ("start","stop","check","clean"):
-            print("Scan command not recognized")
-            return
-        params = urlencode({'repo':repo_url,'coverage':coverage}, quote_via=quote_plus)
-        response = requests.get(f"{self.api_host}scan/{action}?{params}", headers=self.headers)
-        print(f"{response.status_code = }\n{response.text = }")
+        params = urlencode({'repo':repo_url,'coverage':coverage,'skip_check':skip_check}, quote_via=quote_plus)
+        response = requests.get(f"{self.api_host}scan/start?{params}", headers=self.headers)
+        if response.status_code == 200:
+            info = response.json()
+            for key in info:
+                print(f"{key.capitalize()}: {info[key]}")
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
 
     def stop(self, id):
         self.load_config()
@@ -261,9 +263,9 @@ def main():
 
     # scan <repo_url>
     scan_cmd = sub_parsers.add_parser("scan")
-    scan_cmd.add_argument("action")
     scan_cmd.add_argument("repo_url")
-    scan_cmd.add_argument('-c', type=int, default=1, help="coverage")
+    scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=int, default=1, help="coverage")
+    scan_cmd.add_argument('-s','--skip-check', dest='skip_check', default=True, action=argparse.BooleanOptionalAction)
 
     # stop <report_id|repo_name|repo_url>
     stop_cmd = sub_parsers.add_parser("stop")
@@ -296,7 +298,7 @@ def main():
     elif args.subcommand == "cron":
         instance.cron_action(args.action, args.param)
     elif args.subcommand == "scan":
-        instance.scan(args.action,args.repo_url,args.c)
+        instance.scan(args.repo_url, args.coverage, args.skip_check)
     elif args.subcommand == "stop":
         instance.stop(args.id)
     elif args.subcommand == "info":
