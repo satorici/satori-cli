@@ -203,15 +203,15 @@ class Satori(object):
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def clean(self, repo_url):
+    def clean(self, repo):
         self.load_config()
-        params = urlencode({'repo':repo_url}, quote_via=quote_plus)
+        params = urlencode({'repo':repo}, quote_via=quote_plus)
         response = requests.get(f"{self.api_host}scan/clean?{params}", headers=self.headers)
         print(f"{response.status_code = }\n{response.text = }")
 
-    def stop(self, id):
+    def stop(self, repo):
         self.load_config()
-        params = urlencode({'id':id}, quote_via=quote_plus)
+        params = urlencode({'repo':repo}, quote_via=quote_plus)
         response = requests.get(f"{self.api_host}stop?{params}", headers=self.headers)
         print(f"{response.status_code = }\n{response.text = }")
 
@@ -273,9 +273,9 @@ def main():
     scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=int, default=1, help="coverage")
     scan_cmd.add_argument('-s','--skip-check', dest='skip_check', default=False, action=argparse.BooleanOptionalAction)
 
-    # stop <report_id|repo_name|repo_url>
+    # stop <repo_name|repo_url>
     stop_cmd = sub_parsers.add_parser("stop")
-    stop_cmd.add_argument("id")
+    stop_cmd.add_argument("repo")
 
     # info <repo_name|repo_url>
     info_cmd = sub_parsers.add_parser("info")
@@ -310,7 +310,7 @@ def main():
     elif args.subcommand == "scan":
         instance.scan(args.repo_url, args.coverage, args.skip_check)
     elif args.subcommand == "stop":
-        instance.stop(args.id)
+        instance.stop(args.repo)
     elif args.subcommand == "info":
         instance.info(args.repo)
     elif args.subcommand == "clean":
