@@ -203,6 +203,12 @@ class Satori(object):
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
+    def clean(self, repo_url):
+        self.load_config()
+        params = urlencode({'repo':repo_url}, quote_via=quote_plus)
+        response = requests.get(f"{self.api_host}scan/clean?{params}", headers=self.headers)
+        print(f"{response.status_code = }\n{response.text = }")
+
     def stop(self, id):
         self.load_config()
         params = urlencode({'id':id}, quote_via=quote_plus)
@@ -275,6 +281,10 @@ def main():
     info_cmd = sub_parsers.add_parser("info")
     info_cmd.add_argument("repo")
 
+    # clean <repo_name|repo_url>
+    clean_cmd = sub_parsers.add_parser("clean")
+    clean_cmd.add_argument("repo")
+
     if len(sys.argv) <= 1:
         parser.print_help()
         sys.exit(0)
@@ -303,6 +313,8 @@ def main():
         instance.stop(args.id)
     elif args.subcommand == "info":
         instance.info(args.repo)
+    elif args.subcommand == "clean":
+        instance.clean(args.repo)
 
 if __name__ == "__main__":
     main()
