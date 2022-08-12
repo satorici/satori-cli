@@ -270,7 +270,7 @@ def main():
     # scan <repo_url>
     scan_cmd = sub_parsers.add_parser("scan")
     scan_cmd.add_argument("repo_url")
-    scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=int, default=1, help="coverage")
+    scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=float, default=1, help="coverage")
     scan_cmd.add_argument('-s','--skip-check', dest='skip_check', default=False, action=argparse.BooleanOptionalAction)
 
     # stop <repo_name|repo_url>
