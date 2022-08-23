@@ -98,10 +98,7 @@ class Satori(object):
                 zip.write(playbook, "satori.yml")
                 for key, paths in references.items():
                     for path in paths:
-                        zip.write(
-                            os.path.join(playbook_dir, path),
-                            os.path.join(key, path),
-                        )
+                        zip.write(Path(playbook_dir, path), Path(key, path))
         except Exception as e:
             logging.error(e)
             return False

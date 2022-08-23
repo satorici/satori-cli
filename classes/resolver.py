@@ -1,5 +1,5 @@
-import os
 import re
+from pathlib import Path
 
 import yaml
 
@@ -41,7 +41,7 @@ def get_references(stream, dir):
 
     for key, files in file_list.items():
         for path in files:
-            if not os.path.isfile(os.path.join(dir, path)):
+            if not Path(dir, path).is_file():
                 raise Exception(f"{key}: {path} is not a file")
 
     return file_list
