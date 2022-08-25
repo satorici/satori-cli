@@ -235,6 +235,7 @@ class Satori(object):
             for commit in commits:
                 for key in commit:
                     if key == 'Report':
+                        print("▢ Report:")
                         for report_key in commit['Report']:
                             if report_key == 'Testcases':
                                 print("  • Testcases:")
