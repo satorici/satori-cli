@@ -215,7 +215,7 @@ class Satori(object):
         response = requests.get(f"{self.api_host}stop?{params}", headers=self.headers)
         print(f"{response.status_code = }\n{response.text = }")
 
-    def info(self, repo):
+    def scan_info(self, repo):
         self.load_config()
         params = urlencode({'repo':repo}, quote_via=quote_plus)
         response = requests.get(f"{self.api_host}info?{params}", headers=self.headers)
@@ -223,6 +223,23 @@ class Satori(object):
             info = response.json()
             for key in info:
                 print(f"{key.capitalize()}: {info[key]}")
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
+
+    def report_info(self, repo):
+        self.load_config()
+        params = urlencode({'repo':repo}, quote_via=quote_plus)
+        response = requests.get(f"{self.api_host}report/info?{params}", headers=self.headers)
+        if response.status_code == 200:
+            commits = response.json()
+            for commit in commits:
+                for key in commit:
+                    if key == 'report':
+                        for report_key in commit['report']:
+                            print(f"  •{report_key}: {commit['report'][report_key]}")
+                    else:
+                        print(f"▢ {key}: {commit[key]}")
+                print("")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
@@ -287,6 +304,10 @@ def main():
     clean_cmd = sub_parsers.add_parser("clean")
     clean_cmd.add_argument("repo")
 
+    # report <repo_name|repo_url>
+    report_cmd = sub_parsers.add_parser("report")
+    report_cmd.add_argument("repo")
+
     if len(sys.argv) <= 1:
         parser.print_help()
         sys.exit(0)
@@ -314,9 +335,11 @@ def main():
     elif args.subcommand == "stop":
         instance.stop(args.repo)
     elif args.subcommand == "info":
-        instance.info(args.repo)
+        instance.scan_info(args.repo)
     elif args.subcommand == "clean":
         instance.clean(args.repo)
+    elif args.subcommand == "report":
+        instance.report_info(args.repo)
 
 if __name__ == "__main__":
     main()
