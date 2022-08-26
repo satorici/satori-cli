@@ -203,9 +203,9 @@ class Satori(object):
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def clean(self, repo):
+    def clean(self, repo, delete_commits):
         self.load_config()
-        params = urlencode({'repo':repo}, quote_via=quote_plus)
+        params = urlencode({'repo':repo, 'delete_commits':delete_commits}, quote_via=quote_plus)
         response = requests.get(f"{self.api_host}scan/clean?{params}", headers=self.headers)
         print(f"{response.status_code = }\n{response.text = }")
 
@@ -310,6 +310,7 @@ def main():
     # clean <repo_name|repo_url>
     clean_cmd = sub_parsers.add_parser("clean")
     clean_cmd.add_argument("repo")
+    clean_cmd.add_argument('-d','--delete-commits', dest='delete_commits', default=False, action=argparse.BooleanOptionalAction)
 
     # report <repo_name|repo_url>
     report_cmd = sub_parsers.add_parser("report")
@@ -346,7 +347,7 @@ def main():
     elif args.subcommand == "info":
         instance.scan_info(args.repo)
     elif args.subcommand == "clean":
-        instance.clean(args.repo)
+        instance.clean(args.repo, args.delete_commits)
     elif args.subcommand == "report":
         instance.report_info(args.repo, args.page, args.limit)
 
