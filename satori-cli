@@ -237,7 +237,12 @@ class Satori(object):
                     if key == 'Report':
                         print("▢ Report:")
                         for report_key in commit['Report']:
-                            if report_key == 'Testcases':
+                            if report_key == 'Satori Error' and commit['Report']['Satori Error'] is not None:
+                                print("  • Satori Error:")
+                                split_msg = commit['Report']['Satori Error'].split("\n")
+                                for msg in split_msg:
+                                    print(f"   ░ {msg}")
+                            elif report_key == 'Testcases':
                                 print("  • Testcases:")
                                 for testcase in commit['Report']['Testcases']:
                                     print(f"    ○ {testcase}")
