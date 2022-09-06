@@ -299,7 +299,7 @@ def main():
     # scan <repo_url>
     scan_cmd = sub_parsers.add_parser("scan")
     scan_cmd.add_argument("repo_url")
-    scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=float, default=1, help="coverage")
+    scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=float, default=0, help="coverage")
     scan_cmd.add_argument('-s','--skip-check', dest='skip_check', default=False, action=argparse.BooleanOptionalAction)
     scan_cmd.add_argument('-f', '--from', dest='from_date', type=str, default='', help="From Date")
     scan_cmd.add_argument('-t', '--to', dest='to_date', type=str, default='', help="To Date")
