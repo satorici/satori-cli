@@ -18,7 +18,7 @@ import requests
 from classes.resolver import get_references
 
 
-class Satori(object):
+class Satori():
     """TBC"""
     def __init__(self):
         self.config_data = {}
@@ -38,7 +38,7 @@ class Satori(object):
         else:
             print("Config file not found")
         if config_file:
-            with config_file.open() as f:
+            with config_file.open(encoding='utf-8') as f:
                 config = f.read()
                 self.config_data = json.loads(config)
         # Check if user token exist
@@ -102,8 +102,17 @@ class Satori(object):
         except Exception as e:
             logging.error(e)
             return False
-
-        self.connect(endpoint="/run", playbook="SatoriBundle.zip", data=bundle.getvalue())
+        headers = {
+            "Authorization": f"token {self.config_data['token']}",
+            "Content-Type": self.mime_type(playbook),
+            "X-File-Name": os.path.basename(playbook)
+        }
+        response = self.connect("GET", f"{self.host}", playbook="SatoriBundle.zip", data=bundle.getvalue(), headers=headers)  # TODO: endpoint TBD
+        if response.status_code == 200:
+            status = response.json()
+            print(f"UUID: {status['uuid']} | URL: {status['report_url']}")
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
 
     def upload(self, directory):
         """Upload directory and run"""
@@ -121,37 +130,40 @@ class Satori(object):
             print(f"Directory not found: {directory}")
             return False
 
-        self.connect(endpoint="/upload", playbook=directory, data=data)
-
-    def connect(self, endpoint, playbook=None, data=None):
-        """Connect to Satori API"""
-        endpoint = "" # TODO: tenemos que crear los endpoints para dejar de pisarlo
-        self.load_config()
-        if playbook and data:
-            headers = {
-                "Authorization": f"token {self.config_data['token']}",
-                "Content-Type": self.mime_type(playbook),
-                "X-File-Name": os.path.basename(playbook)
-            }
-            response = requests.post(
-                self.host + endpoint,
-                data=data,
-                headers=headers)
-        elif not playbook and not data:
-            response = requests.get(self.host + endpoint, headers=self.headers)
+        response = self.connect("POST", f"{self.host}", playbook=directory, data=data)  # TODO: endpoint TBD
         if response.status_code == 200:
             status = response.json()
             print(f"UUID: {status['uuid']} | URL: {status['report_url']}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
+    def connect(self, method, endpoint, playbook=None, data=None, headers=None):
+        """Connect to Satori API"""
+        self.load_config()
+        if headers is None:
+            headers = self.headers
+        response = None
+        if method == "POST":
+            try:
+                response = requests.post(endpoint, data=data, headers=headers)
+            except requests.exceptions.ConnectionError:
+                logging.error("Connection could not be open")    
+        elif method == "GET":
+            try:
+                response = requests.get(endpoint, headers=headers)
+            except requests.exceptions.ConnectionError:
+                logging.error("Connection could not be open")
+        if response is not None:
+            return response
+        sys.exit(1)
+
     def list_playbooks(self):
         """List Satori playbooks"""
-        self.connect(endpoint="/list-playbooks")
+        response = self.connect("GET", f"{self.host}")  # TODO: endpoint TBD
 
     def list_reports(self, state):
-        self.load_config()
-        response = requests.get(f"{self.api_host}report/list/{state}", headers=self.headers)
+        """TBC"""
+        response = self.connect("GET", f"{self.api_host}report/list/{state}")
         if response.status_code == 200:
             for report in response.json():
                 print(f"{report['uuid']} | {report['status']}")
@@ -159,8 +171,8 @@ class Satori(object):
             print(f"{response.text = }")
 
     def stop_report(self, id):
-        self.load_config()
-        response = requests.get(f"{self.api_host}report/stop/{id}", headers=self.headers)
+        """TBC"""
+        response = self.connect("GET", f"{self.api_host}report/stop/{id}")
         if response.status_code == 200:
             status = response.json()
             print(f"Stopped status: {status['status']}")
@@ -168,8 +180,8 @@ class Satori(object):
             print(f"{response.status_code = }\n{response.text = }")
 
     def report_status(self, id):
-        self.load_config()
-        response = requests.get(f"{self.api_host}report/status/{id}", headers=self.headers)
+        """TBC"""
+        response = self.connect("GET", f"{self.api_host}report/status/{id}")
         if response.status_code == 200:
             status = response.json()
             print(f"Status: {status['status']} | Fails: {status['fails']}")
@@ -177,8 +189,8 @@ class Satori(object):
             print(f"{response.status_code = }\n{response.text = }")
 
     def cron_action(self, action, param):
-        self.load_config()
-        response = requests.get(f"{self.api_host}cron/{action}/{param}", headers=self.headers)
+        """TBC"""
+        response = self.connect("GET", f"{self.api_host}cron/{action}/{param}")
         if response.status_code == 200:
             if action == 'list':
                 for cron in response.json():
@@ -190,12 +202,12 @@ class Satori(object):
             print(f"{response.status_code = }\n{response.text = }")
 
     def scan(self, repo_url, coverage, skip_check, from_date, to_date):
-        self.load_config()
+        """Run Satori on multiple commits"""
         params = urlencode(
             {'repo':repo_url,'coverage':coverage,'skip_check':skip_check,
             'from':from_date,'to':to_date}, 
             quote_via=quote_plus)
-        response = requests.get(f"{self.api_host}scan/start?{params}", headers=self.headers)
+        response = self.connect("GET", f"{self.api_host}scan/start?{params}")
         if response.status_code == 200:
             info = response.json()
             for key in info:
@@ -204,21 +216,21 @@ class Satori(object):
             print(f"{response.status_code = }\n{response.text = }")
 
     def clean(self, repo, delete_commits):
-        self.load_config()
+        """Remove all reports (and commit information) from a repo"""
         params = urlencode({'repo':repo, 'delete_commits':delete_commits}, quote_via=quote_plus)
-        response = requests.get(f"{self.api_host}scan/clean?{params}", headers=self.headers)
+        response = self.connect("GET", f"{self.api_host}scan/clean?{params}")
         print(f"{response.status_code = }\n{response.text = }")
 
     def stop(self, repo):
-        self.load_config()
+        """Stop all scans in progress for a certain repo"""
         params = urlencode({'repo':repo}, quote_via=quote_plus)
-        response = requests.get(f"{self.api_host}stop?{params}", headers=self.headers)
+        response = self.connect("GET", f"{self.api_host}stop?{params}")
         print(f"{response.status_code = }\n{response.text = }")
 
     def scan_info(self, repo):
-        self.load_config()
+        """Get information about the """
         params = urlencode({'repo':repo}, quote_via=quote_plus)
-        response = requests.get(f"{self.api_host}info?{params}", headers=self.headers)
+        response = self.connect("GET", f"{self.api_host}info?{params}")
         if response.status_code == 200:
             info = response.json()
             for key in info:
@@ -227,9 +239,9 @@ class Satori(object):
             print(f"{response.status_code = }\n{response.text = }")
 
     def report_info(self, repo, page, limit):
-        self.load_config()
+        """TBC"""
         params = urlencode({'repo':repo, 'page':page, 'limit':limit}, quote_via=quote_plus)
-        response = requests.get(f"{self.api_host}report/info?{params}", headers=self.headers)
+        response = self.connect("GET", f"{self.api_host}report/info?{params}")
         if response.status_code == 200:
             commits = response.json()
             for commit in commits:
