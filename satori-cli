@@ -19,17 +19,18 @@ from classes.resolver import get_references
 
 
 class Satori():
-    """TBC"""
+    """Have some class"""
     def __init__(self):
+        """Turn on the engines"""
+        self.verbose = True
         self.config_data = {}
         user_home = Path.home()
-        self.config_path = [ f"{user_home}/.satori_credentials.json", ".satori_credentials.json" ]
-        self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"
+        self.config_path = [f"{user_home}/.satori_credentials.json", ".satori_credentials.json"]
+        self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"  # TODO: api.satori-ci.com
         self.api_host = "https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/"
-        # self.host = "https://api.satori-ci.com/staging/" # TODO: api.satori-ci.com
 
     def load_config(self):
-        """TBC"""
+        """Load the config file and set the token on the headers"""
         config_file = None
         if os.path.isfile(self.config_path[0]):
             config_file = Path(self.config_path[0])
@@ -48,7 +49,7 @@ class Satori():
         self.headers = {"Authorization": f"token {self.config_data['token']}"}
 
     def save_config(self, key: str, value: str):
-        """TBC"""
+        """Save the token into the config file"""
         if value == "":
             print("Value not defined")
             return False
@@ -102,7 +103,7 @@ class Satori():
         except Exception as e:
             logging.error(e)
             return False
-        playbook="SatoriBundle.zip"
+        playbook = "SatoriBundle.zip"
         headers = {
             "Authorization": f"token {self.config_data['token']}",
             "Content-Type": self.mime_type(playbook),
@@ -139,11 +140,13 @@ class Satori():
             print(f"{response.status_code = }\n{response.text = }")
 
     def connect(self, method, endpoint, playbook=None, data=None, headers=None):
-        """Connect to Satori API"""
+        """Connect to the Satori API"""
         self.load_config()
         if headers is None:
             headers = self.headers
         response = None
+        if self.verbose is True:
+            print("method:", method, " - endpoint:", endpoint, " - playbook:", playbook, " - headers:", headers)
         if method == "POST":
             try:
                 response = requests.post(endpoint, data=data, headers=headers)
@@ -158,21 +161,12 @@ class Satori():
             return response
         sys.exit(1)
 
-    def list_playbooks(self):
-        """List Satori playbooks"""
+    def playbooks(self):
+        """List playbooks for the user"""
         response = self.connect("GET", f"{self.host}")  # TODO: endpoint TBD
 
-    def list_reports(self, state):
-        """TBC"""
-        response = self.connect("GET", f"{self.api_host}report/list/{state}")
-        if response.status_code == 200:
-            for report in response.json():
-                print(f"{report['uuid']} | {report['status']}")
-        else:
-            print(f"{response.text = }")
-
     def stop_report(self, id):
-        """TBC"""
+        """Stop the execution of a certain given report"""
         response = self.connect("GET", f"{self.api_host}report/stop/{id}")
         if response.status_code == 200:
             status = response.json()
@@ -181,7 +175,7 @@ class Satori():
             print(f"{response.status_code = }\n{response.text = }")
 
     def report_status(self, id):
-        """TBC"""
+        """Show the status for a certain given report"""
         response = self.connect("GET", f"{self.api_host}report/status/{id}")
         if response.status_code == 200:
             status = response.json()
@@ -268,6 +262,7 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
+
 def main():
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
         print(f"Minimum Python version 3.9 required, the current version is {sys.version_info.major}.{sys.version_info.minor}")
@@ -289,12 +284,8 @@ def main():
     upload_cmd = sub_parsers.add_parser("upload")
     upload_cmd.add_argument("directory")
 
-    # list-playbooks
-    list_cmd = sub_parsers.add_parser("list-playbooks")
-
-    # list-reports state
-    list_report_cmd = sub_parsers.add_parser("list-reports")
-    list_report_cmd.add_argument("state", default='all', nargs='?')
+    # playbooks
+    playbooks_cmd = sub_parsers.add_parser("playbooks")
 
     # stop-report id
     stop_report_cmd = sub_parsers.add_parser("stop-report")
@@ -313,7 +304,7 @@ def main():
     scan_cmd = sub_parsers.add_parser("scan")
     scan_cmd.add_argument("repo_url")
     scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=float, default=0, help="coverage")
-    scan_cmd.add_argument('-s','--skip-check', dest='skip_check', default=False, action=argparse.BooleanOptionalAction)
+    scan_cmd.add_argument('-s', '--skip-check', dest='skip_check', default=False, action=argparse.BooleanOptionalAction)
     scan_cmd.add_argument('-f', '--from', dest='from_date', type=str, default='', help="From Date")
     scan_cmd.add_argument('-t', '--to', dest='to_date', type=str, default='', help="To Date")
 
@@ -328,7 +319,7 @@ def main():
     # clean <repo_name|repo_url>
     clean_cmd = sub_parsers.add_parser("clean")
     clean_cmd.add_argument("repo")
-    clean_cmd.add_argument('-d','--delete-commits', dest='delete_commits', default=False, action=argparse.BooleanOptionalAction)
+    clean_cmd.add_argument('-d', '--delete-commits', dest='delete_commits', default=False, action=argparse.BooleanOptionalAction)
 
     # report <repo_name|repo_url>
     report_cmd = sub_parsers.add_parser("report")
@@ -348,10 +339,8 @@ def main():
         instance.run(args.playbook)
     elif args.subcommand == "upload":
         instance.upload(args.directory)
-    elif args.subcommand == "list-playbooks":
-        instance.list_playbooks()
-    elif args.subcommand == "list-reports":
-        instance.list_reports(args.state)
+    elif args.subcommand == "playbooks":
+        instance.playbooks()
     elif args.subcommand == "stop-report":
         instance.stop_report(args.id)
     elif args.subcommand == "status":
@@ -368,6 +357,7 @@ def main():
         instance.clean(args.repo, args.delete_commits)
     elif args.subcommand == "report":
         instance.report_info(args.repo, args.page, args.limit)
+
 
 if __name__ == "__main__":
     main()
