@@ -22,7 +22,7 @@ class Satori():
     """Have some class"""
     def __init__(self):
         """Turn on the engines"""
-        self.verbose = True
+        self.verbose = False
         self.config_data = {}
         user_home = Path.home()
         self.config_path = [f"{user_home}/.satori_credentials.json", ".satori_credentials.json"]
