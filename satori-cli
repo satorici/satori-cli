@@ -265,7 +265,7 @@ class Satori():
 
 def main():
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
-        print(f"Minimum Python version 3.9 required, the current version is {sys.version_info.major}.{sys.version_info.minor}")
+        print(f"Minimum Python version 3.9 required, the current version is {sys.version_info.major}.{sys.version_info.minor}\nHow To Install Python 3.10 on Ubuntu: https://computingforgeeks.com/how-to-install-python-on-ubuntu-linux-system/")
         sys.exit(0)
 
     parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
