@@ -44,7 +44,8 @@ class Satori():
                 self.config_data = json.loads(config)
         # Check if user token exist
         if 'token' not in self.config_data:
-            print(f"Set a token with:\n{sys.argv[0]} config token \"your_user_token\"")
+            print(f"Set a token with: {sys.argv[0]} config token \"your_user_token\"")
+            print("How to get a Satori CI Token: TBC")
             sys.exit(1)
         self.headers = {"Authorization": f"token {self.config_data['token']}"}
 
