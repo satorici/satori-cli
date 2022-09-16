@@ -234,9 +234,9 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def report_info(self, repo, page, limit):
+    def report_info(self, repo, page, limit, filters):
         """TBC"""
-        params = urlencode({'repo':repo, 'page':page, 'limit':limit}, quote_via=quote_plus)
+        params = urlencode({'repo':repo, 'page':page, 'limit':limit, 'filters': filters}, quote_via=quote_plus)
         response = self.connect("GET", f"{self.api_host}report/info?{params}")
         if response.status_code == 200:
             commits = response.json()
@@ -327,6 +327,7 @@ def main():
     report_cmd.add_argument("repo")
     report_cmd.add_argument('-p', '--page', dest='page', type=int, default=1, help="Commit page number")
     report_cmd.add_argument('-l', '--limit', dest='limit', type=int, default=20, help="Page limit number")
+    report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
 
     if len(sys.argv) <= 1:
         parser.print_help()
@@ -357,7 +358,7 @@ def main():
     elif args.subcommand == "clean":
         instance.clean(args.repo, args.delete_commits)
     elif args.subcommand == "report":
-        instance.report_info(args.repo, args.page, args.limit)
+        instance.report_info(args.repo, args.page, args.limit, args.filter)
 
 
 if __name__ == "__main__":
