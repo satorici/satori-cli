@@ -5,5 +5,10 @@ set:
 
 report:
     assertStdoutContains: "Hash"
-    list:
-    - [ python3 satori-cli report satoridev01/test.python.cpython ]
+    exec:
+    - [ python3 satori-cli report satorici/satori-cli ]
+    
+info:
+    assertStdoutContains: "Commits"
+    exec:
+    - [ python3 satori-cli info satorici/satori-cli ]
