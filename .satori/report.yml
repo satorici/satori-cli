@@ -1,0 +1,9 @@
+set:
+    assertStdoutContains: "Config token updated"
+    token:
+    - [ python3 satori-cli settoken $(TOKEN) ]
+
+report:
+    assertStdoutContains: "Hash"
+    list:
+    - [ python3 satori-cli report satoridev01/test.python.cpython ]
