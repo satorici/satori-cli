@@ -152,7 +152,7 @@ class Satori():
             try:
                 response = requests.post(endpoint, data=data, headers=headers)
             except requests.exceptions.ConnectionError:
-                logging.error("Connection could not be open")    
+                logging.error("Connection could not be open")
         elif method == "GET":
             try:
                 response = requests.get(endpoint, headers=headers)
@@ -201,7 +201,7 @@ class Satori():
         """Run Satori on multiple commits"""
         params = urlencode(
             {'repo':repo_url,'coverage':coverage,'skip_check':skip_check,
-            'from':from_date,'to':to_date}, 
+            'from':from_date,'to':to_date},
             quote_via=quote_plus)
         response = self.connect("GET", f"{self.api_host}scan/start?{params}")
         if response.status_code == 200:
@@ -236,6 +236,15 @@ class Satori():
 
     def report_info(self, repo, page, limit, filters):
         """TBC"""
+
+        try:
+            if uuid.UUID(repo):
+                res = self.connect("GET", f"{self.api_host}report/info/{repo}")
+                print(res.text)
+                return
+        except ValueError:
+            pass
+
         params = urlencode({'repo':repo, 'page':page, 'limit':limit, 'filters': filters}, quote_via=quote_plus)
         response = self.connect("GET", f"{self.api_host}report/info?{params}")
         if response.status_code == 200:
