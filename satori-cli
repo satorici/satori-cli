@@ -107,8 +107,8 @@ class Satori():
         playbook = "SatoriBundle.zip"
         headers = {
             "Authorization": f"token {self.config_data['token']}",
-            "Content-Type": self.mime_type(playbook),
-            "X-File-Name": os.path.basename(playbook)
+            "Content-Type": "application/zip",
+            "X-File-Name": playbook,
         }
         response = self.connect("POST", f"{self.host}", playbook=playbook, data=bundle.getvalue(), headers=headers)  # TODO: endpoint TBD
         if response.status_code == 200:
