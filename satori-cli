@@ -9,6 +9,7 @@ import os
 import shutil
 import sys
 import uuid
+import yaml
 from pathlib import Path
 from zipfile import ZipFile
 from urllib.parse import urlencode, quote_plus
@@ -25,11 +26,12 @@ class Satori():
         self.verbose = False
         self.config_data = {}
         user_home = Path.home()
-        self.config_path = [f"{user_home}/.satori_credentials.json", ".satori_credentials.json"]
+        # self.config_path = [f"{user_home}/.satori_credentials.json", ".satori_credentials.json"]
+        self.config_path = [f"{user_home}/.satori_credentials.yml", ".satori_credentials.yml"]
         self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"  # TODO: api.satori-ci.com
         self.api_host = "https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/"
 
-    def load_config(self):
+    def load_config(self, profile='default'):
         """Load the config file and set the token on the headers"""
         config_file = None
         if os.path.isfile(self.config_path[0]):
@@ -40,23 +42,23 @@ class Satori():
             print("Config file not found")
         if config_file:
             with config_file.open(encoding='utf-8') as f:
-                config = f.read()
-                self.config_data = json.loads(config)
+                self.config_data = yaml.safe_load(f)
         # Check if user token exist
-        if 'token' not in self.config_data:
+        if profile not in self.config_data:
             print(f"Set a token with: {sys.argv[0]} config token \"your_user_token\"")
             print("How to get a Satori CI Token: TBC")
             sys.exit(1)
-        self.headers = {"Authorization": f"token {self.config_data['token']}"}
+        self.headers = {"Authorization": f"token {self.config_data[profile]['token']}"}
 
-    def save_config(self, key: str, value: str):
+    def save_config(self, key: str, value: str, profile='default'):
         """Save the token into the config file"""
         if value == "":
             print("Value not defined")
             return False
         if key in ('token'):  # filter config key
-            self.config_data[key] = value
-            config_json = json.dumps(self.config_data)
+            self.config_data[profile] = {}
+            self.config_data[profile][key] = value
+            config_json = yaml.dump(self.config_data)
             try:
                 file = open(self.config_path[0], 'w', 0o700)
             except PermissionError:
@@ -80,9 +82,9 @@ class Satori():
             mime_type = mt[0]
         return mime_type
 
-    def run(self, playbook):
+    def run(self, playbook, profile):
         """Just run"""
-        self.load_config()
+        self.load_config(profile=profile)
         if playbook is None:
             print(f"Define the Satori playbook file:\n{sys.argv[0]} run -p playbook.yml")
             return False
@@ -106,7 +108,7 @@ class Satori():
             return False
         playbook = "SatoriBundle.zip"
         headers = {
-            "Authorization": f"token {self.config_data['token']}",
+            "Authorization": f"token {self.config_data[profile]['token']}",
             "Content-Type": "application/zip",
             "X-File-Name": playbook,
         }
@@ -117,7 +119,7 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def upload(self, directory):
+    def upload(self, directory, profile):
         """Upload directory and run"""
         temp_file = "plbk-" + str(uuid.uuid4())
         if directory is None:
@@ -133,16 +135,16 @@ class Satori():
             print(f"Directory not found: {directory}")
             return False
 
-        response = self.connect("POST", f"{self.host}", playbook=directory, data=data)  # TODO: endpoint TBD
+        response = self.connect("POST", f"{self.host}", playbook=directory, data=data, profile=profile)  # TODO: endpoint TBD
         if response.status_code == 200:
             status = response.json()
             print(f"UUID: {status['uuid']} | URL: {status['report_url']}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def connect(self, method, endpoint, playbook=None, data=None, headers=None):
+    def connect(self, method, endpoint, playbook=None, data=None, headers=None, profile='default'):
         """Connect to the Satori API"""
-        self.load_config()
+        self.load_config(profile=profile)
         if headers is None:
             headers = self.headers
         response = None
@@ -162,31 +164,31 @@ class Satori():
             return response
         sys.exit(1)
 
-    def playbooks(self):
+    def playbooks(self, profile):
         """List playbooks for the user"""
-        response = self.connect("GET", f"{self.host}")  # TODO: endpoint TBD
+        response = self.connect("GET", f"{self.host}", profile=profile)  # TODO: endpoint TBD
 
-    def stop_report(self, id):
+    def stop_report(self, id, profile):
         """Stop the execution of a certain given report"""
-        response = self.connect("GET", f"{self.api_host}report/stop/{id}")
+        response = self.connect("GET", f"{self.api_host}report/stop/{id}", profile=profile)
         if response.status_code == 200:
             status = response.json()
             print(f"Stopped status: {status['status']}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def report_status(self, id):
+    def report_status(self, id, profile):
         """Show the status for a certain given report"""
-        response = self.connect("GET", f"{self.api_host}report/status/{id}")
+        response = self.connect("GET", f"{self.api_host}report/status/{id}", profile=profile)
         if response.status_code == 200:
             status = response.json()
             print(f"Status: {status['status']} | Fails: {status['fails']}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def cron_action(self, action, param):
+    def cron_action(self, action, param, profile):
         """TBC"""
-        response = self.connect("GET", f"{self.api_host}cron/{action}/{param}")
+        response = self.connect("GET", f"{self.api_host}cron/{action}/{param}", profile=profile)
         if response.status_code == 200:
             if action == 'list':
                 for cron in response.json():
@@ -197,13 +199,13 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def scan(self, repo_url, coverage, skip_check, from_date, to_date):
+    def scan(self, repo_url, coverage, skip_check, from_date, to_date, profile):
         """Run Satori on multiple commits"""
         params = urlencode(
             {'repo':repo_url,'coverage':coverage,'skip_check':skip_check,
             'from':from_date,'to':to_date},
             quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}scan/start?{params}")
+        response = self.connect("GET", f"{self.api_host}scan/start?{params}", profile=profile)
         if response.status_code == 200:
             info = response.json()
             for key in info:
@@ -211,22 +213,22 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def clean(self, repo, delete_commits):
+    def clean(self, repo, delete_commits, profile):
         """Remove all reports (and commit information) from a repo"""
         params = urlencode({'repo':repo, 'delete_commits':delete_commits}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}scan/clean?{params}")
+        response = self.connect("GET", f"{self.api_host}scan/clean?{params}", profile=profile)
         print(f"{response.status_code = }\n{response.text = }")
 
-    def stop(self, repo):
+    def stop(self, repo, profile):
         """Stop all scans in progress for a certain repo"""
         params = urlencode({'repo':repo}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}stop?{params}")
+        response = self.connect("GET", f"{self.api_host}stop?{params}", profile=profile)
         print(f"{response.status_code = }\n{response.text = }")
 
-    def scan_info(self, repo):
+    def scan_info(self, repo, profile):
         """Get information about the """
         params = urlencode({'repo':repo}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}info?{params}")
+        response = self.connect("GET", f"{self.api_host}info?{params}", profile=profile)
         if response.status_code == 200:
             info = response.json()
             for key in info:
@@ -234,19 +236,18 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def report_info(self, repo, page, limit, filters):
-        """TBC"""
-
+    def report_info(self, repo, page, limit, filters, profile):
+        """Show a list of reports"""
         try:
             if uuid.UUID(repo):
-                res = self.connect("GET", f"{self.api_host}report/info/{repo}")
+                res = self.connect("GET", f"{self.api_host}report/info/{repo}", profile=profile)
                 print(res.text)
                 return
         except ValueError:
             pass
 
         params = urlencode({'repo':repo, 'page':page, 'limit':limit, 'filters': filters}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}report/info?{params}")
+        response = self.connect("GET", f"{self.api_host}report/info?{params}", profile=profile)
         if response.status_code == 200:
             commits = response.json()
             for commit in commits:
@@ -285,6 +286,7 @@ def main():
     config_cmd = sub_parsers.add_parser("config")
     config_cmd.add_argument("key")
     config_cmd.add_argument("value")
+    config_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     # run playbook.yml
     run_cmd = sub_parsers.add_parser("run")
@@ -325,6 +327,7 @@ def main():
     # info <repo_name|repo_url>
     info_cmd = sub_parsers.add_parser("info")
     info_cmd.add_argument("repo")
+    info_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     # clean <repo_name|repo_url>
     clean_cmd = sub_parsers.add_parser("clean")
@@ -337,6 +340,7 @@ def main():
     report_cmd.add_argument('-p', '--page', dest='page', type=int, default=1, help="Commit page number")
     report_cmd.add_argument('-l', '--limit', dest='limit', type=int, default=20, help="Page limit number")
     report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
+    report_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     if len(sys.argv) <= 1:
         parser.print_help()
@@ -363,11 +367,11 @@ def main():
     elif args.subcommand == "stop":
         instance.stop(args.repo)
     elif args.subcommand == "info":
-        instance.scan_info(args.repo)
+        instance.scan_info(args.repo, args.profile)
     elif args.subcommand == "clean":
         instance.clean(args.repo, args.delete_commits)
     elif args.subcommand == "report":
-        instance.report_info(args.repo, args.page, args.limit, args.filter)
+        instance.report_info(args.repo, args.page, args.limit, args.filter, args.profile)
 
 
 if __name__ == "__main__":
