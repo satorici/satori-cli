@@ -97,19 +97,29 @@ TBC
 
 # Playbooks:
 You can see a list of public playbooks when at https://github.com/satorici/playbooks/
-
-## Public playbooks:
-They can be imported by playbooks that you have in your CI or on assets being Monitored. 
-
-## Private playbooks:
-We will store a copy of the playbooks that you have executed and show them to you whenever you execute the command:
 ```
 $ satori-cli playbooks
 Private playbooks:
-TBC
-...
-
 Public Playbooks:
-TBC
+```
+
+## Public playbooks:
+They can be imported by playbooks that you have in your CI or on assets being Monitored. 
+```
+$ satori-cli playbooks public
+URI                          | Name                                            
+satori://code/trufflehog.yml | Trufflehog will search for secrets in your code 
+...
+```
+
+## Private Playbooks:
+We will store a copy of the playbooks that you have executed and show them to you whenever you execute the command:
+```
+$ satori-cli playbooks private
+Type    | URI                                                     | Name           | Imports
+CI      | github://satorici/satori-cli/.satori.yml                |                |
+Monitor | github://satorici/playbooks/test/satori/monitor.yml     | Monitor Assets | monitorBlog.yml, monitorDNS.yml
+Run     | github://satorici/playbooks/test/satori/monitorBlog.yml | Monitor Blog   |
+Run     | github://satorici/playbooks/test/satori/monitorDNS.yml  | Monitor DNS    |
 ...
 ```
