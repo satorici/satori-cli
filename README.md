@@ -2,9 +2,8 @@
 1. `git clone git@github.com:satorici/satori-cli.git`
 2. `cd satori-cli/`
 3. `apt install python3.10` # Optional step
-4. `pip3 install -f requirements.txt` # Optional step
-5. Register at https://www.satori-ci.com
-6. Get a token from https://www.satori-ci.com/user-settings/
+4. `pip3 install -f requirements.txt`
+5. Register your account at https://www.satori-ci.com and get a token https://www.satori-ci.com/user-settings/
 
 # Example executions:
 
