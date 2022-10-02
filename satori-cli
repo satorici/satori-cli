@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import argparse
 import io
-import json
 import logging
 import mimetypes
 import os
@@ -44,20 +43,28 @@ class Satori():
             with config_file.open(encoding='utf-8') as f:
                 self.config_data = yaml.safe_load(f)
         # Check if user token exist
-        if profile not in self.config_data:
-            print(f"Set a token with: {sys.argv[0]} config token \"your_user_token\"")
+        if len(self.config_data) == 0:
+            print(f"Set a token with: {sys.argv[0]} config default \"your_user_token\"")
             print("How to get a Satori CI Token: TBC")
             sys.exit(1)
-        self.headers = {"Authorization": f"token {self.config_data[profile]['token']}"}
+        if 'default' in self.config_data:
+            token = self.config_data['default']['token']
+        else:
+            for profile in self.config_data:
+                print(f"Warning: default token not found, using profile {profile}")
+                token = self.config_data[profile]['token']
+                break
+        self.headers = {"Authorization": f"token {token}"}
 
-    def save_config(self, key: str, value: str, profile='default'):
+    def save_config(self, profile: str, value: str):
         """Save the token into the config file"""
         if value == "":
             print("Value not defined")
             return False
-        if key in ('token'):  # filter config key
+        self.load_config()
+        if profile:
             self.config_data[profile] = {}
-            self.config_data[profile][key] = value
+            self.config_data[profile]['token'] = value
             config_json = yaml.dump(self.config_data)
             try:
                 file = open(self.config_path[0], 'w', 0o700)
@@ -66,10 +73,7 @@ class Satori():
                 file = open(self.config_path[1], 'w', 0o700)
             file.write(config_json)
             file.close()
-            print('Config token updated')
-        else:
-            print('Unknown config setting')
-            return False
+            print(f'Config token updated for: {profile}')
 
     def mime_type(self, playbook):
         """Get mime type"""
@@ -202,8 +206,8 @@ class Satori():
     def scan(self, repo_url, coverage, skip_check, from_date, to_date, profile):
         """Run Satori on multiple commits"""
         params = urlencode(
-            {'repo':repo_url,'coverage':coverage,'skip_check':skip_check,
-            'from':from_date,'to':to_date},
+            {'repo': repo_url, 'coverage': coverage, 'skip_check': skip_check,
+            'from': from_date, 'to': to_date},
             quote_via=quote_plus)
         response = self.connect("GET", f"{self.api_host}scan/start?{params}", profile=profile)
         if response.status_code == 200:
@@ -215,19 +219,19 @@ class Satori():
 
     def clean(self, repo, delete_commits, profile):
         """Remove all reports (and commit information) from a repo"""
-        params = urlencode({'repo':repo, 'delete_commits':delete_commits}, quote_via=quote_plus)
+        params = urlencode({'repo': repo, 'delete_commits': delete_commits}, quote_via=quote_plus)
         response = self.connect("GET", f"{self.api_host}scan/clean?{params}", profile=profile)
         print(f"{response.status_code = }\n{response.text = }")
 
     def stop(self, repo, profile):
         """Stop all scans in progress for a certain repo"""
-        params = urlencode({'repo':repo}, quote_via=quote_plus)
+        params = urlencode({'repo': repo}, quote_via=quote_plus)
         response = self.connect("GET", f"{self.api_host}stop?{params}", profile=profile)
         print(f"{response.status_code = }\n{response.text = }")
 
     def scan_info(self, repo, profile):
         """Get information about the """
-        params = urlencode({'repo':repo}, quote_via=quote_plus)
+        params = urlencode({'repo': repo}, quote_via=quote_plus)
         response = self.connect("GET", f"{self.api_host}info?{params}", profile=profile)
         if response.status_code == 200:
             info = response.json()
@@ -246,7 +250,7 @@ class Satori():
         except ValueError:
             pass
 
-        params = urlencode({'repo':repo, 'page':page, 'limit':limit, 'filters': filters}, quote_via=quote_plus)
+        params = urlencode({'repo': repo, 'page': page, 'limit': limit, 'filters': filters}, quote_via=quote_plus)
         response = self.connect("GET", f"{self.api_host}report/info?{params}", profile=profile)
         if response.status_code == 200:
             commits = response.json()
@@ -284,59 +288,67 @@ def main():
 
     # config token "user_token"
     config_cmd = sub_parsers.add_parser("config")
-    config_cmd.add_argument("key")
+    config_cmd.add_argument("profile", default='default', help="The profile name, uses 'default' by default")
     config_cmd.add_argument("value")
-    config_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     # run playbook.yml
     run_cmd = sub_parsers.add_parser("run")
     run_cmd.add_argument("playbook")
+    run_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # upload ./directory
     upload_cmd = sub_parsers.add_parser("upload")
     upload_cmd.add_argument("directory")
+    upload_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # playbooks
     playbooks_cmd = sub_parsers.add_parser("playbooks")
+    playbooks_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # stop-report id
     stop_report_cmd = sub_parsers.add_parser("stop-report")
     stop_report_cmd.add_argument("id")
+    stop_report_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # status id
     status_cmd = sub_parsers.add_parser("status")
     status_cmd.add_argument("id")
+    status_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # cron list|stop <report_uuid>|stopall
     cron_cmd = sub_parsers.add_parser("cron")
     cron_cmd.add_argument("action")
     cron_cmd.add_argument("param", default='all', nargs='?')
+    cron_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # scan <repo_url>
     scan_cmd = sub_parsers.add_parser("scan")
-    scan_cmd.add_argument("repo_url")
+    scan_cmd.add_argument("repo_url", help="Github repository")
     scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=float, default=0, help="coverage")
     scan_cmd.add_argument('-s', '--skip-check', dest='skip_check', default=False, action=argparse.BooleanOptionalAction)
     scan_cmd.add_argument('-f', '--from', dest='from_date', type=str, default='', help="From Date")
     scan_cmd.add_argument('-t', '--to', dest='to_date', type=str, default='', help="To Date")
+    scan_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # stop <repo_name|repo_url>
     stop_cmd = sub_parsers.add_parser("stop")
-    stop_cmd.add_argument("repo")
+    stop_cmd.add_argument("repo", help="Github repository")
+    stop_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # info <repo_name|repo_url>
     info_cmd = sub_parsers.add_parser("info")
-    info_cmd.add_argument("repo")
+    info_cmd.add_argument("repo", help="Github repository")
     info_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     # clean <repo_name|repo_url>
     clean_cmd = sub_parsers.add_parser("clean")
-    clean_cmd.add_argument("repo")
+    clean_cmd.add_argument("repo", help="Github repository")
     clean_cmd.add_argument('-d', '--delete-commits', dest='delete_commits', default=False, action=argparse.BooleanOptionalAction)
+    clean_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # report <repo_name|repo_url>
     report_cmd = sub_parsers.add_parser("report")
-    report_cmd.add_argument("repo")
+    report_cmd.add_argument("repo", help="Github repository or report UUID")
     report_cmd.add_argument('-p', '--page', dest='page', type=int, default=1, help="Commit page number")
     report_cmd.add_argument('-l', '--limit', dest='limit', type=int, default=20, help="Page limit number")
     report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
@@ -349,13 +361,13 @@ def main():
     instance = Satori()
     args = parser.parse_args()
     if args.subcommand == "config":
-        instance.save_config(args.key, args.value)
+        instance.save_config(args.profile, args.value)
     elif args.subcommand == "run":
         instance.run(args.playbook)
     elif args.subcommand == "upload":
         instance.upload(args.directory)
     elif args.subcommand == "playbooks":
-        instance.playbooks()
+        instance.playbooks(args.profile)
     elif args.subcommand == "stop-report":
         instance.stop_report(args.id)
     elif args.subcommand == "status":
