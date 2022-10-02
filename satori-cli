@@ -8,11 +8,11 @@ import os
 import shutil
 import sys
 import uuid
-import yaml
 from pathlib import Path
 from zipfile import ZipFile
 from urllib.parse import urlencode, quote_plus
 
+import yaml
 import requests
 
 from classes.resolver import get_references
@@ -29,6 +29,7 @@ class Satori():
         self.config_path = [f"{user_home}/.satori_credentials.yml", ".satori_credentials.yml"]
         self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"  # TODO: api.satori-ci.com
         self.api_host = "https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/"
+        self.headers = {}
 
     def load_config(self, profile='default'):
         """Load the config file and set the token on the headers"""
@@ -50,9 +51,9 @@ class Satori():
         if 'default' in self.config_data:
             token = self.config_data['default']['token']
         else:
-            for profile in self.config_data:
+            for first_profile in self.config_data:
                 print(f"Warning: default token not found, using profile {profile}")
-                token = self.config_data[profile]['token']
+                token = self.config_data[first_profile]['token']
                 break
         self.headers = {"Authorization": f"token {token}"}
 
@@ -67,13 +68,14 @@ class Satori():
             self.config_data[profile]['token'] = value
             config_json = yaml.dump(self.config_data)
             try:
-                file = open(self.config_path[0], 'w', 0o700)
+                file = open(self.config_path[0], 'w', 0o700, encoding='utf-8')
             except PermissionError:
                 print("Warning: the token file could not be saved in $HOME, using current directory")
-                file = open(self.config_path[1], 'w', 0o700)
+                file = open(self.config_path[1], 'w', 0o700, encoding='utf-8')
             file.write(config_json)
             file.close()
             print(f'Config token updated for: {profile}')
+        return True
 
     def mime_type(self, playbook):
         """Get mime type"""
@@ -81,9 +83,8 @@ class Satori():
         file_name = os.path.splitext(playbook)
         if file_name[1] == '.yml':
             mime_type = 'application/x-yaml'
-        if mime_type is None:
-            mt = mimetypes.guess_type('playbook.zip')
-            mime_type = mt[0]
+        elif mime_type is None:
+            mime_type = mimetypes.guess_type('playbook.zip')[0]
         return mime_type
 
     def run(self, playbook, profile):
@@ -100,13 +101,13 @@ class Satori():
         bundle = io.BytesIO()
 
         try:
-            with open(playbook) as f, ZipFile(bundle, "x") as zip:
+            with open(playbook, encoding='utf-8') as f, ZipFile(bundle, "x") as zip_file:
                 playbook_dir = os.path.dirname(playbook)
                 references = get_references(f.read(), playbook_dir)
-                zip.write(playbook, "satori.yml")
+                zip_file.write(playbook, "satori.yml")
                 for key, paths in references.items():
                     for path in paths:
-                        zip.write(Path(playbook_dir, path), Path(key, path))
+                        zip_file.write(Path(playbook_dir, path), Path(key, path))
         except Exception as e:
             logging.error(e)
             return False
@@ -363,25 +364,25 @@ def main():
     if args.subcommand == "config":
         instance.save_config(args.profile, args.value)
     elif args.subcommand == "run":
-        instance.run(args.playbook)
+        instance.run(args.playbook, args.profile)
     elif args.subcommand == "upload":
-        instance.upload(args.directory)
+        instance.upload(args.directory, args.profile)
     elif args.subcommand == "playbooks":
         instance.playbooks(args.profile)
     elif args.subcommand == "stop-report":
-        instance.stop_report(args.id)
+        instance.stop_report(args.id, args.profile)
     elif args.subcommand == "status":
-        instance.report_status(args.id)
+        instance.report_status(args.id, args.profile)
     elif args.subcommand == "cron":
-        instance.cron_action(args.action, args.param)
+        instance.cron_action(args.action, args.param, args.profile)
     elif args.subcommand == "scan":
-        instance.scan(args.repo_url, args.coverage, args.skip_check, args.from_date, args.to_date)
+        instance.scan(args.repo_url, args.coverage, args.skip_check, args.from_date, args.to_date, args.profile)
     elif args.subcommand == "stop":
-        instance.stop(args.repo)
+        instance.stop(args.repo, args.profile)
     elif args.subcommand == "info":
         instance.scan_info(args.repo, args.profile)
     elif args.subcommand == "clean":
-        instance.clean(args.repo, args.delete_commits)
+        instance.clean(args.repo, args.delete_commits, args.profile)
     elif args.subcommand == "report":
         instance.report_info(args.repo, args.page, args.limit, args.filter, args.profile)
 
