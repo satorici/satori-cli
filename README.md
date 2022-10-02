@@ -1,7 +1,7 @@
 # Install satori-cli
 ```
 git clone git@github.com:satorici/satori-cli.git
-cd satori-cli/`
+cd satori-cli/
 apt install python3.10
 pip3 install -f requirements.txt
 ```
