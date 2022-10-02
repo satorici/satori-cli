@@ -14,15 +14,15 @@ pip3 install -f requirements.txt
 satori-cli config default YOUR_TOKEN
 ```
 
-## Check how your repositories are connected to our CI
-`satori-cli ci`
-This command will show you what is our visibility on your repositories. We will tell you which ones are connected, if they have a playbook associated and what is their status.
+# CI
+Check how your repositories are connected to our CI with. This command will show you what is our visibility on your repositories. We will tell you which ones are connected, if they have a playbook associated and what is their status.
 Example output:
 ```
+$ satori-cli ci
 TBC
 ```
 
-### Add a playbook to be executed with your Github pushes
+## CI: Add a playbook to be executed with your Github pushes
 Adding a file named .satori.yml in your root directory, we will be reading your instructions to executed them. Lets suppose for example that you created a Hello World application, and you want to know that that will be the output every time you push new code:
 - .satori.yml:
 ```
@@ -32,11 +32,11 @@ test:
     - [ echo "Hello World" ]
 ```
 
-### Import a playbook to be executed with your Github pushes
+## CI: Import a playbook to be executed with your Github pushes
 
 ```
 import:
-    - satori://code/trufflehog.yml  # more playbooks at https://github.com/satorici/playbooks/
+    - satori://code/trufflehog.yml
 
 test:
     assertStdoutEqual: "Hello World"
@@ -44,7 +44,7 @@ test:
     - [ echo "Hello World" ]
 ```
 
-## Monitor
+# Monitor
 Check that your assets are correctly monitored. This command will check on the playbooks that are running with a crontab to monitor resources:
 `satori-cli monitor`
 Example output:
@@ -52,7 +52,7 @@ Example output:
 TBC
 ```
 
-### Add a playbook: 
+## Monitor: add a playbook to be executed at a certain rate
 Playbook that define a rate are automatically included within the monitor functionality:
 
 - MonitorBlog.yml
@@ -73,42 +73,43 @@ $ satori-cli run MonitorBlog.yml`
 TBC
 ```
 
-### Stop
+## Monitor: stop a playbook
 You will get a list with the `satori-cli monitor`, from where you will take the UUID. Example output:
 ```
 $ satori-cli stop UUID
 TBC
 ```
 
-### Start:
-You will get a list with the `satori-cli monitor`, from where you will take the UUID .
-`satori-cli run UUID`
-
-## Take a look at the playbooks:
-`satori-cli playbooks`
-You will see the list of public and private playbooks that you have
-
-## Get information about your assets
-`satori-cli`
-
-
-
-## Monitor your assets
+## Monitor: start a playbook on the stopped state
+You will get a list of the playbooks being monitored with `satori-cli monitor`. Get the UUID of the playbook name that you would like to start and pass it as a parameter for run:
 ```
-$ satori-cli monitor
+$ satori-cli run UUID
+```
+
+# Scan 
 TBC
-```
 
-## Scan all your commits
+### Scan all your commits
 ```
 $ satori-cli scan GithubAccount/Repository -c 100
 TBC
 ```
 
-## Run playbooks
+# Playbooks:
+You can see a list of public playbooks when at https://github.com/satorici/playbooks/
 
+## Public playbooks:
+They can be imported by playbooks that you have in your CI or on assets being Monitored. 
+
+## Private playbooks:
+We will store a copy of the playbooks that you have executed and show them to you whenever you execute the command:
 ```
-$ git clone git@github.com:satorici/playbooks.git
-$ satori-cli run "../playbooks/devops/GitHub.yml"
+$ satori-cli playbooks
+Private playbooks:
 TBC
+...
+
+Public Playbooks:
+TBC
+...
 ```
