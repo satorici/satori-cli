@@ -1,4 +1,6 @@
-# What is Satori CI?
+# 1. Five Ws (and one H)
+
+## 1.1 What is Satori CI?
 Satori CI is an automated software testing as a service. It asserts what the outputs of the programs will be. Consider the following example "Hello World" program in Python:
 ```
 print("Hello World")
@@ -19,16 +21,19 @@ test:
     - [ ./hello_world.py ]
 ```
 
-# Why to use it?
+## 1.2 Why
 This no code testing language will help you test your software throughout different stages of its development lifecycle. Playbooks can look both at source code and execution (more examples of this in the "CI: Import" section)
 
-# Who should use it?
+## 1.3 Who
 Software developers, software testers, security testers.
 
-# When to use it?
+## 1.4 When
 You can attach it to your CI process (Satori CI), you can launch them manually (Satori Run), and you can launch them periodically (Satori Monitor)
 
-# How to use it?
+## 1.5 Where
+Satori can be used on your continuous integration, deployment and delivery tests.
+
+## 1.6 How to use it?
 First, login at https://www.satori-ci.com using your Github account to be able to use our CI cappabilities. Github will ask for confirmation for us to access to your repositories of choice. After accepting the conditions, you can get a token fromus at https://www.satori-ci.com/user-settings/ 
 
 You will use that token to setup your account with our CLI tool
@@ -41,7 +46,26 @@ pip3 install -f requirements.txt
 satori-cli config default YOUR_TOKEN
 ```
 
-# CI
+# 2. Playbooks
+Are used to assert software behaviors, wether they are source code files or live systems.
+
+## 2.1 Playbooks: Hello World
+TBC 
+
+## 2.2 Playbooks: Import 
+Playbooks can import other local or remote playbooks. We keep at TBC a list of playbooks that can be referenced with the 
+```
+import:
+    - satori://code/trufflehog.yml
+
+test:
+    assertStdoutEqual: "Hello World"
+    bash:
+    - [ echo "Hello World" ]
+```
+Is there a playbook that you would like us to incluide? Drop us a line at support@satori-ci.com
+
+# 3. CI
 Check how your repositories are connected to our CI with. This command will show you what is our visibility on your repositories. We will tell you which ones are connected, if they have a playbook associated and what is their status.
 Example output:
 ```
@@ -49,23 +73,10 @@ $ satori-cli ci
 TBC
 ```
 
-## CI: Add a playbook file
+## 2.1 CI: Add a playbook file
 Adding a file named .satori.yml in your root directory, we will be used by your Github pushes to test your code. Lets suppose for example that you created a Hello World application, and you want to know that that will be the output every time you push new code:
 - .satori.yml:
 ```
-test:
-    assertStdoutEqual: "Hello World"
-    bash:
-    - [ echo "Hello World" ]
-```
-
-## CI: Import 
-Import a playbook to be executed with your Github pushes
-
-```
-import:
-    - satori://code/trufflehog.yml
-
 test:
     assertStdoutEqual: "Hello World"
     bash:
@@ -101,17 +112,11 @@ $ satori-cli run MonitorBlog.yml`
 TBC
 ```
 
-## Monitor: stop a playbook
-You will get a list with the `satori-cli monitor`, from where you will take the UUID. Example output:
+## Monitor: stopping and running again a playbook
+You will get a list with the `satori-cli monitor`, from where you will take the UUID. You can use that UUID with the `stop` and `run` subcommands
 ```
 $ satori-cli stop UUID
 TBC
-```
-
-## Monitor: start a playbook on the stopped state
-You will get a list of the playbooks being monitored with `satori-cli monitor`. Get the UUID of the playbook name that you would like to start and pass it as a parameter for run:
-```
-$ satori-cli run UUID
 ```
 
 # Scan 
