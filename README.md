@@ -1,5 +1,32 @@
 # What is Satori CI?
-Satori CI is an automated software testing as a service. 
+Satori CI is an automated software testing as a service. It asserts what the outputs of the programs will be. Consider the following example "Hello World" program in Python:
+```
+print("Hello World")
+```
+
+If we execute this program, we will see the following:
+```
+$ ./hello_world.py
+Hello World
+```
+
+We can assert that the return code will be 0 and the standard output of this program will be Hello World:
+```
+test:
+    assertReturnCode: 0
+    assertStdoutEqual: Hello World
+    python:
+    - [ ./hello_world.py ]
+```
+
+# Why to use it?
+This no code testing language will help you test your software throughout different stages of its development lifecycle. Playbooks can look both at source code and execution (more examples of this in the "CI: Import" section)
+
+# Who should use it?
+Software developers, software testers, security testers.
+
+# When to use it?
+You can attach it to your CI process (Satori CI), you can launch them manually (Satori Run), and you can launch them periodically (Satori Monitor)
 
 # How to use it?
 First, login at https://www.satori-ci.com using your Github account to be able to use our CI cappabilities. Github will ask for confirmation for us to access to your repositories of choice. After accepting the conditions, you can get a token fromus at https://www.satori-ci.com/user-settings/ 
@@ -22,8 +49,8 @@ $ satori-cli ci
 TBC
 ```
 
-## CI: Add a playbook to be executed with your Github pushes
-Adding a file named .satori.yml in your root directory, we will be reading your instructions to executed them. Lets suppose for example that you created a Hello World application, and you want to know that that will be the output every time you push new code:
+## CI: Add a playbook file
+Adding a file named .satori.yml in your root directory, we will be used by your Github pushes to test your code. Lets suppose for example that you created a Hello World application, and you want to know that that will be the output every time you push new code:
 - .satori.yml:
 ```
 test:
@@ -32,7 +59,8 @@ test:
     - [ echo "Hello World" ]
 ```
 
-## CI: Import a playbook to be executed with your Github pushes
+## CI: Import 
+Import a playbook to be executed with your Github pushes
 
 ```
 import:
