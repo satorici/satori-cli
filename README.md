@@ -146,8 +146,7 @@ We will store a copy of the playbooks that you have executed and show them to yo
 $ satori-cli playbooks private
 Type    | URI                                                     | Name           | Imports
 CI      | github://satorici/satori-cli/.satori.yml                |                |
-Monitor | github://satorici/playbooks/test/satori/monitor.yml     | Monitor Assets | monitorBlog.yml, monitorDNS.yml
+Monitor | github://satorici/playbooks/test/satori/monitor.yml     | Monitor Assets | monitorBlog.yml
 Run     | github://satorici/playbooks/test/satori/monitorBlog.yml | Monitor Blog   |
-Run     | github://satorici/playbooks/test/satori/monitorDNS.yml  | Monitor DNS    |
 ...
 ```
