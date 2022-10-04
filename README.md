@@ -155,3 +155,4 @@ Monitor | github://satorici/playbooks/test/satori/monitor.yml     | Monitor Asse
 Run     | github://satorici/playbooks/test/satori/monitorBlog.yml | Monitor Blog   |
 ...
 ```
+
