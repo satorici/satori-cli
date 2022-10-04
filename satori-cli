@@ -31,20 +31,23 @@ class Satori():
         self.api_host = "https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/"
         self.headers = {}
 
-    def load_config(self, profile='default'):
+    def load_config(self, profile='default', create_profile=False):
         """Load the config file and set the token on the headers"""
         config_file = None
         if os.path.isfile(self.config_path[0]):
             config_file = Path(self.config_path[0])
         elif os.path.isfile(self.config_path[1]):
             config_file = Path(self.config_path[1])
+        elif create_profile:
+            self.config_data = {profile:{'token':''}}
+            return 
         else:
             print("Config file not found")
         if config_file:
             with config_file.open(encoding='utf-8') as f:
                 self.config_data = yaml.safe_load(f)
         # Check if user token exist
-        if len(self.config_data) == 0:
+        if len(self.config_data) == 0: # error?
             print(f"Set a token with: {sys.argv[0]} config default \"your_user_token\"")
             print("How to get a Satori CI Token: TBC")
             sys.exit(1)
@@ -62,17 +65,17 @@ class Satori():
         if value == "":
             print("Value not defined")
             return False
-        self.load_config()
+        self.load_config(profile=profile, create_profile=True)
         if profile:
             self.config_data[profile] = {}
             self.config_data[profile]['token'] = value
-            config_json = yaml.dump(self.config_data)
+            config_yaml = yaml.dump(self.config_data)
             try:
                 file = open(self.config_path[0], 'w', 0o700, encoding='utf-8')
             except PermissionError:
                 print("Warning: the token file could not be saved in $HOME, using current directory")
                 file = open(self.config_path[1], 'w', 0o700, encoding='utf-8')
-            file.write(config_json)
+            file.write(config_yaml)
             file.close()
             print(f'Config token updated for: {profile}')
         return True
@@ -338,7 +341,7 @@ def main():
 
     # info <repo_name|repo_url>
     info_cmd = sub_parsers.add_parser("info")
-    info_cmd.add_argument("repo", help="Github repository")
+    info_cmd.add_argument("repo", type=str, help="Github repository")
     info_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     # clean <repo_name|repo_url>
@@ -355,9 +358,13 @@ def main():
     report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
     report_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
-    if len(sys.argv) <= 1:
+    argv_len = len(sys.argv)
+    if argv_len <= 1:
         parser.print_help()
         sys.exit(0)
+    elif argv_len == 2 and sys.argv[1] == 'info':
+        # Add empty string to 'satori-cli info' command
+        sys.argv.append('')
 
     instance = Satori()
     args = parser.parse_args()
