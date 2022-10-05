@@ -47,7 +47,7 @@ class Satori():
             with config_file.open(encoding='utf-8') as f:
                 self.config_data = yaml.safe_load(f)
         # Check if user token exist
-        if len(self.config_data) == 0: # error?
+        if not isinstance(self.config_data, dict):
             print(f"Set a token with: {sys.argv[0]} config default \"your_user_token\"")
             print("How to get a Satori CI Token: TBC")
             sys.exit(1)
