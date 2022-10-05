@@ -239,8 +239,14 @@ class Satori():
         response = self.connect("GET", f"{self.api_host}info?{params}", profile=profile)
         if response.status_code == 200:
             info = response.json()
-            for key in info:
-                print(f"{key.capitalize()}: {info[key]}")
+            if repo != '':
+                for key in info:
+                    print(f"{key.capitalize()}: {info[key]}")
+            else:
+                for repo in info:
+                    for key in repo:
+                        print(f"{key.capitalize()}: {repo[key]}")
+                    print("-"*48)
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
