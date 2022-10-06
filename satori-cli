@@ -245,7 +245,7 @@ class Satori():
             else:
                 for repo in info:
                     for key in repo:
-                        print(f"{key.capitalize()}: {repo[key]}")
+                        print(f"{key}: {repo[key]}")
                     print("-"*48)
         else:
             print(f"{response.status_code = }\n{response.text = }")
