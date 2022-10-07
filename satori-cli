@@ -47,10 +47,7 @@ class Satori():
             with config_file.open(encoding='utf-8') as f:
                 self.config_data = yaml.safe_load(f)
         # Check if user token exist
-        if not isinstance(self.config_data, dict):
-            print(f"Set a token with: {sys.argv[0]} config default \"your_user_token\"")
-            print("How to get a Satori CI Token: TBC")
-            sys.exit(1)
+        token = None
         if 'default' in self.config_data:
             token = self.config_data['default']['token']
         else:
@@ -58,7 +55,12 @@ class Satori():
                 print(f"Warning: default token not found, using profile {profile}")
                 token = self.config_data[first_profile]['token']
                 break
-        self.headers = {"Authorization": f"token {token}"}
+        if token:
+            self.headers = {"Authorization": f"token {token}"}
+        else:
+            print(f"Set a token with: {sys.argv[0]} config default \"your_user_token\"")
+            print("How to get a Satori CI Token: TBC")
+            sys.exit(1)
 
     def save_config(self, profile: str, value: str):
         """Save the token into the config file"""
@@ -120,7 +122,10 @@ class Satori():
             "Content-Type": "application/zip",
             "X-File-Name": playbook,
         }
-        response = self.connect("POST", f"{self.host}", playbook=playbook, data=bundle.getvalue(), headers=headers)  # TODO: endpoint TBD
+        try:
+            response = self.connect("POST", f"{self.host}", playbook=playbook, data=bundle.getvalue(), headers=headers)  # TODO: endpoint TBD
+        except KeyboardInterrupt:
+            sys.exit(0)
         if response.status_code == 200:
             status = response.json()
             print(f"UUID: {status['uuid']} | URL: {status['report_url']}")
@@ -143,7 +148,10 @@ class Satori():
             print(f"Directory not found: {directory}")
             return False
 
-        response = self.connect("POST", f"{self.host}", playbook=directory, data=data, profile=profile)  # TODO: endpoint TBD
+        try:
+            response = self.connect("POST", f"{self.host}", playbook=directory, data=data, profile=profile)  # TODO: endpoint TBD
+        except KeyboardInterrupt:
+            sys.exit(0)
         if response.status_code == 200:
             status = response.json()
             print(f"UUID: {status['uuid']} | URL: {status['report_url']}")
@@ -163,11 +171,15 @@ class Satori():
                 response = requests.post(endpoint, data=data, headers=headers)
             except requests.exceptions.ConnectionError:
                 logging.error("Connection could not be open")
+            except KeyboardInterrupt:
+                sys.exit(0)
         elif method == "GET":
             try:
                 response = requests.get(endpoint, headers=headers)
             except requests.exceptions.ConnectionError:
                 logging.error("Connection could not be open")
+            except KeyboardInterrupt:
+                sys.exit(0)
         if response is not None:
             return response
         sys.exit(1)
