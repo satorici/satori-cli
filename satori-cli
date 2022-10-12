@@ -239,14 +239,21 @@ class Satori():
         response = self.connect("GET", f"{self.api_host}info?{params}", profile=profile)
         if response.status_code == 200:
             info = response.json()
-            if repo != '':
-                for key in info:
-                    print(f"{key.capitalize()}: {info[key]}")
-            else:
-                for repo in info:
-                    for key in repo:
-                        print(f"{key}: {repo[key]}")
-                    print("-"*48)
+            for key in info:
+                print(f"{key.capitalize()}: {info[key]}")
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
+
+    def ci(self, profile):
+        """Get information about the """
+        params = urlencode({}, quote_via=quote_plus)
+        response = self.connect("GET", f"{self.api_host}ci?{params}", profile=profile)
+        if response.status_code == 200:
+            info = response.json()
+            for repo in info:
+                for key in repo:
+                    print(f"{key}: {repo[key]}")
+                print("-"*48)
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
@@ -350,6 +357,10 @@ def main():
     info_cmd.add_argument("repo", type=str, help="Github repository")
     info_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
+    # ci
+    info_cmd = sub_parsers.add_parser("ci")
+    info_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
+
     # clean <repo_name|repo_url>
     clean_cmd = sub_parsers.add_parser("clean")
     clean_cmd.add_argument("repo", help="Github repository")
@@ -365,12 +376,13 @@ def main():
     report_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     argv_len = len(sys.argv)
+    # print(f"{sys.argv=}")
     if argv_len <= 1:
         parser.print_help()
         sys.exit(0)
-    elif argv_len == 2 and sys.argv[1] == 'info':
+    # elif argv_len in (2,4) and sys.argv[1] == 'info':
         # Add empty string to 'satori-cli info' command
-        sys.argv.append('')
+        # sys.argv.append('')
 
     instance = Satori()
     args = parser.parse_args()
@@ -394,6 +406,8 @@ def main():
         instance.stop(args.repo, args.profile)
     elif args.subcommand == "info":
         instance.scan_info(args.repo, args.profile)
+    elif args.subcommand == "ci":
+        instance.ci(args.profile)
     elif args.subcommand == "clean":
         instance.clean(args.repo, args.delete_commits, args.profile)
     elif args.subcommand == "report":
