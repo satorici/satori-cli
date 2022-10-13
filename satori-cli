@@ -48,8 +48,8 @@ class Satori():
                 self.config_data = yaml.safe_load(f)
         # Check if user token exist
         token = None
-        if 'default' in self.config_data:
-            token = self.config_data['default']['token']
+        if profile in self.config_data:
+            token = self.config_data[profile]['token']
         else:
             for first_profile in self.config_data:
                 print(f"Warning: default token not found, using profile {profile}")
@@ -306,6 +306,19 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
+    def monitor(self, profile):
+        """Get information about the """
+        params = urlencode({}, quote_via=quote_plus)
+        response = self.connect("GET", f"{self.api_host}monitor?{params}", profile=profile)
+        if response.status_code == 200:
+            info = response.json()
+            for repo in info:
+                for key in repo:
+                    print(f"{key}: {repo[key]}")
+                print("-"*48)
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
+
 
 def main():
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
@@ -387,6 +400,10 @@ def main():
     report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
     report_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
+    # monitor
+    monitor_cmd = sub_parsers.add_parser("monitor")
+    monitor_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
+
     argv_len = len(sys.argv)
     # print(f"{sys.argv=}")
     if argv_len <= 1:
@@ -424,6 +441,8 @@ def main():
         instance.clean(args.repo, args.delete_commits, args.profile)
     elif args.subcommand == "report":
         instance.report_info(args.repo, args.page, args.limit, args.filter, args.profile)
+    elif args.subcommand == "monitor":
+        instance.monitor(args.profile)
 
 
 if __name__ == "__main__":
