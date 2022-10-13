@@ -52,7 +52,7 @@ class Satori():
             token = self.config_data[profile]['token']
         else:
             for first_profile in self.config_data:
-                print(f"Warning: default token not found, using profile {profile}")
+                print(f"Warning: {profile} token not found, using profile {first_profile}")
                 token = self.config_data[first_profile]['token']
                 break
         if token:
