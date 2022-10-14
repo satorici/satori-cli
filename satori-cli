@@ -40,7 +40,7 @@ class Satori():
             config_file = Path(self.config_path[1])
         elif create_profile:
             self.config_data = {profile:{'token':''}}
-            return 
+            return
         else:
             print("Config file not found")
         if config_file:
@@ -319,6 +319,17 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
+    def output(self, profile: str, id: str):
+        """Returns commands output"""
+
+        try:
+            if uuid.UUID(id):
+                res = self.connect("GET", f"{self.api_host}report/output/{id}", profile=profile)
+                print(res.text)
+                return
+        except ValueError:
+            pass
+
 
 def main():
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
@@ -404,6 +415,11 @@ def main():
     monitor_cmd = sub_parsers.add_parser("monitor")
     monitor_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
+    # output
+    output_cmd = sub_parsers.add_parser("output")
+    output_cmd.add_argument("id", help="Github repository or report UUID")
+    output_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
+
     argv_len = len(sys.argv)
     # print(f"{sys.argv=}")
     if argv_len <= 1:
@@ -443,6 +459,8 @@ def main():
         instance.report_info(args.repo, args.page, args.limit, args.filter, args.profile)
     elif args.subcommand == "monitor":
         instance.monitor(args.profile)
+    elif args.subcommand == "output":
+        instance.output(args.profile, args.id)
 
 
 if __name__ == "__main__":
