@@ -25,7 +25,7 @@ test:
 This no code testing language will help you test your software throughout different stages of its development lifecycle. Playbooks can look both at source code and execution (more examples of this in the "CI: Import" section)
 
 ## 1.3 Who
-Software developers, software testers, security testers.
+Test engineers, software developers and security testers.
 
 ## 1.4 When
 You can attach it to your CI process (Satori CI), you can launch them manually (Satori Run), and you can launch them periodically (Satori Monitor)
