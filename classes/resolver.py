@@ -4,7 +4,7 @@ from pathlib import Path
 import yaml
 
 
-IMPORT_REGEX = re.compile(r"^(satori|file):\/\/\/?([\w-]*\/?)+\.(ya?ml)$")
+IMPORT_REGEX = re.compile(r"(satori|file):\/(\/[\w-]+)+\.ya?ml")
 
 
 def is_import(value):
