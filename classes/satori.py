@@ -112,10 +112,9 @@ class Satori():
         except Exception as e:
             logging.error(e)
             return False
-        playbook = "SatoriBundle.zip"
         headers = {
             "Authorization": f"token {self.token}",
-            "Content-Type": "application/zip",
+            "Content-Type": "satori/bundle_zip", # is always a zip?
             "X-File-Name": playbook,
         }
         try:
