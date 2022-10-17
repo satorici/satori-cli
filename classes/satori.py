@@ -1,6 +1,5 @@
 import io
 import logging
-import mimetypes
 import os
 import shutil
 import sys
@@ -17,81 +16,81 @@ from classes.resolver import get_references
 
 class Satori():
     """Have some class"""
-    def __init__(self):
+    def __init__(self, profile = "default", config = False):
         """Turn on the engines"""
-        self.verbose = False
-        self.config_data = {}
-        user_home = Path.home()
-        # self.config_path = [f"{user_home}/.satori_credentials.json", ".satori_credentials.json"]
-        self.config_path = [f"{user_home}/.satori_credentials.yml", ".satori_credentials.yml"]
-        self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"  # TODO: api.satori-ci.com
+        self.profile = profile
+        self.config_paths = [
+            f"{Path.home()}/.satori_credentials.yml",
+            ".satori_credentials.yml"
+        ]
+        # TODO: api.satori-ci.com
+        self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"
         self.api_host = "https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/"
-        self.headers = {}
+        self.verbose = False
+        if not config:
+            self.load_config()
 
-    def load_config(self, profile='default', create_profile=False):
+
+    def load_config(self):
         """Load the config file and set the token on the headers"""
+
+
         config_file = None
-        if os.path.isfile(self.config_path[0]):
-            config_file = Path(self.config_path[0])
-        elif os.path.isfile(self.config_path[1]):
-            config_file = Path(self.config_path[1])
-        elif create_profile:
-            self.config_data = {profile:{'token':''}}
-            return
-        else:
-            print("Config file not found")
-        if config_file:
-            with config_file.open(encoding='utf-8') as f:
-                self.config_data = yaml.safe_load(f)
-        # Check if user token exist
-        token = None
-        if profile in self.config_data:
-            token = self.config_data[profile]['token']
-        else:
-            for first_profile in self.config_data:
-                print(f"Warning: {profile} token not found, using profile {first_profile}")
-                token = self.config_data[first_profile]['token']
+        for file in self.config_paths:
+            if Path(file).is_file():
+                config_file = Path(file)
                 break
-        if token:
-            self.headers = {"Authorization": f"token {token}"}
-        else:
-            print(f"Set a token with: {sys.argv[0]} config default \"your_user_token\"")
-            print("How to get a Satori CI Token: TBC")
+
+        if not config_file:
+            print("No config file")
             sys.exit(1)
 
-    def save_config(self, profile: str, value: str):
+        with config_file.open(encoding='utf-8') as f:
+            config: dict[str, dict[str, str]] = yaml.safe_load(f)
+            if not isinstance(config, dict):
+                print("Invalid config format")
+                sys.exit(1)
+
+            profile = config.get(self.profile)
+
+            if not (profile and isinstance(profile, dict)):
+                print("Invalid or non existent profile")
+                sys.exit(1)
+
+            if not profile.get("token"):
+                print(f"No token in profile: {self.profile}")
+                print()
+                print("satori-cli [-p PROFILE] config token TOKEN")
+                sys.exit(1)
+
+            self.config = config
+            self.token = profile["token"]
+
+    def save_config(self, key: str, value: str):
         """Save the token into the config file"""
-        if value == "":
-            print("Value not defined")
-            return False
-        self.load_config(profile=profile, create_profile=True)
-        if profile:
-            self.config_data[profile] = {}
-            self.config_data[profile]['token'] = value
-            config_yaml = yaml.dump(self.config_data)
-            try:
-                file = open(self.config_path[0], 'w', 0o700, encoding='utf-8')
-            except PermissionError:
-                print("Warning: the token file could not be saved in $HOME, using current directory")
-                file = open(self.config_path[1], 'w', 0o700, encoding='utf-8')
-            file.write(config_yaml)
-            file.close()
-            print(f'Config token updated for: {profile}')
-        return True
+        config_file = None
+        for file in self.config_paths:
+            if Path(file).is_file():
+                config_file = Path(file)
+                break
 
-    def mime_type(self, playbook):
-        """Get mime type"""
-        mime_type = None
-        file_name = os.path.splitext(playbook)
-        if file_name[1] == '.yml':
-            mime_type = 'application/x-yaml'
-        elif mime_type is None:
-            mime_type = mimetypes.guess_type('playbook.zip')[0]
-        return mime_type
+        if config_file:
+            with config_file.open() as f:
+                config = yaml.safe_load(f)
+                if not isinstance(config, dict):
+                    print("Invalid config format")
+                    sys.exit(1)
+        else:
+            config = {}
+            config_file = self.config_paths[0]
 
-    def run(self, playbook, profile):
+        config.setdefault(self.profile, {})[key] = value
+
+        with open(config_file, "w") as f:
+            f.write(yaml.safe_dump(config))
+
+    def run(self, playbook):
         """Just run"""
-        self.load_config(profile=profile)
         if playbook is None:
             print(f"Define the Satori playbook file:\n{sys.argv[0]} run -p playbook.yml")
             return False
@@ -115,12 +114,12 @@ class Satori():
             return False
         playbook = "SatoriBundle.zip"
         headers = {
-            "Authorization": f"token {self.config_data[profile]['token']}",
+            "Authorization": f"token {self.token}",
             "Content-Type": "application/zip",
             "X-File-Name": playbook,
         }
         try:
-            response = self.connect("POST", f"{self.host}", playbook=playbook, data=bundle.getvalue(), headers=headers)  # TODO: endpoint TBD
+            response = self.connect("POST", f"{self.host}", data=bundle.getvalue(), headers=headers)  # TODO: endpoint TBD
         except KeyboardInterrupt:
             sys.exit(0)
         if response.status_code == 200:
@@ -129,7 +128,7 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def upload(self, directory, profile):
+    def upload(self, directory):
         """Upload directory and run"""
         temp_file = "plbk-" + str(uuid.uuid4())
         if directory is None:
@@ -146,7 +145,7 @@ class Satori():
             return False
 
         try:
-            response = self.connect("POST", f"{self.host}", playbook=directory, data=data, profile=profile)  # TODO: endpoint TBD
+            response = self.connect("POST", f"{self.host}", data=data)  # TODO: endpoint TBD
         except KeyboardInterrupt:
             sys.exit(0)
         if response.status_code == 200:
@@ -155,14 +154,13 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def connect(self, method, endpoint, playbook=None, data=None, headers=None, profile='default'):
+    def connect(self, method, endpoint, data=None, headers=None):
         """Connect to the Satori API"""
-        self.load_config(profile=profile)
         if headers is None:
-            headers = self.headers
+            headers = {"Authorization": f"token {self.token}"}
         response = None
-        if self.verbose is True:
-            print("method:", method, " - endpoint:", endpoint, " - playbook:", playbook, " - headers:", headers)
+        if self.verbose:
+            print("method:", method, " - endpoint:", endpoint, " - headers:", headers)
         if method == "POST":
             try:
                 response = requests.post(endpoint, data=data, headers=headers)
@@ -181,31 +179,31 @@ class Satori():
             return response
         sys.exit(1)
 
-    def playbooks(self, profile):
+    def playbooks(self):
         """List playbooks for the user"""
-        response = self.connect("GET", f"{self.host}", profile=profile)  # TODO: endpoint TBD
+        response = self.connect("GET", f"{self.host}")  # TODO: endpoint TBD
 
-    def stop_report(self, id, profile):
+    def stop_report(self, id):
         """Stop the execution of a certain given report"""
-        response = self.connect("GET", f"{self.api_host}report/stop/{id}", profile=profile)
+        response = self.connect("GET", f"{self.api_host}report/stop/{id}")
         if response.status_code == 200:
             status = response.json()
             print(f"Stopped status: {status['status']}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def report_status(self, id, profile):
+    def report_status(self, id):
         """Show the status for a certain given report"""
-        response = self.connect("GET", f"{self.api_host}report/status/{id}", profile=profile)
+        response = self.connect("GET", f"{self.api_host}report/status/{id}")
         if response.status_code == 200:
             status = response.json()
             print(f"Status: {status['status']} | Fails: {status['fails']}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def cron_action(self, action, param, profile):
+    def cron_action(self, action, param):
         """TBC"""
-        response = self.connect("GET", f"{self.api_host}cron/{action}/{param}", profile=profile)
+        response = self.connect("GET", f"{self.api_host}cron/{action}/{param}")
         if response.status_code == 200:
             if action == 'list':
                 for cron in response.json():
@@ -216,13 +214,13 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def scan(self, repo_url, coverage, skip_check, from_date, to_date, profile):
+    def scan(self, repo_url, coverage, skip_check, from_date, to_date):
         """Run Satori on multiple commits"""
         params = urlencode(
             {'repo': repo_url, 'coverage': coverage, 'skip_check': skip_check,
             'from': from_date, 'to': to_date},
             quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}scan/start?{params}", profile=profile)
+        response = self.connect("GET", f"{self.api_host}scan/start?{params}")
         if response.status_code == 200:
             info = response.json()
             for key in info:
@@ -230,22 +228,22 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def clean(self, repo, delete_commits, profile):
+    def clean(self, repo, delete_commits):
         """Remove all reports (and commit information) from a repo"""
         params = urlencode({'repo': repo, 'delete_commits': delete_commits}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}scan/clean?{params}", profile=profile)
+        response = self.connect("GET", f"{self.api_host}scan/clean?{params}")
         print(f"{response.status_code = }\n{response.text = }")
 
-    def stop(self, repo, profile):
+    def stop(self, repo):
         """Stop all scans in progress for a certain repo"""
         params = urlencode({'repo': repo}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}stop?{params}", profile=profile)
+        response = self.connect("GET", f"{self.api_host}stop?{params}")
         print(f"{response.status_code = }\n{response.text = }")
 
-    def scan_info(self, repo, profile):
+    def scan_info(self, repo):
         """Get information about the """
         params = urlencode({'repo': repo}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}info?{params}", profile=profile)
+        response = self.connect("GET", f"{self.api_host}info?{params}")
         if response.status_code == 200:
             info = response.json()
             for key in info:
@@ -253,10 +251,10 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def ci(self, profile):
+    def ci(self):
         """Get information about the """
         params = urlencode({}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}ci?{params}", profile=profile)
+        response = self.connect("GET", f"{self.api_host}ci?{params}")
         if response.status_code == 200:
             info = response.json()
             for repo in info:
@@ -266,18 +264,18 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def report_info(self, repo, page, limit, filters, profile):
+    def report_info(self, repo, page, limit, filters):
         """Show a list of reports"""
         try:
             if uuid.UUID(repo):
-                res = self.connect("GET", f"{self.api_host}report/info/{repo}", profile=profile)
+                res = self.connect("GET", f"{self.api_host}report/info/{repo}")
                 print(res.text)
                 return
         except ValueError:
             pass
 
         params = urlencode({'repo': repo, 'page': page, 'limit': limit, 'filters': filters}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}report/info?{params}", profile=profile)
+        response = self.connect("GET", f"{self.api_host}report/info?{params}")
         if response.status_code == 200:
             commits = response.json()
             for commit in commits:
@@ -303,10 +301,10 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def monitor(self, profile):
+    def monitor(self):
         """Get information about the """
         params = urlencode({}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}monitor?{params}", profile=profile)
+        response = self.connect("GET", f"{self.api_host}monitor?{params}")
         if response.status_code == 200:
             info = response.json()
             for repo in info:
@@ -316,12 +314,12 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def output(self, profile: str, id: str):
+    def output(self, id: str):
         """Returns commands output"""
 
         try:
             if uuid.UUID(id):
-                res = self.connect("GET", f"{self.api_host}report/output/{id}", profile=profile)
+                res = self.connect("GET", f"{self.api_host}report/output/{id}")
                 print(res.text)
                 return
         except ValueError:

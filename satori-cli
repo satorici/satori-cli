@@ -12,42 +12,37 @@ def main():
         sys.exit(0)
 
     parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
+    parser.add_argument("-p", "--profile", default="default")
     sub_parsers = parser.add_subparsers(dest="subcommand")
 
     # config token "user_token"
     config_cmd = sub_parsers.add_parser("config")
-    config_cmd.add_argument("profile", default='default', help="The profile name, uses 'default' by default")
+    config_cmd.add_argument("key")
     config_cmd.add_argument("value")
 
     # run playbook.yml
     run_cmd = sub_parsers.add_parser("run")
     run_cmd.add_argument("playbook")
-    run_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # upload ./directory
     upload_cmd = sub_parsers.add_parser("upload")
     upload_cmd.add_argument("directory")
-    upload_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # playbooks
     playbooks_cmd = sub_parsers.add_parser("playbooks")
-    playbooks_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # stop-report id
     stop_report_cmd = sub_parsers.add_parser("stop-report")
     stop_report_cmd.add_argument("id")
-    stop_report_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # status id
     status_cmd = sub_parsers.add_parser("status")
     status_cmd.add_argument("id")
-    status_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # cron list|stop <report_uuid>|stopall
     cron_cmd = sub_parsers.add_parser("cron")
     cron_cmd.add_argument("action")
     cron_cmd.add_argument("param", default='all', nargs='?')
-    cron_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # scan <repo_url>
     scan_cmd = sub_parsers.add_parser("scan")
@@ -56,27 +51,22 @@ def main():
     scan_cmd.add_argument('-s', '--skip-check', dest='skip_check', default=False, action=argparse.BooleanOptionalAction)
     scan_cmd.add_argument('-f', '--from', dest='from_date', type=str, default='', help="From Date")
     scan_cmd.add_argument('-t', '--to', dest='to_date', type=str, default='', help="To Date")
-    scan_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # stop <repo_name|repo_url>
     stop_cmd = sub_parsers.add_parser("stop")
     stop_cmd.add_argument("repo", help="Github repository")
-    stop_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # info <repo_name|repo_url>
     info_cmd = sub_parsers.add_parser("info")
     info_cmd.add_argument("repo", type=str, help="Github repository")
-    info_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     # ci
     info_cmd = sub_parsers.add_parser("ci")
-    info_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     # clean <repo_name|repo_url>
     clean_cmd = sub_parsers.add_parser("clean")
     clean_cmd.add_argument("repo", help="Github repository")
     clean_cmd.add_argument('-d', '--delete-commits', dest='delete_commits', default=False, action=argparse.BooleanOptionalAction)
-    clean_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The credentials profile you are using")
 
     # report <repo_name|repo_url>
     report_cmd = sub_parsers.add_parser("report")
@@ -84,16 +74,13 @@ def main():
     report_cmd.add_argument('-p', '--page', dest='page', type=int, default=1, help="Commit page number")
     report_cmd.add_argument('-l', '--limit', dest='limit', type=int, default=20, help="Page limit number")
     report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
-    report_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     # monitor
     monitor_cmd = sub_parsers.add_parser("monitor")
-    monitor_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     # output
     output_cmd = sub_parsers.add_parser("output")
     output_cmd.add_argument("id", help="Github repository or report UUID")
-    output_cmd.add_argument("--profile", dest='profile', type=str, default='default', help="The profile you are setting up")
 
     argv_len = len(sys.argv)
     # print(f"{sys.argv=}")
@@ -104,38 +91,43 @@ def main():
         # Add empty string to 'satori-cli info' command
         # sys.argv.append('')
 
-    instance = Satori()
     args = parser.parse_args()
+
     if args.subcommand == "config":
-        instance.save_config(args.profile, args.value)
+        instance = Satori(args.profile, config=True)
+    else:
+        instance = Satori(args.profile)
+
+    if args.subcommand == "config":
+        instance.save_config(args.key, args.value)
     elif args.subcommand == "run":
-        instance.run(args.playbook, args.profile)
+        instance.run(args.playbook)
     elif args.subcommand == "upload":
-        instance.upload(args.directory, args.profile)
+        instance.upload(args.directory)
     elif args.subcommand == "playbooks":
-        instance.playbooks(args.profile)
+        instance.playbooks()
     elif args.subcommand == "stop-report":
-        instance.stop_report(args.id, args.profile)
+        instance.stop_report(args.id)
     elif args.subcommand == "status":
-        instance.report_status(args.id, args.profile)
+        instance.report_status(args.id)
     elif args.subcommand == "cron":
-        instance.cron_action(args.action, args.param, args.profile)
+        instance.cron_action(args.action, args.param)
     elif args.subcommand == "scan":
-        instance.scan(args.repo_url, args.coverage, args.skip_check, args.from_date, args.to_date, args.profile)
+        instance.scan(args.repo_url, args.coverage, args.skip_check, args.from_date, args.to_date)
     elif args.subcommand == "stop":
-        instance.stop(args.repo, args.profile)
+        instance.stop(args.repo)
     elif args.subcommand == "info":
-        instance.scan_info(args.repo, args.profile)
+        instance.scan_info(args.repo)
     elif args.subcommand == "ci":
-        instance.ci(args.profile)
+        instance.ci()
     elif args.subcommand == "clean":
-        instance.clean(args.repo, args.delete_commits, args.profile)
+        instance.clean(args.repo, args.delete_commits)
     elif args.subcommand == "report":
-        instance.report_info(args.repo, args.page, args.limit, args.filter, args.profile)
+        instance.report_info(args.repo, args.page, args.limit, args.filter)
     elif args.subcommand == "monitor":
-        instance.monitor(args.profile)
+        instance.monitor()
     elif args.subcommand == "output":
-        instance.output(args.profile, args.id)
+        instance.output(args.id)
 
 
 if __name__ == "__main__":
