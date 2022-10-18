@@ -73,9 +73,9 @@ def main():
     clean_cmd.add_argument('-d', '--delete-commits', dest='delete_commits', default=False, action=argparse.BooleanOptionalAction)
 
     # report <repo_name|repo_url>
-    report_cmd = sub_parsers.add_parser("report")
+    report_cmd = sub_parsers.add_parser("report", parents=[base_subparser])
     report_cmd.add_argument("repo", help="Github repository or report UUID")
-    report_cmd.add_argument('-p', '--page', dest='page', type=int, default=1, help="Commit page number")
+    report_cmd.add_argument('-n', '--page', dest='page', type=int, default=1, help="Commit page number")
     report_cmd.add_argument('-l', '--limit', dest='limit', type=int, default=20, help="Page limit number")
     report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
 
