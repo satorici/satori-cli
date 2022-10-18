@@ -12,40 +12,44 @@ def main():
         sys.exit(0)
 
     parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
-    parser.add_argument("-p", "--profile", default="default")
+    
     sub_parsers = parser.add_subparsers(dest="subcommand")
 
+    base_subparser = argparse.ArgumentParser(add_help=False)
+    # Shared params
+    base_subparser.add_argument("-p", "--profile", default="default")
+
     # config token "user_token"
-    config_cmd = sub_parsers.add_parser("config")
+    config_cmd = sub_parsers.add_parser("config", parents=[base_subparser])
     config_cmd.add_argument("key")
     config_cmd.add_argument("value")
 
     # run playbook.yml
-    run_cmd = sub_parsers.add_parser("run")
+    run_cmd = sub_parsers.add_parser("run", parents=[base_subparser])
     run_cmd.add_argument("playbook")
 
     # upload ./directory
-    upload_cmd = sub_parsers.add_parser("upload")
+    upload_cmd = sub_parsers.add_parser("upload", parents=[base_subparser])
     upload_cmd.add_argument("directory")
 
     # playbooks
-    playbooks_cmd = sub_parsers.add_parser("playbooks")
+    playbooks_cmd = sub_parsers.add_parser("playbooks", parents=[base_subparser])
 
     # stop-report id
-    stop_report_cmd = sub_parsers.add_parser("stop-report")
+    stop_report_cmd = sub_parsers.add_parser("stop-report", parents=[base_subparser])
     stop_report_cmd.add_argument("id")
 
     # status id
-    status_cmd = sub_parsers.add_parser("status")
+    status_cmd = sub_parsers.add_parser("status", parents=[base_subparser])
     status_cmd.add_argument("id")
 
     # cron list|stop <report_uuid>|stopall
-    cron_cmd = sub_parsers.add_parser("cron")
+    cron_cmd = sub_parsers.add_parser("cron", parents=[base_subparser])
     cron_cmd.add_argument("action")
     cron_cmd.add_argument("param", default='all', nargs='?')
 
     # scan <repo_url>
-    scan_cmd = sub_parsers.add_parser("scan")
+    scan_cmd = sub_parsers.add_parser("scan", parents=[base_subparser])
     scan_cmd.add_argument("repo_url", help="Github repository")
     scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=float, default=0, help="coverage")
     scan_cmd.add_argument('-s', '--skip-check', dest='skip_check', default=False, action=argparse.BooleanOptionalAction)
@@ -53,33 +57,34 @@ def main():
     scan_cmd.add_argument('-t', '--to', dest='to_date', type=str, default='', help="To Date")
 
     # stop <repo_name|repo_url>
-    stop_cmd = sub_parsers.add_parser("stop")
+    stop_cmd = sub_parsers.add_parser("stop", parents=[base_subparser])
     stop_cmd.add_argument("repo", help="Github repository")
 
     # info <repo_name|repo_url>
-    info_cmd = sub_parsers.add_parser("info")
+    info_cmd = sub_parsers.add_parser("info", parents=[base_subparser])
     info_cmd.add_argument("repo", type=str, help="Github repository")
 
     # ci
-    info_cmd = sub_parsers.add_parser("ci")
+    info_cmd = sub_parsers.add_parser("ci", parents=[base_subparser])
 
     # clean <repo_name|repo_url>
-    clean_cmd = sub_parsers.add_parser("clean")
+    clean_cmd = sub_parsers.add_parser("clean", parents=[base_subparser])
     clean_cmd.add_argument("repo", help="Github repository")
     clean_cmd.add_argument('-d', '--delete-commits', dest='delete_commits', default=False, action=argparse.BooleanOptionalAction)
 
     # report <repo_name|repo_url>
-    report_cmd = sub_parsers.add_parser("report")
+    report_cmd = sub_parsers.add_parser("report", parents=[base_subparser])
     report_cmd.add_argument("repo", help="Github repository or report UUID")
-    report_cmd.add_argument('-p', '--page', dest='page', type=int, default=1, help="Commit page number")
+    report_cmd.add_argument('-n', '--page', dest='page', type=int, default=1, help="Commit page number")
     report_cmd.add_argument('-l', '--limit', dest='limit', type=int, default=20, help="Page limit number")
     report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
 
     # monitor
-    monitor_cmd = sub_parsers.add_parser("monitor")
+    monitor_cmd = sub_parsers.add_parser("monitor", parents=[base_subparser])
+    
 
     # output
-    output_cmd = sub_parsers.add_parser("output")
+    output_cmd = sub_parsers.add_parser("output", parents=[base_subparser])
     output_cmd.add_argument("id", help="Github repository or report UUID")
 
     argv_len = len(sys.argv)
