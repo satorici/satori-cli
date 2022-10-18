@@ -1,4 +1,5 @@
 import io
+import json
 import logging
 import os
 import shutil
@@ -313,13 +314,28 @@ class Satori():
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
-    def output(self, id: str):
+    def output(self, id: str, table: bool = True):
         """Returns commands output"""
 
         try:
             if uuid.UUID(id):
                 res = self.connect("GET", f"{self.api_host}report/output/{id}")
-                print(res.text)
-                return
+                if not res.ok:
+                    print("Could not fetch output")
+                    sys.exit(1)
         except ValueError:
-            pass
+            sys.exit(1)
+
+        data: dict = res.json()
+
+        if table:
+            outputs = data.pop("output", [])
+            for key, value in data.items():
+                print(f"{key}: {value}")
+
+            for row in outputs:
+                print("-" * 30)
+                for key, value in row.items():
+                    print(f"{key}: {value}")
+        else:
+            print(json.dumps(data, indent=2))
