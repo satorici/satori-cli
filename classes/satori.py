@@ -124,7 +124,8 @@ class Satori():
             sys.exit(0)
         if response.status_code == 200:
             status = response.json()
-            print(f"UUID: {status['uuid']} | URL: {status['report_url']}")
+            for key in status:
+                print(f"{key}: {status[key]}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
