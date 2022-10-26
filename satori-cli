@@ -35,10 +35,6 @@ def main():
     # playbooks
     playbooks_cmd = sub_parsers.add_parser("playbooks", parents=[base_subparser])
 
-    # stop-report id
-    stop_report_cmd = sub_parsers.add_parser("stop-report", parents=[base_subparser])
-    stop_report_cmd.add_argument("id")
-
     # status id
     status_cmd = sub_parsers.add_parser("status", parents=[base_subparser])
     status_cmd.add_argument("id")
@@ -56,9 +52,9 @@ def main():
     scan_cmd.add_argument('-f', '--from', dest='from_date', type=str, default='', help="From Date")
     scan_cmd.add_argument('-t', '--to', dest='to_date', type=str, default='', help="To Date")
 
-    # stop <repo_name|repo_url>
+    # stop <repo_name|repo_url|repor_uuid|monitor_id>
     stop_cmd = sub_parsers.add_parser("stop", parents=[base_subparser])
-    stop_cmd.add_argument("repo", help="Github repository")
+    stop_cmd.add_argument("id", type=str, default='all', help="Github repository/Report UUID/Monitor ID")
 
     # info <repo_name|repo_url>
     info_cmd = sub_parsers.add_parser("info", parents=[base_subparser])
@@ -82,7 +78,6 @@ def main():
     # monitor
     monitor_cmd = sub_parsers.add_parser("monitor", parents=[base_subparser])
     
-
     # output
     output_cmd = sub_parsers.add_parser("output", parents=[base_subparser])
     output_cmd.add_argument("id", help="Github repository or report UUID")
@@ -111,8 +106,6 @@ def main():
         instance.upload(args.directory)
     elif args.subcommand == "playbooks":
         instance.playbooks()
-    elif args.subcommand == "stop-report":
-        instance.stop_report(args.id)
     elif args.subcommand == "status":
         instance.report_status(args.id)
     elif args.subcommand == "cron":
@@ -120,7 +113,7 @@ def main():
     elif args.subcommand == "scan":
         instance.scan(args.repo_url, args.coverage, args.skip_check, args.from_date, args.to_date)
     elif args.subcommand == "stop":
-        instance.stop(args.repo)
+        instance.stop(args.id)
     elif args.subcommand == "info":
         instance.scan_info(args.repo)
     elif args.subcommand == "ci":

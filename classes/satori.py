@@ -145,13 +145,20 @@ class Satori():
             print(f"Directory not found: {directory}")
             return False
 
+        headers = {
+            "Authorization": f"token {self.token}",
+            "Content-Type": "satori/bundle_zip", # is always a zip?
+            "X-File-Name": 'Directory'
+        }
+
         try:
-            response = self.connect("POST", f"{self.host}", data=data)  # TODO: endpoint TBD
+            response = self.connect("POST", f"{self.host}", data=data, headers=headers)  # TODO: endpoint TBD
         except KeyboardInterrupt:
             sys.exit(0)
         if response.status_code == 200:
             status = response.json()
-            print(f"UUID: {status['uuid']} | URL: {status['report_url']}")
+            for key in status:
+                print(f"{key}: {status[key]}")
         else:
             print(f"{response.status_code = }\n{response.text = }")
 
@@ -183,15 +190,6 @@ class Satori():
     def playbooks(self):
         """List playbooks for the user"""
         response = self.connect("GET", f"{self.host}")  # TODO: endpoint TBD
-
-    def stop_report(self, id):
-        """Stop the execution of a certain given report"""
-        response = self.connect("GET", f"{self.api_host}report/stop/{id}")
-        if response.status_code == 200:
-            status = response.json()
-            print(f"Stopped status: {status['status']}")
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
 
     def report_status(self, id):
         """Show the status for a certain given report"""
@@ -235,9 +233,9 @@ class Satori():
         response = self.connect("GET", f"{self.api_host}scan/clean?{params}")
         print(f"{response.status_code = }\n{response.text = }")
 
-    def stop(self, repo):
+    def stop(self, obj_id):
         """Stop all scans in progress for a certain repo"""
-        params = urlencode({'repo': repo}, quote_via=quote_plus)
+        params = urlencode({'id': obj_id}, quote_via=quote_plus)
         response = self.connect("GET", f"{self.api_host}stop?{params}")
         print(f"{response.status_code = }\n{response.text = }")
 
