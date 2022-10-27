@@ -237,7 +237,17 @@ class Satori():
         """Stop all scans in progress for a certain repo"""
         params = urlencode({'id': obj_id}, quote_via=quote_plus)
         response = self.connect("GET", f"{self.api_host}stop?{params}")
-        print(f"{response.status_code = }\n{response.text = }")
+        if response.status_code == 200:
+            stop_list = response.json()
+            if isinstance(stop_list, dict):
+                stop_list = [stop_list]
+            for stop in stop_list:
+                for key in stop:
+                    print(f"{key}:")
+                for obj in stop[key]:
+                    print(obj)
+        else:
+            print(f"{response.status_code = }\n{response.text = }")
 
     def scan_info(self, repo):
         """Get information about the """

@@ -54,7 +54,7 @@ def main():
 
     # stop <repo_name|repo_url|repor_uuid|monitor_id>
     stop_cmd = sub_parsers.add_parser("stop", parents=[base_subparser])
-    stop_cmd.add_argument("id", type=str, default='all', help="Github repository/Report UUID/Monitor ID")
+    stop_cmd.add_argument("id", nargs='?', type=str, default='all', help="Github repository/Report UUID/Monitor ID")
 
     # info <repo_name|repo_url>
     info_cmd = sub_parsers.add_parser("info", parents=[base_subparser])
