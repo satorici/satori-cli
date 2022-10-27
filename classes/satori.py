@@ -106,7 +106,7 @@ class Satori():
             with open(playbook, encoding='utf-8') as f, ZipFile(bundle, "x") as zip_file:
                 playbook_dir = os.path.dirname(playbook)
                 references = get_references(f.read(), playbook_dir)
-                zip_file.write(playbook, "satori.yml")
+                zip_file.write(playbook, ".satori.yml")
                 for key, paths in references.items():
                     for path in paths:
                         zip_file.write(Path(playbook_dir, path), Path(key, path))
