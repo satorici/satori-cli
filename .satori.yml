@@ -1,4 +1,0 @@
-import:
-  - satori://code/trufflehog.yml
-#  - satori://code/semgrep.yml
-#  - satori://code/flake8.yml

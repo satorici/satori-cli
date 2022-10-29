@@ -1,9 +1,9 @@
 [project]
-name = "satori-cli"
-version = ""
-description = ""
+name = "satori-ci"
+version = "1.0"
+description = "Satori CI - Automated Software Testing Platform"
 authors = [
-    {name = "Satori CI", email = ""},
+    {name = "Satori CI CLI", email = "info@satori-ci.com"},
 ]
 dependencies = [
     "requests>=2.27.1",
@@ -12,7 +12,7 @@ dependencies = [
 requires-python = ">=3.9"
 
 [project.urls]
-Homepage = ""
+Homepage = "https://www.satori-ci.com"
 [tool.pdm]
 
 [build-system]
