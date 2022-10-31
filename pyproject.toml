@@ -18,3 +18,9 @@ Homepage = "https://www.satori-ci.com"
 [build-system]
 requires = ["pdm-pep517>=0.12.0"]
 build-backend = "pdm.pep517.api"
+
+[project.scripts]
+satorici = "satorici:main"
+
+[tool.distutils.bdist_wheel]
+universal = true
