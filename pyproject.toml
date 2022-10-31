@@ -23,6 +23,3 @@ build-backend = "pdm.pep517.api"
 
 [project.scripts]
 satori-ci = "satorici.satori_module:main"
-
-[tool.distutils.bdist_wheel]
-universal = true
