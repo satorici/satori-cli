@@ -1,5 +1,5 @@
 [project]
-name = "satorici"
+name = "satori-ci"
 version = "0.0.2"
 description = "Satori CI - Automated Software Testing Platform"
 authors = [
@@ -20,7 +20,7 @@ requires = ["pdm-pep517>=0.12.0"]
 build-backend = "pdm.pep517.api"
 
 [project.scripts]
-satorici = "satorici:main"
+satori-ci = "satorici.satori_module:main"
 
 [tool.distutils.bdist_wheel]
 universal = true

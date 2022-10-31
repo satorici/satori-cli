@@ -12,7 +12,7 @@ from zipfile import ZipFile
 import requests
 import yaml
 
-from classes.resolver import get_references
+from satorici.classes.resolver import get_references
 
 
 class Satori():
