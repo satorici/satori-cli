@@ -5,7 +5,7 @@ import sys
 
 from classes.satori import Satori
 
-VERSION = "1.0.0a"
+VERSION = "0.0.1"
 
 def main():
     print(f"Satori CI {VERSION} - Automated Software Testing Platform")
