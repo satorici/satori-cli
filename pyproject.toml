@@ -22,4 +22,4 @@ requires = ["pdm-pep517>=0.12.0"]
 build-backend = "pdm.pep517.api"
 
 [project.scripts]
-satori-ci = "satorici.satori_module:main"
+satori-cli = "satorici.satori_module:main"
