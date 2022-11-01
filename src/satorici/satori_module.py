@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 import argparse
 import sys
+from importlib import metadata
 
 from satorici.classes.satori import Satori
 
-VERSION = "0.0.1"
+VERSION = metadata.version("satori-ci")
 
 def main():
     print(f"Satori CI {VERSION} - Automated Software Testing Platform")
@@ -14,7 +15,7 @@ def main():
         sys.exit(0)
 
     parser = argparse.ArgumentParser(add_help=True, exit_on_error=True)
-    
+
     sub_parsers = parser.add_subparsers(dest="subcommand")
 
     base_subparser = argparse.ArgumentParser(add_help=False)
@@ -79,7 +80,7 @@ def main():
 
     # monitor
     monitor_cmd = sub_parsers.add_parser("monitor", parents=[base_subparser])
-    
+
     # output
     output_cmd = sub_parsers.add_parser("output", parents=[base_subparser])
     output_cmd.add_argument("id", help="Github repository or report UUID")
