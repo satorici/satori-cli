@@ -2,8 +2,8 @@ import io
 import json
 import logging
 import os
-import shutil
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 from urllib.parse import quote_plus, urlencode
@@ -128,18 +128,25 @@ class Satori():
 
     def upload(self, directory):
         """Upload directory and run"""
-        temp_file = "plbk-" + str(uuid.uuid4())
         if directory is None:
             print(f"Define the directory with the Satori playbook:\n{sys.argv[0]} run -p ./directory_with_playbook")
             return False
 
-        if os.path.isdir(directory):
-            shutil.make_archive(temp_file, 'zip', directory)
-            with open(temp_file + '.zip', 'rb') as f:
-                data = f.read()
-            os.remove(temp_file + '.zip')
-        else:
+        if not os.path.isdir(directory):
             print(f"Directory not found: {directory}")
+            return False
+
+        try:
+            with tempfile.TemporaryFile() as f:
+                with ZipFile(f, "w") as z:
+                    for dirpath, dirnames, filenames in os.walk(directory):
+                        for filename in filenames:
+                            z.write(os.path.join(dirpath, filename))
+
+                f.seek(0)
+                data = f.read()
+        except Exception as e:
+            print(f"Could not compress directory: {e}")
             return False
 
         headers = {
