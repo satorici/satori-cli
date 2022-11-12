@@ -1,17 +1,15 @@
-import io
 import json
-import logging
 import os
 import sys
 import tempfile
 import uuid
 from pathlib import Path
-from urllib.parse import quote_plus, urlencode
 from zipfile import ZipFile
 
 import requests
 import yaml
 
+from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
 
 
@@ -24,12 +22,10 @@ class Satori():
             f"{Path.home()}/.satori_credentials.yml",
             ".satori_credentials.yml"
         ]
-        # TODO: api.satori-ci.com
-        self.host = "https://w7zcm8h3h1.execute-api.us-east-2.amazonaws.com/staging/"
-        self.api_host = "https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com/"
         self.verbose = False
         if not config:
             self.load_config()
+        self.api = SatoriAPI(self.token)
 
 
     def load_config(self):
@@ -98,22 +94,9 @@ class Satori():
             return False
 
         bundle = make_bundle(playbook)
+        res = self.api.get_bundle_presigned_post()
+        requests.post(res["url"], res["fields"], files={"file": bundle})
 
-        headers = {
-            "Authorization": f"token {self.token}",
-            "Content-Type": "satori/bundle_zip", # is always a zip?
-            "X-File-Name": playbook,
-        }
-        try:
-            response = self.connect("POST", f"{self.host}", data=bundle.getvalue(), headers=headers)  # TODO: endpoint TBD
-        except KeyboardInterrupt:
-            sys.exit(0)
-        if response.status_code == 200:
-            status = response.json()
-            for key in status:
-                print(f"{key}: {status[key]}")
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
 
     def upload(self, directory):
         """Upload directory and run"""
@@ -124,6 +107,8 @@ class Satori():
         if not os.path.isdir(directory):
             print(f"Directory not found: {directory}")
             return False
+
+        bundle = make_bundle(Path(directory, ".satori.yml"))
 
         try:
             with tempfile.TemporaryFile() as f:
@@ -138,197 +123,127 @@ class Satori():
             print(f"Could not compress directory: {e}")
             return False
 
-        headers = {
-            "Authorization": f"token {self.token}",
-            "Content-Type": "satori/bundle_zip", # is always a zip?
-            "X-File-Name": 'Directory'
-        }
+        res = self.api.get_archive_presigned_post()
 
-        try:
-            response = self.connect("POST", f"{self.host}", data=data, headers=headers)  # TODO: endpoint TBD
-        except KeyboardInterrupt:
-            sys.exit(0)
-        if response.status_code == 200:
-            status = response.json()
-            for key in status:
-                print(f"{key}: {status[key]}")
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
+        arc = res["archive"]
+        bun = res["bundle"]
 
-    def connect(self, method, endpoint, data=None, headers=None):
-        """Connect to the Satori API"""
-        if headers is None:
-            headers = {"Authorization": f"token {self.token}"}
-        response = None
-        if self.verbose:
-            print("method:", method, " - endpoint:", endpoint, " - headers:", headers)
-        if method == "POST":
-            try:
-                response = requests.post(endpoint, data=data, headers=headers)
-            except requests.exceptions.ConnectionError:
-                logging.error("Connection could not be open")
-            except KeyboardInterrupt:
-                sys.exit(0)
-        elif method == "GET":
-            try:
-                response = requests.get(endpoint, headers=headers)
-            except requests.exceptions.ConnectionError:
-                logging.error("Connection could not be open")
-            except KeyboardInterrupt:
-                sys.exit(0)
-        if response is not None:
-            return response
-        sys.exit(1)
+        res = requests.post(arc["url"], arc["fields"], files={"file": data})
+        if not res.ok:
+            sys.exit(1)
 
-    def playbooks(self):
-        """List playbooks for the user"""
-        response = self.connect("GET", f"{self.host}")  # TODO: endpoint TBD
+        res = requests.post(bun["url"], bun["fields"], files={"file": bundle})
+        if not res.ok:
+            sys.exit(1)
 
     def report_status(self, id):
         """Show the status for a certain given report"""
-        response = self.connect("GET", f"{self.api_host}report/status/{id}")
-        if response.status_code == 200:
-            status = response.json()
-            print(f"Status: {status['status']} | Fails: {status['fails']}")
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
+        status = self.api.get_report_status(id)
+        print(f"Status: {status['status']} | Fails: {status['fails']}")
 
     def cron_action(self, action, param):
         """TBC"""
-        response = self.connect("GET", f"{self.api_host}cron/{action}/{param}")
-        if response.status_code == 200:
-            if action == 'list':
-                for cron in response.json():
-                    print(f"ID: {cron['ID']} | Name: {cron['display_name']}")
-            elif action == 'stop':
-                for cron in response.json():
-                    print(f"Stopped {cron['ID']}")
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
+        result = self.api.cron(action, param)
+        if action == 'list':
+            for cron in result:
+                print(f"ID: {cron['ID']} | Name: {cron['display_name']}")
+        elif action == 'stop':
+            for cron in result:
+                print(f"Stopped {cron['ID']}")
 
     def scan(self, repo_url, coverage, skip_check, from_date, to_date):
         """Run Satori on multiple commits"""
-        params = urlencode(
-            {'repo': repo_url, 'coverage': coverage, 'skip_check': skip_check,
-            'from': from_date, 'to': to_date},
-            quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}scan/start?{params}")
-        if response.status_code == 200:
-            info = response.json()
-            for key in info:
-                print(f"{key.capitalize()}: {info[key]}")
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
+        params = {
+            'repo': repo_url, 'coverage': coverage, 'skip_check': skip_check,
+            'from': from_date, 'to': to_date}
+        info = self.api.start_scan(params)
+        for key in info:
+            print(f"{key.capitalize()}: {info[key]}")
 
     def clean(self, repo, delete_commits):
         """Remove all reports (and commit information) from a repo"""
-        params = urlencode({'repo': repo, 'delete_commits': delete_commits}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}scan/clean?{params}")
-        print(f"{response.status_code = }\n{response.text = }")
+        params = {'repo': repo, 'delete_commits': delete_commits}
+        res = self.api.clean_repo_info(params)
+        print(res)
 
     def stop(self, obj_id):
         """Stop all scans in progress for a certain repo"""
-        params = urlencode({'id': obj_id}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}stop?{params}")
-        if response.status_code == 200:
-            stop_list = response.json()
-            if isinstance(stop_list, dict):
-                stop_list = [stop_list]
-            for stop in stop_list:
-                for key in stop:
-                    print(f"{key}:")
-                for obj in stop[key]:
-                    print(obj)
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
+        params = {'id': obj_id}
+        stop_list = self.api.stop_scan(params)
+        if isinstance(stop_list, dict):
+            stop_list = [stop_list]
+        for stop in stop_list:
+            for key in stop:
+                print(f"{key}:")
+            for obj in stop[key]:
+                print(obj)
 
     def scan_info(self, repo):
         """Get information about the """
-        params = urlencode({'repo': repo}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}info?{params}")
-        if response.status_code == 200:
-            info = response.json()
-            for key in info:
-                print(f"{key.capitalize()}: {info[key]}")
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
+        params = {'repo': repo}
+        info = self.api.get_scan_info(params)
+        for key in info:
+            print(f"{key.capitalize()}: {info[key]}")
 
     def ci(self):
         """Get information about the """
-        params = urlencode({}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}ci?{params}")
-        if response.status_code == 200:
-            info = response.json()
-            for repo in info:
-                for key in repo:
-                    print(f"{key}: {repo[key]}")
-                print("-"*48)
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
+        params = {}
+        info = self.api.get_ci_info(params)
+        for repo in info:
+            for key in repo:
+                print(f"{key}: {repo[key]}")
+            print("-"*48)
 
     def report_info(self, repo, page, limit, filters):
         """Show a list of reports"""
         try:
             if uuid.UUID(repo):
-                res = self.connect("GET", f"{self.api_host}report/info/{repo}")
-                print(res.text)
+                res = self.api.get_report_json(repo)
+                print(res)
                 return
         except ValueError:
             pass
 
-        params = urlencode({'repo': repo, 'page': page, 'limit': limit, 'filters': filters}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}report/info?{params}")
-        if response.status_code == 200:
-            commits = response.json()
-            for commit in commits:
-                for key in commit:
-                    if key == 'Report':
-                        print("▢ Report:")
-                        for report_key in commit['Report']:
-                            if report_key == 'Satori Error' and commit['Report']['Satori Error'] is not None:
-                                print("  • Satori Error:")
-                                split_msg = commit['Report']['Satori Error'].split("\n")
-                                for msg in split_msg:
-                                    print(f"   ░ {msg}")
-                            elif report_key == 'Testcases':
-                                print("  • Testcases:")
-                                for testcase in commit['Report']['Testcases']:
-                                    print(f"    ○ {testcase}")
-                            else:
-                                print(f"  • {report_key}: {commit['Report'][report_key]}")
-                    else:
-                        print(f"▢ {key}: {commit[key]}")
-                print(("_" * 48)+"\n")
-            print(f"Current page: {page}")
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
+        params = {'repo': repo, 'page': page, 'limit': limit, 'filters': filters}
+        commits = self.api.get_report_info(params)
+        for commit in commits:
+            for key in commit:
+                if key == 'Report':
+                    print("▢ Report:")
+                    for report_key in commit['Report']:
+                        if report_key == 'Satori Error' and commit['Report']['Satori Error'] is not None:
+                            print("  • Satori Error:")
+                            split_msg = commit['Report']['Satori Error'].split("\n")
+                            for msg in split_msg:
+                                print(f"   ░ {msg}")
+                        elif report_key == 'Testcases':
+                            print("  • Testcases:")
+                            for testcase in commit['Report']['Testcases']:
+                                print(f"    ○ {testcase}")
+                        else:
+                            print(f"  • {report_key}: {commit['Report'][report_key]}")
+                else:
+                    print(f"▢ {key}: {commit[key]}")
+            print(("_" * 48)+"\n")
+        print(f"Current page: {page}")
 
     def monitor(self):
         """Get information about the """
-        params = urlencode({}, quote_via=quote_plus)
-        response = self.connect("GET", f"{self.api_host}monitor?{params}")
-        if response.status_code == 200:
-            info = response.json()
-            for repo in info:
-                for key in repo:
-                    print(f"{key}: {repo[key]}")
-                print("-"*48)
-        else:
-            print(f"{response.status_code = }\n{response.text = }")
+        params = {}
+        info = self.api.get_monitor_info(params)
+        for repo in info:
+            for key in repo:
+                print(f"{key}: {repo[key]}")
+            print("-"*48)
 
     def output(self, id: str, table: bool = True):
         """Returns commands output"""
 
         try:
             if uuid.UUID(id):
-                res = self.connect("GET", f"{self.api_host}report/output/{id}")
-                if not res.ok:
-                    print("Could not fetch output")
-                    sys.exit(1)
+                data = self.api.get_report_output(id)
         except ValueError:
             sys.exit(1)
-
-        data: dict = res.json()
 
         if table:
             outputs = data.pop("output", [])
