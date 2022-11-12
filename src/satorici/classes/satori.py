@@ -12,7 +12,7 @@ from zipfile import ZipFile
 import requests
 import yaml
 
-from satorici.classes.resolver import get_references
+from satorici.classes.bundler import make_bundle
 
 
 class Satori():
@@ -97,19 +97,8 @@ class Satori():
             print(f"Playbook not found: {playbook}")
             return False
 
-        bundle = io.BytesIO()
+        bundle = make_bundle(playbook)
 
-        try:
-            with open(playbook, encoding='utf-8') as f, ZipFile(bundle, "x") as zip_file:
-                playbook_dir = os.path.dirname(playbook)
-                references = get_references(f.read(), playbook_dir)
-                zip_file.write(playbook, ".satori.yml")
-                for key, paths in references.items():
-                    for path in paths:
-                        zip_file.write(Path(playbook_dir, path), Path(key, path))
-        except Exception as e:
-            logging.error(e)
-            return False
         headers = {
             "Authorization": f"token {self.token}",
             "Content-Type": "satori/bundle_zip", # is always a zip?
