@@ -108,7 +108,7 @@ class Satori():
             print(f"Directory not found: {directory}")
             return False
 
-        bundle = make_bundle(Path(directory, ".satori.yml"))
+        bundle = make_bundle(Path(directory, ".satori.yml"), from_dir=True)
 
         try:
             with tempfile.TemporaryFile() as f:
