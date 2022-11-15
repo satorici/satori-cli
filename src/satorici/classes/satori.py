@@ -8,6 +8,8 @@ from pathlib import Path
 
 import requests
 import yaml
+from tqdm import tqdm
+from tqdm.utils import CallbackIOWrapper
 
 from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
@@ -128,8 +130,15 @@ class Satori():
         bun = res["bundle"]
 
         try:
-            with open(full_path, "rb") as f:
-                res = requests.post(arc["url"], arc["fields"], files={"file": f})
+            bar_params = {
+                "total": os.stat(full_path).st_size,
+                "unit": "B",
+                "desc": "Archive upload",
+                "unit_scale": True,
+            }
+            with tqdm(**bar_params) as t, open(full_path, "rb") as f:
+                w = CallbackIOWrapper(t.update, f, "read")
+                res = requests.post(arc["url"], arc["fields"], files={"file": w})
         finally:
             os.remove(full_path)
 
