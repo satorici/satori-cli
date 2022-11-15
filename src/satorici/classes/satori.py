@@ -94,10 +94,10 @@ class Satori():
             return False
 
         bundle = make_bundle(playbook)
-        res = self.api.get_bundle_presigned_post()
-        res = requests.post(res["url"], res["fields"], files={"file": bundle})
+        url = self.api.get_bundle_presigned_post()
+        res = requests.post(url["url"], url["fields"], files={"file": bundle})
         if res.ok:
-            uuid = res["fields"]["key"].split("/")[1]
+            uuid = url["fields"]["key"].split("/")[1]
             print(f"UUID: {uuid}")
             print(f"Report: https://www.satori-ci.com/report_details/?n={uuid}")
 
