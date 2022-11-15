@@ -1,10 +1,10 @@
 import json
 import os
+import shutil
 import sys
 import tempfile
 import uuid
 from pathlib import Path
-from zipfile import ZipFile
 
 import requests
 import yaml
@@ -113,16 +113,11 @@ class Satori():
             return False
 
         bundle = make_bundle(Path(directory, ".satori.yml"), from_dir=True)
+        temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
+        full_path = f"{temp_file}.zip"
 
         try:
-            with tempfile.TemporaryFile() as f:
-                with ZipFile(f, "w") as z:
-                    for dirpath, dirnames, filenames in os.walk(directory):
-                        for filename in filenames:
-                            z.write(os.path.join(dirpath, filename))
-
-                f.seek(0)
-                data = f.read()
+            shutil.make_archive(temp_file, "zip", directory)
         except Exception as e:
             print(f"Could not compress directory: {e}")
             return False
@@ -132,7 +127,12 @@ class Satori():
         arc = res["archive"]
         bun = res["bundle"]
 
-        res = requests.post(arc["url"], arc["fields"], files={"file": data})
+        try:
+            with open(full_path, "rb") as f:
+                res = requests.post(arc["url"], arc["fields"], files={"file": f})
+        finally:
+            os.remove(full_path)
+
         if not res.ok:
             print("Archive upload failed")
             sys.exit(1)
@@ -142,9 +142,9 @@ class Satori():
             print("Bundle upload failed")
             sys.exit(1)
 
-        uuid = bun["fields"]["key"].split("/")[1]
-        print(f"UUID: {uuid}")
-        print(f"Report: https://www.satori-ci.com/report_details/?n={uuid}")
+        ruuid = bun["fields"]["key"].split("/")[1]
+        print(f"UUID: {ruuid}")
+        print(f"Report: https://www.satori-ci.com/report_details/?n={ruuid}")
 
     def report_status(self, id):
         """Show the status for a certain given report"""
