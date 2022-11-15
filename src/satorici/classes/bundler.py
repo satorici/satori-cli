@@ -1,5 +1,8 @@
+import io
+import os
 import re
 from pathlib import Path
+from zipfile import ZipFile
 
 import yaml
 
@@ -45,3 +48,19 @@ def get_references(stream, dir):
                 raise Exception(f"{key}: {path} is not a file")
 
     return file_list
+
+
+def make_bundle(playbook: str, from_dir: bool = False):
+    obj = io.BytesIO()
+    with open(playbook) as f, ZipFile(obj, "x") as zip_file:
+        playbook_dir = os.path.dirname(playbook)
+        references = get_references(f.read(), playbook_dir)
+        zip_file.write(playbook, ".satori.yml")
+        if from_dir:
+            zip_file.writestr(".fromupload", "")
+        for key, paths in references.items():
+            for path in paths:
+                zip_file.write(Path(playbook_dir, path), Path(key, path))
+
+    obj.seek(0)
+    return obj

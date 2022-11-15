@@ -4,6 +4,8 @@ import argparse
 import sys
 from importlib import metadata
 
+from requests import HTTPError, Response
+
 from satorici.classes.satori import Satori
 
 VERSION = metadata.version("satori-ci")
@@ -97,34 +99,39 @@ def main():
     else:
         instance = Satori(args.profile)
 
-    if args.subcommand == "config":
-        instance.save_config(args.key, args.value)
-    elif args.subcommand == "run":
-        instance.run(args.playbook)
-    elif args.subcommand == "upload":
-        instance.upload(args.directory)
-    elif args.subcommand == "playbooks":
-        instance.playbooks()
-    elif args.subcommand == "status":
-        instance.report_status(args.id)
-    elif args.subcommand == "cron":
-        instance.cron_action(args.action, args.param)
-    elif args.subcommand == "scan":
-        instance.scan(args.repo_url, args.coverage, args.skip_check, args.from_date, args.to_date)
-    elif args.subcommand == "stop":
-        instance.stop(args.id)
-    elif args.subcommand == "info":
-        instance.scan_info(args.repo)
-    elif args.subcommand == "ci":
-        instance.ci()
-    elif args.subcommand == "clean":
-        instance.clean(args.repo, args.delete_commits)
-    elif args.subcommand == "report":
-        instance.report_info(args.repo, args.page, args.limit, args.filter)
-    elif args.subcommand == "monitor":
-        instance.monitor()
-    elif args.subcommand == "output":
-        instance.output(args.id)
+    try:
+        if args.subcommand == "config":
+            instance.save_config(args.key, args.value)
+        elif args.subcommand == "run":
+            instance.run(args.playbook)
+        elif args.subcommand == "upload":
+            instance.upload(args.directory)
+        elif args.subcommand == "playbooks":
+            instance.playbooks()
+        elif args.subcommand == "status":
+            instance.report_status(args.id)
+        elif args.subcommand == "cron":
+            instance.cron_action(args.action, args.param)
+        elif args.subcommand == "scan":
+            instance.scan(args.repo_url, args.coverage, args.skip_check, args.from_date, args.to_date)
+        elif args.subcommand == "stop":
+            instance.stop(args.id)
+        elif args.subcommand == "info":
+            instance.scan_info(args.repo)
+        elif args.subcommand == "ci":
+            instance.ci()
+        elif args.subcommand == "clean":
+            instance.clean(args.repo, args.delete_commits)
+        elif args.subcommand == "report":
+            instance.report_info(args.repo, args.page, args.limit, args.filter)
+        elif args.subcommand == "monitor":
+            instance.monitor()
+        elif args.subcommand == "output":
+            instance.output(args.id)
+    except HTTPError as e:
+        res: Response = e.response
+        print(f"Status code: {res.status_code}")
+        print(f"Body: {res.json()}")
 
 
 if __name__ == "__main__":
