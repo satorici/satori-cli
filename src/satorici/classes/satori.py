@@ -95,7 +95,11 @@ class Satori():
 
         bundle = make_bundle(playbook)
         res = self.api.get_bundle_presigned_post()
-        requests.post(res["url"], res["fields"], files={"file": bundle})
+        res = requests.post(res["url"], res["fields"], files={"file": bundle})
+        if res.ok:
+            uuid = res["fields"]["key"].split("/")[1]
+            print(f"UUID: {uuid}")
+            print(f"Report: https://www.satori-ci.com/report_details/?n={uuid}")
 
 
     def upload(self, directory):
@@ -130,11 +134,17 @@ class Satori():
 
         res = requests.post(arc["url"], arc["fields"], files={"file": data})
         if not res.ok:
+            print("Archive upload failed")
             sys.exit(1)
 
         res = requests.post(bun["url"], bun["fields"], files={"file": bundle})
         if not res.ok:
+            print("Bundle upload failed")
             sys.exit(1)
+
+        uuid = bun["fields"]["key"].split("/")[1]
+        print(f"UUID: {uuid}")
+        print(f"Report: https://www.satori-ci.com/report_details/?n={uuid}")
 
     def report_status(self, id):
         """Show the status for a certain given report"""
