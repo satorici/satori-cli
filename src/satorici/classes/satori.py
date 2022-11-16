@@ -50,6 +50,8 @@ class Satori():
 
             if not (profile and isinstance(profile, dict)):
                 print("Invalid or non existent profile")
+                profile_list = list(config.keys())
+                print(f"Profiles list: {', '.join(profile_list)}")
                 sys.exit(1)
 
             if not profile.get("token"):
@@ -221,7 +223,7 @@ class Satori():
                 if key == 'Report':
                     print("▢ Report:")
                     for report_key in commit['Report']:
-                        if report_key == 'Satori Error' and commit['Report']['Satori Error'] is not None:
+                        if report_key == 'Satori Error' and commit['Report']['Satori Error'] :
                             print("  • Satori Error:")
                             split_msg = commit['Report']['Satori Error'].split("\n")
                             for msg in split_msg:
@@ -266,3 +268,14 @@ class Satori():
                     print(f"{key}: {value}")
         else:
             print(json.dumps(data, indent=2))
+
+    def dashboard(self):
+        """Get user dashboard"""
+        info = self.api.dashboard()
+        for title in info:
+            print(f"\n{title}:")
+            n = 0
+            for i in info[title]:
+                n += 1
+                for key in i:
+                    print(f"{n}) {key.capitalize()}: {i[key]}")
