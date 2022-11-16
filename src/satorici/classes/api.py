@@ -64,3 +64,7 @@ class SatoriAPI:
     def cron(self, action, param):
         res = self.__session__.get(f"{HOST}/cron/{action}/{param}")
         return res.json()
+
+    def dashboard(self):
+        res = self.__session__.get(f"{HOST}/dashboard")
+        return res.json()
