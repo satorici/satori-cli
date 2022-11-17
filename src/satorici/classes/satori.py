@@ -40,6 +40,9 @@ class Satori():
 
         if not config_file:
             print("No config file")
+            print("")
+            print("Configure your credentials")
+            print("satori-cli [-p PROFILE] config token TOKEN")
             sys.exit(1)
 
         with config_file.open(encoding='utf-8') as f:
@@ -58,7 +61,7 @@ class Satori():
 
             if not profile.get("token"):
                 print(f"No token in profile: {self.profile}\n")
-                print("satori-ci [-p PROFILE] config token TOKEN")
+                print("satori-cli [-p PROFILE] config token TOKEN")
                 sys.exit(1)
 
             self.config = config
