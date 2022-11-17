@@ -51,7 +51,7 @@ class SatoriAPI:
 
     def get_report_json(self, uuid):
         res = self.__session__.get(f"{HOST}/report/info/{uuid}")
-        return res.text
+        return res.json()
 
     def get_report_info(self, parameters):
         res = self.__session__.get(f"{HOST}/report/info", params=parameters)
