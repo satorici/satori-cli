@@ -28,7 +28,7 @@ class Satori():
         self.verbose = False
         if not config:
             self.load_config()
-        self.api = SatoriAPI(self.token)
+            self.api = SatoriAPI(self.token)
 
     def load_config(self):
         """Load the config file and set the token on the headers"""
