@@ -13,11 +13,12 @@ from tqdm.utils import CallbackIOWrapper
 
 from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
+from satorici.classes.formatters import dict_formatter
 
 
 class Satori():
     """Have some class"""
-    def __init__(self, profile = "default", config = False):
+    def __init__(self, profile="default", config=False):
         """Turn on the engines"""
         self.profile = profile
         self.config_paths = [
@@ -27,8 +28,7 @@ class Satori():
         self.verbose = False
         if not config:
             self.load_config()
-        self.api = SatoriAPI(self.token)
-
+            self.api = SatoriAPI(self.token)
 
     def load_config(self):
         """Load the config file and set the token on the headers"""
@@ -107,7 +107,6 @@ class Satori():
             uuid = url["fields"]["key"].split("/")[1]
             print(f"UUID: {uuid}")
             print(f"Report: https://www.satori-ci.com/report_details/?n={uuid}")
-
 
     def upload(self, directory):
         """Upload directory and run"""
@@ -223,7 +222,7 @@ class Satori():
         try:
             if uuid.UUID(repo):
                 res = self.api.get_report_json(repo)
-                print(res)
+                dict_formatter(res)
                 return
         except ValueError:
             pass
@@ -231,23 +230,7 @@ class Satori():
         params = {'repo': repo, 'page': page, 'limit': limit, 'filters': filters}
         commits = self.api.get_report_info(params)
         for commit in commits:
-            for key in commit:
-                if key == 'Report':
-                    print("▢ Report:")
-                    for report_key in commit['Report']:
-                        if report_key == 'Satori Error' and commit['Report']['Satori Error'] :
-                            print("  • Satori Error:")
-                            split_msg = commit['Report']['Satori Error'].split("\n")
-                            for msg in split_msg:
-                                print(f"   ░ {msg}")
-                        elif report_key == 'Testcases':
-                            print("  • Testcases:")
-                            for testcase in commit['Report']['Testcases']:
-                                print(f"    ○ {testcase}")
-                        else:
-                            print(f"  • {report_key}: {commit['Report'][report_key]}")
-                else:
-                    print(f"▢ {key}: {commit[key]}")
+            dict_formatter(commit)
             print(("_" * 48)+"\n")
         print(f"Current page: {page}")
 
