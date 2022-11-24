@@ -11,7 +11,7 @@ from satorici.classes.satori import Satori
 VERSION = metadata.version("satori-ci")
 
 def main():
-    print(f"Satori CI {VERSION} - Automated Software Testing Platform")
+    print(f"Satori CI {VERSION} - Automated Software Testing Platform", file=sys.stderr)
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
         print(
             "Minimum Python version 3.9 required, the current version is "
