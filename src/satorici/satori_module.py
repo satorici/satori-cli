@@ -82,6 +82,7 @@ def main():
     report_cmd.add_argument('-n', '--page', dest='page', type=int, default=1, help="Commit page number")
     report_cmd.add_argument('-l', '--limit', dest='limit', type=int, default=20, help="Page limit number")
     report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
+    report_cmd.add_argument("--json", action="store_true", help="Show json report")
 
     # monitor
     monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])
@@ -121,7 +122,7 @@ def main():
         elif args.subcommand == "clean":
             instance.clean(args.repo, args.delete_commits)
         elif args.subcommand == "report":
-            instance.report_info(args.repo, args.page, args.limit, args.filter)
+            instance.report_info(args.repo, args.page, args.limit, args.filter, args.json)
         elif args.subcommand == "monitor":
             instance.monitor()
         elif args.subcommand == "output":

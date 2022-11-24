@@ -217,12 +217,15 @@ class Satori():
                 print(f"{key}: {repo[key]}")
             print("-"*48)
 
-    def report_info(self, repo, page, limit, filters):
+    def report_info(self, repo, page, limit, filters, jsonfmt):
         """Show a list of reports"""
         try:
             if uuid.UUID(repo):
                 res = self.api.get_report_json(repo)
-                dict_formatter(res)
+                if jsonfmt:
+                    print(json.dumps(res))
+                else:
+                    dict_formatter(res)
                 return
         except ValueError:
             pass
