@@ -91,6 +91,10 @@ def main():
     output_cmd = subparsers.add_parser("output", parents=[baseparser])
     output_cmd.add_argument("id", help="Github repository or report UUID")
 
+    # remove
+    remove_cmd = subparsers.add_parser("remove", parents=[baseparser])
+    remove_cmd.add_argument("id", help="Monitor ID or report UUID")
+
     args = parser.parse_args()
 
     if args.subcommand == "config":
@@ -127,6 +131,8 @@ def main():
             instance.monitor()
         elif args.subcommand == "output":
             instance.output(args.id)
+        elif args.subcommand == "remove":
+            instance.remove(args.id)
         elif not args.subcommand or args.subcommand == "dashboard":
             instance.dashboard()
     except HTTPError as e:

@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -277,3 +278,19 @@ class Satori():
                 n += 1
                 for key in i:
                     print(f"{n}) {key.capitalize()}: {i[key]}")
+
+    def remove(self, id):
+        """Delete report/monitor"""
+        uuid4_reg = re.compile(
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+            re.I)
+        monitor_reg = re.compile(r"^[a-f0-9]{40}$")
+        params = {"id": id}
+        if uuid4_reg.match(id):
+            data = self.api.remove_report(params)
+        elif monitor_reg.match(id):
+            data = self.api.remove_monitor(params)
+        else:
+            print("Unknown ID")
+            sys.exit(1)
+        print(json.dumps(data, indent=2))

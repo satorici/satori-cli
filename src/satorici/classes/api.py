@@ -68,3 +68,11 @@ class SatoriAPI:
     def dashboard(self):
         res = self.__session__.get(f"{HOST}/dashboard")
         return res.json()
+
+    def remove_report(self, parameters):
+        res = self.__session__.delete(f"{HOST}/report", params=parameters)
+        return res.json()
+
+    def remove_monitor(self, parameters):
+        res = self.__session__.delete(f"{HOST}/monitor", params=parameters)
+        return res.json()
