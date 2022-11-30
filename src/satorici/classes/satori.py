@@ -14,7 +14,7 @@ from tqdm.utils import CallbackIOWrapper
 
 from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
-from satorici.classes.formatters import dict_formatter
+from satorici.classes.formatters import dict_formatter, list_formatter
 
 
 class Satori():
@@ -225,8 +225,10 @@ class Satori():
                 res = self.api.get_report_json(repo)
                 if jsonfmt:
                     print(json.dumps(res))
-                else:
+                elif isinstance(res, dict):
                     dict_formatter(res)
+                elif isinstance(res, list):
+                    list_formatter(res)
                 return
         except ValueError:
             pass
