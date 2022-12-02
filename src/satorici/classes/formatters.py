@@ -28,3 +28,10 @@ def list_formatter(obj: dict, capitalize: bool = False, indent: int = 0):
             list_formatter(item, capitalize, indent + 1)
         else:
             print(indent_text + str(item))
+
+
+def autoformat(obj: dict, capitalize: bool = False):
+    if isinstance(obj, dict):
+        dict_formatter(obj, capitalize)
+    elif isinstance(obj, list):
+        list_formatter(obj, capitalize)

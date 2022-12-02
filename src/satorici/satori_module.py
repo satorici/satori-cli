@@ -23,6 +23,7 @@ def main():
 
     baseparser = argparse.ArgumentParser(add_help=False)
     baseparser.add_argument("-p", "--profile", default="default")
+    baseparser.add_argument("-j", "--json", action="store_true", help="JSON output")
 
     parser = argparse.ArgumentParser(parents=[baseparser])
     subparsers = parser.add_subparsers(dest="subcommand")
@@ -40,8 +41,11 @@ def main():
     upload_cmd = subparsers.add_parser("upload", parents=[baseparser])
     upload_cmd.add_argument("directory")
 
-    # playbooks
-    playbooks_cmd = subparsers.add_parser("playbooks", parents=[baseparser])
+    # playbook {id}
+    playbook_cmd = subparsers.add_parser("playbook", parents=[baseparser])
+    playbook_cmd.add_argument("id", nargs='?', type=str, default='all')
+    playbook_cmd.add_argument('-n', '--page', dest='page', type=int, default=1, help="Playbooks page number")
+    playbook_cmd.add_argument('-l', '--limit', dest='limit', type=int, default=5, help="Page limit number")
 
     # status id
     status_cmd = subparsers.add_parser("status", parents=[baseparser])
@@ -56,7 +60,7 @@ def main():
     scan_cmd = subparsers.add_parser("scan", parents=[baseparser])
     scan_cmd.add_argument("repo_url", help="Github repository")
     scan_cmd.add_argument('-c', '--coverage', dest='coverage', type=float, default=0, help="coverage")
-    scan_cmd.add_argument('-s', '--skip-check', dest='skip_check', default=False, action=argparse.BooleanOptionalAction)
+    scan_cmd.add_argument('-s', '--skip-check', dest='skip_check', default=False, action="store_true")
     scan_cmd.add_argument('-f', '--from', dest='from_date', type=str, default='', help="From Date")
     scan_cmd.add_argument('-t', '--to', dest='to_date', type=str, default='', help="To Date")
 
@@ -74,15 +78,14 @@ def main():
     # clean <repo_name|repo_url>
     clean_cmd = subparsers.add_parser("clean", parents=[baseparser])
     clean_cmd.add_argument("repo", help="Github repository")
-    clean_cmd.add_argument('-d', '--delete-commits', dest='delete_commits', default=False, action=argparse.BooleanOptionalAction)
+    clean_cmd.add_argument('-d', '--delete-commits', dest='delete_commits', default=False, action="store_true")
 
     # report <repo_name|repo_url>
     report_cmd = subparsers.add_parser("report", parents=[baseparser])
-    report_cmd.add_argument("repo", help="Github repository or report UUID")
+    report_cmd.add_argument("repo", help="Github repository")
     report_cmd.add_argument('-n', '--page', dest='page', type=int, default=1, help="Commit page number")
     report_cmd.add_argument('-l', '--limit', dest='limit', type=int, default=20, help="Page limit number")
     report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
-    report_cmd.add_argument("--json", action="store_true", help="Show json report")
 
     # monitor
     monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])
@@ -109,8 +112,8 @@ def main():
             instance.run(args.playbook)
         elif args.subcommand == "upload":
             instance.upload(args.directory)
-        elif args.subcommand == "playbooks":
-            instance.playbooks()
+        elif args.subcommand == "playbook":
+            instance.playbook(args)
         elif args.subcommand == "status":
             instance.report_status(args.id)
         elif args.subcommand == "cron":
@@ -132,7 +135,7 @@ def main():
         elif args.subcommand == "output":
             instance.output(args.id)
         elif args.subcommand == "remove":
-            instance.remove(args.id)
+            instance.remove(args)
         elif not args.subcommand or args.subcommand == "dashboard":
             instance.dashboard()
     except HTTPError as e:

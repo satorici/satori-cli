@@ -14,7 +14,7 @@ from tqdm.utils import CallbackIOWrapper
 
 from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
-from satorici.classes.formatters import dict_formatter, list_formatter
+from satorici.classes.formatters import dict_formatter, autoformat
 
 
 class Satori():
@@ -225,10 +225,8 @@ class Satori():
                 res = self.api.get_report_json(repo)
                 if jsonfmt:
                     print(json.dumps(res))
-                elif isinstance(res, dict):
-                    dict_formatter(res)
-                elif isinstance(res, list):
-                    list_formatter(res)
+                else:
+                    autoformat(res)
                 return
         except ValueError:
             pass
@@ -281,8 +279,9 @@ class Satori():
                 for key in i:
                     print(f"{n}) {key.capitalize()}: {i[key]}")
 
-    def remove(self, id):
+    def remove(self, args):
         """Delete report/monitor"""
+        id = args.id
         uuid4_reg = re.compile(
             r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
             re.I)
@@ -295,4 +294,19 @@ class Satori():
         else:
             print("Unknown ID")
             sys.exit(1)
-        print(json.dumps(data, indent=2))
+        print(json.dumps(data)) if args.json else autoformat(data)
+
+    def playbook(self, args):
+        """Get playbooks"""
+        params = {"id": args.id, "limit": args.limit, "page": args.page}
+        data = self.api.get_playbook(params)
+        if args.json:
+            print(json.dumps(data))
+        elif args.id == "all":
+            data = list(map(lambda x: {
+                    "ID": x["ID"],
+                    # Add a new line to remove indent
+                    "Playbook": f"\n{x['Playbook']}"}, data))
+            autoformat(data)
+        else:
+            print(data)

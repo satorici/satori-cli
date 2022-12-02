@@ -76,3 +76,7 @@ class SatoriAPI:
     def remove_monitor(self, parameters):
         res = self.__session__.delete(f"{HOST}/monitor", params=parameters)
         return res.json()
+
+    def get_playbook(self, parameters):
+        res = self.__session__.get(f"{HOST}/playbook", params=parameters)
+        return res.json()
