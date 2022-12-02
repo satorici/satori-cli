@@ -308,7 +308,8 @@ class Satori():
             sys.exit(1)
         if args.id == 'all':
             data = list(map(lambda x: {
-                    "ID": x["ID"],
+                    "ID": x["ID"], "URI": x["URI"],
+                    "Name": x["Name"],
                     # Add a new line to remove indent
                     "Playbook": f"\n{x['Playbook']}"}, data))
         autoformat(data)
