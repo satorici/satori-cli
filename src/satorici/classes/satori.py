@@ -14,7 +14,7 @@ from tqdm.utils import CallbackIOWrapper
 
 from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
-from satorici.classes.formatters import dict_formatter, autoformat
+from satorici.classes.utils import filter_params, dict_formatter, autoformat
 
 
 class Satori():
@@ -294,19 +294,21 @@ class Satori():
         else:
             print("Unknown ID")
             sys.exit(1)
-        print(json.dumps(data)) if args.json else autoformat(data)
+        if args.json:
+            print(json.dumps(data))
+        else:
+            autoformat(data)
 
     def playbook(self, args):
         """Get playbooks"""
-        params = {"id": args.id, "limit": args.limit, "page": args.page}
+        params = filter_params(args, ("id", "limit", "page"))
         data = self.api.get_playbook(params)
         if args.json:
             print(json.dumps(data))
-        elif args.id == "all":
+            sys.exit(1)
+        if args.id == 'all':
             data = list(map(lambda x: {
                     "ID": x["ID"],
                     # Add a new line to remove indent
                     "Playbook": f"\n{x['Playbook']}"}, data))
-            autoformat(data)
-        else:
-            print(data)
+        autoformat(data)

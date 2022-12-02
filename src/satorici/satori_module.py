@@ -7,6 +7,7 @@ from importlib import metadata
 from requests import HTTPError, Response
 
 from satorici.classes.satori import Satori
+from satorici.classes.utils import autoformat
 
 VERSION = metadata.version("satori-ci")
 
@@ -140,8 +141,12 @@ def main():
             instance.dashboard()
     except HTTPError as e:
         res: Response = e.response
-        print(f"Status code: {res.status_code}")
-        print(f"Body: {res.json()}")
+        status = {"Status code": res.status_code}
+        status.update(res.json())
+        if args.json:
+            print(str(status))
+        else:
+            autoformat(status, capitalize=True)
 
 
 if __name__ == "__main__":
