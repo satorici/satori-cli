@@ -271,7 +271,11 @@ class Satori():
     def dashboard(self):
         """Get user dashboard"""
         info = self.api.dashboard()
+        print("Actions required:")
+        autoformat(info["Actions"])
         for title in info:
+            if title == "Actions":
+                continue
             print(f"\n{title}:")
             n = 0
             for i in info[title]:
