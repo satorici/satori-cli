@@ -1,4 +1,5 @@
 from typing import Union
+import json
 
 __decorations = "▢•○░"
 
@@ -32,7 +33,9 @@ def list_formatter(obj: dict, capitalize: bool = False, indent: int = 0):
             print(indent_text + str(item))
 
 
-def autoformat(obj: any, capitalize: bool = False):
+def autoformat(
+    obj: any, capitalize: bool = False, indent: int = 0, jsonfmt: bool = False
+):
     """Format and print a dict, list or other var
 
     Parameters
@@ -41,13 +44,20 @@ def autoformat(obj: any, capitalize: bool = False):
         Var to print
     capitalize : bool, optional
         Capitalize dict keys, by default False
+    ident : bool, optional
+        Indent length, by default 0
+    jsonfmt: bool, optional
+        Print as json, by default False
     """
-    if isinstance(obj, dict):
-        dict_formatter(obj, capitalize)
-    elif isinstance(obj, list):
-        list_formatter(obj, capitalize)
+    if jsonfmt:
+        print(json.dumps(obj, indent=indent, default=str))
     else:
-        print(str(obj))
+        if isinstance(obj, dict):
+            dict_formatter(obj, capitalize, indent)
+        elif isinstance(obj, list):
+            list_formatter(obj, capitalize, indent)
+        else:
+            print(str(obj))
 
 
 def filter_params(params: any, filter_keys: Union[tuple, list]) -> dict:

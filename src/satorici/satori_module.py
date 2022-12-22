@@ -55,16 +55,7 @@ def main():
         "-l", "--limit", dest="limit", type=int, default=5, help="Page limit number"
     )
 
-    #     # status id
-    #     status_cmd = subparsers.add_parser("status", parents=[baseparser])
-    #     status_cmd.add_argument("id")
-
-    #     # cron list|stop <report_uuid>|stopall
-    #     cron_cmd = subparsers.add_parser("cron", parents=[baseparser])
-    #     cron_cmd.add_argument("action")
-    #     cron_cmd.add_argument("param", default='all', nargs='?')
-
-    # repo {id} <commits|check-commits|check-forks|scan|run|clean>
+    # repo {id} <commits|check-commits|check-forks|scan|scan-stop|run|clean>
     repo_cmd = subparsers.add_parser("scan", parents=[baseparser])
     repo_cmd.add_argument(
         "-c", "--coverage", dest="coverage", type=float, default=0, help="coverage"
@@ -75,9 +66,7 @@ def main():
     repo_cmd.add_argument(
         "-f", "--from", dest="from", type=str, default="", help="From Date"
     )
-    repo_cmd.add_argument(
-        "-t", "--to", dest="to", type=str, default="", help="To Date"
-    )
+    repo_cmd.add_argument("-t", "--to", dest="to", type=str, default="", help="To Date")
     repo_cmd.add_argument(
         "-d",
         "--delete-commits",
@@ -86,39 +75,25 @@ def main():
         action="store_true",
     )
 
-    #     # stop <repo_name|repo_url|repor_uuid|monitor_id>
-    #     stop_cmd = subparsers.add_parser("stop", parents=[baseparser])
-    #     stop_cmd.add_argument("id", nargs='?', type=str, default='all', help="Github repository/Report UUID/Monitor ID")
+    # report {id} <output|stop|delete>
+    report_cmd = subparsers.add_parser("report", parents=[baseparser])
+    report_cmd.add_argument(
+        "-n", "--page", dest="page", type=int, default=1, help="Commit page number"
+    )
+    report_cmd.add_argument(
+        "-l", "--limit", dest="limit", type=int, default=20, help="Page limit number"
+    )
+    report_cmd.add_argument(
+        "-f",
+        "--filter",
+        dest="filter",
+        type=str,
+        default="",
+        help="Filters: from,to,satori_error,status",
+    )
 
-    #     # info <repo_name|repo_url>
-    #     info_cmd = subparsers.add_parser("info", parents=[baseparser])
-    #     info_cmd.add_argument("repo", type=str, help="Github repository")
-
-    #     # ci
-    #     info_cmd = subparsers.add_parser("ci", parents=[baseparser])
-
-    #     # clean <repo_name|repo_url>
-    #     clean_cmd = subparsers.add_parser("clean", parents=[baseparser])
-    #     clean_cmd.add_argument("repo", help="Github repository")
-    #     clean_cmd.add_argument('-d', '--delete-commits', dest='delete_commits', default=False, action="store_true")
-
-    #     # report <repo_name|repo_url>
-    #     report_cmd = subparsers.add_parser("report", parents=[baseparser])
-    #     report_cmd.add_argument("repo", help="Github repository")
-    #     report_cmd.add_argument('-n', '--page', dest='page', type=int, default=1, help="Commit page number")
-    #     report_cmd.add_argument('-l', '--limit', dest='limit', type=int, default=20, help="Page limit number")
-    #     report_cmd.add_argument('-f', '--filter', dest='filter', type=str, default='', help="Filters: from,to,satori_error,status")
-
-    #     # monitor
-    #     monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])
-
-    #     # output
-    #     output_cmd = subparsers.add_parser("output", parents=[baseparser])
-    #     output_cmd.add_argument("id", help="Github repository or report UUID")
-
-    #     # remove
-    #     remove_cmd = subparsers.add_parser("remove", parents=[baseparser])
-    #     remove_cmd.add_argument("id", help="Monitor ID or report UUID")
+    # monitor {id} <start|stop|delete>
+    monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])  # noqa: F841
 
     args = parser.parse_args()
 
@@ -136,28 +111,12 @@ def main():
         #             instance.upload(args.directory)
         elif args.subcommand == "playbook":
             instance.playbook(args)
-        #         elif args.subcommand == "status":
-        #             instance.report_status(args.id)
-        #         elif args.subcommand == "cron":
-        #             instance.cron_action(args.action, args.param)
         elif args.subcommand == "repo":
             instance.repo(args)
-        #         elif args.subcommand == "stop":
-        #             instance.stop(args.id)
-        #         elif args.subcommand == "info":
-        #             instance.scan_info(args.repo)
-        #         elif args.subcommand == "ci":
-        #             instance.ci()
-        #         elif args.subcommand == "clean":
-        #             instance.clean(args.repo, args.delete_commits)
-        #         elif args.subcommand == "report":
-        #             instance.report_info(args.repo, args.page, args.limit, args.filter, args.json)
-        #         elif args.subcommand == "monitor":
-        #             instance.monitor()
-        #         elif args.subcommand == "output":
-        #             instance.output(args.id)
-        #         elif args.subcommand == "remove":
-        #             instance.remove(args)
+        elif args.subcommand == "report":
+            instance.report(args)
+        elif args.subcommand == "monitor":
+            instance.monitor(args)
         elif not args.subcommand or args.subcommand == "dashboard":
             instance.dashboard()
     except HTTPError as e:

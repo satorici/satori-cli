@@ -13,7 +13,7 @@ from tqdm.utils import CallbackIOWrapper
 
 from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
-from satorici.classes.utils import filter_params, autoformat
+from satorici.classes.utils import dict_formatter, filter_params, autoformat
 
 
 class Satori:
@@ -165,128 +165,87 @@ class Satori:
         print(f"UUID: {ruuid}")
         print(f"Report: https://www.satori-ci.com/report_details/?n={ruuid}")
 
-    # def report_status(self, id):
-    #     """Show the status for a certain given report"""
-    #     status = self.api.get_report_status(id)
-    #     print(f"Status: {status['status']} | Fails: {status['fails']}")
-
-    # def cron_action(self, action, param):
-    #     """TBC"""
-    #     result = self.api.cron(action, param)
-    #     if action == "list":
-    #         for cron in result:
-    #             print(f"ID: {cron['ID']} | Name: {cron['display_name']}")
-    #     elif action == "stop":
-    #         for cron in result:
-    #             print(f"Stopped {cron['ID']}")
-
     def repo(self, args):
         """Run Satori on multiple commits"""
         params = filter_params(args, ("id"))
-        if args.action == "get":
-            info = self.api.repo_get(params)
-        elif args.action == "commits":
-            info = self.api.repo_commits(params)
-        elif args.action == "check-commits":
-            info = self.api.repo_check_commits(params)
-        elif args.action == "check-forks":
-            info = self.api.repo_check_forks(params)
-        elif args.action == "scan":
+        if args.action == "scan":
             params = filter_params(args, ("id", "coverage", "from", "to"))
-            info = self.api.repo_scan(params)
-        elif args.action == "run":
-            info = self.api.repo_run(params)
         elif args.action == "clean":
             params = filter_params(args, ("id", "delete_commits"))
-            info = self.api.repo_clean(params)
+        elif args.action not in (
+            "commits",
+            "check-commits",
+            "check-forks",
+            "scan-stop",
+            "run",
+        ):
+            print("Unknown subcommand")
+            sys.exit(1)
+        info = self.api.repo_get(args.action, params)
+        autoformat(info, jsonfmt=args.json)
+
+    def report(self, args):
+        """Show a list of reports"""
+        params = filter_params(args, ("id"))
+        if args.action == "get":
+            try:
+                if uuid.UUID(args.id):
+                    res = self.api.report_get(args.action, params)
+                    autoformat(res, jsonfmt=args.json)
+                    return
+            except ValueError:
+                pass
+
+            params = filter_params(args, ("id", "page", "limit", "filters"))
+            commits = self.api.report_get(args.action, params)
+            for commit in commits:
+                dict_formatter(commit)
+                print(("_" * 48) + "\n")
+            print(f"Current page: {args.page}")
+        elif args.action == "output":
+            self.output(args)
+        elif args.action == "stop":
+            res = self.api.report_stop(args.action, params)
+            autoformat(res, jsonfmt=args.json)
+        elif args.action == "delete":
+            res = self.api.report_delete(params)
+            autoformat(res, jsonfmt=args.json)
         else:
             print("Unknown subcommand")
             sys.exit(1)
-        autoformat(info, True)
 
-    # def clean(self, repo, delete_commits):
-    #     """Remove all reports (and commit information) from a repo"""
-    #     params = {"repo": repo, "delete_commits": delete_commits}
-    #     res = self.api.clean_repo_info(params)
-    #     print(res)
+    def monitor(self, args):
+        """Get information about the"""
+        params = filter_params(args, ("id"))
+        if args.action == "delete":
+            info = self.api.monitor_delete(params)
+        elif args.action in ("start", "stop"):
+            info = self.api.monitor_get(args.action, params)
+        else:
+            print("Unknown subcommand")
+            sys.exit(1)
+        autoformat(info, jsonfmt=args.json)
 
-    # def stop(self, obj_id):
-    #     """Stop all scans in progress for a certain repo"""
-    #     params = {"id": obj_id}
-    #     stop_list = self.api.stop_scan(params)
-    #     if isinstance(stop_list, dict):
-    #         stop_list = [stop_list]
-    #     for stop in stop_list:
-    #         for key in stop:
-    #             print(f"{key}:")
-    #         for obj in stop[key]:
-    #             print(obj)
+    def output(self, args, table: bool = True):
+        """Returns commands output"""
 
-    # def scan_info(self, repo):
-    #     """Get information about the"""
-    #     params = {"repo": repo}
-    #     info = self.api.get_scan_info(params)
-    #     for key in info:
-    #         print(f"{key.capitalize()}: {info[key]}")
+        try:
+            if uuid.UUID(args.id):
+                data = self.api.get_report_output(args.id)
+        except ValueError:
+            sys.exit(1)
 
-    # def ci(self):
-    #     """Get information about the"""
-    #     params = {}
-    #     info = self.api.get_ci_info(params)
-    #     for repo in info:
-    #         for key in repo:
-    #             print(f"{key}: {repo[key]}")
-    #         print("-" * 48)
+        if table:
+            outputs = data.pop("output", [])
+            for key, value in data.items():
+                print(f"{key}: {value}")
 
-    # def report_info(self, repo, page, limit, filters, jsonfmt):
-    #     """Show a list of reports"""
-    #     try:
-    #         if uuid.UUID(repo):
-    #             res = self.api.get_report_json(repo)
-    #             if jsonfmt:
-    #                 print(json.dumps(res))
-    #             else:
-    #                 autoformat(res)
-    #             return
-    #     except ValueError:
-    #         pass
-
-    #     params = {"repo": repo, "page": page, "limit": limit, "filters": filters}
-    #     commits = self.api.get_report_info(params)
-    #     for commit in commits:
-    #         dict_formatter(commit)
-    #         print(("_" * 48) + "\n")
-    #     print(f"Current page: {page}")
-
-    # def monitor(self):
-    #     """Get information about the"""
-    #     params = {}
-    #     info = self.api.get_monitor_info(params)
-    #     for repo in info:
-    #         for key in repo:
-    #             print(f"{key}: {repo[key]}")
-    #         print("-" * 48)
-
-    # def output(self, id: str, table: bool = True):
-    #     """Returns commands output"""
-
-    #     try:
-    #         if uuid.UUID(id):
-    #             data = self.api.get_report_output(id)
-    #     except ValueError:
-    #         sys.exit(1)
-
-    #     if table:
-    #         outputs = data.pop("output", [])
-    #         for key, value in data.items():
-    #             print(f"{key}: {value}")
-
-    #         for row in outputs:
-    #             print("-" * 30)
-    #             for key, value in row.items():
-    #                 print(f"{key}: {value}")
-    #     else:
-    #         print(json.dumps(data, indent=2))
+            for row in outputs:
+                print("-" * 30)
+                for key, value in row.items():
+                    print(f"{key}: {value}")
+        else:
+            print(json.dumps(data, indent=2))
 
     def dashboard(self):
         """Get user dashboard"""
@@ -302,27 +261,6 @@ class Satori:
                 n += 1
                 for key in i:
                     print(f"{n}) {key.capitalize()}: {i[key]}")
-
-    # def remove(self, args):
-    #     """Delete report/monitor"""
-    #     id = args.id
-    #     uuid4_reg = re.compile(
-    #         r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
-    #         re.I,
-    #     )
-    #     monitor_reg = re.compile(r"^[a-f0-9]{40}$")
-    #     params = {"id": id}
-    #     if uuid4_reg.match(id):
-    #         data = self.api.remove_report(params)
-    #     elif monitor_reg.match(id):
-    #         data = self.api.remove_monitor(params)
-    #     else:
-    #         print("Unknown ID")
-    #         sys.exit(1)
-    #     if args.json:
-    #         print(json.dumps(data))
-    #     else:
-    #         autoformat(data)
 
     def playbook(self, args):
         """Get playbooks"""
@@ -352,4 +290,4 @@ class Satori:
         else:
             print("Unknown subcommand")
             sys.exit(1)
-        autoformat(data)
+        autoformat(data, jsonfmt=args.json)
