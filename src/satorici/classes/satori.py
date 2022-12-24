@@ -264,7 +264,6 @@ class Satori:
 
     def playbook(self, args):
         """Get playbooks"""
-        print(f"{vars(args)=}")
         if args.action == "get":
             params = filter_params(args, ("id", "limit", "page"))
             data = self.api.playbook_get(params)

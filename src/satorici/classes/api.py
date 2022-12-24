@@ -1,6 +1,7 @@
 import requests
 
-HOST = "https://nuvyp2kffa.execute-api.us-east-2.amazonaws.com"
+# HOST = "https://api.satori-ci.com/v1"
+HOST = "https://elc25wbao2.execute-api.us-east-2.amazonaws.com/v1"
 
 
 class SatoriAPI:
@@ -50,7 +51,6 @@ class SatoriAPI:
     def dashboard(self):
         res = self.__session__.get(f"{HOST}/dashboard")
         return res.json()
-
 
     def playbook_get(self, parameters):
         res = self.__session__.get(f"{HOST}/playbook", params=parameters)
