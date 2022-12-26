@@ -1,7 +1,6 @@
 import requests
 
-# HOST = "https://api.satori-ci.com/v1"
-HOST = "https://elc25wbao2.execute-api.us-east-2.amazonaws.com/v1"
+HOST = "https://api.satori-ci.com"
 
 
 class SatoriAPI:
