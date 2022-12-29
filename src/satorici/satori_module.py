@@ -12,6 +12,12 @@ from satorici.classes.utils import autoformat
 VERSION = metadata.version("satori-ci")
 
 
+def add_satori_arguments(cmd):
+    # satori-cli repo|report|monitor|... {id} {action} ... 
+    cmd.add_argument("id", nargs="?", type=str, default="list")
+    cmd.add_argument("action", nargs="?", type=str, default="get")
+
+
 def main():
     print(f"Satori CI {VERSION} - Automated Software Testing Platform", file=sys.stderr)
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
@@ -26,9 +32,6 @@ def main():
     baseparser = argparse.ArgumentParser(add_help=False)
     baseparser.add_argument("-p", "--profile", default="default")
     baseparser.add_argument("-j", "--json", action="store_true", help="JSON output")
-    # satori-cli repo|report|monitor|... {id} {action} ...
-    baseparser.add_argument("id", nargs="?", type=str, default="list")
-    baseparser.add_argument("action", nargs="?", type=str, default="get")
 
     parser = argparse.ArgumentParser(parents=[baseparser])
     subparsers = parser.add_subparsers(dest="subcommand")
@@ -54,9 +57,10 @@ def main():
     playbook_cmd.add_argument(
         "-l", "--limit", dest="limit", type=int, default=5, help="Page limit number"
     )
+    add_satori_arguments(playbook_cmd)
 
     # repo {id} <commits|check-commits|check-forks|scan|scan-stop|run|clean>
-    repo_cmd = subparsers.add_parser("scan", parents=[baseparser])
+    repo_cmd = subparsers.add_parser("repo", parents=[baseparser])
     repo_cmd.add_argument(
         "-c", "--coverage", dest="coverage", type=float, default=0, help="coverage"
     )
@@ -74,6 +78,7 @@ def main():
         default=False,
         action="store_true",
     )
+    add_satori_arguments(repo_cmd)
 
     # report {id} <output|stop|delete>
     report_cmd = subparsers.add_parser("report", parents=[baseparser])
@@ -91,9 +96,11 @@ def main():
         default="",
         help="Filters: from,to,satori_error,status",
     )
+    add_satori_arguments(report_cmd)
 
     # monitor {id} <start|stop|delete>
     monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])  # noqa: F841
+    add_satori_arguments(monitor_cmd)
 
     args = parser.parse_args()
 

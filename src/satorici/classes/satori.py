@@ -177,6 +177,7 @@ class Satori:
             "check-commits",
             "check-forks",
             "scan-stop",
+            "scan-status",
             "run",
         ):
             print("Unknown subcommand")
