@@ -7,18 +7,18 @@ class SatoriAPI:
     def __init__(self, token: str):
         self.__session__ = requests.Session()
         self.__session__.headers.update(
-            Authorization=f"token {token}",
+            Authorization=f"Bearer {token}",
         )
         self.__session__.hooks = {
             "response": lambda r, *args, **kwargs: r.raise_for_status()
         }
 
     def get_bundle_presigned_post(self):
-        res = self.__session__.get(f"{HOST}/uploadurl/bundle")
+        res = self.__session__.get(f"{HOST}/run/bundle")
         return res.json()
 
     def get_archive_presigned_post(self):
-        res = self.__session__.get(f"{HOST}/uploadurl/archive")
+        res = self.__session__.get(f"{HOST}/run/archive")
         return res.json()
 
     def repo_get(self, action, parameters):
