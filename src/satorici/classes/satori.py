@@ -179,6 +179,7 @@ class Satori:
             "scan-stop",
             "scan-status",
             "run",
+            "get"
         ):
             print("Unknown subcommand")
             sys.exit(1)
@@ -220,7 +221,7 @@ class Satori:
         params = filter_params(args, ("id"))
         if args.action == "delete":
             info = self.api.monitor_delete(params)
-        elif args.action in ("start", "stop"):
+        elif args.action in ("start", "stop", "get"):
             info = self.api.monitor_get(args.action, params)
         else:
             print("Unknown subcommand")
