@@ -179,12 +179,20 @@ class Satori:
             "scan-stop",
             "scan-status",
             "run",
-            "get"
+            "get",
         ):
             print("Unknown subcommand")
             sys.exit(1)
         info = self.api.repo_get(args.action, params)
-        autoformat(info, jsonfmt=args.json)
+        if args.action != "get" or args.json:
+            autoformat(info, jsonfmt=args.json)
+        else:
+            print("Pending actions:")
+            autoformat(info["pending"])
+            print("\nRepos:")
+            for monitor in info["list"]:
+                autoformat(monitor, indent=1)
+                print("  " + "-" * 48)
 
     def report(self, args):
         """Show a list of reports"""
@@ -226,7 +234,15 @@ class Satori:
         else:
             print("Unknown subcommand")
             sys.exit(1)
-        autoformat(info, jsonfmt=args.json)
+        if args.action != "get" or args.json:
+            autoformat(info, jsonfmt=args.json)
+        else:
+            print("Pending actions:")
+            autoformat(info["pending"])
+            print("\nMonitors:")
+            for monitor in info["list"]:
+                autoformat(monitor, indent=1)
+                print("  " + "-" * 48)
 
     def output(self, args, table: bool = True):
         """Returns commands output"""
