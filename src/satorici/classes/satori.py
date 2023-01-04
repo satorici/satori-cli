@@ -13,7 +13,12 @@ from tqdm.utils import CallbackIOWrapper
 
 from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
-from satorici.classes.utils import dict_formatter, filter_params, autoformat
+from satorici.classes.utils import (
+    dict_formatter,
+    filter_params,
+    autoformat,
+    check_monitor,
+)
 
 
 class Satori:
@@ -104,9 +109,16 @@ class Satori:
             return False
 
         bundle = make_bundle(playbook)
+        is_monitor = check_monitor(playbook)
         url = self.api.get_bundle_presigned_post()
         res = requests.post(url["url"], url["fields"], files={"file": bundle})
-        if res.ok:
+        if not res.ok:
+            print("File upload failed")
+            sys.exit(1)
+        if is_monitor:
+            print(f"Monitor ID: {url['monitor']}")
+            print(f"Status: https://www.satori-ci.com/status?id={url['monitor']}")
+        else:
             uuid = url["fields"]["key"].split("/")[1]
             print(f"UUID: {uuid}")
             print(f"Report: https://www.satori-ci.com/report_details/?n={uuid}")
@@ -124,7 +136,9 @@ class Satori:
             print(f"Directory not found: {directory}")
             return False
 
-        bundle = make_bundle(Path(directory, ".satori.yml"), from_dir=True)
+        satori_yml = Path(directory, ".satori.yml")
+        bundle = make_bundle(satori_yml, from_dir=True)
+        is_monitor = check_monitor(satori_yml)
         temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
         full_path = f"{temp_file}.zip"
 
@@ -161,9 +175,13 @@ class Satori:
             print("Bundle upload failed")
             sys.exit(1)
 
-        ruuid = bun["fields"]["key"].split("/")[1]
-        print(f"UUID: {ruuid}")
-        print(f"Report: https://www.satori-ci.com/report_details/?n={ruuid}")
+        if is_monitor:
+            print(f"Monitor ID: {bun['monitor']}")
+            print(f"Status: https://www.satori-ci.com/status?id={bun['monitor']}")
+        else:
+            ruuid = bun["fields"]["key"].split("/")[1]
+            print(f"UUID: {ruuid}")
+            print(f"Report: https://www.satori-ci.com/report_details/?n={ruuid}")
 
     def repo(self, args):
         """Run Satori on multiple commits"""

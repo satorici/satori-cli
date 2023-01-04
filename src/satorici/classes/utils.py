@@ -1,5 +1,6 @@
 from typing import Union
 import json
+import yaml
 
 __decorations = "▢•○░"
 
@@ -79,3 +80,10 @@ def filter_params(params: any, filter_keys: Union[tuple, list]) -> dict:
         params = vars(params)
     filtered = filter(lambda i: i[0] in filter_keys, params.items())
     return dict(filtered)
+
+
+def check_monitor(playbook):
+    with open(playbook) as stream:
+        config = yaml.safe_load(stream)
+        settings = config.get("settings", {})
+        return set() != {"rate", "cron"} & settings.keys()

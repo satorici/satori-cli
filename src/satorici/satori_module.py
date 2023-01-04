@@ -114,8 +114,8 @@ def main():
             instance.save_config(args.key, args.value)
         elif args.subcommand == "run":
             instance.run(args.playbook)
-        #         elif args.subcommand == "upload":
-        #             instance.upload(args.directory)
+        elif args.subcommand == "upload":
+            instance.upload(args.directory)
         elif args.subcommand == "playbook":
             instance.playbook(args)
         elif args.subcommand == "repo":
