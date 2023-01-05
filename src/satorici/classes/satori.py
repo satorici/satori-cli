@@ -96,6 +96,8 @@ class Satori:
         with open(config_file, "w") as f:
             f.write(yaml.safe_dump(config))
 
+        print("Token saved")
+
     def run(self, playbook):
         """Just run"""
         if playbook is None:

@@ -46,8 +46,8 @@ def main():
     run_cmd.add_argument("playbook")
 
     #     # upload ./directory
-    #     upload_cmd = subparsers.add_parser("upload", parents=[baseparser])
-    #     upload_cmd.add_argument("directory")
+    upload_cmd = subparsers.add_parser("upload", parents=[baseparser])
+    upload_cmd.add_argument("directory")
 
     # playbook {id} <delete>
     playbook_cmd = subparsers.add_parser("playbook", parents=[baseparser])
