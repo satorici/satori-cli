@@ -43,11 +43,7 @@ def main():
 
     # run playbook.yml
     run_cmd = subparsers.add_parser("run", parents=[baseparser])
-    run_cmd.add_argument("playbook")
-
-    #     # upload ./directory
-    upload_cmd = subparsers.add_parser("upload", parents=[baseparser])
-    upload_cmd.add_argument("directory")
+    run_cmd.add_argument("path")
 
     # playbook {id} <delete>
     playbook_cmd = subparsers.add_parser("playbook", parents=[baseparser])
@@ -113,9 +109,7 @@ def main():
         if args.subcommand == "config":
             instance.save_config(args.key, args.value)
         elif args.subcommand == "run":
-            instance.run(args.playbook)
-        elif args.subcommand == "upload":
-            instance.upload(args.directory)
+            instance.run(args.path)
         elif args.subcommand == "playbook":
             instance.playbook(args)
         elif args.subcommand == "repo":

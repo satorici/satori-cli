@@ -98,7 +98,16 @@ class Satori:
 
         print("Token saved")
 
-    def run(self, playbook):
+    def run(self, path):
+        if os.path.isdir(path):
+            self.run_folder(path)
+        elif os.path.isfile(path):
+            self.run_file(path)
+        else:
+            print("Unknown file type")  # is a device?
+            sys.exit(1)
+
+    def run_file(self, playbook):
         """Just run"""
         if playbook is None:
             print(
@@ -125,7 +134,7 @@ class Satori:
             print(f"UUID: {uuid}")
             print(f"Report: https://www.satori-ci.com/report_details/?n={uuid}")
 
-    def upload(self, directory):
+    def run_folder(self, directory):
         """Upload directory and run"""
         if directory is None:
             print(
