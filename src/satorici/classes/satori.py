@@ -163,6 +163,7 @@ class Satori:
 
         arc = res["archive"]
         bun = res["bundle"]
+        mon = res["monitor"]
 
         try:
             bar_params = {
@@ -187,8 +188,8 @@ class Satori:
             sys.exit(1)
 
         if is_monitor:
-            print(f"Monitor ID: {bun['monitor']}")
-            print(f"Status: https://www.satori-ci.com/status?id={bun['monitor']}")
+            print(f"Monitor ID: {mon}")
+            print(f"Status: https://www.satori-ci.com/status?id={mon}")
         else:
             ruuid = bun["fields"]["key"].split("/")[1]
             print(f"UUID: {ruuid}")
@@ -242,7 +243,7 @@ class Satori:
                 print(("_" * 48) + "\n")
             print(f"Current page: {args.page}")
         elif args.action == "output":
-            self.output(args)
+            self.output(args, params)
         elif args.action == "stop":
             res = self.api.report_stop(args.action, params)
             autoformat(res, jsonfmt=args.json)
@@ -265,27 +266,25 @@ class Satori:
             sys.exit(1)
         if args.action != "get" or args.json:
             autoformat(info, jsonfmt=args.json)
-        else:
-            print("Pending actions:")
+        else:          
             if len(info["pending"]) > 1:
+                print("Pending actions:")
                 autoformat(info["pending"])
-            else:
-                print("  No active monitors defined")
             print("\nMonitors:")
             for monitor in info["list"]:
                 autoformat(monitor, indent=1)
                 print("  " + "-" * 48)
 
-    def output(self, args, table: bool = True):
+    def output(self, args, params):
         """Returns commands output"""
 
         try:
             if uuid.UUID(args.id):
-                data = self.api.get_report_output(args.id)
+                data = self.api.report_get(args.action, params)
         except ValueError:
             sys.exit(1)
 
-        if table:
+        if not args.json:
             outputs = data.pop("output", [])
             for key, value in data.items():
                 print(f"{key}: {value}")
@@ -303,18 +302,23 @@ class Satori:
         if args.json:
             autoformat(info, jsonfmt=True)
         else:
-            print("Actions required:")
-            if len(info["Actions"]["Monitors"]) == 0:
-                print("  Monitors: no active monitors defined")
-            else:
-                print("  Monitors:")
-                autoformat(info["Actions"]["Monitors"], indent=1)
-            if len(info["Actions"]["Repos"]) > 0:
-                print("  Repos:")
-                autoformat(info["Actions"]["Repos"], indent=1)
+            len_mon = len(info["Actions"]["Monitors"])
+            len_rep = len(info["Actions"]["Repos"])
+            if len_mon > 0 or len_rep > 0:
+                print("Actions required:")
+                if len_mon > 0:
+                    print("  Monitors:")
+                    autoformat(info["Actions"]["Monitors"], indent=1)
+                if len_rep > 0:
+                    print("  Repos:")
+                    autoformat(info["Actions"]["Repos"], indent=1)
             for title in info:
                 if title == "Actions":
                     continue
+                if title == "Monitors":
+                    if len(info[title]) == 0:
+                        print("\nMonitors: no active monitors defined")
+                        continue
                 print(f"\n{title}:")
                 n = 0
                 for i in info[title]:
