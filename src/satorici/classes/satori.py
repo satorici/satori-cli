@@ -267,7 +267,10 @@ class Satori:
             autoformat(info, jsonfmt=args.json)
         else:
             print("Pending actions:")
-            autoformat(info["pending"])
+            if len(info["pending"]) > 1:
+                autoformat(info["pending"])
+            else:
+                print("  No active monitors defined")
             print("\nMonitors:")
             for monitor in info["list"]:
                 autoformat(monitor, indent=1)
@@ -294,20 +297,30 @@ class Satori:
         else:
             print(json.dumps(data, indent=2))
 
-    def dashboard(self):
+    def dashboard(self, args):
         """Get user dashboard"""
         info = self.api.dashboard()
-        print("Actions required:")
-        autoformat(info["Actions"])
-        for title in info:
-            if title == "Actions":
-                continue
-            print(f"\n{title}:")
-            n = 0
-            for i in info[title]:
-                n += 1
-                for key in i:
-                    print(f"{n}) {key.capitalize()}: {i[key]}")
+        if args.json:
+            autoformat(info, jsonfmt=True)
+        else:
+            print("Actions required:")
+            if len(info["Actions"]["Monitors"]) == 0:
+                print("  Monitors: no active monitors defined")
+            else:
+                print("  Monitors:")
+                autoformat(info["Actions"]["Monitors"], indent=1)
+            if len(info["Actions"]["Repos"]) > 0:
+                print("  Repos:")
+                autoformat(info["Actions"]["Repos"], indent=1)
+            for title in info:
+                if title == "Actions":
+                    continue
+                print(f"\n{title}:")
+                n = 0
+                for i in info[title]:
+                    n += 1
+                    for key in i:
+                        print(f"{n}) {key.capitalize()}: {i[key]}")
 
     def playbook(self, args):
         """Get playbooks"""

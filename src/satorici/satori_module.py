@@ -119,7 +119,7 @@ def main():
         elif args.subcommand == "monitor":
             instance.monitor(args)
         elif not args.subcommand or args.subcommand == "dashboard":
-            instance.dashboard()
+            instance.dashboard(args)
     except HTTPError as e:
         res: Response = e.response
         status = {"Status code": res.status_code}
