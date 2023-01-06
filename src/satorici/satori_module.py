@@ -128,6 +128,7 @@ def main():
             print(str(status))
         else:
             autoformat(status, capitalize=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

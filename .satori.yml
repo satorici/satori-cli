@@ -1,0 +1,38 @@
+settings:
+  name: Satori CLI Test
+  log: slack
+
+install_satori:
+  assertReturnCode: 0
+  test:
+  - [ pip install . ]
+
+set_token:
+  assertStdoutContains: "Token saved"
+  test:
+  - [ satori-cli config token test_token -p test_user ]
+
+dashboard:
+  assertStdoutContains: "Actions required"
+  test:
+  - [ satori-cli ]
+
+playbook:
+  assertReturnCode: 0
+  test:
+  - [ satori-cli playbook ]
+
+report:
+  assertReturnCode: 0
+  test:
+  - [ satori-cli report ]
+
+repo:
+  assertReturnCode: 0
+  test:
+  - [ satori-cli repo ]
+
+monitor:
+  assertReturnCode: 0
+  test:
+  - [ satori-cli monitor ]
