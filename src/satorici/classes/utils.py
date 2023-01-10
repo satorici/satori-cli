@@ -9,7 +9,9 @@ def get_decoration(indent):
     return "  " * indent + __decorations[indent % len(__decorations)] + " "
 
 
-def dict_formatter(obj: dict, capitalize: bool = False, indent: int = 0):
+def dict_formatter(
+    obj: dict, capitalize: bool = False, indent: int = 0, list_separator: str = None
+):
     for key in obj.keys():
         indent_text = get_decoration(indent)
         key_text = key.capitalize() if capitalize else key
@@ -18,12 +20,14 @@ def dict_formatter(obj: dict, capitalize: bool = False, indent: int = 0):
             dict_formatter(obj[key], capitalize, indent + 1)
         elif isinstance(obj[key], list):
             print(indent_text + f"{key_text}:")
-            list_formatter(obj[key], capitalize, indent + 1)
+            list_formatter(obj[key], capitalize, indent + 1, list_separator)
         else:
             print(indent_text + f"{key_text}: {obj[key]}")
 
 
-def list_formatter(obj: dict, capitalize: bool = False, indent: int = 0):
+def list_formatter(
+    obj: dict, capitalize: bool = False, indent: int = 0, list_separator: str = None
+):
     for item in obj:
         indent_text = get_decoration(indent)
         if isinstance(item, dict):
@@ -32,10 +36,16 @@ def list_formatter(obj: dict, capitalize: bool = False, indent: int = 0):
             list_formatter(item, capitalize, indent + 1)
         else:
             print(indent_text + str(item))
+        if list_separator:
+            print("  " * (indent+1) + list_separator)
 
 
 def autoformat(
-    obj: any, capitalize: bool = False, indent: int = 0, jsonfmt: bool = False
+    obj: any,
+    capitalize: bool = False,
+    indent: int = 0,
+    jsonfmt: bool = False,
+    list_separator: str = None,
 ):
     """Format and print a dict, list or other var
 
@@ -49,14 +59,16 @@ def autoformat(
         Indent length, by default 0
     jsonfmt: bool, optional
         Print as json, by default False
+    list_separator: str, optional
+        List separator
     """
     if jsonfmt:
         print(json.dumps(obj, indent=indent, default=str))
     else:
         if isinstance(obj, dict):
-            dict_formatter(obj, capitalize, indent)
+            dict_formatter(obj, capitalize, indent, list_separator)
         elif isinstance(obj, list):
-            list_formatter(obj, capitalize, indent)
+            list_formatter(obj, capitalize, indent, list_separator)
         else:
             print(str(obj))
 
