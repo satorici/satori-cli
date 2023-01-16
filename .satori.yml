@@ -32,6 +32,16 @@ repo:
   test:
   - [ satori-cli repo ]
 
+repo-run:
+  assertStdoutContains: "status: Report running"
+  test:
+  - [ satori-cli repo satoridev01/test.python.cpython run ] 
+
+repo-scan:
+  assertStdoutNotContains: "No commits available to scan"
+  test:
+  - [ satori-cli repo satoridev01/test.python.cpython scan -c 0.01 ]
+
 monitor:
   assertReturnCode: 0
   test:
