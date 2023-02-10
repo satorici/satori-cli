@@ -56,4 +56,6 @@ jobs:
         run: |
           pip3 install satori-ci
           satori-cli config token $TOKEN
+          pwd
+          ls -la
           satori-cli run .satori.yml
