@@ -1,2 +1,3 @@
 import:
   - "satori://code/trufflehog.yml"
+  - "satori://code/semgrep.yml"
