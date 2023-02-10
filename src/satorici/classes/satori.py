@@ -1,12 +1,11 @@
 import json
 import os
-import re
 import shutil
 import sys
 import tempfile
 import uuid
 from pathlib import Path
-
+import time
 import requests
 import yaml
 from tqdm import tqdm
@@ -14,17 +13,23 @@ from tqdm.utils import CallbackIOWrapper
 
 from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
-from satorici.classes.utils import filter_params, dict_formatter, autoformat
+from satorici.classes.utils import (
+    dict_formatter,
+    filter_params,
+    autoformat,
+    check_monitor,
+)
 
 
-class Satori():
+class Satori:
     """Have some class"""
+
     def __init__(self, profile="default", config=False):
         """Turn on the engines"""
         self.profile = profile
         self.config_paths = [
             f"{Path.home()}/.satori_credentials.yml",
-            ".satori_credentials.yml"
+            ".satori_credentials.yml",
         ]
         self.verbose = False
         if not config:
@@ -46,7 +51,7 @@ class Satori():
             print("satori-cli [-p PROFILE] config token TOKEN")
             sys.exit(1)
 
-        with config_file.open(encoding='utf-8') as f:
+        with config_file.open(encoding="utf-8") as f:
             config: dict[str, dict[str, str]] = yaml.safe_load(f)
             if not isinstance(config, dict):
                 print("Invalid config format")
@@ -91,10 +96,26 @@ class Satori():
         with open(config_file, "w") as f:
             f.write(yaml.safe_dump(config))
 
-    def run(self, playbook):
+        print("Token saved")
+
+    def run(self, args):
+        exec_data = None
+        if os.path.isdir(args.path):
+            exec_data = self.run_folder(args.path)
+        elif os.path.isfile(args.path):
+            exec_data = self.run_file(args.path)
+        else:
+            print("Unknown file type")  # is a device?
+            sys.exit(1)
+        if args.sync and exec_data:
+            self.run_sync(exec_data)
+
+    def run_file(self, playbook) -> dict:
         """Just run"""
         if playbook is None:
-            print(f"Define the Satori playbook file:\n{sys.argv[0]} run -p playbook.yml")
+            print(
+                f"Define the Satori playbook file:\n{sys.argv[0]} run -p playbook.yml"
+            )
             return False
 
         if not os.path.isfile(playbook):
@@ -102,24 +123,40 @@ class Satori():
             return False
 
         bundle = make_bundle(playbook)
+        is_monitor = check_monitor(playbook)
         url = self.api.get_bundle_presigned_post()
         res = requests.post(url["url"], url["fields"], files={"file": bundle})
-        if res.ok:
-            uuid = url["fields"]["key"].split("/")[1]
-            print(f"UUID: {uuid}")
-            print(f"Report: https://www.satori-ci.com/report_details/?n={uuid}")
+        if not res.ok:
+            print("File upload failed")
+            sys.exit(1)
+        if is_monitor:
+            exec_type = "monitor"
+            exec_id = url["monitor"]
+            print(f"Monitor ID: {exec_id}")
+            print(f"Status: https://www.satori-ci.com/status?id={exec_id}")
+        else:
+            exec_type = "report"
+            exec_id = url["fields"]["key"].split("/")[1]
+            print(f"UUID: {exec_id}")
+            print(f"Report: https://www.satori-ci.com/report_details/?n={exec_id}")
+        return {"type": exec_type, "id": exec_id}
 
-    def upload(self, directory):
+    def run_folder(self, directory) -> dict:
         """Upload directory and run"""
         if directory is None:
-            print(f"Define the directory with the Satori playbook:\n{sys.argv[0]} run -p ./directory_with_playbook")
+            print(
+                "Define the directory with the Satori playbook:"
+                f"\n{sys.argv[0]} run -p ./directory_with_playbook"
+            )
             return False
 
         if not os.path.isdir(directory):
             print(f"Directory not found: {directory}")
             return False
 
-        bundle = make_bundle(Path(directory, ".satori.yml"), from_dir=True)
+        satori_yml = Path(directory, ".satori.yml")
+        bundle = make_bundle(satori_yml, from_dir=True)
+        is_monitor = check_monitor(satori_yml)
         temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
         full_path = f"{temp_file}.zip"
 
@@ -133,6 +170,7 @@ class Satori():
 
         arc = res["archive"]
         bun = res["bundle"]
+        mon = res["monitor"]
 
         try:
             bar_params = {
@@ -156,107 +194,142 @@ class Satori():
             print("Bundle upload failed")
             sys.exit(1)
 
-        ruuid = bun["fields"]["key"].split("/")[1]
-        print(f"UUID: {ruuid}")
-        print(f"Report: https://www.satori-ci.com/report_details/?n={ruuid}")
+        if is_monitor:
+            exec_type = "monitor"
+            exec_id = mon
+            print(f"Monitor ID: {mon}")
+            print(f"Status: https://www.satori-ci.com/status?id={mon}")
+        else:
+            exec_type = "report"
+            exec_id = bun["fields"]["key"].split("/")[1]
+            print(f"UUID: {exec_id}")
+            print(f"Report: https://www.satori-ci.com/report_details/?n={exec_id}")
+        return {"type": exec_type, "id": exec_id}
 
-    def report_status(self, id):
-        """Show the status for a certain given report"""
-        status = self.api.get_report_status(id)
-        print(f"Status: {status['status']} | Fails: {status['fails']}")
-
-    def cron_action(self, action, param):
-        """TBC"""
-        result = self.api.cron(action, param)
-        if action == 'list':
-            for cron in result:
-                print(f"ID: {cron['ID']} | Name: {cron['display_name']}")
-        elif action == 'stop':
-            for cron in result:
-                print(f"Stopped {cron['ID']}")
-
-    def scan(self, repo_url, coverage, skip_check, from_date, to_date):
-        """Run Satori on multiple commits"""
-        params = {
-            'repo': repo_url, 'coverage': coverage, 'skip_check': skip_check,
-            'from': from_date, 'to': to_date}
-        info = self.api.start_scan(params)
-        for key in info:
-            print(f"{key.capitalize()}: {info[key]}")
-
-    def clean(self, repo, delete_commits):
-        """Remove all reports (and commit information) from a repo"""
-        params = {'repo': repo, 'delete_commits': delete_commits}
-        res = self.api.clean_repo_info(params)
-        print(res)
-
-    def stop(self, obj_id):
-        """Stop all scans in progress for a certain repo"""
-        params = {'id': obj_id}
-        stop_list = self.api.stop_scan(params)
-        if isinstance(stop_list, dict):
-            stop_list = [stop_list]
-        for stop in stop_list:
-            for key in stop:
-                print(f"{key}:")
-            for obj in stop[key]:
-                print(obj)
-
-    def scan_info(self, repo):
-        """Get information about the """
-        params = {'repo': repo}
-        info = self.api.get_scan_info(params)
-        for key in info:
-            print(f"{key.capitalize()}: {info[key]}")
-
-    def ci(self):
-        """Get information about the """
-        params = {}
-        info = self.api.get_ci_info(params)
-        for repo in info:
-            for key in repo:
-                print(f"{key}: {repo[key]}")
-            print("-"*48)
-
-    def report_info(self, repo, page, limit, filters, jsonfmt):
-        """Show a list of reports"""
-        try:
-            if uuid.UUID(repo):
-                res = self.api.get_report_json(repo)
-                if jsonfmt:
-                    print(json.dumps(res))
+    def run_sync(self, exec_data: dict) -> None:
+        print("Fetching data...", end="\r")
+        start_time = time.time()
+        while True:
+            time.sleep(1)
+            elapsed = time.time() - start_time
+            elapsed_text = f"Elapsed time: {elapsed:.1f}s"
+            try:
+                report_data = self.api.report_get("get", {"id": exec_data["id"]})
+            except requests.HTTPError as e:
+                code = e.response.status_code
+                if code == 404:
+                    print(f"Report status: Unknown | {elapsed_text}", end="\r")
+                    continue
                 else:
-                    autoformat(res)
-                return
-        except ValueError:
-            pass
+                    print(f"Failed to get data\nStatus code: {code}")
+                    break
+            status = report_data.get("status", "Unknown")
+            if status == "Completed":
+                print(f"Report status: Completed | {elapsed_text}", end="\r\n")
+                report_out = []
+                # Remove keys
+                for report in report_data.get("json", []):
+                    report.pop("gfx", None)
+                    report_out.append(report)
+                    asserts = []
+                    for asrt in report["asserts"]:
+                        asrt.pop("count", None)
+                        asrt.pop("description", None)
+                        if len(asrt.get("data", [])) == 0:
+                            asrt.pop("data", None)
+                        asserts.append(asrt)
+                autoformat(report_out, list_separator="- " * 20)
+                # Return code 0 if report status==pass else 1
+                sys.exit(0 if report_data["fails"] == 0 else 1)
+            else:
+                print(f"Report status: {status} | {elapsed_text}", end="\r")
 
-        params = {'repo': repo, 'page': page, 'limit': limit, 'filters': filters}
-        commits = self.api.get_report_info(params)
-        for commit in commits:
-            dict_formatter(commit)
-            print(("_" * 48)+"\n")
-        print(f"Current page: {page}")
+    def repo(self, args):
+        """Run Satori on multiple commits"""
+        params = filter_params(args, ("id"))
+        if args.action == "scan":
+            params = filter_params(args, ("id", "coverage", "from", "to"))
+        elif args.action == "clean":
+            params = filter_params(args, ("id", "delete_commits"))
+        elif args.action not in (
+            "commits",
+            "check-commits",
+            "check-forks",
+            "scan-stop",
+            "scan-status",
+            "run",
+            "get",
+        ):
+            print("Unknown subcommand")
+            sys.exit(1)
+        info = self.api.repo_get(args.action, params)
+        if args.id != "list" or args.action != "get" or args.json:
+            autoformat(info, jsonfmt=args.json)
+        else:
+            print("Pending actions:")
+            autoformat(info["pending"])
+            print("\nRepos:")
+            autoformat(info["list"], list_separator="-" * 48)
 
-    def monitor(self):
-        """Get information about the """
-        params = {}
-        info = self.api.get_monitor_info(params)
-        for repo in info:
-            for key in repo:
-                print(f"{key}: {repo[key]}")
-            print("-"*48)
+    def report(self, args):
+        """Show a list of reports"""
+        params = filter_params(args, ("id"))
+        if args.action == "get":
+            try:
+                if uuid.UUID(args.id):
+                    res = self.api.report_get(args.action, params)
+                    autoformat(res, jsonfmt=args.json)
+                    return
+            except ValueError:
+                pass
 
-    def output(self, id: str, table: bool = True):
+            params = filter_params(args, ("id", "page", "limit", "filters"))
+            commits = self.api.report_get(args.action, params)
+            for commit in commits:
+                dict_formatter(commit)
+                print(("_" * 48) + "\n")
+            print(f"Current page: {args.page}")
+        elif args.action == "output":
+            self.output(args, params)
+        elif args.action == "stop":
+            res = self.api.report_stop(args.action, params)
+            autoformat(res, jsonfmt=args.json)
+        elif args.action == "delete":
+            res = self.api.report_delete(params)
+            autoformat(res, jsonfmt=args.json)
+        else:
+            print("Unknown subcommand")
+            sys.exit(1)
+
+    def monitor(self, args):
+        """Get information about the"""
+        params = filter_params(args, ("id"))
+        if args.action == "delete":
+            info = self.api.monitor_delete(params)
+        elif args.action in ("start", "stop", "get"):
+            info = self.api.monitor_get(args.action, params)
+        else:
+            print("Unknown subcommand")
+            sys.exit(1)
+        if args.id != "list" or args.action != "get" or args.json:
+            autoformat(info, jsonfmt=args.json, list_separator="*" * 48)
+        else:
+            if len(info["pending"]) > 1:
+                print("Pending actions:")
+                autoformat(info["pending"])
+            print("\nMonitors:")
+            autoformat(info["list"], list_separator="-" * 48)
+
+    def output(self, args, params):
         """Returns commands output"""
 
         try:
-            if uuid.UUID(id):
-                data = self.api.get_report_output(id)
+            if uuid.UUID(args.id):
+                data = self.api.report_get(args.action, params)
         except ValueError:
             sys.exit(1)
 
-        if table:
+        if not args.json:
             outputs = data.pop("output", [])
             for key, value in data.items():
                 print(f"{key}: {value}")
@@ -268,52 +341,61 @@ class Satori():
         else:
             print(json.dumps(data, indent=2))
 
-    def dashboard(self):
+    def dashboard(self, args):
         """Get user dashboard"""
         info = self.api.dashboard()
-        print("Actions required:")
-        autoformat(info["Actions"])
-        for title in info:
-            if title == "Actions":
-                continue
-            print(f"\n{title}:")
-            n = 0
-            for i in info[title]:
-                n += 1
-                for key in i:
-                    print(f"{n}) {key.capitalize()}: {i[key]}")
-
-    def remove(self, args):
-        """Delete report/monitor"""
-        id = args.id
-        uuid4_reg = re.compile(
-            r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
-            re.I)
-        monitor_reg = re.compile(r"^[a-f0-9]{40}$")
-        params = {"id": id}
-        if uuid4_reg.match(id):
-            data = self.api.remove_report(params)
-        elif monitor_reg.match(id):
-            data = self.api.remove_monitor(params)
-        else:
-            print("Unknown ID")
-            sys.exit(1)
         if args.json:
-            print(json.dumps(data))
+            autoformat(info, jsonfmt=True)
         else:
-            autoformat(data)
+            len_mon = len(info["Actions"]["Monitors"])
+            len_rep = len(info["Actions"]["Repos"])
+            if len_mon > 0 or len_rep > 0:
+                print("Actions required:")
+                if len_mon > 0:
+                    print("  Monitors:")
+                    autoformat(info["Actions"]["Monitors"], indent=1)
+                if len_rep > 0:
+                    print("  Repos:")
+                    autoformat(info["Actions"]["Repos"], indent=1)
+            for title in info:
+                if title == "Actions":
+                    continue
+                if title == "Monitors":
+                    if len(info[title]) == 0:
+                        print("\nMonitors: no active monitors defined")
+                        continue
+                print(f"\n{title}:")
+                n = 0
+                for i in info[title]:
+                    n += 1
+                    for key in i:
+                        print(f"{n}) {key.capitalize()}: {i[key]}")
 
     def playbook(self, args):
         """Get playbooks"""
-        params = filter_params(args, ("id", "limit", "page"))
-        data = self.api.get_playbook(params)
-        if args.json:
-            print(json.dumps(data))
+        if args.action == "get":
+            params = filter_params(args, ("id", "limit", "page"))
+            data = self.api.playbook_get(params)
+            if args.json:
+                print(json.dumps(data))
+                sys.exit(1)
+            if args.id == "all":
+                data = list(
+                    map(
+                        lambda x: {
+                            "ID": x["ID"],
+                            "URI": x["URI"],
+                            "Name": x["Name"],
+                            # Add a new line to remove indent
+                            "Playbook": f"\n{x['Playbook']}",
+                        },
+                        data,
+                    )
+                )
+        elif args.action == "delete":
+            params = filter_params(args, ("id"))
+            data = self.api.playbook_delete(params)
+        else:
+            print("Unknown subcommand")
             sys.exit(1)
-        if args.id == 'all':
-            data = list(map(lambda x: {
-                    "ID": x["ID"], "URI": x["URI"],
-                    "Name": x["Name"],
-                    # Add a new line to remove indent
-                    "Playbook": f"\n{x['Playbook']}"}, data))
-        autoformat(data)
+        autoformat(data, jsonfmt=args.json)
