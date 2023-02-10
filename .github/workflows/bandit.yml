@@ -28,4 +28,4 @@ jobs:
         run: |
           pip3 install satori-ci
           satori-cli config token $TOKEN
-          satori-cli run .satori.yml
+          satori-cli run .satori.yml # --sync
