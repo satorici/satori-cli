@@ -13,7 +13,7 @@ VERSION = metadata.version("satori-ci")
 
 
 def add_satori_arguments(cmd):
-    # satori-cli repo|report|monitor|... {id} {action} ... 
+    # satori-cli repo|report|monitor|... {id} {action} ...
     cmd.add_argument("id", nargs="?", type=str, default="list")
     cmd.add_argument("action", nargs="?", type=str, default="get")
 
@@ -44,6 +44,7 @@ def main():
     # run playbook.yml
     run_cmd = subparsers.add_parser("run", parents=[baseparser])
     run_cmd.add_argument("path")
+    run_cmd.add_argument("-s", "--sync", default=False, action="store_true")
 
     # playbook {id} <delete>
     playbook_cmd = subparsers.add_parser("playbook", parents=[baseparser])
@@ -109,7 +110,7 @@ def main():
         if args.subcommand == "config":
             instance.save_config(args.key, args.value)
         elif args.subcommand == "run":
-            instance.run(args.path)
+            instance.run(args)
         elif args.subcommand == "playbook":
             instance.playbook(args)
         elif args.subcommand == "repo":

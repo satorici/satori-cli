@@ -17,7 +17,7 @@ def dict_formatter(
         key_text = key.capitalize() if capitalize else key
         if isinstance(obj[key], dict):
             print(indent_text + f"{key_text}:")
-            dict_formatter(obj[key], capitalize, indent + 1)
+            dict_formatter(obj[key], capitalize, indent + 1, list_separator)
         elif isinstance(obj[key], list):
             print(indent_text + f"{key_text}:")
             list_formatter(obj[key], capitalize, indent + 1, list_separator)
@@ -31,9 +31,9 @@ def list_formatter(
     for item in obj:
         indent_text = get_decoration(indent)
         if isinstance(item, dict):
-            dict_formatter(item, capitalize, indent + 1)
+            dict_formatter(item, capitalize, indent + 1, list_separator)
         elif isinstance(item, list):
-            list_formatter(item, capitalize, indent + 1)
+            list_formatter(item, capitalize, indent + 1, list_separator)
         else:
             print(indent_text + str(item))
         if list_separator:

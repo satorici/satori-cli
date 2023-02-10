@@ -5,7 +5,7 @@ import sys
 import tempfile
 import uuid
 from pathlib import Path
-
+import time
 import requests
 import yaml
 from tqdm import tqdm
@@ -98,16 +98,19 @@ class Satori:
 
         print("Token saved")
 
-    def run(self, path):
-        if os.path.isdir(path):
-            self.run_folder(path)
-        elif os.path.isfile(path):
-            self.run_file(path)
+    def run(self, args):
+        exec_data = None
+        if os.path.isdir(args.path):
+            exec_data = self.run_folder(args.path)
+        elif os.path.isfile(args.path):
+            exec_data = self.run_file(args.path)
         else:
             print("Unknown file type")  # is a device?
             sys.exit(1)
+        if args.sync and exec_data:
+            self.run_sync(exec_data)
 
-    def run_file(self, playbook):
+    def run_file(self, playbook) -> dict:
         """Just run"""
         if playbook is None:
             print(
@@ -127,14 +130,18 @@ class Satori:
             print("File upload failed")
             sys.exit(1)
         if is_monitor:
-            print(f"Monitor ID: {url['monitor']}")
-            print(f"Status: https://www.satori-ci.com/status?id={url['monitor']}")
+            exec_type = "monitor"
+            exec_id = url["monitor"]
+            print(f"Monitor ID: {exec_id}")
+            print(f"Status: https://www.satori-ci.com/status?id={exec_id}")
         else:
-            uuid = url["fields"]["key"].split("/")[1]
-            print(f"UUID: {uuid}")
-            print(f"Report: https://www.satori-ci.com/report_details/?n={uuid}")
+            exec_type = "report"
+            exec_id = url["fields"]["key"].split("/")[1]
+            print(f"UUID: {exec_id}")
+            print(f"Report: https://www.satori-ci.com/report_details/?n={exec_id}")
+        return {"type": exec_type, "id": exec_id}
 
-    def run_folder(self, directory):
+    def run_folder(self, directory) -> dict:
         """Upload directory and run"""
         if directory is None:
             print(
@@ -188,12 +195,54 @@ class Satori:
             sys.exit(1)
 
         if is_monitor:
+            exec_type = "monitor"
+            exec_id = mon
             print(f"Monitor ID: {mon}")
             print(f"Status: https://www.satori-ci.com/status?id={mon}")
         else:
-            ruuid = bun["fields"]["key"].split("/")[1]
-            print(f"UUID: {ruuid}")
-            print(f"Report: https://www.satori-ci.com/report_details/?n={ruuid}")
+            exec_type = "report"
+            exec_id = bun["fields"]["key"].split("/")[1]
+            print(f"UUID: {exec_id}")
+            print(f"Report: https://www.satori-ci.com/report_details/?n={exec_id}")
+        return {"type": exec_type, "id": exec_id}
+
+    def run_sync(self, exec_data: dict) -> None:
+        print("Fetching data...", end="\r")
+        start_time = time.time()
+        while True:
+            time.sleep(1)
+            elapsed = time.time() - start_time
+            elapsed_text = f"Elapsed time: {elapsed:.1f}s"
+            try:
+                report_data = self.api.report_get("get", {"id": exec_data["id"]})
+            except requests.HTTPError as e:
+                code = e.response.status_code
+                if code == 404:
+                    print(f"Report status: Unknown | {elapsed_text}", end="\r")
+                    continue
+                else:
+                    print(f"Failed to get data\nStatus code: {code}")
+                    break
+            status = report_data.get("status", "Unknown")
+            if status == "Completed":
+                print(f"Report status: Completed | {elapsed_text}", end="\r\n")
+                report_out = []
+                # Remove keys
+                for report in report_data.get("json", []):
+                    report.pop("gfx", None)
+                    report_out.append(report)
+                    asserts = []
+                    for asrt in report["asserts"]:
+                        asrt.pop("count", None)
+                        asrt.pop("description", None)
+                        if len(asrt.get("data", [])) == 0:
+                            asrt.pop("data", None)
+                        asserts.append(asrt)
+                autoformat(report_out, list_separator="- " * 20)
+                # Return code 0 if report status==pass else 1
+                sys.exit(0 if report_data["fails"] == 0 else 1)
+            else:
+                print(f"Report status: {status} | {elapsed_text}", end="\r")
 
     def repo(self, args):
         """Run Satori on multiple commits"""
@@ -263,7 +312,7 @@ class Satori:
             print("Unknown subcommand")
             sys.exit(1)
         if args.id != "list" or args.action != "get" or args.json:
-            autoformat(info, jsonfmt=args.json, list_separator="*"*48)
+            autoformat(info, jsonfmt=args.json, list_separator="*" * 48)
         else:
             if len(info["pending"]) > 1:
                 print("Pending actions:")
