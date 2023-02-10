@@ -48,8 +48,8 @@ jobs:
           # path to a .bandit file that supplies command line arguments
           # ini_path: # optional, default is DEFAULT
   satori:
-    permissions:
-      contents: read # for actions/checkout to fetch code
+    #permissions:
+    #  contents: read # for actions/checkout to fetch code
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -58,9 +58,5 @@ jobs:
           TOKEN: ${{ secrets.TOKEN }}
         run: |
           pip3 install satori-ci
-          #cd ../
-          #cd $HOME
           satori-cli config token $TOKEN
-          pwd
-          ls -la
           satori-cli run .satori.yml
