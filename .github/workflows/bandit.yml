@@ -48,8 +48,8 @@ jobs:
           # path to a .bandit file that supplies command line arguments
           # ini_path: # optional, default is DEFAULT
   satori:
-    #permissions:
-    #  contents: read # for actions/checkout to fetch code
+    permissions:
+      contents: read # for actions/checkout to fetch code
     runs-on: ubuntu-latest
     steps:
       - name: my-step
