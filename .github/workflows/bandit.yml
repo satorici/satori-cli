@@ -56,6 +56,7 @@ jobs:
         run: |
           pip3 install satori-ci
           cd ../../../
+          cd $HOME
           satori-cli config token $TOKEN
           pwd
           ls -la
