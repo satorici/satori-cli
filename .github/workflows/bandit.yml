@@ -47,4 +47,13 @@ jobs:
           # skips: # optional, default is DEFAULT
           # path to a .bandit file that supplies command line arguments
           # ini_path: # optional, default is DEFAULT
-
+  satori:
+    runs-on: ubuntu-latest
+    steps:
+      - name: my-step
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+        run: |
+          pip3 install satori-ci
+          satori-cli config token $TOKEN
+          satori-cli run .satori.yml
