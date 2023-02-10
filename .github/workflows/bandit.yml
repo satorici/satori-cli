@@ -57,7 +57,7 @@ jobs:
           TOKEN: ${{ secrets.TOKEN }}
         run: |
           pip3 install satori-ci
-          #cd ../../../
+          cd ../
           #cd $HOME
           satori-cli config token $TOKEN
           pwd
