@@ -52,8 +52,8 @@ jobs:
     #  contents: read # for actions/checkout to fetch code
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: my-step
+      #- uses: actions/checkout@v2
+      - name: run
         env:
           TOKEN: ${{ secrets.TOKEN }}
         run: |
