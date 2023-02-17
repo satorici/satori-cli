@@ -101,17 +101,18 @@ class Satori:
     def run(self, args):
         exec_data = None
         if os.path.isdir(args.path):
-            exec_data = self.run_folder(args.path)
+            exec_data = self.run_folder(args)
         elif os.path.isfile(args.path):
-            exec_data = self.run_file(args.path)
+            exec_data = self.run_file(args)
         else:
             print("Unknown file type")  # is a device?
             sys.exit(1)
         if args.sync and exec_data:
             self.run_sync(exec_data)
 
-    def run_file(self, playbook) -> dict:
+    def run_file(self, args) -> dict:
         """Just run"""
+        playbook = args.playbook
         if playbook is None:
             print(
                 f"Define the Satori playbook file:\n{sys.argv[0]} run -p playbook.yml"
@@ -125,7 +126,12 @@ class Satori:
         bundle = make_bundle(playbook)
         is_monitor = check_monitor(playbook)
         url = self.api.get_bundle_presigned_post()
-        res = requests.post(url["url"], url["fields"], files={"file": bundle})
+        res = requests.post(
+            url["url"],
+            url["fields"],
+            files={"file": bundle},
+            data={"parameters": args.data},
+        )
         if not res.ok:
             print("File upload failed")
             sys.exit(1)
@@ -141,8 +147,9 @@ class Satori:
             print(f"Report: https://www.satori-ci.com/report_details/?n={exec_id}")
         return {"type": exec_type, "id": exec_id}
 
-    def run_folder(self, directory) -> dict:
+    def run_folder(self, args) -> dict:
         """Upload directory and run"""
+        directory = args.playbook
         if directory is None:
             print(
                 "Define the directory with the Satori playbook:"
@@ -189,7 +196,12 @@ class Satori:
             print("Archive upload failed")
             sys.exit(1)
 
-        res = requests.post(bun["url"], bun["fields"], files={"file": bundle})
+        res = requests.post(
+            bun["url"],
+            bun["fields"],
+            files={"file": bundle},
+            data={"parameters": args.data},
+        )
         if not res.ok:
             print("Bundle upload failed")
             sys.exit(1)
