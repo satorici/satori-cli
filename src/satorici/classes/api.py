@@ -13,12 +13,16 @@ class SatoriAPI:
             "response": lambda r, *args, **kwargs: r.raise_for_status()
         }
 
-    def get_bundle_presigned_post(self):
-        res = self.__session__.get(f"{HOST}/run/bundle")
+    def get_bundle_presigned_post(self, args):
+        res = self.__session__.get(
+            f"{HOST}/run/bundle", data={"secrets": args.data}
+        )
         return res.json()
 
-    def get_archive_presigned_post(self):
-        res = self.__session__.get(f"{HOST}/run/archive")
+    def get_archive_presigned_post(self, args):
+        res = self.__session__.get(
+            f"{HOST}/run/archive", data={"secrets": args.data}
+        )
         return res.json()
 
     def repo_get(self, action, parameters):

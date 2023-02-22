@@ -112,7 +112,7 @@ class Satori:
 
     def run_file(self, args) -> dict:
         """Just run"""
-        playbook = args.playbook
+        playbook = args.path
         if playbook is None:
             print(
                 f"Define the Satori playbook file:\n{sys.argv[0]} run -p playbook.yml"
@@ -125,12 +125,11 @@ class Satori:
 
         bundle = make_bundle(playbook)
         is_monitor = check_monitor(playbook)
-        url = self.api.get_bundle_presigned_post()
+        url = self.api.get_bundle_presigned_post(args)
         res = requests.post(
             url["url"],
             url["fields"],
             files={"file": bundle},
-            data={"parameters": args.data},
         )
         if not res.ok:
             print("File upload failed")
@@ -149,7 +148,7 @@ class Satori:
 
     def run_folder(self, args) -> dict:
         """Upload directory and run"""
-        directory = args.playbook
+        directory = args.path
         if directory is None:
             print(
                 "Define the directory with the Satori playbook:"
@@ -173,7 +172,7 @@ class Satori:
             print(f"Could not compress directory: {e}")
             return False
 
-        res = self.api.get_archive_presigned_post()
+        res = self.api.get_archive_presigned_post(args)
 
         arc = res["archive"]
         bun = res["bundle"]
@@ -200,7 +199,6 @@ class Satori:
             bun["url"],
             bun["fields"],
             files={"file": bundle},
-            data={"parameters": args.data},
         )
         if not res.ok:
             print("Bundle upload failed")
