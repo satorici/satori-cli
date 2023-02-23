@@ -235,7 +235,12 @@ class Satori:
                     break
             status = report_data.get("status", "Unknown")
             if status == "Completed":
-                print(f"Report status: Completed | {elapsed_text}", end="\r\n")
+                fails = report_data["fails"]
+                result = "Pass" if fails == 0 else f"Fail({fails})"
+                print(
+                    f"Report status: Completed | Result: {result} | {elapsed_text}",
+                    end="\r\n",
+                )
                 report_out = []
                 # Remove keys
                 for report in report_data.get("json", []):
