@@ -236,7 +236,10 @@ class Satori:
             status = report_data.get("status", "Unknown")
             if status == "Completed":
                 fails = report_data["fails"]
-                result = "Pass" if fails == 0 else f"Fail({fails})"
+                if fails is None:
+                    result = "Unknown"
+                else:
+                    result = "Pass" if fails == 0 else f"Fail({fails})"
                 print(
                     f"Report status: Completed | Result: {result} | {elapsed_text}",
                     end="\r\n",
