@@ -5,11 +5,13 @@ import sys
 from importlib import metadata
 
 from requests import HTTPError, Response
+from colorama import just_fix_windows_console, Fore
 
 from satorici.classes.satori import Satori
-from satorici.classes.utils import autoformat
+from satorici.classes.utils import autoformat, puts
 
 VERSION = metadata.version("satori-ci")
+just_fix_windows_console()
 
 
 def add_satori_arguments(cmd):
@@ -19,12 +21,16 @@ def add_satori_arguments(cmd):
 
 
 def main():
-    print(f"Satori CI {VERSION} - Automated Software Testing Platform", file=sys.stderr)
+    puts(
+        Fore.LIGHTBLACK_EX,
+        f"Satori CI {VERSION} - Automated Software Testing Platform",
+        file=sys.stderr,
+    )
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
         print(
             "Minimum Python version 3.9 required, the current version is "
             f"{sys.version_info.major}.{sys.version_info.minor}\n"
-            "How To Install Python 3.10 on Ubuntu: "
+            "How To Install Python 3.10 on Ubuntu:\n"
             "https://computingforgeeks.com/how-to-install-python-on-ubuntu-linux-system"
         )
         sys.exit(0)
@@ -127,9 +133,9 @@ def main():
         status = {"Status code": res.status_code}
         status.update(res.json())
         if args.json:
-            print(str(status))
+            puts(Fore.RED, str(status))
         else:
-            autoformat(status, capitalize=True)
+            autoformat(status, capitalize=True, color=Fore.RED)
         sys.exit(1)
 
 

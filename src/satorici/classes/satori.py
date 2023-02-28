@@ -18,6 +18,14 @@ from satorici.classes.utils import (
     filter_params,
     autoformat,
     check_monitor,
+    FAIL_COLOR,
+    KEYNAME_COLOR,
+    SATORIURL_COLOR,
+    VALUE_COLOR,
+    UNKNOWN_COLOR,
+    PASS_COLOR,
+    get_value_color,
+    puts,
 )
 
 
@@ -54,19 +62,19 @@ class Satori:
         with config_file.open(encoding="utf-8") as f:
             config: dict[str, dict[str, str]] = yaml.safe_load(f)
             if not isinstance(config, dict):
-                print("Invalid config format")
+                puts(FAIL_COLOR, "Invalid config format")
                 sys.exit(1)
 
             profile = config.get(self.profile)
 
             if not (profile and isinstance(profile, dict)):
-                print("Invalid or non existent profile")
+                puts(FAIL_COLOR, "Invalid or non existent profile")
                 profile_list = list(config.keys())
                 print(f"Profiles list: {', '.join(profile_list)}")
                 sys.exit(1)
 
             if not profile.get("token"):
-                print(f"No token in profile: {self.profile}\n")
+                puts(FAIL_COLOR, f"No token in profile: {self.profile}\n")
                 print("satori-cli [-p PROFILE] config token TOKEN")
                 sys.exit(1)
 
@@ -85,7 +93,7 @@ class Satori:
             with config_file.open() as f:
                 config = yaml.safe_load(f)
                 if not isinstance(config, dict):
-                    print("Invalid config format")
+                    puts(FAIL_COLOR, "Invalid config format")
                     sys.exit(1)
         else:
             config = {}
@@ -105,7 +113,7 @@ class Satori:
         elif os.path.isfile(args.path):
             exec_data = self.run_file(args)
         else:
-            print("Unknown file type")  # is a device?
+            puts(FAIL_COLOR, "Unknown file type")  # is a device?
             sys.exit(1)
         if args.sync and exec_data:
             self.run_sync(exec_data)
@@ -120,7 +128,7 @@ class Satori:
             return False
 
         if not os.path.isfile(playbook):
-            print(f"Playbook not found: {playbook}")
+            puts(FAIL_COLOR, f"Playbook not found: {playbook}")
             return False
 
         bundle = make_bundle(playbook)
@@ -132,18 +140,28 @@ class Satori:
             files={"file": bundle},
         )
         if not res.ok:
-            print("File upload failed")
+            puts(FAIL_COLOR, "File upload failed")
             sys.exit(1)
         if is_monitor:
             exec_type = "monitor"
             exec_id = url["monitor"]
-            print(f"Monitor ID: {exec_id}")
-            print(f"Status: https://www.satori-ci.com/status?id={exec_id}")
+            print(KEYNAME_COLOR + "Monitor ID: " + VALUE_COLOR + f"{exec_id}")
+            print(
+                KEYNAME_COLOR
+                + "Status: "
+                + SATORIURL_COLOR
+                + f"https://www.satori-ci.com/status?id={exec_id}"
+            )
         else:
             exec_type = "report"
             exec_id = url["fields"]["key"].split("/")[1]
-            print(f"UUID: {exec_id}")
-            print(f"Report: https://www.satori-ci.com/report_details/?n={exec_id}")
+            print(KEYNAME_COLOR + "UUID: " + VALUE_COLOR + f"{exec_id}")
+            print(
+                KEYNAME_COLOR
+                + "Report: "
+                + SATORIURL_COLOR
+                + f"https://www.satori-ci.com/report_details/?n={exec_id}"
+            )
         return {"type": exec_type, "id": exec_id}
 
     def run_folder(self, args) -> dict:
@@ -157,7 +175,7 @@ class Satori:
             return False
 
         if not os.path.isdir(directory):
-            print(f"Directory not found: {directory}")
+            puts(FAIL_COLOR, f"Directory not found: {directory}")
             return False
 
         satori_yml = Path(directory, ".satori.yml")
@@ -169,7 +187,7 @@ class Satori:
         try:
             shutil.make_archive(temp_file, "zip", directory)
         except Exception as e:
-            print(f"Could not compress directory: {e}")
+            puts(FAIL_COLOR, f"Could not compress directory: {e}")
             return False
 
         res = self.api.get_archive_presigned_post(args)
@@ -207,17 +225,27 @@ class Satori:
         if is_monitor:
             exec_type = "monitor"
             exec_id = mon
-            print(f"Monitor ID: {mon}")
-            print(f"Status: https://www.satori-ci.com/status?id={mon}")
+            print(KEYNAME_COLOR + "Monitor ID: " + VALUE_COLOR + f"{mon}")
+            print(
+                KEYNAME_COLOR
+                + "Status: "
+                + SATORIURL_COLOR
+                + f"https://www.satori-ci.com/status?id={mon}"
+            )
         else:
             exec_type = "report"
             exec_id = bun["fields"]["key"].split("/")[1]
-            print(f"UUID: {exec_id}")
-            print(f"Report: https://www.satori-ci.com/report_details/?n={exec_id}")
+            print(KEYNAME_COLOR + "UUID: " + VALUE_COLOR + f"{exec_id}")
+            print(
+                KEYNAME_COLOR
+                + "Report: "
+                + SATORIURL_COLOR
+                + f"https://www.satori-ci.com/report_details/?n={exec_id}"
+            )
         return {"type": exec_type, "id": exec_id}
 
     def run_sync(self, exec_data: dict) -> None:
-        print("Fetching data...", end="\r")
+        puts(KEYNAME_COLOR, "Fetching data...", end="\r")
         start_time = time.time()
         while True:
             time.sleep(1)
@@ -228,10 +256,18 @@ class Satori:
             except requests.HTTPError as e:
                 code = e.response.status_code
                 if code == 404:
-                    print(f"Report status: Unknown | {elapsed_text}", end="\r")
+                    print(
+                        KEYNAME_COLOR
+                        + "Report status: "
+                        + UNKNOWN_COLOR
+                        + "Unknown"
+                        + KEYNAME_COLOR
+                        + f" | {elapsed_text}",
+                        end="\r",
+                    )
                     continue
                 else:
-                    print(f"Failed to get data\nStatus code: {code}")
+                    puts(FAIL_COLOR, f"Failed to get data\nStatus code: {code}")
                     break
             status = report_data.get("status", "Unknown")
             if status == "Completed":
@@ -241,7 +277,16 @@ class Satori:
                 else:
                     result = "Pass" if fails == 0 else f"Fail({fails})"
                 print(
-                    f"Report status: Completed | Result: {result} | {elapsed_text}",
+                    KEYNAME_COLOR
+                    + "Report status: "
+                    + PASS_COLOR
+                    + "Completed"
+                    + KEYNAME_COLOR
+                    + " | Result: "
+                    + get_value_color(result)
+                    + f"{result} "
+                    + KEYNAME_COLOR
+                    + f"| {elapsed_text}",
                     end="\r\n",
                 )
                 report_out = []
@@ -260,7 +305,15 @@ class Satori:
                 # Return code 0 if report status==pass else 1
                 sys.exit(0 if report_data["fails"] == 0 else 1)
             else:
-                print(f"Report status: {status} | {elapsed_text}", end="\r")
+                print(
+                    KEYNAME_COLOR
+                    + "Report status: "
+                    + get_value_color(status)
+                    + status
+                    + KEYNAME_COLOR
+                    + f" | {elapsed_text}",
+                    end="\r",
+                )
 
     def repo(self, args):
         """Run Satori on multiple commits"""

@@ -1,12 +1,35 @@
 from typing import Union
 import json
 import yaml
+import re
+from colorama import Fore, Style
 
 __decorations = "▢•○░"
 
+PASS_REGEX = re.compile(r"^pass", re.IGNORECASE)
+RUNNING_REGEX = re.compile(r"^(pending|running)", re.IGNORECASE)
+FAIL_REGEX = re.compile(r"^fail", re.IGNORECASE)
+UNKNOWN_REGEX = re.compile(r"^unknown", re.IGNORECASE)
+SATORIURL_REGEX = re.compile(r"^https?:\/\/(www\.)satori-ci\.com")
+
+# Colors outputs
+PASS_COLOR = Fore.LIGHTGREEN_EX
+FAIL_COLOR = Fore.LIGHTRED_EX
+UNKNOWN_COLOR = Fore.LIGHTYELLOW_EX
+RUNNING_COLOR = Fore.LIGHTBLUE_EX
+KEYNAME_COLOR = Fore.WHITE
+SATORIURL_COLOR = Fore.LIGHTBLUE_EX
+VALUE_COLOR = Fore.CYAN
+
 
 def get_decoration(indent):
-    return "  " * indent + __decorations[indent % len(__decorations)] + " "
+    return (
+        Style.DIM
+        + "  " * indent
+        + __decorations[indent % len(__decorations)]
+        + " "
+        + Style.RESET_ALL
+    )
 
 
 def dict_formatter(
@@ -16,13 +39,21 @@ def dict_formatter(
         indent_text = get_decoration(indent)
         key_text = key.capitalize() if capitalize else key
         if isinstance(obj[key], dict):
-            print(indent_text + f"{key_text}:")
+            print(indent_text + KEYNAME_COLOR + f"{key_text}:" + Style.RESET_ALL)
             dict_formatter(obj[key], capitalize, indent + 1, list_separator)
         elif isinstance(obj[key], list):
-            print(indent_text + f"{key_text}:")
+            print(indent_text + KEYNAME_COLOR + f"{key_text}:" + Style.RESET_ALL)
             list_formatter(obj[key], capitalize, indent + 1, list_separator)
         else:
-            print(indent_text + f"{key_text}: {obj[key]}")
+            item = str(obj[key])
+            print(
+                indent_text
+                + KEYNAME_COLOR
+                + f"{key_text}: "
+                + get_value_color(item)
+                + item
+                + Style.RESET_ALL
+            )
 
 
 def list_formatter(
@@ -35,9 +66,15 @@ def list_formatter(
         elif isinstance(item, list):
             list_formatter(item, capitalize, indent + 1, list_separator)
         else:
-            print(indent_text + str(item))
+            item = str(item)
+            print(indent_text + get_value_color(item) + item + Style.RESET_ALL)
         if list_separator:
-            print("  " * (indent+1) + list_separator)
+            print(
+                "  " * (indent + 1)
+                + Fore.LIGHTBLACK_EX
+                + list_separator
+                + Style.RESET_ALL
+            )
 
 
 def autoformat(
@@ -46,6 +83,7 @@ def autoformat(
     indent: int = 0,
     jsonfmt: bool = False,
     list_separator: str = None,
+    color: any = None,
 ):
     """Format and print a dict, list or other var
 
@@ -70,7 +108,7 @@ def autoformat(
         elif isinstance(obj, list):
             list_formatter(obj, capitalize, indent, list_separator)
         else:
-            print(str(obj))
+            print(color + str(obj) + Style.RESET_ALL)
 
 
 def filter_params(params: any, filter_keys: Union[tuple, list]) -> dict:
@@ -99,3 +137,31 @@ def check_monitor(playbook):
         config = yaml.safe_load(stream)
         settings = config.get("settings", {})
         return set() != {"rate", "cron"} & settings.keys()
+
+
+def puts(color: str = Style.NORMAL, *args, **kargs):
+    """Print with colors, resets the color after printing
+
+    Parameters
+    ----------
+    color : any, optional
+        Color of the text, by default Style.NORMAL
+    """
+    # color, args adds an empty space??
+    print(color + "".join(args), Style.RESET_ALL, **kargs)
+
+
+def get_value_color(item: any) -> str:
+    item = str(item)
+    color = VALUE_COLOR
+    if PASS_REGEX.search(item):
+        color = PASS_COLOR
+    elif FAIL_REGEX.search(item):
+        color = FAIL_COLOR
+    elif UNKNOWN_REGEX.search(item):
+        color = UNKNOWN_COLOR
+    elif RUNNING_REGEX.search(item):
+        color = RUNNING_COLOR
+    elif SATORIURL_REGEX.search(item):
+        color = SATORIURL_COLOR
+    return color
