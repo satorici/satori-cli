@@ -330,6 +330,7 @@ class Satori:
             "scan-status",
             "run",
             "get",
+            "download",
         ):
             print("Unknown subcommand")
             sys.exit(1)
