@@ -268,7 +268,7 @@ class Satori:
                     continue
                 else:
                     puts(FAIL_COLOR, f"Failed to get data\nStatus code: {code}")
-                    break
+                    sys.exit(1)
             status = report_data.get("status", "Unknown")
             if status == "Completed":
                 fails = report_data["fails"]
