@@ -24,6 +24,7 @@ from satorici.classes.utils import (
     VALUE_COLOR,
     UNKNOWN_COLOR,
     PASS_COLOR,
+    UUID4_REGEX,
     get_value_color,
     puts,
 )
@@ -255,7 +256,7 @@ class Satori:
                 report_data = self.api.report_get("get", {"id": exec_data["id"]})
             except requests.HTTPError as e:
                 code = e.response.status_code
-                if code == 404:
+                if code in (404, 403):
                     print(
                         KEYNAME_COLOR
                         + "Report status: "
@@ -342,6 +343,11 @@ class Satori:
             autoformat(info["pending"])
             print("\nRepos:")
             autoformat(info["list"], list_separator="-" * 48)
+        if args.action == "run" and args.sync:
+            report = info.get("status", "")
+            match = UUID4_REGEX.findall(report)
+            if match:
+                self.run_sync({"type": "report", "id": match[0]})
 
     def report(self, args):
         """Show a list of reports"""

@@ -69,7 +69,7 @@ def main():
         "-c", "--coverage", dest="coverage", type=float, default=0, help="coverage"
     )
     repo_cmd.add_argument(
-        "-s", "--skip-check", dest="skip_check", default=False, action="store_true"
+        "--skip-check", dest="skip_check", default=False, action="store_true"
     )
     repo_cmd.add_argument(
         "-f", "--from", dest="from", type=str, default="", help="From Date"
@@ -82,6 +82,7 @@ def main():
         default=False,
         action="store_true",
     )
+    repo_cmd.add_argument("-s", "--sync", default=False, action="store_true")
     add_satori_arguments(repo_cmd)
 
     # report {id} <output|stop|delete>
