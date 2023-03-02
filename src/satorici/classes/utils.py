@@ -10,13 +10,13 @@ UUID4_REGEX = re.compile(
     r"[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
     re.I,
 )
-
-PASS_REGEX = re.compile(r"^pass", re.IGNORECASE)
-RUNNING_REGEX = re.compile(r"^(pending|running)", re.IGNORECASE)
-FAIL_REGEX = re.compile(r"^fail", re.IGNORECASE)
-UNKNOWN_REGEX = re.compile(r"^unknown", re.IGNORECASE)
-SATORIURL_REGEX = re.compile(r"^https?:\/\/(www\.)satori-ci\.com")
-
+# Regex
+PASS_REGEX = re.compile(r"(pass|completed)", re.IGNORECASE)
+RUNNING_REGEX = re.compile(r"(pending|running)", re.IGNORECASE)
+FAIL_REGEX = re.compile(r"(fail(\(\d+\))?)", re.IGNORECASE)
+UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
+SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
+KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:)(?!\/\/)")
 # Colors outputs
 PASS_COLOR = Fore.LIGHTGREEN_EX
 FAIL_COLOR = Fore.LIGHTRED_EX
@@ -159,14 +159,29 @@ def puts(color: str = Style.NORMAL, *args, **kargs):
 def get_value_color(item: any) -> str:
     item = str(item)
     color = VALUE_COLOR
-    if PASS_REGEX.search(item):
-        color = PASS_COLOR
-    elif FAIL_REGEX.search(item):
-        color = FAIL_COLOR
-    elif UNKNOWN_REGEX.search(item):
-        color = UNKNOWN_COLOR
-    elif RUNNING_REGEX.search(item):
-        color = RUNNING_COLOR
-    elif SATORIURL_REGEX.search(item):
-        color = SATORIURL_COLOR
+    if item.count("\n") == 0:
+        if PASS_REGEX.search(item):
+            color = PASS_COLOR
+        elif FAIL_REGEX.search(item):
+            color = FAIL_COLOR
+        elif UNKNOWN_REGEX.search(item):
+            color = UNKNOWN_COLOR
+        elif RUNNING_REGEX.search(item):
+            color = RUNNING_COLOR
+        elif SATORIURL_REGEX.search(item):
+            color = SATORIURL_COLOR
     return color
+
+
+def autocolor(txt: str) -> str:
+    rst = Style.RESET_ALL
+    if txt.count("\n") > 0:
+        txt = KEYNAME_REGEX.sub(rf"{KEYNAME_COLOR}\1{VALUE_COLOR}", txt, 1)
+        return txt
+    txt = KEYNAME_REGEX.sub(rf"{KEYNAME_COLOR}\1{VALUE_COLOR}", txt)
+    txt = PASS_REGEX.sub(rf"{PASS_COLOR}\1{rst}", txt)
+    txt = RUNNING_REGEX.sub(rf"{RUNNING_COLOR}\1{rst}", txt)
+    txt = FAIL_REGEX.sub(rf"{FAIL_COLOR}\1{rst}", txt)
+    txt = UNKNOWN_REGEX.sub(rf"{UNKNOWN_COLOR}\1{rst}", txt)
+    txt = SATORIURL_REGEX.sub(rf"{SATORIURL_COLOR}\1{rst}", txt)
+    return txt

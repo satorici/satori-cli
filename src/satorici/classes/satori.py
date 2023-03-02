@@ -22,10 +22,8 @@ from satorici.classes.utils import (
     KEYNAME_COLOR,
     SATORIURL_COLOR,
     VALUE_COLOR,
-    UNKNOWN_COLOR,
-    PASS_COLOR,
     UUID4_REGEX,
-    get_value_color,
+    autocolor,
     puts,
 )
 
@@ -147,12 +145,7 @@ class Satori:
             exec_type = "monitor"
             exec_id = url["monitor"]
             print(KEYNAME_COLOR + "Monitor ID: " + VALUE_COLOR + f"{exec_id}")
-            print(
-                KEYNAME_COLOR
-                + "Status: "
-                + SATORIURL_COLOR
-                + f"https://www.satori-ci.com/status?id={exec_id}"
-            )
+            print(autocolor(f"Status: https://www.satori-ci.com/status?id={exec_id}"))
         else:
             exec_type = "report"
             exec_id = url["fields"]["key"].split("/")[1]
@@ -227,21 +220,15 @@ class Satori:
             exec_type = "monitor"
             exec_id = mon
             print(KEYNAME_COLOR + "Monitor ID: " + VALUE_COLOR + f"{mon}")
-            print(
-                KEYNAME_COLOR
-                + "Status: "
-                + SATORIURL_COLOR
-                + f"https://www.satori-ci.com/status?id={mon}"
-            )
+            print(autocolor(f"Status: https://www.satori-ci.com/status?id={mon}"))
         else:
             exec_type = "report"
             exec_id = bun["fields"]["key"].split("/")[1]
             print(KEYNAME_COLOR + "UUID: " + VALUE_COLOR + f"{exec_id}")
             print(
-                KEYNAME_COLOR
-                + "Report: "
-                + SATORIURL_COLOR
-                + f"https://www.satori-ci.com/report_details/?n={exec_id}"
+                autocolor(
+                    f"Report: https://www.satori-ci.com/report_details/?n={exec_id}"
+                )
             )
         return {"type": exec_type, "id": exec_id}
 
@@ -258,36 +245,23 @@ class Satori:
                 code = e.response.status_code
                 if code in (404, 403):
                     print(
-                        KEYNAME_COLOR
-                        + "Report status: "
-                        + UNKNOWN_COLOR
-                        + "Unknown"
-                        + KEYNAME_COLOR
-                        + f" | {elapsed_text}",
-                        end="\r",
+                        autocolor(f"Report status: Unknown | {elapsed_text}"), end="\r"
                     )
                     continue
                 else:
                     puts(FAIL_COLOR, f"Failed to get data\nStatus code: {code}")
                     sys.exit(1)
             status = report_data.get("status", "Unknown")
-            if status == "Completed":
+            if status in ("Completed", "Undefined"):
                 fails = report_data["fails"]
                 if fails is None:
                     result = "Unknown"
                 else:
                     result = "Pass" if fails == 0 else f"Fail({fails})"
                 print(
-                    KEYNAME_COLOR
-                    + "Report status: "
-                    + PASS_COLOR
-                    + "Completed"
-                    + KEYNAME_COLOR
-                    + " | Result: "
-                    + get_value_color(result)
-                    + f"{result} "
-                    + KEYNAME_COLOR
-                    + f"| {elapsed_text}",
+                    autocolor(
+                        f"Report status: {status} | Result: {result} | {elapsed_text}"
+                    ),
                     end="\r\n",
                 )
                 report_out = []
@@ -303,18 +277,13 @@ class Satori:
                             asrt.pop("data", None)
                         asserts.append(asrt)
                 autoformat(report_out, list_separator="- " * 20)
-                # Return code 0 if report status==pass else 1
-                sys.exit(0 if report_data["fails"] == 0 else 1)
+                if status == "Undefined":
+                    sys.exit(1)
+                else:
+                    # Return code 0 if report status==pass else 1
+                    sys.exit(0 if report_data["fails"] == 0 else 1)
             else:
-                print(
-                    KEYNAME_COLOR
-                    + "Report status: "
-                    + get_value_color(status)
-                    + status
-                    + KEYNAME_COLOR
-                    + f" | {elapsed_text}",
-                    end="\r",
-                )
+                print(autocolor(f"Report status: {status} | {elapsed_text}"), end="\r")
 
     def repo(self, args):
         """Run Satori on multiple commits"""
