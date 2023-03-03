@@ -38,6 +38,7 @@ def main():
     baseparser = argparse.ArgumentParser(add_help=False)
     baseparser.add_argument("-p", "--profile", default="default")
     baseparser.add_argument("-j", "--json", action="store_true", help="JSON output")
+    baseparser.add_argument("--debug", action="store_true", help="Debug mode")
 
     parser = argparse.ArgumentParser(parents=[baseparser])
     subparsers = parser.add_subparsers(dest="subcommand")
@@ -51,7 +52,7 @@ def main():
     run_cmd = subparsers.add_parser("run", parents=[baseparser])
     run_cmd.add_argument("path")
     run_cmd.add_argument("-s", "--sync", default=False, action="store_true")
-    run_cmd.add_argument("-d", "--data", type=str, default="", help="Parameters")
+    run_cmd.add_argument("-d", "--data", type=str, default="", help="Secrets")
 
     # playbook {id} <delete>
     playbook_cmd = subparsers.add_parser("playbook", parents=[baseparser])
@@ -76,13 +77,13 @@ def main():
     )
     repo_cmd.add_argument("-t", "--to", dest="to", type=str, default="", help="To Date")
     repo_cmd.add_argument(
-        "-d",
         "--delete-commits",
         dest="delete_commits",
         default=False,
         action="store_true",
     )
     repo_cmd.add_argument("-s", "--sync", default=False, action="store_true")
+    repo_cmd.add_argument("-d", "--data", type=str, default="", help="Secrets")
     add_satori_arguments(repo_cmd)
 
     # report {id} <output|stop|delete>

@@ -292,19 +292,20 @@ class Satori:
             params = filter_params(args, ("id", "coverage", "from", "to"))
         elif args.action == "clean":
             params = filter_params(args, ("id", "delete_commits"))
+        elif args.action == "run":
+            params = filter_params(args, ("id", "data"))
         elif args.action not in (
             "commits",
             "check-commits",
             "check-forks",
             "scan-stop",
             "scan-status",
-            "run",
             "get",
             "download",
         ):
             print("Unknown subcommand")
             sys.exit(1)
-        info = self.api.repo_get(args.action, params)
+        info = self.api.repo_get(args, params)
         if args.id != "list" or args.action != "get" or args.json:
             autoformat(info, jsonfmt=args.json)
         else:

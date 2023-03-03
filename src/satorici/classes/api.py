@@ -13,23 +13,24 @@ class SatoriAPI:
             "response": lambda r, *args, **kwargs: r.raise_for_status()
         }
 
-    def get_bundle_presigned_post(self, args):
-        res = self.__session__.get(
-            f"{HOST}/run/bundle", data={"secrets": args.data}
-        )
+    def debug_bridge(self, res: requests.Response, args) -> dict:
+        if args.debug:
+            print("Response headers:", res.headers)
         return res.json()
+
+    def get_bundle_presigned_post(self, args):
+        res = self.__session__.get(f"{HOST}/run/bundle", data={"secrets": args.data})
+        return self.debug_bridge(res, args)
 
     def get_archive_presigned_post(self, args):
-        res = self.__session__.get(
-            f"{HOST}/run/archive", data={"secrets": args.data}
-        )
-        return res.json()
+        res = self.__session__.get(f"{HOST}/run/archive", data={"secrets": args.data})
+        return self.debug_bridge(res, args)
 
-    def repo_get(self, action, parameters):
-        if action == "get":
-            action = ""
-        res = self.__session__.get(f"{HOST}/repo/{action}", params=parameters)
-        return res.json()
+    def repo_get(self, args, parameters):
+        if args.action == "get":
+            args.action = ""
+        res = self.__session__.get(f"{HOST}/repo/{args.action}", params=parameters)
+        return self.debug_bridge(res, args)
 
     def monitor_get(self, action, parameters):
         if action == "get":
