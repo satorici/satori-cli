@@ -17,10 +17,10 @@ set_token:
   test:
   - [ satori-cli config token "not_a_token" -p test_user ]
 
-set_test_token:
+default_token:
   assertStdoutContains: "Token saved"
   test:
-  - [ satori-cli config token "$(token)"" ]
+  - [ satori-cli config token "$(user_token)" ]
 
 dashboard:
   assertStdoutContains: "Actions required"
