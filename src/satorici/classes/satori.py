@@ -22,6 +22,7 @@ from satorici.classes.utils import (
     KEYNAME_COLOR,
     SATORIURL_COLOR,
     VALUE_COLOR,
+    UNKNOWN_COLOR,
     UUID4_REGEX,
     autocolor,
     puts,
@@ -266,7 +267,8 @@ class Satori:
                 )
                 report_out = []
                 # Remove keys
-                for report in report_data.get("json", []):
+                json_data = report_data.get("json") or []
+                for report in json_data:
                     report.pop("gfx", None)
                     report_out.append(report)
                     asserts = []
@@ -278,6 +280,9 @@ class Satori:
                         asserts.append(asrt)
                 autoformat(report_out, list_separator="- " * 20)
                 if status == "Undefined":
+                    comments = report_data.get("comments")
+                    if comments:
+                        puts(UNKNOWN_COLOR, f"Message: {comments}")
                     sys.exit(1)
                 else:
                     # Return code 0 if report status==pass else 1
