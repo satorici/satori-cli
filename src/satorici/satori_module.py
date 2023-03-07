@@ -5,7 +5,7 @@ import sys
 from importlib import metadata
 
 from requests import HTTPError, Response
-from colorama import just_fix_windows_console, Fore
+from colorama import just_fix_windows_console, Fore, Back
 
 from satorici.classes.satori import Satori
 from satorici.classes.utils import autoformat, puts
@@ -130,6 +130,9 @@ def main():
             instance.monitor(args)
         elif not args.subcommand or args.subcommand == "dashboard":
             instance.dashboard(args)
+    except KeyboardInterrupt:
+        puts(Back.RED, "Interrupted by user")
+        sys.exit(1)
     except HTTPError as e:
         res: Response = e.response
         status = {"Status code": res.status_code}

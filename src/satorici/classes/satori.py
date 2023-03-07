@@ -22,7 +22,6 @@ from satorici.classes.utils import (
     KEYNAME_COLOR,
     SATORIURL_COLOR,
     VALUE_COLOR,
-    UNKNOWN_COLOR,
     UUID4_REGEX,
     autocolor,
     puts,
@@ -282,7 +281,7 @@ class Satori:
                 if status == "Undefined":
                     comments = report_data.get("comments")
                     if comments:
-                        puts(UNKNOWN_COLOR, f"Message: {comments}")
+                        puts(FAIL_COLOR, f"Error: {comments}")
                     sys.exit(1)
                 else:
                     # Return code 0 if report status==pass else 1
