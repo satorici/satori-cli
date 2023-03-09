@@ -1,4 +1,4 @@
-name: Bandit
+name: Satori CLI Action
 on:
   push:
     branches: [ "main" ]
