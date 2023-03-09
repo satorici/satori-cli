@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [ "main" ]
 jobs:
-  satori:
+  satori-cli_run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
