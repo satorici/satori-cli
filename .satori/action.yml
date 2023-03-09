@@ -1,0 +1,47 @@
+settings:
+  name: Satori CLI Test
+  report: pdf
+  log: slack
+
+import:
+  - "satori://code/trufflehog.yml"
+  - "satori://code/semgrep-secrets.yml"
+  #- "satori://code/semgrep.yml"
+  #- "satori://code/python/pylint.yml"
+
+tests:
+  assertReturnCode: 0
+  install_satori:
+    test:
+    - [ pip install . ]
+
+  set_token:
+    assertStdoutContains: "Token saved"
+    test:
+    - [ satori-cli config token "not_a_token" -p test_user ]
+
+  default_token:
+    assertStdoutContains: "Token saved"
+    test:
+    - [ satori-cli config token "$(TOKEN)" ]
+
+  dashboard:
+    assertStdoutContains: "Actions required"
+    test:
+    - [ satori-cli ]
+
+  playbook:
+    test:
+    - [ satori-cli playbook ]
+
+  report:
+    test:
+    - [ satori-cli report ]
+
+  repo:
+    test:
+    - [ satori-cli repo ]
+
+  monitor:
+    test:
+    - [ satori-cli monitor ]
