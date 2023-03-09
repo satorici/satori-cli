@@ -23,7 +23,7 @@ tests:
   default_token:
     assertStdoutContains: "Token saved"
     test:
-    - [ satori-cli config token "$(user_token)" ]
+    - [ satori-cli config token "$(TOKEN)" ]
 
   dashboard:
     assertStdoutContains: "Actions required"
