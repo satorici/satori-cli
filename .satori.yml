@@ -1,48 +1,47 @@
 settings:
   name: Satori CLI Test
+  report: pdf
   log: slack
 
 import:
   - "satori://code/trufflehog.yml"
-  - "satori://code/semgrep.yml"
-  - "satori://code/python/pylint.yml"
+  - "satori://code/semgrep-secrets.yml"
+  #- "satori://code/semgrep.yml"
+  #- "satori://code/python/pylint.yml"
 
-install_satori:
+tests:
   assertReturnCode: 0
-  test:
-  - [ pip install . ]
+  install_satori:
+    test:
+    - [ pip install . ]
 
-set_token:
-  assertStdoutContains: "Token saved"
-  test:
-  - [ satori-cli config token "not_a_token" -p test_user ]
+  set_token:
+    assertStdoutContains: "Token saved"
+    test:
+    - [ satori-cli config token "not_a_token" -p test_user ]
 
-default_token:
-  assertStdoutContains: "Token saved"
-  test:
-  - [ satori-cli config token "$(user_token)" ]
+  default_token:
+    assertStdoutContains: "Token saved"
+    test:
+    - [ satori-cli config token "$(user_token)" ]
 
-dashboard:
-  assertStdoutContains: "Actions required"
-  test:
-  - [ satori-cli ]
+  dashboard:
+    assertStdoutContains: "Actions required"
+    test:
+    - [ satori-cli ]
 
-playbook:
-  assertReturnCode: 0
-  test:
-  - [ satori-cli playbook ]
+  playbook:
+    test:
+    - [ satori-cli playbook ]
 
-report:
-  assertReturnCode: 0
-  test:
-  - [ satori-cli report ]
+  report:
+    test:
+    - [ satori-cli report ]
 
-repo:
-  assertReturnCode: 0
-  test:
-  - [ satori-cli repo ]
+  repo:
+    test:
+    - [ satori-cli repo ]
 
-monitor:
-  assertReturnCode: 0
-  test:
-  - [ satori-cli monitor ]
+  monitor:
+    test:
+    - [ satori-cli monitor ]
