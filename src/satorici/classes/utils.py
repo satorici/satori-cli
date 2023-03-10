@@ -13,7 +13,7 @@ UUID4_REGEX = re.compile(
 # Regex
 PASS_REGEX = re.compile(r"(pass|completed)", re.IGNORECASE)
 RUNNING_REGEX = re.compile(r"(pending|running)", re.IGNORECASE)
-FAIL_REGEX = re.compile(r"(fail(\(\d+\))?)", re.IGNORECASE)
+FAIL_REGEX = re.compile(r"(fail(\(\d+\))?|error)", re.IGNORECASE)
 UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
 SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
 KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:)(?!\/\/)")

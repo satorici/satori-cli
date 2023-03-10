@@ -311,7 +311,7 @@ class Satori:
             sys.exit(1)
         info = self.api.repo_get(args, params)
         if args.id != "list" or args.action != "get" or args.json:
-            autoformat(info, jsonfmt=args.json)
+            autoformat(info, jsonfmt=args.json, list_separator="-" * 48)
         else:
             print("Pending actions:")
             autoformat(info["pending"])
