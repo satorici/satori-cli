@@ -450,4 +450,4 @@ class Satori:
         else:
             print("Unknown subcommand")
             sys.exit(1)
-        autoformat(data, jsonfmt=args.json)
+        autoformat(data, jsonfmt=args.json, list_separator="-" * 48)
