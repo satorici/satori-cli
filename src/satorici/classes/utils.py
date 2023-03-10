@@ -16,7 +16,7 @@ RUNNING_REGEX = re.compile(r"(pending|running)", re.IGNORECASE)
 FAIL_REGEX = re.compile(r"(fail(\(\d+\))?|error)", re.IGNORECASE)
 UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
 SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
-KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:)(?!\/\/)")
+KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)")
 # Colors outputs
 PASS_COLOR = Fore.LIGHTGREEN_EX
 FAIL_COLOR = Fore.LIGHTRED_EX
@@ -25,6 +25,7 @@ RUNNING_COLOR = Fore.LIGHTBLUE_EX
 KEYNAME_COLOR = Fore.WHITE
 SATORIURL_COLOR = Fore.LIGHTBLUE_EX
 VALUE_COLOR = Fore.CYAN
+MULTILINE_COLOR = Fore.YELLOW
 
 
 def get_decoration(indent):
@@ -159,7 +160,9 @@ def puts(color: str = Style.NORMAL, *args, **kargs):
 def get_value_color(item: any) -> str:
     item = str(item)
     color = VALUE_COLOR
-    if item.count("\n") == 0:
+    if item.count("\n") > 0:
+        color = f"\n{MULTILINE_COLOR}"
+    else:
         if PASS_REGEX.search(item):
             color = PASS_COLOR
         elif FAIL_REGEX.search(item):
@@ -176,7 +179,9 @@ def get_value_color(item: any) -> str:
 def autocolor(txt: str) -> str:
     rst = Style.RESET_ALL
     if txt.count("\n") > 0:
-        txt = KEYNAME_REGEX.sub(rf"{KEYNAME_COLOR}\1{VALUE_COLOR}", txt, 1)
+        txt = KEYNAME_REGEX.sub(
+            rf"{KEYNAME_COLOR}\1\n{MULTILINE_COLOR}", txt + Style.RESET_ALL, 1
+        )
         return txt
     txt = KEYNAME_REGEX.sub(rf"{KEYNAME_COLOR}\1{VALUE_COLOR}", txt)
     txt = PASS_REGEX.sub(rf"{PASS_COLOR}\1{rst}", txt)
