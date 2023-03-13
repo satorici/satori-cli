@@ -179,9 +179,7 @@ def get_value_color(item: any) -> str:
 def autocolor(txt: str) -> str:
     rst = Style.RESET_ALL
     if txt.count("\n") > 0:
-        txt = KEYNAME_REGEX.sub(
-            rf"{KEYNAME_COLOR}\1\n{MULTILINE_COLOR}", txt + Style.RESET_ALL, 1
-        )
+        txt = KEYNAME_REGEX.sub(rf"{KEYNAME_COLOR}\1\n{MULTILINE_COLOR}", txt + rst, 1)
         return txt
     txt = KEYNAME_REGEX.sub(rf"{KEYNAME_COLOR}\1{VALUE_COLOR}", txt)
     txt = PASS_REGEX.sub(rf"{PASS_COLOR}\1{rst}", txt)

@@ -67,7 +67,7 @@ def main():
     # repo {id} <commits|check-commits|check-forks|scan|scan-stop|run|clean>
     repo_cmd = subparsers.add_parser("repo", parents=[baseparser])
     repo_cmd.add_argument(
-        "-c", "--coverage", dest="coverage", type=float, default=0, help="coverage"
+        "-c", "--coverage", dest="coverage", type=float, default=1, help="coverage"
     )
     repo_cmd.add_argument(
         "--skip-check", dest="skip_check", default=False, action="store_true"
