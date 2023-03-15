@@ -293,7 +293,7 @@ class Satori:
         """Run Satori on multiple commits"""
         params = filter_params(args, ("id"))
         if args.action == "scan":
-            params = filter_params(args, ("id", "coverage", "from", "to"))
+            params = filter_params(args, ("id", "coverage", "from", "to", "branch"))
         elif args.action == "clean":
             params = filter_params(args, ("id", "delete_commits"))
         elif args.action == "run":
