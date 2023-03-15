@@ -84,6 +84,9 @@ def main():
     )
     repo_cmd.add_argument("-s", "--sync", default=False, action="store_true")
     repo_cmd.add_argument("-d", "--data", type=str, default="", help="Secrets")
+    repo_cmd.add_argument(
+        "-b", "--branch", dest="branch", type=str, default="main", help="Repo branch"
+    )
     add_satori_arguments(repo_cmd)
 
     # report {id} <output|stop|delete>

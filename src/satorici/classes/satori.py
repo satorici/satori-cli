@@ -298,9 +298,10 @@ class Satori:
             params = filter_params(args, ("id", "delete_commits"))
         elif args.action == "run":
             params = filter_params(args, ("id", "data"))
+        elif args.action == "check-commits":
+            params = filter_params(args, ("id", "branch"))
         elif args.action not in (
             "commits",
-            "check-commits",
             "check-forks",
             "scan-stop",
             "scan-status",
