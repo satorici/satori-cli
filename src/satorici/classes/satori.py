@@ -298,6 +298,8 @@ class Satori:
             )
         elif args.action == "clean":
             params = filter_params(args, ("id", "delete_commits"))
+        elif args.action == "tests":
+            params = filter_params(args, ("id", "filter"))
         elif args.action == "run":
             params = filter_params(args, ("id", "data"))
         elif args.action == "check-commits":

@@ -87,6 +87,7 @@ def main():
     repo_cmd.add_argument(
         "-b", "--branch", dest="branch", type=str, default="main", help="Repo branch"
     )
+    repo_cmd.add_argument("--filter", dest="filter", type=str, help="Filter names")
     add_satori_arguments(repo_cmd)
 
     # report {id} <output|stop|delete>
