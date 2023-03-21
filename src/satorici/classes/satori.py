@@ -10,6 +10,7 @@ import requests
 import yaml
 from tqdm import tqdm
 from tqdm.utils import CallbackIOWrapper
+from colorama import Fore
 
 from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
@@ -332,20 +333,16 @@ class Satori:
         """Show a list of reports"""
         params = filter_params(args, ("id"))
         if args.action == "get":
-            try:
-                if uuid.UUID(args.id):
-                    res = self.api.report_get(args.action, params)
-                    autoformat(res, jsonfmt=args.json)
-                    return
-            except ValueError:
-                pass
-
-            params = filter_params(args, ("id", "page", "limit", "filters"))
-            commits = self.api.report_get(args.action, params)
-            for commit in commits:
-                dict_formatter(commit)
-                print(("_" * 48) + "\n")
-            print(f"Current page: {args.page}")
+            params = filter_params(args, ("id", "page", "limit", "filter"))
+            res = self.api.report_get(args.action, params)
+            if isinstance(res, list) and not args.json:
+                for commit in res:
+                    dict_formatter(commit)
+                    puts(Fore.LIGHTBLACK_EX, ("_" * 48) + "\n")
+            else:
+                autoformat(res, jsonfmt=args.json)
+            if not args.json:
+                print(f"Current page: {args.page}")
         elif args.action == "output":
             self.output(args, params)
         elif args.action == "stop":
