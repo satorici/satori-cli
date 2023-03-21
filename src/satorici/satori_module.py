@@ -66,42 +66,33 @@ def main():
 
     # repo {id} <commits|check-commits|check-forks|scan|scan-stop|run|clean>
     repo_cmd = subparsers.add_parser("repo", parents=[baseparser])
-    repo_cmd.add_argument(
-        "-c", "--coverage", dest="coverage", type=float, default=1, help="coverage"
-    )
-    repo_cmd.add_argument(
-        "--skip-check", dest="skip_check", default=False, action="store_true"
-    )
-    repo_cmd.add_argument(
-        "-f", "--from", dest="from", type=str, default="", help="From Date"
-    )
+    repo_cmd.add_argument("-c", "--coverage", type=float, default=1, help="coverage")
+    repo_cmd.add_argument("--skip-check", default=False, action="store_true")
+    repo_cmd.add_argument("-f", "--from", type=str, default="", help="From Date")
     repo_cmd.add_argument("-t", "--to", dest="to", type=str, default="", help="To Date")
-    repo_cmd.add_argument(
-        "--delete-commits",
-        dest="delete_commits",
-        default=False,
-        action="store_true",
-    )
+    repo_cmd.add_argument("--delete-commits", default=False, action="store_true")
     repo_cmd.add_argument("-s", "--sync", default=False, action="store_true")
     repo_cmd.add_argument("-d", "--data", type=str, default="", help="Secrets")
     repo_cmd.add_argument(
-        "-b", "--branch", dest="branch", type=str, default="main", help="Repo branch"
+        "-b", "--branch", type=str, default="main", help="Repo branch"
     )
-    repo_cmd.add_argument("--filter", dest="filter", type=str, help="Filter names")
+    repo_cmd.add_argument("--filter", type=str, help="Filter names")
+    repo_cmd.add_argument("-a", "--all", default=False, action="store_true")
+    repo_cmd.add_argument("-l", "--limit", type=int, default=100, help="Limit number")
+    repo_cmd.add_argument("--fail", default=False, action="store_true")
     add_satori_arguments(repo_cmd)
 
     # report {id} <output|stop|delete>
     report_cmd = subparsers.add_parser("report", parents=[baseparser])
     report_cmd.add_argument(
-        "-n", "--page", dest="page", type=int, default=1, help="Commit page number"
+        "-n", "--page", type=int, default=1, help="Commit page number"
     )
     report_cmd.add_argument(
-        "-l", "--limit", dest="limit", type=int, default=20, help="Page limit number"
+        "-l", "--limit", type=int, default=20, help="Page limit number"
     )
     report_cmd.add_argument(
         "-f",
         "--filter",
-        dest="filter",
         type=str,
         default="",
         help="Filters: from,to,satori_error,status",
