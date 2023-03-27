@@ -63,3 +63,15 @@ class SatoriAPI:
     def playbook_delete(self, parameters):
         res = self.__session__.delete(f"{HOST}/playbook", params=parameters)
         return res.json()
+
+    def team_get(self, parameters):
+        res = self.__session__.get(f"{HOST}/team", params=parameters)
+        return res.json()
+
+    def team_members_get(self, parameters):
+        res = self.__session__.get(f"{HOST}/team/members", params=parameters)
+        return res.json()
+
+    def team_post(self, parameters):
+        res = self.__session__.post(f"{HOST}/team", params=parameters)
+        return res.json()

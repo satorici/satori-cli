@@ -103,6 +103,10 @@ def main():
     monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])  # noqa: F841
     add_satori_arguments(monitor_cmd)
 
+    # team {id} create|members
+    team_cmd = subparsers.add_parser("team", parents=[baseparser])
+    add_satori_arguments(team_cmd)
+
     args = parser.parse_args()
 
     if args.subcommand == "config":
@@ -123,6 +127,8 @@ def main():
             instance.report(args)
         elif args.subcommand == "monitor":
             instance.monitor(args)
+        elif args.subcommand == "team":
+            instance.team(args)
         elif not args.subcommand or args.subcommand == "dashboard":
             instance.dashboard(args)
     except KeyboardInterrupt:

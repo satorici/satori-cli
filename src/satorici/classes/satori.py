@@ -453,3 +453,17 @@ class Satori:
             print("Unknown subcommand")
             sys.exit(1)
         autoformat(data, jsonfmt=args.json, list_separator="-" * 48)
+
+    def team(self, args):
+        """Get information about the"""
+        params = filter_params(args, ("id"))
+        if args.action == "get":
+            info = self.api.team_get(params)
+        elif args.action in ("members"):
+            info = self.api.team_members_get(params)
+        elif args.action in ("create"):
+            info = self.api.team_post(params)
+        else:
+            print("Unknown subcommand")
+            sys.exit(1)
+        autoformat(info, jsonfmt=args.json, list_separator="*" * 48)
