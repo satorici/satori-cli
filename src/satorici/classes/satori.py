@@ -459,13 +459,18 @@ class Satori:
         params = filter_params(args, ("id"))
         if args.action == "get":
             info = self.api.team_get(params)
+        elif args.action == "create":
+            info = self.api.team_post(params)
         elif args.action == "members":
             info = self.api.team_members_get(params)
         elif args.action == "add_member":
             params = filter_params(args, ("id", "email", "role"))
-            info = self.api.team_members_post(params)
-        elif args.action == "create":
-            info = self.api.team_post(params)
+            info = self.api.team_members_put(params)
+        elif args.action == "repos":
+            info = self.api.team_repos_get(params)
+        elif args.action == "add_repo":
+            params = filter_params(args, ("id", "repo"))
+            info = self.api.team_repos_put(params)
         else:
             print("Unknown subcommand")
             sys.exit(1)

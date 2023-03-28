@@ -76,6 +76,14 @@ class SatoriAPI:
         res = self.__session__.get(f"{HOST}/team/members", params=parameters)
         return res.json()
 
-    def team_members_post(self, parameters):
-        res = self.__session__.post(f"{HOST}/team/members", params=parameters)
+    def team_members_put(self, parameters):
+        res = self.__session__.put(f"{HOST}/team/members", params=parameters)
+        return res.json()
+
+    def team_repos_get(self, parameters):
+        res = self.__session__.get(f"{HOST}/team/repos", params=parameters)
+        return res.json()
+
+    def team_repos_put(self, parameters):
+        res = self.__session__.put(f"{HOST}/team/repos", params=parameters)
         return res.json()

@@ -107,6 +107,7 @@ def main():
     team_cmd = subparsers.add_parser("team", parents=[baseparser])
     team_cmd.add_argument("--email", type=str, help="User email")
     team_cmd.add_argument("--role", type=str, default="GUEST", help="User role")
+    team_cmd.add_argument("--repo", type=str, default=None, help="Repo name")
     add_satori_arguments(team_cmd)
 
     args = parser.parse_args()
