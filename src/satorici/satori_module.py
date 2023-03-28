@@ -105,6 +105,8 @@ def main():
 
     # team {id} create|members
     team_cmd = subparsers.add_parser("team", parents=[baseparser])
+    team_cmd.add_argument("--email", type=str, help="User email")
+    team_cmd.add_argument("--role", type=str, default="GUEST", help="User role")
     add_satori_arguments(team_cmd)
 
     args = parser.parse_args()
@@ -129,7 +131,7 @@ def main():
             instance.monitor(args)
         elif args.subcommand == "team":
             instance.team(args)
-        elif not args.subcommand or args.subcommand == "dashboard":
+        elif args.subcommand in (None, "dashboard"):
             instance.dashboard(args)
     except KeyboardInterrupt:
         puts(Back.RED, "Interrupted by user")
