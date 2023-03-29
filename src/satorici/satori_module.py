@@ -103,10 +103,10 @@ def main():
     monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])  # noqa: F841
     add_satori_arguments(monitor_cmd)
 
-    # team {id} create|members
+    # team {id} create|members|add_member|repos|add_repo
     team_cmd = subparsers.add_parser("team", parents=[baseparser])
     team_cmd.add_argument("--email", type=str, help="User email")
-    team_cmd.add_argument("--role", type=str, default="GUEST", help="User role")
+    team_cmd.add_argument("--role", type=str, default="READ", help="User role")
     team_cmd.add_argument("--repo", type=str, default=None, help="Repo name")
     add_satori_arguments(team_cmd)
 
