@@ -42,7 +42,7 @@ class Satori:
         self.verbose = False
         if not config:
             self.load_config()
-            self.api = SatoriAPI(self.token)
+            self.api = SatoriAPI(self.token, self.server)
 
     def load_config(self):
         """Load the config file and set the token on the headers"""
@@ -80,6 +80,7 @@ class Satori:
 
             self.config = config
             self.token = profile["token"]
+            self.server = profile.get("server")
 
     def save_config(self, key: str, value: str):
         """Save the token into the config file"""
@@ -104,7 +105,7 @@ class Satori:
         with open(config_file, "w") as f:
             f.write(yaml.safe_dump(config))
 
-        print("Token saved")
+        puts(Fore.LIGHTGREEN_EX, key.capitalize() + " saved")
 
     def run(self, args):
         exec_data = None
