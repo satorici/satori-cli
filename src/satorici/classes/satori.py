@@ -347,7 +347,7 @@ class Satori:
         elif args.action == "output":
             self.output(args, params)
         elif args.action == "stop":
-            res = self.api.report_stop(args.action, params)
+            res = self.api.report_get(args.action, params)
             autoformat(res, jsonfmt=args.json)
         elif args.action == "delete":
             res = self.api.report_delete(params)
