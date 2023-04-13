@@ -294,6 +294,9 @@ class Satori:
     def repo(self, args):
         """Run Satori on multiple commits"""
         params = filter_params(args, ("id"))
+        playbook = Path(args.playbook)
+        if playbook.is_file():
+            args.playbook = playbook.read_text()
         if args.action == "scan":
             params = filter_params(
                 args, ("id", "coverage", "from", "to", "branch", "data", "playbook")
