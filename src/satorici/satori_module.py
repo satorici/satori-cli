@@ -80,6 +80,7 @@ def main():
     repo_cmd.add_argument("-a", "--all", default=False, action="store_true")
     repo_cmd.add_argument("-l", "--limit", type=int, default=100, help="Limit number")
     repo_cmd.add_argument("--fail", default=False, action="store_true")
+    repo_cmd.add_argument("--playbook", type=str, help="Playbook")
     add_satori_arguments(repo_cmd)
 
     # report {id} <output|stop|delete>

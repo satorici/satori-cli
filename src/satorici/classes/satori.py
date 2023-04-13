@@ -296,14 +296,14 @@ class Satori:
         params = filter_params(args, ("id"))
         if args.action == "scan":
             params = filter_params(
-                args, ("id", "coverage", "from", "to", "branch", "data")
+                args, ("id", "coverage", "from", "to", "branch", "data", "playbook")
             )
         elif args.action == "clean":
             params = filter_params(args, ("id", "delete_commits"))
         elif args.action == "tests":
             params = filter_params(args, ("id", "filter", "all", "limit", "fail"))
         elif args.action == "run":
-            params = filter_params(args, ("id", "data"))
+            params = filter_params(args, ("id", "data", "playbook"))
         elif args.action == "check-commits":
             params = filter_params(args, ("id", "branch"))
         elif args.action not in (
