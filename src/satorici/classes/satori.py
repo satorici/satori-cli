@@ -32,9 +32,9 @@ from satorici.classes.utils import (
 class Satori:
     """Have some class"""
 
-    def __init__(self, profile="default", config=False):
+    def __init__(self, args, config=False):
         """Turn on the engines"""
-        self.profile = profile
+        self.profile = args.profile
         self.config_paths = [
             f"{Path.home()}/.satori_credentials.yml",
             ".satori_credentials.yml",
@@ -42,7 +42,7 @@ class Satori:
         self.verbose = False
         if not config:
             self.load_config()
-            self.api = SatoriAPI(self.token, self.server)
+            self.api = SatoriAPI(self.token, self.server, args)
 
     def load_config(self):
         """Load the config file and set the token on the headers"""
@@ -294,9 +294,10 @@ class Satori:
     def repo(self, args):
         """Run Satori on multiple commits"""
         params = filter_params(args, ("id"))
-        playbook = Path(args.playbook)
-        if playbook.is_file():
-            args.playbook = playbook.read_text()
+        if args.playbook:
+            playbook = Path(args.playbook)
+            if playbook.is_file():
+                args.playbook = playbook.read_text()
         if args.action == "scan":
             params = filter_params(
                 args, ("id", "coverage", "from", "to", "branch", "data", "playbook")
