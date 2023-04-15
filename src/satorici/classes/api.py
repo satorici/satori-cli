@@ -1,4 +1,18 @@
 import requests
+import sys
+from satorici.classes.utils import (
+    dict_formatter,
+    filter_params,
+    autoformat,
+    check_monitor,
+    FAIL_COLOR,
+    KEYNAME_COLOR,
+    SATORIURL_COLOR,
+    VALUE_COLOR,
+    UUID4_REGEX,
+    autocolor,
+    puts,
+)
 
 HOST = "https://api.satori-ci.com"
 
@@ -17,12 +31,16 @@ class SatoriAPI:
         self.server = server or HOST
 
     def request(self, method: str, endpoint: str, **kwargs):
-        resp = self.__session__.request(
-            method=method,
-            url=f"{self.server}/{endpoint}",
-            timeout=self.timeout,
-            **kwargs,
-        )
+        try:
+          resp = self.__session__.request(
+              method=method,
+              url=f"{self.server}/{endpoint}",
+              timeout=self.timeout,
+              **kwargs,
+          )
+        except:
+          puts(FAIL_COLOR, "Connection error")
+          sys.exit(1)
         if self.debug:
             print(resp.headers)
         return resp
