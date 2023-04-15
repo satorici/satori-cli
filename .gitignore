@@ -134,7 +134,7 @@ dmypy.json
 
 # Custom
 # playbooks/
-.pdm.toml
+.pdm-python
 .vscode
 *.tar.gz
 *.zip
