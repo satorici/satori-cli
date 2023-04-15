@@ -32,18 +32,20 @@ class SatoriAPI:
 
     def request(self, method: str, endpoint: str, **kwargs):
         try:
-          resp = self.__session__.request(
-              method=method,
-              url=f"{self.server}/{endpoint}",
-              timeout=self.timeout,
-              **kwargs,
-          )
-        except:
-          puts(FAIL_COLOR, "Connection error")
-          sys.exit(1)
-        if self.debug:
-            print(resp.headers)
-        return resp
+            resp = self.__session__.request(
+                method=method,
+                url=f"{self.server}/{endpoint}",
+                timeout=self.timeout,
+                **kwargs,
+            )
+            if self.debug:
+                print(resp.headers)
+            return resp
+        except Exception as e:
+            puts(FAIL_COLOR, "Connection error")
+            if self.debug:
+                print(e)
+            sys.exit(1)
 
     def debug_bridge(self, res: requests.Response, args) -> dict:
         if args.debug:
