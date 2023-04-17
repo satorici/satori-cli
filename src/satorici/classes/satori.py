@@ -329,6 +329,8 @@ class Satori:
             print("\nRepos:")
             autoformat(info["list"], list_separator="-" * 48)
         if args.action == "run" and args.sync:
+            if isinstance(info, list):
+                info = info[0]
             report = info.get("status", "")
             match = UUID4_REGEX.findall(report)
             if match:
