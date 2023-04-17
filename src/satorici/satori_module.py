@@ -139,15 +139,6 @@ def main():
     except KeyboardInterrupt:
         puts(Back.RED, "Interrupted by user")
         sys.exit(1)
-    except HTTPError as e:
-        res: Response = e.response
-        status = {"Status code": res.status_code}
-        status.update(res.json())
-        if args.json:
-            puts(Fore.RED, str(status))
-        else:
-            autoformat(status, capitalize=True, color=Fore.RED)
-        sys.exit(1)
 
 
 if __name__ == "__main__":

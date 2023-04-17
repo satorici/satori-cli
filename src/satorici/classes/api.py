@@ -1,16 +1,10 @@
 import requests
 import sys
+from requests import HTTPError, Response
+
 from satorici.classes.utils import (
-    dict_formatter,
-    filter_params,
     autoformat,
-    check_monitor,
     FAIL_COLOR,
-    KEYNAME_COLOR,
-    SATORIURL_COLOR,
-    VALUE_COLOR,
-    UUID4_REGEX,
-    autocolor,
     puts,
 )
 
@@ -25,6 +19,7 @@ class SatoriAPI:
         )
         self.timeout = cli_args.timeout
         self.debug = cli_args.debug
+        self.json = cli_args.json
         self.__session__.hooks = {
             "response": lambda r, *args, **kwargs: r.raise_for_status()
         }
@@ -41,8 +36,17 @@ class SatoriAPI:
             if self.debug:
                 print(resp.headers)
             return resp
+        except HTTPError as e:
+            res: Response = e.response
+            status = {"Status code": res.status_code}
+            status.update(res.json())
+            if self.json:
+                puts(FAIL_COLOR, str(status))
+            else:
+                autoformat(status, capitalize=True, color=FAIL_COLOR)
+            sys.exit(1)
         except Exception as e:
-            puts(FAIL_COLOR, "Connection error")
+            puts(FAIL_COLOR, "Error")
             if self.debug:
                 print(e)
             sys.exit(1)
