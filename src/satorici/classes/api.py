@@ -79,7 +79,7 @@ class SatoriAPI:
     def report_get(self, action, parameters):
         if action == "get":
             action = ""
-        res = self.request("GET", "report/{action}", params=parameters)
+        res = self.request("GET", f"report/{action}", params=parameters)
         return res.json()
 
     def report_delete(self, parameters):
