@@ -87,7 +87,8 @@ class SatoriAPI:
         report = res.json()
         if report["json"]:
             for e in report["json"]:
-                del e["gfx"]
+                if e.get("gfx"):
+                    del e["gfx"]
         return report
 
     def report_delete(self, parameters):
