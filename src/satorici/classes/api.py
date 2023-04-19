@@ -45,7 +45,7 @@ class SatoriAPI:
         #    else:
         #        autoformat(status, capitalize=True, color=FAIL_COLOR)
         #    sys.exit(1)
-        except ConnectionError,ReadTimeout as e:
+        except (ConnectionError,ReadTimeout) as e:
             puts(FAIL_COLOR, "Error")
             if self.debug:
                 print(e)
