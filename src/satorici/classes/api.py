@@ -36,16 +36,16 @@ class SatoriAPI:
             if self.debug:
                 print(resp.headers)
             return resp
-        except HTTPError as e:
-            res: Response = e.response
-            status = {"Status code": res.status_code}
-            status.update(res.json())
-            if self.json:
-                puts(FAIL_COLOR, str(status))
-            else:
-                autoformat(status, capitalize=True, color=FAIL_COLOR)
-            sys.exit(1)
-        except Exception as e:
+        #except HTTPError as e:
+        #    res: Response = e.response
+        #    status = {"Status code": res.status_code}
+        #    status.update(res.json())
+        #    if self.json:
+        #        puts(FAIL_COLOR, str(status))
+        #    else:
+        #        autoformat(status, capitalize=True, color=FAIL_COLOR)
+        #    sys.exit(1)
+        except ConnectionError,ReadTimeout as e:
             puts(FAIL_COLOR, "Error")
             if self.debug:
                 print(e)
