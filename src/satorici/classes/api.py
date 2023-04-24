@@ -85,7 +85,7 @@ class SatoriAPI:
             action = ""
         res = self.request("GET", f"report/{action}", params=parameters)
         report = res.json()
-        if report["json"]:
+        if report.get("json"):
             for e in report["json"]:
                 if e.get("gfx"):
                     del e["gfx"]
