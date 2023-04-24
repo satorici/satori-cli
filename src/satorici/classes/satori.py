@@ -390,15 +390,26 @@ class Satori:
         except ValueError:
             sys.exit(1)
 
-        if not args.json:
+        if not args.json:  # default output
             outputs = data.pop("output", [])
             for key, value in data.items():
                 print(f"{key}: {value}")
 
             for row in outputs:
-                print("-" * 30)
+                puts(Fore.LIGHTBLACK_EX, "-" * 48)
+                puts(Fore.CYAN, f"test_name: {row['test_name']}")
+                puts(KEYNAME_COLOR, "command: ", Fore.LIGHTBLUE_EX, row["command"])
                 for key, value in row.items():
-                    print(f"{key}: {value}")
+                    if key in ("test_name", "command"):
+                        continue
+                    val_color = VALUE_COLOR
+                    if key == "stdout":
+                        val_color = Fore.LIGHTGREEN_EX
+                    elif key == "stderr":
+                        val_color = Fore.LIGHTRED_EX
+                    elif key == "return_code":
+                        val_color = Fore.YELLOW
+                    puts(KEYNAME_COLOR, f"{key}: ", val_color, str(value))
         else:
             print(json.dumps(data, indent=2))
 
