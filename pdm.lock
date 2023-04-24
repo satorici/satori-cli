@@ -20,6 +20,11 @@ requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7
 summary = "Cross-platform colored terminal text."
 
 [[package]]
+name = "flatdict"
+version = "4.0.1"
+summary = "Python module for interacting with nested dicts as a single level dict with delimited keys."
+
+[[package]]
 name = "idna"
 version = "3.3"
 requires_python = ">=3.5"
@@ -61,7 +66,7 @@ summary = "HTTP library with thread-safe connection pooling, file post, and more
 [metadata]
 lock_version = "4.2"
 groups = ["default"]
-content_hash = "sha256:1a00305e5fcb3c563a25de9b5fd6df873c58986178bb3ff41de2ef2c9dd5f7ca"
+content_hash = "sha256:595a9bd0ffb9b9efa27aa33996abe98eab7d7d3e9f32dd18e49fc8403199d50a"
 
 [metadata.files]
 "certifi 2022.6.15" = [
@@ -75,6 +80,9 @@ content_hash = "sha256:1a00305e5fcb3c563a25de9b5fd6df873c58986178bb3ff41de2ef2c9
 "colorama 0.4.6" = [
     {url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
+]
+"flatdict 4.0.1" = [
+    {url = "https://files.pythonhosted.org/packages/3e/0d/424de6e5612f1399ff69bf86500d6a62ff0a4843979701ae97f120c7f1fe/flatdict-4.0.1.tar.gz", hash = "sha256:cd32f08fd31ed21eb09ebc76f06b6bd12046a24f77beb1fd0281917e47f26742"},
 ]
 "idna 3.3" = [
     {url = "https://files.pythonhosted.org/packages/04/a2/d918dcd22354d8958fe113e1a3630137e0fc8b44859ade3063982eacd2a4/idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
