@@ -73,10 +73,11 @@ class SatoriAPI:
         res = self.request("DELETE", "monitors", params=parameters)
         return res.json()
 
-    def report_get(self, action, parameters):
-        if action == "get":
-            action = ""
-        res = self.request("GET", f"reports/{action}", params=parameters)
+    def report_get(self, args, parameters):
+        id = ""
+        if args.action == "get" and args.id != "list":
+            id = args.id
+        res = self.request("GET", f"reports/{id}", params=parameters)
         report = res.json()
         if isinstance(report, dict) and report.get("json"):
             for e in report["json"]:

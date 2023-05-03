@@ -341,7 +341,7 @@ class Satori:
         params = filter_params(args, ("id"))
         if args.action == "get":
             params = filter_params(args, ("id", "page", "limit", "filter"))
-            res = self.api.report_get(args.action, params)
+            res = self.api.report_get(args, params)
             if isinstance(res, list) and not args.json:
                 for commit in res:
                     dict_formatter(commit)
@@ -353,7 +353,7 @@ class Satori:
         elif args.action == "output":
             self.output(args, params)
         elif args.action == "stop":
-            res = self.api.report_get(args.action, params)
+            res = self.api.report_get(args, params)
             autoformat(res, jsonfmt=args.json)
         elif args.action == "delete":
             res = self.api.report_delete(params)
