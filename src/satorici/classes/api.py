@@ -1,12 +1,8 @@
 import requests
 import sys
-from requests import HTTPError, Response
-
-from satorici.classes.utils import (
-    autoformat,
-    FAIL_COLOR,
-    puts,
-)
+from requests import Response
+from requests.exceptions import ConnectionError, ReadTimeout, HTTPError
+from satorici.classes.utils import FAIL_COLOR, puts, autoformat
 
 HOST = "https://api.satori-ci.com"
 
@@ -36,19 +32,17 @@ class SatoriAPI:
             if self.debug:
                 print(resp.headers)
             return resp
-        #except HTTPError as e:
-        #    res: Response = e.response
-        #    status = {"Status code": res.status_code}
-        #    status.update(res.json())
-        #    if self.json:
-        #        puts(FAIL_COLOR, str(status))
-        #    else:
-        #        autoformat(status, capitalize=True, color=FAIL_COLOR)
-        #    sys.exit(1)
-        except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) as e:
-            puts(FAIL_COLOR, "Error")
+        except (ConnectionError, ReadTimeout, HTTPError) as e:
             if self.debug:
-                print(e)
+                res: Response = e.response
+                status = {"Status code": res.status_code}
+                status.update(res.json())
+                if self.json:
+                    puts(FAIL_COLOR, str(status))
+                else:
+                    autoformat(status, capitalize=True, color=FAIL_COLOR)
+            else:
+                puts(FAIL_COLOR, "Error")
             sys.exit(1)
 
     def debug_bridge(self, res: requests.Response, args) -> dict:
