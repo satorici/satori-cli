@@ -5,9 +5,11 @@
 Satori CI is an automated testing platform that allows you to test throughout the software lifecycle.
 
 .SH SYNOPSIS
+
 satori-cli [dir] [option]
 
 .SH DESCRIPTION
+
 **Dashboard: /api/dashboard**
 
 ```
@@ -71,29 +73,75 @@ satori-cli playbook GHI456         # GET /api/playbook/?id=GHI456
 satori-cli playbook GHI456 delete  # DELETE /api/playbook/?id=GHI456
 ```
 .SH OPTIONS
-satori-cli config default [token] 
-Use token to setup your account with our CLI tool
+The following options are available for satori-cli:
 
-satori-cli ci
-Check how your repositories are connected to our CI with. This command will show you what is our visibility on your repositories.
+.TP
+\fBconfig default [token]\fR
+Use token to set up your account with our CLI tool.
 
-satori-cli monitor
+.TP
+\fBci\fR
+Check how your repositories are connected to our CI. This command will show you what our visibility is on your repositories.
+
+.TP
+\fBmonitor\fR
 Check that your assets are correctly monitored.
 
-satori-cli playbooks [private or public]
-You can see a list of public playbooks when at https://github.com/satorici/playbooks/
+.TP
+\fBplaybooks [private or public]\fR
+See a list of public playbooks at https://github.com/satorici/playbooks/.
 
-satori-cli run [playbook]
+.TP
+\fBrun [playbook]\fR
+Run a playbook.
 
+.TP
+\fBstop\fR
+Stop a currently running playbook.
 
-satori-cli stop
-
-
-satori-cli scan [GithubAccount/Repository]
+.TP
+\fBscan [GithubAccount/Repository]\fR
 Scan all your commits.
 
+.SH EXAMPLES
+The following examples demonstrate how to use satori-cli:
+
+.TP
+\fBsatori-cli config default X\fR
+Use token X to set up your account with our CLI tool.
+
+.TP
+\fBsatori-cli ci\fR
+Check how your repositories are connected to our CI.
+
+.TP
+\fBsatori-cli monitor ABC123 start\fR
+Start monitoring assets with ID ABC123.
+
+.TP
+\fBsatori-cli playbooks public\fR
+See a list of public playbooks.
+
+.TP
+\fBsatori-cli run playbook.yml\fR
+Run the playbook specified in the playbook.yml file.
+
+.TP
+\fBsatori-cli stop\fR
+Stop a currently running playbook.
+
+.TP
+\fBsatori-cli scan satoridev01/HelloWorld\fR
+Scan all commits for the satoridev01/HelloWorld repository.
+
 .SH SEE ALSO
-tbc 
+The following resources provide additional information about satori-cli:
+
+.TP
+https://satori-ci.com/
+The official website for Satori CI.
+
+
 
 .SH BUGS
 No known bugs.
