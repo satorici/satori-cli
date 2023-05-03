@@ -35,8 +35,7 @@ class SatoriAPI:
         except (ConnectionError, ReadTimeout, HTTPError) as e:
             if self.debug:
                 res: Response = e.response
-                status = {"Status code": res.status_code}
-                status.update(res.json())
+                status = res.json()
                 if self.json:
                     puts(FAIL_COLOR, str(status))
                 else:
@@ -61,23 +60,23 @@ class SatoriAPI:
     def repo_get(self, args, parameters):
         if args.action == "get":
             args.action = ""
-        res = self.request("GET", f"repo/{args.action}", params=parameters)
+        res = self.request("GET", f"repos/{args.action}", params=parameters)
         return res.json()
 
     def monitor_get(self, action, parameters):
         if action == "get":
             action = ""
-        res = self.request("GET", f"monitor/{action}", params=parameters)
+        res = self.request("GET", f"monitors/{action}", params=parameters)
         return res.json()
 
     def monitor_delete(self, parameters):
-        res = self.request("DELETE", "monitor", params=parameters)
+        res = self.request("DELETE", "monitors", params=parameters)
         return res.json()
 
     def report_get(self, action, parameters):
         if action == "get":
             action = ""
-        res = self.request("GET", f"report/{action}", params=parameters)
+        res = self.request("GET", f"reports/{action}", params=parameters)
         report = res.json()
         if isinstance(report, dict) and report.get("json"):
             for e in report["json"]:
@@ -85,7 +84,7 @@ class SatoriAPI:
         return report
 
     def report_delete(self, parameters):
-        res = self.request("DELETE", "report", params=parameters)
+        res = self.request("DELETE", "reports", params=parameters)
         return res.json()
 
     def dashboard(self):
@@ -93,33 +92,33 @@ class SatoriAPI:
         return res.json()
 
     def playbook_get(self, parameters):
-        res = self.request("GET", "playbook", params=parameters)
+        res = self.request("GET", "playbooks", params=parameters)
         return res.json()
 
     def playbook_delete(self, parameters):
-        res = self.request("DELETE", "playbook", params=parameters)
+        res = self.request("DELETE", "playbooks", params=parameters)
         return res.json()
 
     def team_get(self, parameters):
-        res = self.request("GET", "team", params=parameters)
+        res = self.request("GET", "teams", params=parameters)
         return res.json()
 
     def team_post(self, parameters):
-        res = self.request("POST", "team", params=parameters)
+        res = self.request("POST", "teams", params=parameters)
         return res.json()
 
     def team_members_get(self, parameters):
-        res = self.request("GET", "team/members", params=parameters)
+        res = self.request("GET", "teams/members", params=parameters)
         return res.json()
 
     def team_members_put(self, parameters):
-        res = self.request("PUT", "team/members", params=parameters)
+        res = self.request("PUT", "teams/members", params=parameters)
         return res.json()
 
     def team_repos_get(self, parameters):
-        res = self.request("GET", "team/repos", params=parameters)
+        res = self.request("GET", "teams/repos", params=parameters)
         return res.json()
 
     def team_repos_put(self, parameters):
-        res = self.request("PUT", "team/repos", params=parameters)
+        res = self.request("PUT", "teams/repos", params=parameters)
         return res.json()
