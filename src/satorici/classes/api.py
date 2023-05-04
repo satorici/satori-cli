@@ -22,12 +22,12 @@ class SatoriAPI:
         self.server = server or HOST
 
     def request(self, method: str, endpoint: str, **kwargs):
+        url = f"{self.server}/{endpoint}"
+        if self.debug:
+            print("Request URL:", method, url)
         try:
             resp = self.__session__.request(
-                method=method,
-                url=f"{self.server}/{endpoint}",
-                timeout=self.timeout,
-                **kwargs,
+                method=method, url=url, timeout=self.timeout, **kwargs
             )
             if self.debug:
                 print(resp.headers)
@@ -58,9 +58,9 @@ class SatoriAPI:
         return res.json()
 
     def repo_get(self, args, parameters):
-        if args.action == "get":
-            args.action = ""
-        res = self.request("GET", f"repos/{args.action}", params=parameters)
+        id = "/" + args.id if args.id != "list" and args.action != "pending" else ""
+        action = "/" + args.action if args.action != "get" else ""
+        res = self.request("GET", f"repos{action}{id}", params=parameters)
         return res.json()
 
     def monitor_get(self, action, parameters):
@@ -71,22 +71,20 @@ class SatoriAPI:
 
     def monitor_delete(self, parameters):
         res = self.request("DELETE", "monitors", params=parameters)
-        return res.json()
+        return res.ok
 
     def report_get(self, args, parameters):
-        id = ""
-        if args.action == "get" and args.id != "list":
-            id = args.id
-        res = self.request("GET", f"reports/{id}", params=parameters)
+        id = "/" + args.id if args.id != "list" else ""
+        action = "/" + args.action if args.action != "get" else ""
+        res = self.request("GET", f"reports{action}{id}", params=parameters)
         report = res.json()
         if isinstance(report, dict) and report.get("json"):
             for e in report["json"]:
                 e.pop("gfx", None)
         return report
 
-    def report_delete(self, parameters):
-        res = self.request("DELETE", "reports", params=parameters)
-        return res.json()
+    def report_delete(self, parameters) -> None:
+        self.request("DELETE", f"reports/{parameters['id']}")
 
     def dashboard(self):
         res = self.request("GET", "dashboard")
@@ -96,9 +94,8 @@ class SatoriAPI:
         res = self.request("GET", "playbooks", params=parameters)
         return res.json()
 
-    def playbook_delete(self, parameters):
-        res = self.request("DELETE", "playbooks", params=parameters)
-        return res.json()
+    def playbook_delete(self, parameters) -> None:
+        self.request("DELETE", "playbooks", params=parameters)
 
     def team_get(self, parameters):
         res = self.request("GET", "teams", params=parameters)

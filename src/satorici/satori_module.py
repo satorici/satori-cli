@@ -4,11 +4,10 @@ import argparse
 import sys
 from importlib import metadata
 
-from requests import HTTPError, Response
 from colorama import just_fix_windows_console, Fore, Back
 
 from satorici.classes.satori import Satori
-from satorici.classes.utils import autoformat, puts
+from satorici.classes.utils import puts
 
 VERSION = metadata.version("satori-ci")
 just_fix_windows_console()

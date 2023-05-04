@@ -317,6 +317,7 @@ class Satori:
             "scan-status",
             "get",
             "download",
+            "pending"
         ):
             print("Unknown subcommand")
             sys.exit(1)
@@ -356,8 +357,8 @@ class Satori:
             res = self.api.report_get(args, params)
             autoformat(res, jsonfmt=args.json)
         elif args.action == "delete":
-            res = self.api.report_delete(params)
-            autoformat(res, jsonfmt=args.json)
+            self.api.report_delete(params)
+            print("Report deleted")
         else:
             print("Unknown subcommand")
             sys.exit(1)
@@ -386,7 +387,7 @@ class Satori:
 
         try:
             if uuid.UUID(args.id):
-                data = self.api.report_get(args.action, params)
+                data = self.api.report_get(args, params)
         except ValueError:
             sys.exit(1)
 
