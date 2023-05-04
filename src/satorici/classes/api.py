@@ -35,7 +35,10 @@ class SatoriAPI:
         except (ConnectionError, ReadTimeout, HTTPError) as e:
             if self.debug:
                 res: Response = e.response
-                status = res.json()
+                try:
+                    status = res.json()
+                except Exception:
+                    status = res.text
                 if self.json:
                     puts(FAIL_COLOR, str(status))
                 else:
@@ -63,15 +66,14 @@ class SatoriAPI:
         res = self.request("GET", f"repos{action}{id}", params=parameters)
         return res.json()
 
-    def monitor_get(self, action, parameters):
-        if action == "get":
-            action = ""
-        res = self.request("GET", f"monitors/{action}", params=parameters)
+    def monitor_get(self, args, parameters):
+        id = "/" + args.id if args.id != "list" and args.action != "pending" else ""
+        action = "/" + args.action if args.action != "get" else ""
+        res = self.request("GET", f"monitors/{action}{id}", params=parameters)
         return res.json()
 
     def monitor_delete(self, parameters):
-        res = self.request("DELETE", "monitors", params=parameters)
-        return res.ok
+        self.request("DELETE", f"monitors/{parameters['id']}")
 
     def report_get(self, args, parameters):
         id = "/" + args.id if args.id != "list" else ""

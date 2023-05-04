@@ -367,9 +367,11 @@ class Satori:
         """Get information about the"""
         params = filter_params(args, ("id"))
         if args.action == "delete":
-            info = self.api.monitor_delete(params)
+            self.api.monitor_delete(params)
+            print("Monitor deleted")
+            sys.exit(0)
         elif args.action in ("start", "stop", "get"):
-            info = self.api.monitor_get(args.action, params)
+            info = self.api.monitor_get(args, params)
         else:
             print("Unknown subcommand")
             sys.exit(1)
