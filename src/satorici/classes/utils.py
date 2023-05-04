@@ -89,7 +89,7 @@ def autoformat(
     indent: int = 0,
     jsonfmt: bool = False,
     list_separator: str = None,
-    color: any = None,
+    color: any = "",
 ):
     """Format and print a dict, list or other var
 
