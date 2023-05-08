@@ -1,12 +1,12 @@
 .\" Manpage for satori-cli
 .\" Contact support@satori-ci.com to correct errors or typos.
-.TH man 8 "13 Apr 2023" "1.0" "satori-cli man page"
+.TH man 1 "13 Apr 2023" "1.0" "satori-cli man page"
 .SH NAME
 Satori CI is an automated testing platform that allows you to test throughout the software lifecycle.
 
 .SH SYNOPSIS
 
-satori-cli [dir] [option]
+satori-cli [category] [object] [action] [options]
 
 .SH DESCRIPTION
 
@@ -25,114 +25,63 @@ satori-cli config token X                             # no API call
 **Repository: /api/repo/**
 
 ```
-satori-cli repo                                       # GET /api/repo/
-satori-cli repo satoridev01/HelloWorld                # GET /api/repo/?id=satoridev01/HelloWorld
-satori-cli repo satoridev01/HelloWorld commits        # GET /api/repo/commits?id=satoridev01/HelloWorld
-satori-cli repo satoridev01/HelloWorld check-commits  # GET /api/repo/check-commits?id=satoridev01/HelloWorld
-satori-cli repo satoridev01/HelloWorld check-forks    # GET /api/repo/check-forks?id=satoridev01/HelloWorld
-satori-cli repo satoridev01/HelloWorld scan           # GET /api/repo/scan?id=satoridev01/HelloWorld
-satori-cli repo satoridev01/HelloWorld scan-stop      # GET /api/repo/scan-stop?id=satoridev01/HelloWorld
-satori-cli repo satoridev01/HelloWorld run            # GET /api/repo/run?id=satoridev01/HelloWorld
-satori-cli repo satoridev01/HelloWorld/commit123 run  # GET /api/repo/run?id=satoridev01/HelloWorld/commit123
-satori-cli repo satoridev01/HelloWorld clean          # GET /api/repo/clean?id=satoridev01/HelloWorld
+satori-cli repo                                             # GET /api/repo/
+satori-cli repo satoridev01/HelloWorld                      # GET /api/repo/?id=satoridev01/HelloWorld
+satori-cli repo satoridev01/HelloWorld commits              # GET /api/repo/commits?id=satoridev01/HelloWorld
+satori-cli repo satoridev01/HelloWorld check-commits        # GET /api/repo/check-commits?id=satoridev01/HelloWorld
+satori-cli repo satoridev01/HelloWorld check-forks          # GET /api/repo/check-forks?id=satoridev01/HelloWorld
+satori-cli repo satoridev01/HelloWorld scan                 # GET /api/repo/scan?id=satoridev01/HelloWorld
+satori-cli repo satoridev01/HelloWorld scan-stop            # GET /api/repo/scan-stop?id=satoridev01/HelloWorld
+satori-cli repo satoridev01/HelloWorld run                  # GET /api/repo/run?id=satoridev01/HelloWorld
+satori-cli repo satoridev01/HelloWorld/commit123 run        # GET /api/repo/run?id=satoridev01/HelloWorld/commit123
+satori-cli repo satoridev01/HelloWorld clean                # GET /api/repo/clean?id=satoridev01/HelloWorld
 ```
 
 **Monitor: /api/monitor/**
 
 ```
-satori-cli monitor               #    GET /api/monitor/
-satori-cli monitor ABC123        #    GET /api/monitor/?id=ABC123
-satori-cli monitor ABC123 start  #    GET /api/monitor/start?id=ABC123
-satori-cli monitor ABC123 stop   #    GET /api/monitor/stop?id=ABC123
-satori-cli monitor ABC123 delete # DELETE /api/monitor/?id=ABC123
+satori-cli monitor                      #    GET /api/monitor/
+satori-cli monitor ABC123               #    GET /api/monitor/?id=ABC123
+satori-cli monitor ABC123 start         #    GET /api/monitor/start?id=ABC123
+satori-cli monitor ABC123 stop          #    GET /api/monitor/stop?id=ABC123
+satori-cli monitor ABC123 delete        # DELETE /api/monitor/?id=ABC123
 ```
 
 **Report: /api/report/**
 
 ```
-satori-cli report                #    GET /api/report/
-satori-cli report DEF456         #    GET /api/report/?id=DEF456
-satori-cli report DEF456 output  #    GET /api/report/output?id=DEF456
-satori-cli report DEF456 stop    #    GET /api/report/stop?id=DEF456
-satori-cli report DEF456 delete  # DELETE /api/report/?id=DEF456
+satori-cli report                       #    GET /api/report/
+satori-cli report DEF456                #    GET /api/report/?id=DEF456
+satori-cli report DEF456 output         #    GET /api/report/output?id=DEF456
+satori-cli report DEF456 stop           #    GET /api/report/stop?id=DEF456
+satori-cli report DEF456 delete         # DELETE /api/report/?id=DEF456
 ```
 
 **Run: /api/run/**
 
 ```
-satori-cli run                   #  GET /api/run/
-satori-cli run playbook.yml      # POST /api/run/
-satori-cli run ./                # POST /api/run/
+satori-cli run                      #  GET /api/run/        
+satori-cli run playbook.yml         # POST /api/run/
+satori-cli run ./                   # POST /api/run/
 ```
 
 **Playbook**
 
 ```
-satori-cli playbook                # GET /api/playbook/
-satori-cli playbook GHI456         # GET /api/playbook/?id=GHI456
-satori-cli playbook GHI456 delete  # DELETE /api/playbook/?id=GHI456
+satori-cli playbook                     # GET /api/playbook/
+satori-cli playbook GHI456              # GET /api/playbook/?id=GHI456
+satori-cli playbook GHI456 delete       # DELETE /api/playbook/?id=GHI456
 ```
 .SH OPTIONS
-The following options are available for satori-cli:
+The following options are available for Satori-CLI:
 
 .TP
-\fBconfig default [token]\fR
-Use token to set up your account with our CLI tool.
+\fB--json\fR
+Output results in JSON format.
 
 .TP
-\fBci\fR
-Check how your repositories are connected to our CI. This command will show you what our visibility is on your repositories.
-
-.TP
-\fBmonitor\fR
-Check that your assets are correctly monitored.
-
-.TP
-\fBplaybooks [private or public]\fR
-See a list of public playbooks at https://github.com/satorici/playbooks/.
-
-.TP
-\fBrun [playbook]\fR
-Run a playbook.
-
-.TP
-\fBstop\fR
-Stop a currently running playbook.
-
-.TP
-\fBscan [GithubAccount/Repository]\fR
-Scan all your commits.
-
-.SH EXAMPLES
-The following examples demonstrate how to use satori-cli:
-
-.TP
-\fBsatori-cli config default X\fR
-Use token X to set up your account with our CLI tool.
-
-.TP
-\fBsatori-cli ci\fR
-Check how your repositories are connected to our CI.
-
-.TP
-\fBsatori-cli monitor ABC123 start\fR
-Start monitoring assets with ID ABC123.
-
-.TP
-\fBsatori-cli playbooks public\fR
-See a list of public playbooks.
-
-.TP
-\fBsatori-cli run playbook.yml\fR
-Run the playbook specified in the playbook.yml file.
-
-.TP
-\fBsatori-cli stop\fR
-Stop a currently running playbook.
-
-.TP
-\fBsatori-cli scan satoridev01/HelloWorld\fR
-Scan all commits for the satoridev01/HelloWorld repository.
+\fB--filter\fR
+Filter results using
 
 .SH SEE ALSO
 The following resources provide additional information about satori-cli:
