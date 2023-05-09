@@ -47,10 +47,10 @@ class SatoriAPI:
                 puts(FAIL_COLOR, "Error")
             sys.exit(1)
 
-    def debug_bridge(self, res: requests.Response, args) -> dict:
-        if args.debug:
-            print("Response headers:", res.headers)
-        return res.json()
+    def get_path_params(self, args) -> tuple:
+        id = "/" + args.id if args.id != "list" else ""
+        action = "/" + args.action if args.action != "get" else ""
+        return (id, action)
 
     def get_bundle_presigned_post(self, args):
         res = self.request("GET", "run/bundle", data={"secrets": args.data})
@@ -63,22 +63,21 @@ class SatoriAPI:
     def repo_get(self, args, parameters):
         id = "/" + args.id if args.id != "list" and args.action != "pending" else ""
         action = "/" + args.action if args.action != "get" else ""
-        res = self.request("GET", f"repos{action}{id}", params=parameters)
+        res = self.request("GET", f"repos{id}{action}", params=parameters)
         return res.json()
 
     def monitor_get(self, args, parameters):
         id = "/" + args.id if args.id != "list" and args.action != "pending" else ""
         action = "/" + args.action if args.action != "get" else ""
-        res = self.request("GET", f"monitors/{action}{id}", params=parameters)
+        res = self.request("GET", f"monitors{id}{action}", params=parameters)
         return res.json()
 
-    def monitor_delete(self, parameters):
+    def monitor_delete(self, parameters) -> None:
         self.request("DELETE", f"monitors/{parameters['id']}")
 
     def report_get(self, args, parameters):
-        id = "/" + args.id if args.id != "list" else ""
-        action = "/" + args.action if args.action != "get" else ""
-        res = self.request("GET", f"reports{action}{id}", params=parameters)
+        id, action = self.get_path_params(args)
+        res = self.request("GET", f"reports{id}{action}", params=parameters)
         report = res.json()
         if isinstance(report, dict) and report.get("json"):
             for e in report["json"]:
@@ -99,26 +98,6 @@ class SatoriAPI:
     def playbook_delete(self, parameters) -> None:
         self.request("DELETE", "playbooks", params=parameters)
 
-    def team_get(self, parameters):
-        res = self.request("GET", "teams", params=parameters)
-        return res.json()
-
-    def team_post(self, parameters):
-        res = self.request("POST", "teams", params=parameters)
-        return res.json()
-
-    def team_members_get(self, parameters):
-        res = self.request("GET", "teams/members", params=parameters)
-        return res.json()
-
-    def team_members_put(self, parameters):
-        res = self.request("PUT", "teams/members", params=parameters)
-        return res.json()
-
-    def team_repos_get(self, parameters):
-        res = self.request("GET", "teams/repos", params=parameters)
-        return res.json()
-
-    def team_repos_put(self, parameters):
-        res = self.request("PUT", "teams/repos", params=parameters)
+    def teams(self, method: str, name: str, action: str, parameters):
+        res = self.request(method, f"teams{name}{action}", params=parameters)
         return res.json()
