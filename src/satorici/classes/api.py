@@ -34,15 +34,20 @@ class SatoriAPI:
             log.debug(resp.headers)
             return resp
         except (ConnectionError, ReadTimeout, HTTPError) as e:
+            res: Response = e.response
+            log.debug("Response headers:")
+            log.debug(res.headers)
+            try:
+                status = res.json()
+            except Exception:
+                status = res.text
             if self.debug:
-                res: Response = e.response
-                try:
-                    status = res.json()
-                except Exception:
-                    status = res.text
                 autoformat(status, capitalize=True, color=FAIL_COLOR, jsonfmt=self.json)
             else:
-                puts(FAIL_COLOR, "Error")
+                msg = "Error"
+                if isinstance(status, dict) and "detail" in status:
+                    msg += f": {status['detail']}"
+                puts(FAIL_COLOR, msg)
             sys.exit(1)
 
     def runs(self, run_type: str, secrets: str):
