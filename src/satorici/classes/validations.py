@@ -47,3 +47,9 @@ def get_parameters(config: dict):
             parameters.update(get_unbound(value, key, flat_config))
 
     return parameters
+
+
+def validate_parameters(params: dict):
+    if isinstance(params, dict):
+        if all(isinstance(v, (str, int, list)) for v in params.values()):
+            return True
