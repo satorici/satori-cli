@@ -7,6 +7,8 @@ from colorama import Fore, Style
 from rich.logging import RichHandler
 import logging
 from rich import print_json
+from rich.console import Console
+from rich.syntax import Syntax
 
 __decorations = "▢•○░"
 # IDs
@@ -20,7 +22,7 @@ RUNNING_REGEX = re.compile(r"(pending|running)", re.IGNORECASE)
 FAIL_REGEX = re.compile(r"(fail(\(\d+\))?|error)", re.IGNORECASE)
 UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
 SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
-KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)")
+KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)")  # ex: "key: "
 # Colors outputs
 PASS_COLOR = Fore.LIGHTGREEN_EX
 FAIL_COLOR = Fore.LIGHTRED_EX
@@ -31,8 +33,13 @@ SATORIURL_COLOR = Fore.LIGHTBLUE_EX
 VALUE_COLOR = Fore.CYAN
 MULTILINE_COLOR = Fore.YELLOW
 
-logging.basicConfig(level="CRITICAL", format="%(message)s", handlers=[RichHandler()])
+logging.basicConfig(
+    level="CRITICAL",
+    format="%(message)s",
+    handlers=[RichHandler(rich_tracebacks=True, show_time=False)],
+)
 log = logging.getLogger()
+console = Console(log_path=False, log_time=False)
 
 
 def get_decoration(indent):
@@ -62,14 +69,13 @@ def dict_formatter(
             list_formatter(obj[key], capitalize, indent + 1, list_separator)
         else:
             item = str(obj[key])
-            print(
-                indent_text
-                + KEYNAME_COLOR
-                + f"{key_text}: "
-                + get_value_color(item)
-                + item
-                + Style.RESET_ALL
-            )
+            color = get_value_color(item)
+            print(indent_text + KEYNAME_COLOR + f"{key_text}: ", end="")
+            if item.count("\n") > 0:
+                if autosyntax(item, indent + 2):
+                    continue
+            # Not JSON or YAML
+            print(color + item + Style.RESET_ALL)
 
 
 def list_formatter(
@@ -102,7 +108,7 @@ def autoformat(
     indent: int = 0,
     jsonfmt: bool = False,
     list_separator: Union[str, None] = None,
-    color: Any = None,
+    color: str = "",
 ):
     """Format and print a dict, list or other var
 
@@ -126,6 +132,10 @@ def autoformat(
             dict_formatter(obj, capitalize, indent, list_separator)
         elif isinstance(obj, list):
             list_formatter(obj, capitalize, indent, list_separator)
+        elif isinstance(obj, str):
+            if obj.count("\n") > 0:
+                if not autosyntax(obj, indent):
+                    print(obj)
         else:
             print(color + str(obj) + Style.RESET_ALL)
 
@@ -201,3 +211,23 @@ def autocolor(txt: str) -> str:
     txt = UNKNOWN_REGEX.sub(rf"{UNKNOWN_COLOR}\1{rst}", txt)
     txt = SATORIURL_REGEX.sub(rf"{SATORIURL_COLOR}\1{rst}", txt)
     return txt
+
+
+def autosyntax(item: str, indent: int) -> bool:
+    ind = (indent) * 2
+    try:
+        json.loads(item)
+    except Exception:
+        try:
+            yaml.safe_load(item)
+        except Exception:  # Not YAML/JSON
+            return False
+        else:  # Is YAML
+            yml = Syntax(item, "YAML", padding=(0, ind), theme="fruity", word_wrap=True)
+            print()
+            console.log(yml)
+            return True
+    else:  # Is JSON
+        print()
+        print_json(item, indent=ind)
+        return True

@@ -126,15 +126,16 @@ class Satori:
             print(
                 f"Define the Satori playbook file:\n{sys.argv[0]} run -p playbook.yml"
             )
-            return False
+            sys.exit(1)
 
         if not os.path.isfile(playbook):
             puts(FAIL_COLOR, f"Playbook not found: {playbook}")
-            return False
+            sys.exit(1)
 
         bundle = make_bundle(playbook)
         is_monitor = check_monitor(playbook)
-        url = self.api.get_bundle_presigned_post(args)
+        url = self.api.runs("bundle", args.data)
+
         res = requests.post(
             url["url"],
             url["fields"],
@@ -181,12 +182,12 @@ class Satori:
         full_path = f"{temp_file}.zip"
 
         try:
-            shutil.make_archive(temp_file, "zip", directory)
+            shutil.make_archive(str(temp_file), "zip", directory)
         except Exception as e:
             puts(FAIL_COLOR, f"Could not compress directory: {e}")
             sys.exit(1)
 
-        res = self.api.get_archive_presigned_post(args)
+        res = self.api.runs("archive", args.data)
 
         arc = res["archive"]
         bun = res["bundle"]
@@ -242,8 +243,7 @@ class Satori:
             elapsed = time.time() - start_time
             elapsed_text = f"Elapsed time: {elapsed:.1f}s"
             try:
-                # TODO: incorrect params
-                report_data = self.api.report_get("", {"id": exec_data["id"]})
+                report_data = self.api.reports("", exec_data["id"], "")
             except requests.HTTPError as e:
                 code = e.response.status_code
                 if code in (404, 403):
@@ -303,26 +303,31 @@ class Satori:
             params = filter_params(
                 args, ("id", "coverage", "from", "to", "branch", "data", "playbook")
             )
+            info = self.api.repos_scan("GET", "", "", params=params)
         elif args.action == "clean":
             params = filter_params(args, ("id", "delete_commits"))
+            info = self.api.repos("GET", args.id, args.action, params=params)
         elif args.action == "tests":
             params = filter_params(args, ("id", "filter", "all", "limit", "fail"))
+            info = self.api.repos("GET", args.id, args.action, params=params)
         elif args.action == "run":
             params = filter_params(args, ("id", "data", "playbook"))
+            info = self.api.repos_scan("GET", args.id, "last", params=params)
+        elif args.action == "scan-stop":
+            info = self.api.repos_scan("GET", args.id, "stop", params=params)
+        elif args.action == "scan-status":
+            info = self.api.repos_scan("GET", args.id, "status", params=params)
+        elif args.action == "check-forks":
+            info = self.api.repos_scan("GET", args.id, args.action, params=params)
         elif args.action == "check-commits":
             params = filter_params(args, ("id", "branch"))
-        elif args.action not in (
-            "commits",
-            "check-forks",
-            "scan-stop",
-            "scan-status",
-            "",
-            "download",
-            "pending",
-        ):
-            print("Unknown subcommand")
+            info = self.api.repos_scan("GET", args.id, args.action, params=params)
+        elif args.action in ("commits", "", "download", "pending"):
+            info = self.api.repos("GET", args.id, args.action, params=params)
+        else:
+            puts(FAIL_COLOR, "Unknown subcommand")
             sys.exit(1)
-        info = self.api.repo_get(args, params)
+
         if args.id != "" or args.action != "" or args.json:
             autoformat(info, jsonfmt=args.json, list_separator="-" * 48)
         else:
@@ -343,7 +348,7 @@ class Satori:
         params = filter_params(args, ("id",))
         if args.action == "":
             params = filter_params(args, ("id", "page", "limit", "filter"))
-            res = self.api.report_get(args, params)
+            res = self.api.reports("GET", args.id, "", params=params)
             if isinstance(res, list) and not args.json:
                 for commit in res:
                     dict_formatter(commit)
@@ -355,7 +360,7 @@ class Satori:
         elif args.action == "output":
             self.output(args, params)
         elif args.action == "stop":
-            res = self.api.report_get(args, params)
+            res = self.api.reports("GET", args.id, "stop")
             autoformat(res, jsonfmt=args.json)
         elif args.action == "delete":
             self.api.report_delete(params)
@@ -389,12 +394,12 @@ class Satori:
 
     def output(self, args, params):
         """Returns commands output"""
-
         try:
-            if uuid.UUID(args.id):
-                data = self.api.report_get(args, params)
+            uuid.UUID(args.id)
         except ValueError:
+            puts(FAIL_COLOR, f"{args.id} is not a valid report ID")
             sys.exit(1)
+        data = self.api.reports("GET", args.id, args.action, params=params)
 
         if not args.json:  # default output
             outputs = data.pop("output", [])
@@ -455,21 +460,8 @@ class Satori:
             params = filter_params(args, ("id", "limit", "page"))
             data = self.api.playbook_get(params)
             if args.json:
-                print(json.dumps(data))
+                autoformat(data, jsonfmt=True)
                 sys.exit(1)
-            if args.id == "all":
-                data = list(
-                    map(
-                        lambda x: {
-                            "ID": x["ID"],
-                            "URI": x["URI"],
-                            "Name": x["Name"],
-                            # Add a new line to remove indent
-                            "Playbook": f"\n{x['Playbook']}",
-                        },
-                        data,
-                    )
-                )
         elif args.action == "delete":
             params = filter_params(args, ("id",))
             data = self.api.playbook_delete(params)

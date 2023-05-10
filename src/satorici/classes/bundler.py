@@ -17,23 +17,18 @@ def is_import(value):
 
 
 def is_input(value):
-    return isinstance(value, list) and (
-        all(isinstance(e, (str, dict)) for e in value)
-    )
+    return isinstance(value, list) and (all(isinstance(e, (str, dict)) for e in value))
 
 
 def get_local_files(config: dict):
     paths = {"imports": set(), "inputs": set()}
     for value in config.values():
         if is_import(value):
-            paths["imports"].update([
-                p[7:] for p in value if p.startswith("file")
-            ])
+            paths["imports"].update([p[7:] for p in value if p.startswith("file")])
         elif is_input(value):
-            paths["inputs"].update([
-                p.get("file") for p in value
-                if isinstance(p, dict) and p.get("file")
-            ])
+            paths["inputs"].update(
+                [p.get("file") for p in value if isinstance(p, dict) and p.get("file")]
+            )
         elif isinstance(value, dict):
             paths.update(get_local_files(value))
     return paths
@@ -50,7 +45,7 @@ def get_references(stream, dir):
     return file_list
 
 
-def make_bundle(playbook: str, from_dir: bool = False):
+def make_bundle(playbook: Path, from_dir: bool = False):
     obj = io.BytesIO()
     with open(playbook) as f, ZipFile(obj, "x") as zip_file:
         playbook_dir = os.path.dirname(playbook)
