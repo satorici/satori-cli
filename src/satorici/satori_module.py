@@ -15,8 +15,8 @@ just_fix_windows_console()
 
 def add_satori_arguments(cmd):
     # satori-cli repo|report|monitor|... {id} {action} ...
-    cmd.add_argument("id", nargs="?", type=str, default="list")
-    cmd.add_argument("action", nargs="?", type=str, default="get")
+    cmd.add_argument("id", nargs="?", type=str, default="")
+    cmd.add_argument("action", nargs="?", type=str, default="")
 
 
 def main():

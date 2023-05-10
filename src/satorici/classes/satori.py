@@ -168,11 +168,11 @@ class Satori:
                 "Define the directory with the Satori playbook:"
                 f"\n{sys.argv[0]} run -p ./directory_with_playbook"
             )
-            return False
+            sys.exit(1)
 
         if not os.path.isdir(directory):
             puts(FAIL_COLOR, f"Directory not found: {directory}")
-            return False
+            sys.exit(1)
 
         satori_yml = Path(directory, ".satori.yml")
         bundle = make_bundle(satori_yml, from_dir=True)
@@ -184,7 +184,7 @@ class Satori:
             shutil.make_archive(temp_file, "zip", directory)
         except Exception as e:
             puts(FAIL_COLOR, f"Could not compress directory: {e}")
-            return False
+            sys.exit(1)
 
         res = self.api.get_archive_presigned_post(args)
 
@@ -242,7 +242,8 @@ class Satori:
             elapsed = time.time() - start_time
             elapsed_text = f"Elapsed time: {elapsed:.1f}s"
             try:
-                report_data = self.api.report_get("get", {"id": exec_data["id"]})
+                # TODO: incorrect params
+                report_data = self.api.report_get("", {"id": exec_data["id"]})
             except requests.HTTPError as e:
                 code = e.response.status_code
                 if code in (404, 403):
@@ -293,7 +294,7 @@ class Satori:
 
     def repo(self, args):
         """Run Satori on multiple commits"""
-        params = filter_params(args, ("id"))
+        params = filter_params(args, ("id",))
         if args.playbook:
             playbook = Path(args.playbook)
             if playbook.is_file():
@@ -315,14 +316,14 @@ class Satori:
             "check-forks",
             "scan-stop",
             "scan-status",
-            "get",
+            "",
             "download",
             "pending",
         ):
             print("Unknown subcommand")
             sys.exit(1)
         info = self.api.repo_get(args, params)
-        if args.id != "list" or args.action != "get" or args.json:
+        if args.id != "" or args.action != "" or args.json:
             autoformat(info, jsonfmt=args.json, list_separator="-" * 48)
         else:
             print("Pending actions:")
@@ -339,8 +340,8 @@ class Satori:
 
     def report(self, args):
         """Show a list of reports"""
-        params = filter_params(args, ("id"))
-        if args.action == "get":
+        params = filter_params(args, ("id",))
+        if args.action == "":
             params = filter_params(args, ("id", "page", "limit", "filter"))
             res = self.api.report_get(args, params)
             if isinstance(res, list) and not args.json:
@@ -365,17 +366,19 @@ class Satori:
 
     def monitor(self, args):
         """Get information about the"""
-        params = filter_params(args, ("id"))
+        params = filter_params(args, ("id",))
         if args.action == "delete":
             self.api.monitor_delete(params)
             print("Monitor deleted")
             sys.exit(0)
-        elif args.action in ("start", "stop", "get"):
-            info = self.api.monitor_get(args, params)
+        elif args.action == "":
+            info = self.api.monitors("GET", args.id, "")
+        elif args.action in ("start", "stop"):
+            info = self.api.monitors("PATCH", args.id, args.action)
         else:
             print("Unknown subcommand")
             sys.exit(1)
-        if args.id != "list" or args.action != "get" or args.json:
+        if args.id != "" or args.action != "" or args.json:
             autoformat(info, jsonfmt=args.json, list_separator="*" * 48)
         else:
             if len(info["pending"]) > 1:
@@ -448,7 +451,7 @@ class Satori:
 
     def playbook(self, args):
         """Get playbooks"""
-        if args.action == "get":
+        if args.action == "":
             params = filter_params(args, ("id", "limit", "page"))
             data = self.api.playbook_get(params)
             if args.json:
@@ -468,7 +471,7 @@ class Satori:
                     )
                 )
         elif args.action == "delete":
-            params = filter_params(args, ("id"))
+            params = filter_params(args, ("id",))
             data = self.api.playbook_delete(params)
         else:
             print("Unknown subcommand")
@@ -477,21 +480,21 @@ class Satori:
 
     def team(self, args):
         """Get information about the"""
-        params = filter_params(args, ("id"))
-        if args.action == "get":
-            info = self.api.teams("GET", "", "", params)
+        params = filter_params(args, ("id",))
+        if args.action == "":
+            info = self.api.teams("GET", "", "", params=params)
         elif args.action == "create":
-            info = self.api.teams("PUT", args.id, "", params)
+            info = self.api.teams("PUT", args.id, "", data=params)
         elif args.action == "members":
-            info = self.api.teams("GET", args.id, "members", params)
+            info = self.api.teams("GET", args.id, "members", params=params)
         elif args.action == "add_member":
             params = filter_params(args, ("id", "email", "role"))
-            info = self.api.teams("PUT", args.id, "members", params)
+            info = self.api.teams("PUT", args.id, "members", data=params)
         elif args.action == "repos":
-            info = self.api.teams("PUT", args.id, "repos", params)
+            info = self.api.teams("PUT", args.id, "repos", data=params)
         elif args.action == "add_repo":
             params = filter_params(args, ("id", "repo"))
-            info = self.api.teams("PUT", args.id, "repos", params)
+            info = self.api.teams("PUT", args.id, "repos", data=params)
         else:
             print("Unknown subcommand")
             sys.exit(1)

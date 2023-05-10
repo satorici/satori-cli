@@ -66,10 +66,8 @@ class SatoriAPI:
         res = self.request("GET", f"repos{id}{action}", params=parameters)
         return res.json()
 
-    def monitor_get(self, args, parameters):
-        id = "/" + args.id if args.id != "list" and args.action != "pending" else ""
-        action = "/" + args.action if args.action != "get" else ""
-        res = self.request("GET", f"monitors{id}{action}", params=parameters)
+    def monitors(self, method: str, monitor_id: str, action: str, **kwargs):
+        res = self.request(method, f"monitors/{monitor_id}/{action}", **kwargs)
         return res.json()
 
     def monitor_delete(self, parameters) -> None:
@@ -98,6 +96,6 @@ class SatoriAPI:
     def playbook_delete(self, parameters) -> None:
         self.request("DELETE", "playbooks", params=parameters)
 
-    def teams(self, method: str, name: str, action: str, parameters):
-        res = self.request(method, f"teams{name}{action}", params=parameters)
+    def teams(self, method: str, name: str, action: str, **kwargs):
+        res = self.request(method, f"teams/{name}/{action}", **kwargs)
         return res.json()
