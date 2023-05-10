@@ -2,7 +2,7 @@ import requests
 import sys
 from requests import Response
 from requests.exceptions import ConnectionError, ReadTimeout, HTTPError
-from satorici.classes.utils import FAIL_COLOR, puts, autoformat
+from satorici.classes.utils import FAIL_COLOR, puts, autoformat, log
 
 HOST = "https://api.satori-ci.com"
 
@@ -15,6 +15,9 @@ class SatoriAPI:
         )
         self.timeout = cli_args.timeout
         self.debug = cli_args.debug
+        if self.debug:
+            log.setLevel("DEBUG")
+            log.debug(cli_args)
         self.json = cli_args.json
         self.__session__.hooks = {
             "response": lambda r, *args, **kwargs: r.raise_for_status()
@@ -23,14 +26,11 @@ class SatoriAPI:
 
     def request(self, method: str, endpoint: str, **kwargs):
         url = f"{self.server}/{endpoint}"
-        if self.debug:
-            print("Request URL:", method, url)
         try:
             resp = self.__session__.request(
                 method=method, url=url, timeout=self.timeout, **kwargs
             )
-            if self.debug:
-                print(resp.headers)
+            log.debug(resp.headers)
             return resp
         except (ConnectionError, ReadTimeout, HTTPError) as e:
             if self.debug:
@@ -39,10 +39,7 @@ class SatoriAPI:
                     status = res.json()
                 except Exception:
                     status = res.text
-                if self.json:
-                    puts(FAIL_COLOR, str(status))
-                else:
-                    autoformat(status, capitalize=True, color=FAIL_COLOR)
+                autoformat(status, capitalize=True, color=FAIL_COLOR, jsonfmt=self.json)
             else:
                 puts(FAIL_COLOR, "Error")
             sys.exit(1)

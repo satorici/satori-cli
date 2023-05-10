@@ -2,7 +2,11 @@ from typing import Union
 import json
 import yaml
 import re
+from typing import Any
 from colorama import Fore, Style
+from rich.logging import RichHandler
+import logging
+from rich import print_json
 
 __decorations = "▢•○░"
 # IDs
@@ -27,6 +31,9 @@ SATORIURL_COLOR = Fore.LIGHTBLUE_EX
 VALUE_COLOR = Fore.CYAN
 MULTILINE_COLOR = Fore.YELLOW
 
+logging.basicConfig(level="CRITICAL", format="%(message)s", handlers=[RichHandler()])
+log = logging.getLogger()
+
 
 def get_decoration(indent):
     return (
@@ -39,7 +46,10 @@ def get_decoration(indent):
 
 
 def dict_formatter(
-    obj: dict, capitalize: bool = False, indent: int = 0, list_separator: str = None
+    obj: dict,
+    capitalize: bool = False,
+    indent: int = 0,
+    list_separator: Union[str, None] = None,
 ):
     for key in obj.keys():
         indent_text = get_decoration(indent)
@@ -63,7 +73,10 @@ def dict_formatter(
 
 
 def list_formatter(
-    obj: dict, capitalize: bool = False, indent: int = 0, list_separator: str = None
+    obj: list,
+    capitalize: bool = False,
+    indent: int = 0,
+    list_separator: Union[str, None] = None,
 ):
     for item in obj:
         indent_text = get_decoration(indent)
@@ -84,18 +97,18 @@ def list_formatter(
 
 
 def autoformat(
-    obj: any,
+    obj: Any,
     capitalize: bool = False,
     indent: int = 0,
     jsonfmt: bool = False,
-    list_separator: str = None,
-    color: any = None,
+    list_separator: Union[str, None] = None,
+    color: Any = None,
 ):
     """Format and print a dict, list or other var
 
     Parameters
     ----------
-    obj : any
+    obj : Any
         Var to print
     capitalize : bool, optional
         Capitalize dict keys, by default False
@@ -107,7 +120,7 @@ def autoformat(
         List separator
     """
     if jsonfmt:
-        print(json.dumps(obj, indent=indent, default=str))
+        print_json(json.dumps(obj, default=str), indent=(indent + 1) * 2)
     else:
         if isinstance(obj, dict):
             dict_formatter(obj, capitalize, indent, list_separator)
@@ -117,12 +130,12 @@ def autoformat(
             print(color + str(obj) + Style.RESET_ALL)
 
 
-def filter_params(params: any, filter_keys: Union[tuple, list]) -> dict:
+def filter_params(params: Any, filter_keys: Union[tuple, list]) -> dict:
     """Filter elements of a dict/namespace according to a list of keys
 
     Parameters
     ----------
-    params : any
+    params : Any
         dict or namespace to filter
     filter_keys : Union[tuple, list]
         List of keys to return from dict or namespace
@@ -150,14 +163,14 @@ def puts(color: str = Style.NORMAL, *args, **kargs):
 
     Parameters
     ----------
-    color : any, optional
+    color : Any, optional
         Color of the text, by default Style.NORMAL
     """
     # color, args adds an empty space??
     print(color + "".join(args), Style.RESET_ALL, **kargs)
 
 
-def get_value_color(item: any) -> str:
+def get_value_color(item: Any) -> str:
     item = str(item)
     color = VALUE_COLOR
     if item.count("\n") > 0:

@@ -11,6 +11,7 @@ dependencies = [
     "tqdm>=4.64.1",
     "colorama>=0.4.6",
     "flatdict>=4.0.1",
+    "rich>=13.0",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -21,8 +22,8 @@ Homepage = "https://www.satori-ci.com"
 [tool.pdm]
 
 [build-system]
-requires = ["pdm-pep517>=0.12.0"]
-build-backend = "pdm.pep517.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
 [project.scripts]
 satori-cli = "satorici.satori_module:main"
