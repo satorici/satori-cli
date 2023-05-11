@@ -45,7 +45,7 @@ def get_references(stream, dir):
     return file_list
 
 
-def make_bundle(playbook: Path, from_dir: bool = False):
+def make_bundle(playbook: str, from_dir: bool = False):
     obj = io.BytesIO()
     with open(playbook) as f, ZipFile(obj, "x") as zip_file:
         playbook_dir = os.path.dirname(playbook)

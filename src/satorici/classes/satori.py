@@ -9,9 +9,11 @@ from pathlib import Path
 import time
 import requests
 import yaml
+from typing import Union
 from tqdm import tqdm
 from tqdm.utils import CallbackIOWrapper
 from colorama import Fore
+from argparse import Namespace
 
 from satorici.classes.api import SatoriAPI
 from satorici.classes.bundler import make_bundle
@@ -28,6 +30,7 @@ from satorici.classes.utils import (
     autocolor,
     puts,
     table_generator,
+    argument,
 )
 from satorici.classes.validations import get_parameters, validate_parameters
 
@@ -35,7 +38,7 @@ from satorici.classes.validations import get_parameters, validate_parameters
 class Satori:
     """Have some class"""
 
-    def __init__(self, args, config=False):
+    def __init__(self, args: Union[Namespace, argument], config=False) -> None:
         """Turn on the engines"""
         self.profile = args.profile
         self.config_paths = [
@@ -47,7 +50,7 @@ class Satori:
             self.load_config()
             self.api = SatoriAPI(self.token, self.server, args)
 
-    def load_config(self):
+    def load_config(self) -> None:
         """Load the config file and set the token on the headers"""
         config_file = None
         for file in self.config_paths:
@@ -110,7 +113,7 @@ class Satori:
 
         puts(Fore.LIGHTGREEN_EX, key.capitalize() + " saved")
 
-    def run(self, args):
+    def run(self, args: Union[Namespace, argument]):
         path = Path(args.path)
         params = set()
 
@@ -147,7 +150,7 @@ class Satori:
         if args.sync and exec_data:
             self.run_sync(exec_data)
 
-    def run_file(self, args) -> dict:
+    def run_file(self, args: Union[Namespace, argument]) -> dict:
         """Just run"""
         playbook = args.path
         if playbook is None:
@@ -187,7 +190,7 @@ class Satori:
             )
         return {"type": exec_type, "id": exec_id}
 
-    def run_folder(self, args) -> dict:
+    def run_folder(self, args: Union[Namespace, argument]) -> dict:
         """Upload directory and run"""
         directory = args.path
         if directory is None:
@@ -202,7 +205,7 @@ class Satori:
             sys.exit(1)
 
         satori_yml = Path(directory, ".satori.yml")
-        bundle = make_bundle(satori_yml, from_dir=True)
+        bundle = make_bundle(str(satori_yml), from_dir=True)
         is_monitor = check_monitor(satori_yml)
         temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
         full_path = f"{temp_file}.zip"
@@ -228,8 +231,9 @@ class Satori:
             }
             with tqdm(**bar_params) as t, open(full_path, "rb") as f:
                 w = CallbackIOWrapper(t.update, f, "read")
+                file = {"file": w}
                 res = requests.post(
-                    arc["url"], arc["fields"], files={"file": w}, timeout=0
+                    arc["url"], arc["fields"], files=file, timeout=0  # type: ignore
                 )
         finally:
             os.remove(full_path)
@@ -318,7 +322,7 @@ class Satori:
             else:
                 print(autocolor(f"Report status: {status} | {elapsed_text}"), end="\r")
 
-    def repo(self, args):
+    def repo(self, args: Union[Namespace, argument]):
         """Run Satori on multiple commits"""
         params = filter_params(args, ("id",))
         if args.playbook:
@@ -370,7 +374,7 @@ class Satori:
             if match:
                 self.run_sync({"type": "report", "id": match[0]})
 
-    def report(self, args):
+    def report(self, args: Union[Namespace, argument]):
         """Show a list of reports"""
         params = filter_params(args, ("id",))
         if args.action == "":
@@ -396,7 +400,7 @@ class Satori:
             print("Unknown subcommand")
             sys.exit(1)
 
-    def monitor(self, args):
+    def monitor(self, args: Union[Namespace, argument]):
         """Get information about the"""
         params = filter_params(args, ("id",))
         if args.action == "delete":
@@ -451,7 +455,7 @@ class Satori:
         else:
             print(json.dumps(data, indent=2))
 
-    def dashboard(self, args):
+    def dashboard(self, args: Union[Namespace, argument]):
         """Get user dashboard"""
         info = self.api.dashboard()
         if args.json:
@@ -491,7 +495,7 @@ class Satori:
                         items.append([str(n), key, i[key]])
                 table_generator(["Nº", "Name", "Status"], items, "bold blue")
 
-    def playbook(self, args):
+    def playbook(self, args: Union[Namespace, argument]):
         """Get playbooks"""
         if args.action == "":
             params = filter_params(args, ("id", "limit", "page"))
@@ -507,7 +511,7 @@ class Satori:
             sys.exit(1)
         autoformat(data, jsonfmt=args.json, list_separator="-" * 48)
 
-    def team(self, args):
+    def team(self, args: Union[Namespace, argument]):
         """Get information about the"""
         params = filter_params(args, ("id",))
         if args.action == "":

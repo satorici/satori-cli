@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import argparse
+from argparse import ArgumentParser
 import sys
 from importlib import metadata
-
 from colorama import just_fix_windows_console, Fore, Back
 
 from satorici.classes.satori import Satori
@@ -13,10 +12,12 @@ VERSION = metadata.version("satori-ci")
 just_fix_windows_console()
 
 
-def add_satori_arguments(cmd):
+def add_satori_arguments(cmd: ArgumentParser):
     # satori-cli repo|report|monitor|... {id} {action} ...
-    cmd.add_argument("id", nargs="?", type=str, default="")
-    cmd.add_argument("action", nargs="?", type=str, default="")
+    cmd.add_argument("id", nargs="?", type=str, default="", help="Object ID")
+    cmd.add_argument(
+        "action", nargs="?", type=str, default="", help="Action to perform"
+    )
 
 
 def main():
@@ -34,19 +35,25 @@ def main():
         )
         sys.exit(0)
 
-    baseparser = argparse.ArgumentParser(add_help=False)
+    baseparser = ArgumentParser(add_help=False)
     baseparser.add_argument("-p", "--profile", default="default")
     baseparser.add_argument("-j", "--json", action="store_true", help="JSON output")
     baseparser.add_argument("--debug", action="store_true", help="Debug mode")
     baseparser.add_argument("--timeout", type=int, default=30, help="Request timeout")
+    baseparser.add_argument(
+        "--version", "-v", action="version", version=f"%(prog)s {VERSION}"
+    )
 
-    parser = argparse.ArgumentParser(parents=[baseparser])
+    parser = ArgumentParser(parents=[baseparser])
     subparsers = parser.add_subparsers(dest="subcommand")
 
     # config token "user_token"
     config_cmd = subparsers.add_parser("config", parents=[baseparser])
     config_cmd.add_argument("key")
     config_cmd.add_argument("value")
+
+    # dashboard
+    subparsers.add_parser("dashboard", parents=[baseparser])
 
     # run playbook.yml
     run_cmd = subparsers.add_parser("run", parents=[baseparser])
@@ -101,7 +108,7 @@ def main():
     add_satori_arguments(report_cmd)
 
     # monitor {id} <start|stop|delete>
-    monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])  # noqa: F841
+    monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])
     add_satori_arguments(monitor_cmd)
 
     # team {id} create|members|add_member|repos|add_repo

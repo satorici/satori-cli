@@ -254,3 +254,18 @@ def table_generator(headers: list, items: list, header_style=None):
             cells.append(styled)
         table.add_row(*cells)
     console.log(table)
+
+
+class argument:
+    def __init__(self) -> None:
+        self.id = str()
+        self.action = str()
+        self.profile = str()
+        self.debug = bool()
+        self.json = bool()
+        self.path = str()
+        self.data = Any
+        self.sync = bool()
+        self.timeout = int()
+        self.playbook = str()
+        self.page = int()
