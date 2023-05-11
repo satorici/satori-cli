@@ -122,8 +122,8 @@ class Satori:
                     raise
 
                 params.update(data.keys())
-            except:
-                puts(FAIL_COLOR, f"Malformed parameters")
+            except Exception:
+                puts(FAIL_COLOR, "Malformed parameters")
                 sys.exit(1)
 
         if path.is_dir():
