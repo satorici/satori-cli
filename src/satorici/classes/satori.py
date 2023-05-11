@@ -26,6 +26,7 @@ from satorici.classes.utils import (
     UUID4_REGEX,
     autocolor,
     puts,
+    table_generator,
 )
 
 
@@ -137,9 +138,7 @@ class Satori:
         url = self.api.runs("bundle", args.data)
 
         res = requests.post(
-            url["url"],
-            url["fields"],
-            files={"file": bundle},
+            url["url"], url["fields"], files={"file": bundle}, timeout=0
         )
         if not res.ok:
             puts(FAIL_COLOR, "File upload failed")
@@ -202,7 +201,9 @@ class Satori:
             }
             with tqdm(**bar_params) as t, open(full_path, "rb") as f:
                 w = CallbackIOWrapper(t.update, f, "read")
-                res = requests.post(arc["url"], arc["fields"], files={"file": w})
+                res = requests.post(
+                    arc["url"], arc["fields"], files={"file": w}, timeout=0
+                )
         finally:
             os.remove(full_path)
 
@@ -211,9 +212,7 @@ class Satori:
             sys.exit(1)
 
         res = requests.post(
-            bun["url"],
-            bun["fields"],
-            files={"file": bundle},
+            bun["url"], bun["fields"], files={"file": bundle}, timeout=0
         )
         if not res.ok:
             print("Bundle upload failed")
@@ -433,13 +432,21 @@ class Satori:
             len_mon = len(info["Actions"]["Monitors"])
             len_rep = len(info["Actions"]["Repos"])
             if len_mon > 0 or len_rep > 0:
-                print("Actions required:")
+                # print pending actions
                 if len_mon > 0:
-                    print("  Monitors:")
-                    autoformat(info["Actions"]["Monitors"], indent=1)
+                    print("Monitors(Actions required):")
+                    mon_items = []
+                    for m in info["Actions"]["Monitors"]:
+                        for key in m:
+                            mon_items.append([key, m[key]])
+                    table_generator(["Name", "Pending action"], mon_items, "bold green")
                 if len_rep > 0:
-                    print("  Repos:")
-                    autoformat(info["Actions"]["Repos"], indent=1)
+                    print("Repos(Actions required):")
+                    rep_items = []
+                    for r in info["Actions"]["Repos"]:
+                        for key in r:
+                            rep_items.append([key, r[key]])
+                    table_generator(["Name", "Pending action"], rep_items, "bold green")
             for title in info:
                 if title == "Actions":
                     continue
@@ -448,11 +455,13 @@ class Satori:
                         print("\nMonitors: no active monitors defined")
                         continue
                 print(f"\n{title}:")
+                items = []
                 n = 0
                 for i in info[title]:
                     n += 1
                     for key in i:
-                        print(f"{n}) {key.capitalize()}: {i[key]}")
+                        items.append([str(n), key, i[key]])
+                table_generator(["Nº", "Name", "Status"], items, "bold blue")
 
     def playbook(self, args):
         """Get playbooks"""

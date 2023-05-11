@@ -9,6 +9,7 @@ import logging
 from rich import print_json
 from rich.console import Console
 from rich.syntax import Syntax
+from rich.table import Table
 
 __decorations = "▢•○░"
 # IDs
@@ -231,3 +232,25 @@ def autosyntax(item: str, indent: int) -> bool:
         print()
         print_json(item, indent=ind)
         return True
+
+
+def table_generator(headers: list, items: list, header_style=None):
+    table = Table(show_header=True, header_style=header_style)
+    for header in headers:
+        table.add_column(header)
+    for item in items:
+        cells = []
+        for i in item:
+            if PASS_REGEX.search(i):
+                styled = "[green]" + i
+            elif FAIL_REGEX.search(i):
+                styled = "[red]" + i
+            elif UNKNOWN_REGEX.search(i):
+                styled = "[yellow]" + i
+            elif RUNNING_REGEX.search(i):
+                styled = "[blue]" + i
+            else:
+                styled = i
+            cells.append(styled)
+        table.add_row(*cells)
+    console.log(table)
