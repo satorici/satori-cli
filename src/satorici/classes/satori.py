@@ -140,14 +140,10 @@ class Satori:
                 puts(FAIL_COLOR, f"Required parameters: {variables - params}")
                 sys.exit(1)
 
-        exec_data = None
         if path.is_dir():
             exec_data = self.run_folder(args)
-        elif path.is_file():
+        else:  # is file
             exec_data = self.run_file(args)
-        else:
-            puts(FAIL_COLOR, "Unknown file type")  # is a device?
-            sys.exit(1)
         if args.sync and exec_data:
             self.run_sync(exec_data)
 
