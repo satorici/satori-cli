@@ -14,7 +14,7 @@ satori-cli [category] [object] [action] [options]
 \fB**Dashboard: /dashboard**\fR
 
 
-satori-cli                                            # GET /dashboard/
+satori-cli                                            # GET /dashboard
 
 
 .IP \fB**Config:**\fR
@@ -25,51 +25,51 @@ satori-cli config token X                             # no API call
 
 .IP \fB**Repository: /repo/**\fR
 
-satori-cli repo                                             # GET /repo/
+satori-cli repo                                             # GET /repos/
 
-satori-cli repo satoridev01/HelloWorld                      # GET /repo/satoridev01/HelloWorld
+satori-cli repo satoridev01/HelloWorld                      # GET /repos/satoridev01/HelloWorld
 
-satori-cli repo satoridev01/HelloWorld commits              # GET /repo/satoridev01/HelloWorld/commits
+satori-cli repo satoridev01/HelloWorld commits              # GET /repos/satoridev01/HelloWorld/commits
 
-satori-cli repo satoridev01/HelloWorld check-commits        # GET /repo/satoridev01/HelloWorld/check-commits
+satori-cli repo satoridev01/HelloWorld check-commits        # GET /repos/satoridev01/HelloWorld/check-commits
 
-satori-cli repo satoridev01/HelloWorld check-forks          # GET /repo/satoridev01/HelloWorld/check-forks
+satori-cli repo satoridev01/HelloWorld check-forks          # GET /repos/satoridev01/HelloWorld/check-forks
 
-satori-cli repo satoridev01/HelloWorld scan                 # GET /repo/scan/satoridev01/HelloWorld/start
+satori-cli repo satoridev01/HelloWorld scan                 # GET /repos/scan/satoridev01/HelloWorld/start
 
-satori-cli repo satoridev01/HelloWorld scan-stop            # GET /repo/scan/satoridev01/HelloWorld/stop
+satori-cli repo satoridev01/HelloWorld scan-stop            # GET /repos/scan/satoridev01/HelloWorld/stop
 
-satori-cli repo satoridev01/HelloWorld run                  # GET /repo/scan/runsatoridev01/HelloWorld/last
+satori-cli repo satoridev01/HelloWorld run                  # GET /repos/scan/runsatoridev01/HelloWorld/last
 
-satori-cli repo satoridev01/HelloWorld/commit123 run        # GET /repo/scan?url=satoridev01/HelloWorld/commit123
+satori-cli repo satoridev01/HelloWorld/commit123 run        # GET /repos/scan?url=satoridev01/HelloWorld/commit123
 
-satori-cli repo satoridev01/HelloWorld clean                # GET /repo/satoridev01/HelloWorld/clean
+satori-cli repo satoridev01/HelloWorld clean                # GET /repos/satoridev01/HelloWorld/clean
 
 
 .IP \fB**Monitor: /monitor/**\fR
 
-satori-cli monitor                      #    GET /monitor/
+satori-cli monitor                      #      GET /monitors/
 
-satori-cli monitor ABC123               #    GET /monitor/ABC123/
+satori-cli monitor ABC123               #      GET /monitors/ABC123/
 
-satori-cli monitor ABC123 start         #    PATCH /monitor/ABC123/start
+satori-cli monitor ABC123 start         #    PATCH /monitors/ABC123/start
 
-satori-cli monitor ABC123 stop          #    PATCH /monitor/ABC123/stop
+satori-cli monitor ABC123 stop          #    PATCH /monitors/ABC123/stop
 
-satori-cli monitor ABC123 delete        # DELETE /monitor/ABC123/
+satori-cli monitor ABC123 delete        #   DELETE /monitors/ABC123/
 
 
 .IP \fB**Report: /report/**\fR
 
-satori-cli report                       #    GET /report/
+satori-cli report                       #    GET /reports/
 
-satori-cli report DEF456                #    GET /report/DEF456
+satori-cli report DEF456                #    GET /reports/DEF456
 
-satori-cli report DEF456 output         #    GET /report/DEF456/output
+satori-cli report DEF456 output         #    GET /reports/DEF456/output
 
-satori-cli report DEF456 stop           #    GET /report/DEF456/stop
+satori-cli report DEF456 stop           #    GET /reports/DEF456/stop
 
-satori-cli report DEF456 delete         # DELETE /report/DEF456
+satori-cli report DEF456 delete         # DELETE /reports/DEF456
 
 
 .IP \fB**Run: /run/**\fR
@@ -83,11 +83,11 @@ satori-cli run ./                   # POST /runs/archive
 
 .IP \fB**Playbook**\fR
 
-satori-cli playbook                     # GET /playbook/
+satori-cli playbook                     # GET /playbooks/
 
-satori-cli playbook GHI456              # GET /playbook/?id=GHI456
+satori-cli playbook GHI456              # GET /playbooks/?id=GHI456
 
-satori-cli playbook GHI456 delete       # DELETE /playbook/?id=GHI456
+satori-cli playbook GHI456 delete       # DELETE /playbooks/?id=GHI456
 
 
 .SH OPTIONS
