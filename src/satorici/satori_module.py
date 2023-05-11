@@ -69,6 +69,9 @@ def main():
     playbook_cmd.add_argument(
         "-l", "--limit", dest="limit", type=int, default=5, help="Page limit number"
     )
+    playbook_cmd.add_argument(
+        "--public", action="store_true", help="Fetch public satori playbooks"
+    )
     add_satori_arguments(playbook_cmd)
 
     # repo {id} <commits|check-commits|check-forks|scan|scan-stop|run|clean>

@@ -33,6 +33,7 @@ from satorici.classes.utils import (
     argument,
 )
 from satorici.classes.validations import get_parameters, validate_parameters
+from satorici.classes.playbooks import display_public_playbooks
 
 
 class Satori:
@@ -497,6 +498,9 @@ class Satori:
 
     def playbook(self, args: Union[Namespace, argument]):
         """Get playbooks"""
+        if args.public:
+            display_public_playbooks()
+
         if args.action == "":
             params = filter_params(args, ("id", "limit", "page"))
             data = self.api.playbook_get(params)

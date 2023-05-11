@@ -12,6 +12,7 @@ dependencies = [
     "colorama>=0.4.6",
     "flatdict>=4.0.1",
     "rich>=13.0",
+    "gitpython>=3.1.31",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -19,8 +20,6 @@ license = {file = "LICENSE"}
 
 [project.urls]
 Homepage = "https://www.satori-ci.com"
-[tool.pdm]
-
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
