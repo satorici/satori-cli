@@ -1,3 +1,4 @@
+import ast
 import json
 import os
 import shutil
@@ -28,6 +29,7 @@ from satorici.classes.utils import (
     puts,
     table_generator,
 )
+from satorici.classes.validations import get_parameters, validate_parameters
 
 
 class Satori:
@@ -109,10 +111,36 @@ class Satori:
         puts(Fore.LIGHTGREEN_EX, key.capitalize() + " saved")
 
     def run(self, args):
+        path = Path(args.path)
+        params = set()
+
+        if getattr(args, "data", False):
+            try:
+                data = ast.literal_eval(args.data)
+
+                if not validate_parameters(args.data):
+                    raise
+
+                params.update(data.keys())
+            except:
+                puts(FAIL_COLOR, f"Malformed parameters")
+                sys.exit(1)
+
+        if path.is_dir():
+            playbook = path / ".satori.yml"
+        elif path.is_file():
+            playbook = path
+
+        with playbook.open() as f:
+            variables = get_parameters(yaml.safe_load(f))
+            if variables != params:
+                puts(FAIL_COLOR, f"Required parameters: {variables - params}")
+                sys.exit(1)
+
         exec_data = None
-        if os.path.isdir(args.path):
+        if path.is_dir():
             exec_data = self.run_folder(args)
-        elif os.path.isfile(args.path):
+        elif path.is_file():
             exec_data = self.run_file(args)
         else:
             puts(FAIL_COLOR, "Unknown file type")  # is a device?
