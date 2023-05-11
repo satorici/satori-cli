@@ -300,8 +300,9 @@ class Satori:
                 args.playbook = playbook.read_text()
         if args.action == "scan":
             params = filter_params(
-                args, ("id", "coverage", "from", "to", "branch", "data", "playbook")
+                args, ("coverage", "from", "to", "branch", "data", "playbook")
             )
+            params["url"] = args.id
             info = self.api.repos_scan("GET", "", "", params=params)
         elif args.action == "clean":
             params = filter_params(args, ("id", "delete_commits"))
