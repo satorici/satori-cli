@@ -130,6 +130,9 @@ class Satori:
             playbook = path / ".satori.yml"
         elif path.is_file():
             playbook = path
+        else:
+            puts(FAIL_COLOR, "Satori can not access to file/folder")
+            sys.exit(1)
 
         with playbook.open() as f:
             variables = get_parameters(yaml.safe_load(f))
