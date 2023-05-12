@@ -29,7 +29,9 @@ class SatoriAPI:
         }
         self.server = server or HOST
 
-    def request(self, method: str, endpoint: str, **kwargs) -> Response:
+    def request(
+        self, method: str, endpoint: str, raise_error: bool = False, **kwargs
+    ) -> Response:
         url = f"{self.server}/{endpoint}"
         try:
             resp = self.__session__.request(
@@ -37,6 +39,8 @@ class SatoriAPI:
             )
             log.debug(resp.headers)
         except (ConnectionError, ReadTimeout, HTTPError) as e:
+            if raise_error:
+                raise e
             try:
                 res: Response = e.response  # can fail if is not a HTTPError
             except Exception as e:
@@ -82,8 +86,17 @@ class SatoriAPI:
     def monitor_delete(self, parameters: dict) -> None:
         self.request("DELETE", f"monitors/{parameters['id']}")
 
-    def reports(self, method: str, report_id: str, action: str, **kwargs) -> Any:
-        res = self.request(method, f"reports/{report_id}/{action}", **kwargs)
+    def reports(
+        self,
+        method: str,
+        report_id: str,
+        action: str,
+        raise_error: bool = False,
+        **kwargs,
+    ) -> Any:
+        res = self.request(
+            method, f"reports/{report_id}/{action}", raise_error, **kwargs
+        )
         report = res.json()
         if isinstance(report, dict) and report.get("json"):
             for e in report["json"]:

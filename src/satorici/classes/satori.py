@@ -31,6 +31,7 @@ from satorici.classes.utils import (
     puts,
     table_generator,
     argument,
+    log,
 )
 from satorici.classes.validations import get_parameters, validate_parameters
 from satorici.classes.playbooks import display_public_playbooks
@@ -167,10 +168,11 @@ class Satori:
         bundle = make_bundle(playbook)
         is_monitor = check_monitor(playbook)
         url = self.api.runs("bundle", args.data)
-
+        log.debug(url)
         res = requests.post(
-            url["url"], url["fields"], files={"file": bundle}, timeout=args.timeout
+            url["url"], url["fields"], files={"file": bundle}, timeout=None
         )
+        log.debug(res.text)
         if not res.ok:
             puts(FAIL_COLOR, "File upload failed")
             sys.exit(1)
@@ -218,7 +220,7 @@ class Satori:
             sys.exit(1)
 
         res = self.api.runs("archive", args.data)
-
+        log.debug(res)
         arc = res["archive"]
         bun = res["bundle"]
         mon = res["monitor"]
@@ -234,10 +236,7 @@ class Satori:
                 w = CallbackIOWrapper(t.update, f, "read")
                 file = {"file": w}
                 res = requests.post(
-                    arc["url"],
-                    arc["fields"],
-                    files=file,  # type: ignore
-                    timeout=args.timeout,
+                    arc["url"], arc["fields"], files=file, timeout=None  # type: ignore
                 )
         finally:
             os.remove(full_path)
@@ -247,8 +246,9 @@ class Satori:
             sys.exit(1)
 
         res = requests.post(
-            bun["url"], bun["fields"], files={"file": bundle}, timeout=args.timeout
+            bun["url"], bun["fields"], files={"file": bundle}, timeout=None
         )
+        log.debug(res.text)
         if not res.ok:
             print("Bundle upload failed")
             sys.exit(1)
@@ -272,22 +272,33 @@ class Satori:
     def run_sync(self, exec_data: dict) -> None:
         puts(KEYNAME_COLOR, "Fetching data...", end="\r")
         start_time = time.time()
+        spin = "-\\|/"
+        pos = 0
         while True:
+            pos += 1
+            if pos >= len(spin):
+                pos = 0
             time.sleep(1)
             elapsed = time.time() - start_time
             elapsed_text = f"Elapsed time: {elapsed:.1f}s"
             try:
-                report_data = self.api.reports("", exec_data["id"], "")
+                report_data = self.api.reports(
+                    "GET", exec_data["id"], "", raise_error=True
+                )
             except requests.HTTPError as e:
                 code = e.response.status_code
                 if code in (404, 403):
                     print(
-                        autocolor(f"Report status: Unknown | {elapsed_text}"), end="\r"
+                        autocolor(
+                            f"{spin[pos]} Report status: Unknown | {elapsed_text}"
+                        ),
+                        end="\r",
                     )
                     continue
                 else:
                     puts(FAIL_COLOR, f"Failed to get data\nStatus code: {code}")
                     sys.exit(1)
+
             status = report_data.get("status", "Unknown")
             if status in ("Completed", "Undefined"):
                 fails = report_data["fails"]
@@ -297,7 +308,7 @@ class Satori:
                     result = "Pass" if fails == 0 else f"Fail({fails})"
                 print(
                     autocolor(
-                        f"Report status: {status} | Result: {result} | {elapsed_text}"
+                        f"- Report status: {status} | Result: {result} | {elapsed_text}"
                     ),
                     end="\r\n",
                 )
@@ -324,7 +335,10 @@ class Satori:
                     # Return code 0 if report status==pass else 1
                     sys.exit(0 if report_data["fails"] == 0 else 1)
             else:
-                print(autocolor(f"Report status: {status} | {elapsed_text}"), end="\r")
+                print(
+                    autocolor(f"{spin[pos]} Report status: {status} | {elapsed_text}"),
+                    end="\r",
+                )
 
     def repo(self, args: Union[Namespace, argument]):
         """Run Satori on multiple commits"""
