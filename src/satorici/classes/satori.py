@@ -169,7 +169,7 @@ class Satori:
         url = self.api.runs("bundle", args.data)
 
         res = requests.post(
-            url["url"], url["fields"], files={"file": bundle}, timeout=0
+            url["url"], url["fields"], files={"file": bundle}, timeout=args.timeout
         )
         if not res.ok:
             puts(FAIL_COLOR, "File upload failed")
@@ -234,7 +234,10 @@ class Satori:
                 w = CallbackIOWrapper(t.update, f, "read")
                 file = {"file": w}
                 res = requests.post(
-                    arc["url"], arc["fields"], files=file, timeout=0  # type: ignore
+                    arc["url"],
+                    arc["fields"],
+                    files=file,  # type: ignore
+                    timeout=args.timeout,
                 )
         finally:
             os.remove(full_path)
@@ -244,7 +247,7 @@ class Satori:
             sys.exit(1)
 
         res = requests.post(
-            bun["url"], bun["fields"], files={"file": bundle}, timeout=0
+            bun["url"], bun["fields"], files={"file": bundle}, timeout=args.timeout
         )
         if not res.ok:
             print("Bundle upload failed")
