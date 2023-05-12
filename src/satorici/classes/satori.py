@@ -29,9 +29,9 @@ from satorici.classes.utils import (
     UUID4_REGEX,
     autocolor,
     puts,
-    table_generator,
     argument,
     log,
+    autotable,
 )
 from satorici.classes.validations import get_parameters, validate_parameters
 from satorici.classes.playbooks import display_public_playbooks
@@ -379,11 +379,12 @@ class Satori:
 
         if args.id != "" or args.action != "" or args.json:
             autoformat(info, jsonfmt=args.json, list_separator="-" * 48)
-        else:
-            print("Pending actions:")
-            autoformat(info["pending"])
+        else:  # Default command (satori-cli repo)
+            if len(info["pending"]) > 1:
+                print("Pending actions:")
+                autotable(info["pending"], "bold red")
             print("\nRepos:")
-            autoformat(info["list"], list_separator="-" * 48)
+            autotable(info["list"], "bold blue")
         if args.action == "run" and args.sync:
             if isinstance(info, list):
                 info = info[0]
@@ -434,12 +435,12 @@ class Satori:
             sys.exit(1)
         if args.id != "" or args.action != "" or args.json:
             autoformat(info, jsonfmt=args.json, list_separator="*" * 48)
-        else:
+        else:  # Default command (satori-cli monitor)
             if len(info["pending"]) > 1:
                 print("Pending actions:")
-                autoformat(info["pending"])
+                autotable(info["pending"], "bold red")
             print("\nMonitors:")
-            autoformat(info["list"], list_separator="-" * 48, table=True)
+            autotable(info["list"], "bold blue")
 
     def output(self, args, params):
         """Returns commands output"""
@@ -479,39 +480,24 @@ class Satori:
         if args.json:
             autoformat(info, jsonfmt=True)
         else:
-            len_mon = len(info["Actions"]["Monitors"])
-            len_rep = len(info["Actions"]["Repos"])
+            len_mon = len(info["monitors"]["pending"])
+            len_rep = len(info["repos"]["pending"])
             if len_mon > 0 or len_rep > 0:
                 # print pending actions
                 if len_mon > 0:
                     print("Monitors(Actions required):")
-                    mon_items = []
-                    for m in info["Actions"]["Monitors"]:
-                        for key in m:
-                            mon_items.append([key, m[key]])
-                    table_generator(["Name", "Pending action"], mon_items, "bold green")
+                    autotable(info["monitors"]["pending"], "bold green")
                 if len_rep > 0:
                     print("Repos(Actions required):")
-                    rep_items = []
-                    for r in info["Actions"]["Repos"]:
-                        for key in r:
-                            rep_items.append([key, r[key]])
-                    table_generator(["Name", "Pending action"], rep_items, "bold green")
-            for title in info:
-                if title == "Actions":
-                    continue
-                if title == "Monitors":
-                    if len(info[title]) == 0:
-                        print("\nMonitors: no active monitors defined")
-                        continue
-                print(f"\n{title}:")
-                items = []
-                n = 0
-                for i in info[title]:
-                    n += 1
-                    for key in i:
-                        items.append([str(n), key, i[key]])
-                table_generator(["Nº", "Name", "Status"], items, "bold blue")
+                    autotable(info["repos"]["pending"], "bold green")
+            if len(info["monitors"]["list"]) == 0:
+                print("\nMonitors: no active monitors defined")
+            else:
+                print("Monitors:")
+                autotable(info["monitors"]["list"], "bold blue", True)
+            if len(info["repos"]["list"]) > 0:
+                print("Repos:")
+                autotable(info["repos"]["list"], "bold blue", True)
 
     def playbook(self, args: Union[Namespace, argument]):
         """Get playbooks"""

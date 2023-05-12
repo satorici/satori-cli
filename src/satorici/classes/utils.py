@@ -241,13 +241,25 @@ def autosyntax(item: str, indent: int) -> bool:
         return True
 
 
-def table_generator(headers: list, items: list, header_style=None):
+def table_generator(headers: list[str], items: list[list], header_style=None):
+    """Print a rich table
+
+    Parameters
+    ----------
+    headers : list
+        A list of the headers names, ex: ["header1","header2"]
+    items : list
+        A list of rows with cells, ex: [["row1-1","row1-2"],["row2-1","row2-2"]]
+    header_style : _type_, optional
+        Rich Table header style, by default None
+    """
     table = Table(show_header=True, header_style=header_style)
     for header in headers:
         table.add_column(header)
     for item in items:
         cells = []
-        for i in item:
+        for raw_i in item:
+            i = str(raw_i)
             if PASS_REGEX.search(i):
                 styled = "[green]" + i
             elif FAIL_REGEX.search(i):
@@ -279,8 +291,19 @@ class argument:
         self.public = bool()
 
 
-def autotable(items: list[dict], header_style=None) -> None:
-    headers = []
+def autotable(items: list[dict], header_style=None, numerate=False) -> None:
+    """Print a list of dictionaries like a table
+
+    Parameters
+    ----------
+    items : list[dict]
+        The list, ex: [{"id":1,"name":"one"},{"id":2,"name":"two"}]
+    header_style : _type_, optional
+        Rich Table header style, by default None
+    numerate : bool, optional
+        Add numeration, by default False
+    """
+    headers = ["N°"] if numerate else []
     # get headers
     for i in items:
         for h in i.keys():
@@ -288,10 +311,14 @@ def autotable(items: list[dict], header_style=None) -> None:
                 headers.append(h)
     rows = []
     # get rows
+    n = 0
     for item in items:
+        n += 1
         row = []
         for key in headers:
-            if key in item:
+            if key == "N°":
+                row.append(str(n))
+            elif key in item:
                 row.append(item[key])
             else:
                 row.append("")
