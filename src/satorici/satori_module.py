@@ -39,7 +39,7 @@ def main():
     baseparser.add_argument("-p", "--profile", default="default")
     baseparser.add_argument("-j", "--json", action="store_true", help="JSON output")
     baseparser.add_argument("--debug", action="store_true", help="Debug mode")
-    baseparser.add_argument("--timeout", type=int, default=30, help="Request timeout")
+    baseparser.add_argument("--timeout", type=int, default=180, help="Request timeout")
     baseparser.add_argument(
         "--version", "-v", action="version", version=f"%(prog)s {VERSION}"
     )
