@@ -422,7 +422,7 @@ class Satori:
                 print("Pending actions:")
                 autoformat(info["pending"])
             print("\nMonitors:")
-            autoformat(info["list"], list_separator="-" * 48)
+            autoformat(info["list"], list_separator="-" * 48, table=True)
 
     def output(self, args, params):
         """Returns commands output"""
@@ -535,4 +535,4 @@ class Satori:
         else:
             print("Unknown subcommand")
             sys.exit(1)
-        autoformat(info, jsonfmt=args.json, list_separator="*" * 48)
+        autoformat(info, jsonfmt=args.json, list_separator="*" * 48, table=True)

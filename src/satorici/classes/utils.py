@@ -10,8 +10,10 @@ from rich import print_json
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
+import random
 
 __decorations = "▢•○░"
+__random_colors = ["green", "blue", "red"]
 # IDs
 UUID4_REGEX = re.compile(
     r"[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
@@ -110,7 +112,8 @@ def autoformat(
     jsonfmt: bool = False,
     list_separator: Union[str, None] = None,
     color: str = "",
-):
+    table: bool = False,
+) -> None:
     """Format and print a dict, list or other var
 
     Parameters
@@ -132,6 +135,10 @@ def autoformat(
         if isinstance(obj, dict):
             dict_formatter(obj, capitalize, indent, list_separator)
         elif isinstance(obj, list):
+            if table and len(obj) > 0 and isinstance(obj[0], dict):
+                head_color = random.choice(__random_colors)  # nosec
+                autotable(obj, f"bold {head_color}")
+                return None
             list_formatter(obj, capitalize, indent, list_separator)
         elif isinstance(obj, str):
             if obj.count("\n") > 0:
@@ -269,3 +276,24 @@ class argument:
         self.timeout = int()
         self.playbook = str()
         self.page = int()
+        self.public = bool()
+
+
+def autotable(items: list[dict], header_style=None) -> None:
+    headers = []
+    # get headers
+    for i in items:
+        for h in i.keys():
+            if h not in headers:
+                headers.append(h)
+    rows = []
+    # get rows
+    for item in items:
+        row = []
+        for key in headers:
+            if key in item:
+                row.append(item[key])
+            else:
+                row.append("")
+        rows.append(row)
+    table_generator(headers, rows, header_style)
