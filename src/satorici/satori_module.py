@@ -7,6 +7,7 @@ from colorama import just_fix_windows_console, Fore, Back
 
 from satorici.classes.satori import Satori
 from satorici.classes.utils import puts
+from satorici.classes.gui import GuiApp
 
 VERSION = metadata.version("satori-ci")
 just_fix_windows_console()
@@ -121,6 +122,9 @@ def main():
     team_cmd.add_argument("--repo", type=str, default=None, help="Repo name")
     add_satori_arguments(team_cmd)
 
+    # gui
+    subparsers.add_parser("gui", parents=[baseparser])
+
     args = parser.parse_args()
 
     if args.subcommand == "config":
@@ -145,6 +149,9 @@ def main():
             instance.team(args)
         elif args.subcommand in (None, "dashboard"):
             instance.dashboard(args)
+        elif args.subcommand in ("gui"):
+            gui = GuiApp(instance)
+            gui.run()
     except KeyboardInterrupt:
         puts(Back.RED, "Interrupted by user")
         sys.exit(1)

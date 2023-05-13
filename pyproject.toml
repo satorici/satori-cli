@@ -13,6 +13,7 @@ dependencies = [
     "flatdict>=4.0.1",
     "rich>=13.0",
     "gitpython>=3.1.31",
+    "textual>=0.24.1",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -26,3 +27,11 @@ build-backend = "pdm.backend"
 
 [project.scripts]
 satori-cli = "satorici.satori_module:main"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "black>=23.3.0",
+    "flake8>=6.0.0",
+    "bandit>=1.7.5",
+    "textual[dev]>=0.24.1",
+]

@@ -35,7 +35,7 @@ class SatoriAPI:
         url = f"{self.server}/{endpoint}"
         try:
             resp = self.__session__.request(
-                method=method, url=url, timeout=self.timeout, **kwargs
+                method=method, url=url, timeout=self.timeout, verify=False, **kwargs
             )
             log.debug(resp.headers)
         except (ConnectionError, ReadTimeout, HTTPError) as e:
