@@ -1,7 +1,7 @@
 import requests
 import sys
 from requests import Response
-from requests.exceptions import ConnectionError, ReadTimeout, HTTPError
+from requests.exceptions import HTTPError
 from typing import Union, Any
 from argparse import Namespace
 
@@ -38,34 +38,30 @@ class SatoriAPI:
                 method=method, url=url, timeout=self.timeout, **kwargs
             )
             log.debug(resp.headers)
-        except (ConnectionError, ReadTimeout, HTTPError) as e:
+        except HTTPError as e:
             if raise_error:
                 raise e
+            # Show reponse messages when server response is not 20x
+            res: Response = e.response
+            log.debug("Response headers:")
+            log.debug(res.headers)
             try:
-                res: Response = e.response  # can fail if is not a HTTPError
-            except Exception as e:
-                log.debug(e, stack_info=True)
-                puts(FAIL_COLOR, "Error")
+                status = res.json()
+            except Exception:
+                status = res.text
+            if self.debug:
+                autoformat(status, capitalize=True, color=FAIL_COLOR, jsonfmt=self.json)
             else:
-                log.debug("Response headers:")
-                log.debug(res.headers)
-                try:
-                    status = res.json()
-                except Exception:
-                    status = res.text
-                if self.debug:
-                    autoformat(
-                        status, capitalize=True, color=FAIL_COLOR, jsonfmt=self.json
-                    )
-                else:
-                    msg = "Error"
-                    if isinstance(status, dict) and "detail" in status:
-                        msg += f": {status['detail']}"
-                    puts(FAIL_COLOR, msg)
-            finally:
-                sys.exit(1)
-        else:
+                msg = "Error"
+                if isinstance(status, dict) and "detail" in status:
+                    msg += f": {status['detail']}"
+                puts(FAIL_COLOR, msg)
+        except Exception as e:
+            puts(FAIL_COLOR, "Error")
+            log.debug(e)
+        else:  # response is 20x
             return resp
+        sys.exit(1)
 
     def runs(self, run_type: str, secrets: str) -> Any:
         res = self.request("POST", f"runs/{run_type}", json={"secrets": secrets})
