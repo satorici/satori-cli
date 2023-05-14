@@ -1,7 +1,8 @@
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, VerticalScroll
-from textual.widgets import Button, Footer, Header, Static, DataTable
+from textual.widgets import Button, Footer, Header, Static, DataTable, Markdown
 from satorici.classes.satori import Satori
+from pathlib import Path
 
 
 class GuiApp(App):
@@ -17,12 +18,13 @@ class GuiApp(App):
         yield Header(show_clock=True)
         yield Footer()
         yield Horizontal(
+            Button("Readme", id="readme"),
             Button("Repos", id="repo", variant="primary"),
             Button("Reports", id="report", variant="success"),
             Button("Monitors", id="monitor", variant="error"),
             id="menu",
         )
-        yield VerticalScroll(Info(), id="info_c")
+        yield VerticalScroll(Info(id="cont"), id="info_c")
 
     def on_mount(self) -> None:
         menu = self.query_one("#menu")
@@ -36,9 +38,17 @@ class GuiApp(App):
         self.dark = not self.dark
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        info = self.query_one(Info)
+        info = self.query_one("#cont")
         info.remove()
-        new_info = Info()
+        if event.button.id == "readme":
+            path = str(Path(__file__).parent)
+            with open(path + "/../../../README.md") as f:
+                readme = f.read()
+                new_info = Markdown(readme, id="cont")
+            self.query_one("#info_c").mount(new_info)
+            new_info.scroll_visible()
+            return None
+        new_info = Info(id="cont")
         if event.button.id == "report":
             res = self.satori.api.reports("GET", "", "")
             headers = ("Date", "Author", "Email", "Status", "Report")
