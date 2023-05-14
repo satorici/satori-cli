@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
-import ast
 import sys
 from importlib import metadata
 from colorama import just_fix_windows_console, Fore, Back
@@ -60,7 +59,7 @@ def main():
     run_cmd = subparsers.add_parser("run", parents=[baseparser])
     run_cmd.add_argument("path")
     run_cmd.add_argument("-s", "--sync", default=False, action="store_true")
-    run_cmd.add_argument("-d", "--data", type=ast.literal_eval, help="Secrets")
+    run_cmd.add_argument("-d", "--data", type=str, default="", help="Secrets")
 
     # playbook {id} <delete>
     playbook_cmd = subparsers.add_parser("playbook", parents=[baseparser])

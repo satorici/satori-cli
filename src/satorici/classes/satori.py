@@ -1,3 +1,4 @@
+import ast
 import json
 import os
 import shutil
@@ -120,12 +121,14 @@ class Satori:
 
         if getattr(args, "data", False):
             try:
-                if not validate_parameters(args.data):
-                    raise ValueError("Malformed parameters")
+                data = ast.literal_eval(args.data)
 
-                params.update(args.data.keys())
-            except Exception as e:
-                puts(FAIL_COLOR, str(e))
+                if not validate_parameters(args.data):
+                    raise
+
+                params.update(data.keys())
+            except Exception:
+                puts(FAIL_COLOR, "Malformed parameters")
                 sys.exit(1)
 
         if path.is_dir():
@@ -138,7 +141,7 @@ class Satori:
 
         with playbook.open() as f:
             variables = get_parameters(yaml.safe_load(f))
-            if variables - params:
+            if variables != params:
                 puts(FAIL_COLOR, f"Required parameters: {variables - params}")
                 sys.exit(1)
 
@@ -164,7 +167,7 @@ class Satori:
 
         bundle = make_bundle(playbook)
         is_monitor = check_monitor(playbook)
-        url = self.api.runs("bundle", str(args.data))
+        url = self.api.runs("bundle", args.data)
         log.debug(url)
         res = requests.post(
             url["url"], url["fields"], files={"file": bundle}, timeout=None
@@ -216,7 +219,7 @@ class Satori:
             puts(FAIL_COLOR, f"Could not compress directory: {e}")
             sys.exit(1)
 
-        res = self.api.runs("archive", str(args.data))
+        res = self.api.runs("archive", args.data)
         log.debug(res)
         arc = res["archive"]
         bun = res["bundle"]
