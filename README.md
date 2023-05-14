@@ -17,7 +17,7 @@ Hello World
 
 We can assert that the return code will be 0 and the standard output of this program will be Hello World:
 
-```yml
+```yaml
 test:
     assertReturnCode: 0
     assertStdoutEqual: Hello World
@@ -68,7 +68,7 @@ TBC
 
 Playbooks can import other local or remote playbooks. We keep at TBC a list of playbooks that can be referenced with the
 
-```yml
+```yaml
 import:
     - satori://code/trufflehog.yml
 
@@ -95,7 +95,7 @@ Adding a file named .satori.yml in your root directory, we will be used by your 
 
 - .satori.yml:
 
-```yml
+```yaml
 test:
     assertStdoutEqual: "Hello World"
     bash:
@@ -118,7 +118,7 @@ Playbook that define a rate are automatically included within the monitor functi
 
 - MonitorBlog.yml
 
-```yml
+```yaml
 settings:
   - name: Monitor Blog
   - rate: TBC
