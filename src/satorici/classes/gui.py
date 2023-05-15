@@ -1,8 +1,10 @@
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, VerticalScroll
 from textual.widgets import Button, Footer, Header, Static, DataTable, Markdown
-from satorici.classes.satori import Satori
 from pathlib import Path
+
+from satorici.classes.satori import Satori
+from satorici.classes.utils import get_headers, get_rows
 
 
 class GuiApp(App):
@@ -51,46 +53,18 @@ class GuiApp(App):
         new_info = Info(id="cont")
         if event.button.id == "report":
             res = self.satori.api.reports("GET", "", "")
-            headers = ("Date", "Author", "Email", "Status", "Report")
-            rows = map(
-                lambda x: [
-                    x["Date"],
-                    x["Author"],
-                    x["Email"],
-                    x["Status"],
-                    x["Report"],
-                ],
-                res,
-            )
+            headers = get_headers(res)
+            rows = get_rows(res, headers)
             new_info.data = {"headers": headers, "rows": rows}
         elif event.button.id == "monitor":
             res = self.satori.api.monitors("GET", "", "")
-            headers = ("ID", "Name", "Status", "Last Result", "Schedule", "Errors")
-            rows = map(
-                lambda x: [
-                    x["id"],
-                    x["name"],
-                    x["status"],
-                    x["last result"],
-                    x["schedule"],
-                    x["errors"],
-                ],
-                res["list"],
-            )
+            headers = get_headers(res["list"])
+            rows = get_rows(res["list"], headers)
             new_info.data = {"headers": headers, "rows": rows}
         elif event.button.id == "repo":
             res = self.satori.api.repos("GET", "", "")
-            headers = ("Repo", "CI", "Playbook", "Result", "Errors")
-            rows = map(
-                lambda x: [
-                    x["repo"],
-                    x["ci"],
-                    x["playbook"],
-                    x["result"],
-                    x["errors"],
-                ],
-                res["list"],
-            )
+            headers = get_headers(res["list"])
+            rows = get_rows(res["list"], headers)
             new_info.data = {"headers": headers, "rows": rows}
         self.query_one("#info_c").mount(new_info)
         new_info.scroll_visible()
