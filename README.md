@@ -160,7 +160,7 @@ TBC
 You can see a list of public playbooks when at https://github.com/satorici/playbooks/
 
 ```sh
-$ satori-cli playbooks
+$ satori-cli playbook
 Private playbooks:
 Public Playbooks:
 ```
@@ -170,7 +170,7 @@ Public Playbooks:
 They can be imported by playbooks that you have in your CI or on assets being Monitored.
 
 ```sh
-$ satori-cli playbooks public
+$ satori-cli playbook --public
 URI                          | Name                                            
 satori://code/trufflehog.yml | Trufflehog will search for secrets in your code 
 ...
