@@ -140,15 +140,15 @@ class Satori:
             puts(FAIL_COLOR, "Satori can not access to file/folder")
             sys.exit(1)
 
-        with playbook.open() as f:
-            try:
-                variables = get_parameters(yaml.safe_load(f))
-            except yaml.YAMLError as e:
-                console.log("[bold]Error parsing the playbook:\n", e)
-                sys.exit(1)
-            if variables - params:
-                puts(FAIL_COLOR, f"Required parameters: {variables - params}")
-                sys.exit(1)
+        playbook_text = playbook.read_text()
+        try:
+            variables = get_parameters(yaml.safe_load(playbook_text))
+        except yaml.YAMLError as e:
+            console.log(f"Error parsing the playbook[bold]{playbook.name}[/bold]:\n", e)
+            sys.exit(1)
+        if variables - params:
+            puts(FAIL_COLOR, f"Required parameters: {variables - params}")
+            sys.exit(1)
 
         if path.is_dir():
             exec_data = self.run_folder(args)
