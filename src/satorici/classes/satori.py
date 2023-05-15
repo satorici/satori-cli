@@ -144,7 +144,9 @@ class Satori:
         try:
             variables = get_parameters(yaml.safe_load(playbook_text))
         except yaml.YAMLError as e:
-            console.log(f"Error parsing the playbook[bold]{playbook.name}[/bold]:\n", e)
+            console.log(
+                f"Error parsing the playbook [bold]{playbook.name}[/bold]:\n", e
+            )
             sys.exit(1)
         if variables - params:
             puts(FAIL_COLOR, f"Required parameters: {variables - params}")
