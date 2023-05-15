@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
 import random
+from attr import dataclass
 
 __decorations = "▢•○░"
 __random_colors = ["green", "blue", "red"]
@@ -275,20 +276,20 @@ def table_generator(headers: list[str], items: list[list], header_style=None):
     console.log(table)
 
 
+@dataclass
 class argument:
-    def __init__(self) -> None:
-        self.id = str()
-        self.action = str()
-        self.profile = str()
-        self.debug = bool()
-        self.json = bool()
-        self.path = str()
-        self.data = Any
-        self.sync = bool()
-        self.timeout = int()
-        self.playbook = str()
-        self.page = int()
-        self.public = bool()
+    id: str
+    action: str
+    profile: str
+    debug: bool
+    json: bool
+    path: str
+    data: Any
+    sync: bool
+    timeout: int
+    playbook: str
+    page: int
+    public: bool
 
 
 def autotable(items: list[dict], header_style=None, numerate=False) -> None:
@@ -303,12 +304,8 @@ def autotable(items: list[dict], header_style=None, numerate=False) -> None:
     numerate : bool, optional
         Add numeration, by default False
     """
-    headers = ["N°"] if numerate else []
-    # get headers
-    for i in items:
-        for h in i.keys():
-            if h not in headers:
-                headers.append(h)
+    h = get_headers(items)
+    headers = ["N°", *h] if numerate else h
     rows = []
     # get rows
     n = 0
@@ -323,4 +320,19 @@ def autotable(items: list[dict], header_style=None, numerate=False) -> None:
             else:
                 row.append("")
         rows.append(row)
-    table_generator(headers, rows, header_style)
+    table_generator(capitalize_list(headers), rows, header_style)
+
+
+def get_headers(items: list[dict]) -> list[str]:
+    headers = []
+    for i in items:
+        for h in i.keys():
+            h = str(h)
+            if h not in headers:
+                headers.append(h)
+    return headers
+
+
+def capitalize_list(items: list[str]) -> list[str]:
+    new_list = map(lambda x: x.capitalize() if len(x) > 2 else x.upper(), items)
+    return list(new_list)
