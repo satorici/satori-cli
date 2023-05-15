@@ -123,12 +123,12 @@ class Satori:
             try:
                 data = ast.literal_eval(args.data)
 
-                if not validate_parameters(args.data):
-                    raise
+                if not validate_parameters(data):
+                    raise ValueError("Malformed parameters")
 
                 params.update(data.keys())
-            except Exception:
-                puts(FAIL_COLOR, "Malformed parameters")
+            except Exception as e:
+                puts(FAIL_COLOR, str(e))
                 sys.exit(1)
 
         if path.is_dir():
@@ -141,7 +141,7 @@ class Satori:
 
         with playbook.open() as f:
             variables = get_parameters(yaml.safe_load(f))
-            if variables != params:
+            if variables - params:
                 puts(FAIL_COLOR, f"Required parameters: {variables - params}")
                 sys.exit(1)
 
