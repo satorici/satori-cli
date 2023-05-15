@@ -32,6 +32,7 @@ from satorici.classes.utils import (
     argument,
     log,
     autotable,
+    console,
 )
 from satorici.classes.validations import get_parameters, validate_parameters
 from satorici.classes.playbooks import display_public_playbooks
@@ -140,7 +141,11 @@ class Satori:
             sys.exit(1)
 
         with playbook.open() as f:
-            variables = get_parameters(yaml.safe_load(f))
+            try:
+                variables = get_parameters(yaml.safe_load(f))
+            except yaml.YAMLError as e:
+                console.log("[bold]Error parsing the playbook:\n", e)
+                sys.exit(1)
             if variables - params:
                 puts(FAIL_COLOR, f"Required parameters: {variables - params}")
                 sys.exit(1)
