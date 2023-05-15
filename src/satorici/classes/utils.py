@@ -306,20 +306,7 @@ def autotable(items: list[dict], header_style=None, numerate=False) -> None:
     """
     h = get_headers(items)
     headers = ["N°", *h] if numerate else h
-    rows = []
-    # get rows
-    n = 0
-    for item in items:
-        n += 1
-        row = []
-        for key in headers:
-            if key == "N°":
-                row.append(str(n))
-            elif key in item:
-                row.append(item[key])
-            else:
-                row.append("")
-        rows.append(row)
+    rows = get_rows(items, headers)
     table_generator(capitalize_list(headers), rows, header_style)
 
 
@@ -331,6 +318,23 @@ def get_headers(items: list[dict]) -> list[str]:
             if h not in headers:
                 headers.append(h)
     return headers
+
+
+def get_rows(items: list[dict], headers: list[str]) -> list[list]:
+    rows = []
+    n = 0
+    for item in items:
+        n += 1
+        row = []
+        for key in headers:
+            if key == "N°":  # add numeration
+                row.append(str(n))
+            elif key in item:
+                row.append(item[key])
+            else:
+                row.append("")
+        rows.append(row)
+    return rows
 
 
 def capitalize_list(items: list[str]) -> list[str]:
