@@ -34,13 +34,13 @@ from satorici.classes.utils import (
 )
 from satorici.classes.validations import get_parameters, validate_parameters
 from satorici.classes.playbooks import display_public_playbooks
-from satorici.classes.data import argument
+from satorici.classes.data import arguments
 
 
 class Satori:
     """Have some class"""
 
-    def __init__(self, args: argument, config=False) -> None:
+    def __init__(self, args: arguments, config=False) -> None:
         """Turn on the engines"""
         self.profile = args.profile
         self.config_paths = [
@@ -115,7 +115,7 @@ class Satori:
 
         puts(Fore.LIGHTGREEN_EX, key.capitalize() + " saved")
 
-    def run(self, args: argument):
+    def run(self, args: arguments):
         path = Path(args.path)
         params = set()
 
@@ -158,19 +158,9 @@ class Satori:
         if args.sync and exec_data:
             self.run_sync(exec_data)
 
-    def run_file(self, args: argument) -> dict:
+    def run_file(self, args: arguments) -> dict:
         """Just run"""
         playbook = args.path
-        if playbook is None:
-            print(
-                f"Define the Satori playbook file:\n{sys.argv[0]} run -p playbook.yml"
-            )
-            sys.exit(1)
-
-        if not os.path.isfile(playbook):
-            puts(FAIL_COLOR, f"Playbook not found: {playbook}")
-            sys.exit(1)
-
         bundle = make_bundle(playbook)
         is_monitor = check_monitor(playbook)
         url = self.api.runs("bundle", args.data)
@@ -199,20 +189,9 @@ class Satori:
             )
         return {"type": exec_type, "id": exec_id}
 
-    def run_folder(self, args: argument) -> dict:
+    def run_folder(self, args: arguments) -> dict:
         """Upload directory and run"""
         directory = args.path
-        if directory is None:
-            print(
-                "Define the directory with the Satori playbook:"
-                f"\n{sys.argv[0]} run -p ./directory_with_playbook"
-            )
-            sys.exit(1)
-
-        if not os.path.isdir(directory):
-            puts(FAIL_COLOR, f"Directory not found: {directory}")
-            sys.exit(1)
-
         satori_yml = Path(directory, ".satori.yml")
         bundle = make_bundle(str(satori_yml), from_dir=True)
         is_monitor = check_monitor(satori_yml)
@@ -349,7 +328,7 @@ class Satori:
                     end="\r",
                 )
 
-    def repo(self, args: argument):
+    def repo(self, args: arguments):
         """Run Satori on multiple commits"""
         params = filter_params(args, ("id",))
         if args.playbook:
@@ -402,7 +381,7 @@ class Satori:
             if match:
                 self.run_sync({"type": "report", "id": match[0]})
 
-    def report(self, args: argument):
+    def report(self, args: arguments):
         """Show a list of reports"""
         params = filter_params(args, ("id",))
         if args.action == "":
@@ -428,7 +407,7 @@ class Satori:
             print("Unknown subcommand")
             sys.exit(1)
 
-    def monitor(self, args: argument):
+    def monitor(self, args: arguments):
         """Get information about the"""
         params = filter_params(args, ("id",))
         if args.action == "delete":
@@ -451,7 +430,7 @@ class Satori:
             print("\nMonitors:")
             autotable(info["list"], "bold blue")
 
-    def output(self, args: argument, params):
+    def output(self, args: arguments, params):
         """Returns commands output"""
         try:
             uuid.UUID(args.id)
@@ -483,7 +462,7 @@ class Satori:
         else:
             print(json.dumps(data, indent=2))
 
-    def dashboard(self, args: argument):
+    def dashboard(self, args: arguments):
         """Get user dashboard"""
         info = self.api.dashboard()
         if args.json:
@@ -508,7 +487,7 @@ class Satori:
                 print("Repos:")
                 autotable(info["repos"]["list"], "bold blue", True)
 
-    def playbook(self, args: argument):
+    def playbook(self, args: arguments):
         """Get playbooks"""
         if args.public:
             display_public_playbooks()
@@ -527,7 +506,7 @@ class Satori:
             sys.exit(1)
         autoformat(data, jsonfmt=args.json, list_separator="-" * 48)
 
-    def team(self, args: argument):
+    def team(self, args: arguments):
         """Get information about the"""
         params = filter_params(args, ("id",))
         if args.action == "":

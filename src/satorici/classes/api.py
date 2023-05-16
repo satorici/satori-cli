@@ -5,15 +5,13 @@ from requests.exceptions import HTTPError
 from typing import Union, Any
 
 from satorici.classes.utils import FAIL_COLOR, puts, autoformat, log
-from satorici.classes.data import argument
+from satorici.classes.data import arguments
 
 HOST = "https://api.satori-ci.com"
 
 
 class SatoriAPI:
-    def __init__(
-        self, token: str, server: Union[str, None], cli_args: argument
-    ):
+    def __init__(self, token: str, server: Union[str, None], cli_args: arguments):
         self.__session__ = requests.Session()
         self.__session__.headers.update(
             Authorization=f"Bearer {token}",

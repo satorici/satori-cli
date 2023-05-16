@@ -19,4 +19,4 @@ class args:
     public: bool
 
 
-argument = Union[Namespace, args]
+arguments = Union[Namespace, args]
