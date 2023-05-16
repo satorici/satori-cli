@@ -3,16 +3,16 @@ import sys
 from requests import Response
 from requests.exceptions import HTTPError
 from typing import Union, Any
-from argparse import Namespace
 
-from satorici.classes.utils import FAIL_COLOR, puts, autoformat, log, argument
+from satorici.classes.utils import FAIL_COLOR, puts, autoformat, log
+from satorici.classes.data import argument
 
 HOST = "https://api.satori-ci.com"
 
 
 class SatoriAPI:
     def __init__(
-        self, token: str, server: Union[str, None], cli_args: Union[Namespace, argument]
+        self, token: str, server: Union[str, None], cli_args: argument
     ):
         self.__session__ = requests.Session()
         self.__session__.headers.update(

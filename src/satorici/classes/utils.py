@@ -11,7 +11,6 @@ from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
 import random
-from dataclasses import dataclass
 
 __decorations = "▢•○░"
 __random_colors = ["green", "blue", "red"]
@@ -274,22 +273,6 @@ def table_generator(headers: list[str], items: list[list], header_style=None):
             cells.append(styled)
         table.add_row(*cells)
     console.log(table)
-
-
-@dataclass
-class argument:
-    id: str
-    action: str
-    profile: str
-    debug: bool
-    json: bool
-    path: str
-    data: Any
-    sync: bool
-    timeout: int
-    playbook: str
-    page: int
-    public: bool
 
 
 def autotable(items: list[dict], header_style=None, numerate=False) -> None:
