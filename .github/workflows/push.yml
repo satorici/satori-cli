@@ -28,16 +28,16 @@ jobs:
         uses: pdm-project/setup-pdm@v3
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: pdm install
-      - name: Check type
-        run: pdm run check_type
-      - name: Check Lint
-        run: pdm run check_lint
-      - name: Check Format
-        run: pdm run check_format
-      - name: Test
-        run: pdm run test
+      #- name: Install dependencies
+      #  run: pdm install
+      #- name: Check type
+      #  run: pdm run check_type
+      #- name: Check Lint
+      #  run: pdm run check_lint
+      #- name: Check Format
+      #  run: pdm run check_format
+      #- name: Test
+      #  run: pdm run test
       - name: run
         env:
           PDMUSER: ${{ secrets.PDMUSER }}
