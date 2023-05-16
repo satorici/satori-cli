@@ -348,8 +348,9 @@ class Satori:
             params = filter_params(args, ("id", "filter", "all", "limit", "fail"))
             info = self.api.repos("GET", args.id, args.action, params=params)
         elif args.action == "run":
-            params = filter_params(args, ("id", "data", "playbook"))
-            info = self.api.repos_scan("GET", args.id, "last", params=params)
+            params = filter_params(args, ("data", "playbook"))
+            params["url"] = args.id
+            info = self.api.repos_scan("GET", "", "last", params=params)
         elif args.action == "scan-stop":
             info = self.api.repos_scan("GET", args.id, "stop", params=params)
         elif args.action == "scan-status":
