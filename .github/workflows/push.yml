@@ -19,12 +19,15 @@ jobs:
           satori-cli run ./ --data="{'TOKEN':'$TOKEN'} -s
   pdm-upload:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v3
         with:
-          python-version: ["3.11"]
+          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: pdm install
       - name: Check type
