@@ -351,6 +351,8 @@ class Satori:
             params = filter_params(args, ("data", "playbook"))
             params["url"] = args.id
             info = self.api.repos_scan("GET", "", "last", params=params)
+            if args.sync:
+                self.sync_reports_list(info)
         elif args.action == "scan-stop":
             info = self.api.repos_scan("GET", args.id, "stop", params=params)
         elif args.action == "scan-status":
@@ -528,3 +530,45 @@ class Satori:
             print("Unknown subcommand")
             sys.exit(1)
         autoformat(info, jsonfmt=args.json, list_separator="*" * 48, table=True)
+
+    def sync_reports_list(self, report_list: list[dict]) -> None:
+        completed = []
+        n = 0
+        with console.status("[bold cyan]Getting results...") as report:
+            while len(completed) < len(report_list):
+                report = report_list[n]["status"].replace("Report running ", "")
+                repo = report_list[n]["repo"]
+                if repo not in completed:
+                    if report == "Failed to scan commit":
+                        console.log(f"[bold]{repo}[/bold] [red]Failed to start")
+                        completed.append(repo)
+                    try:
+                        report_data = self.api.reports(
+                            "GET", report, "", raise_error=True
+                        )
+                    except requests.HTTPError as e:
+                        code = e.response.status_code
+                        if code not in (404, 403):
+                            console.log(f"[red]Failed to get data\nStatus code: {code}")
+                            sys.exit(1)
+                    else:
+                        report_status = report_data.get("status", "Unknown")
+                        if report_status in ("Completed", "Undefined"):
+                            fails = report_data["fails"]
+                            if fails is None:
+                                result = "[yellow]Unknown"
+                            else:
+                                result = (
+                                    "[green]Pass"
+                                    if fails == 0
+                                    else f"[red]Fail({fails})"
+                                )
+                            console.log(
+                                f"[bold]{repo}[/bold] Completed | Result: {result}"
+                            )
+                            completed.append(repo)
+                time.sleep(0.5)
+                n += 1
+                if n >= len(report_list):
+                    n = 0
+        sys.exit(0)
