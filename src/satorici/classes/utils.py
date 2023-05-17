@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 import json
 import yaml
 import re
@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
 import random
+from satorici.classes.data import arguments
 
 __decorations = "▢•○░"
 __random_colors = ["green", "blue", "red"]
@@ -109,7 +110,7 @@ def autoformat(
     obj: Any,
     capitalize: bool = False,
     indent: int = 0,
-    jsonfmt: bool = False,
+    args: Optional[arguments] = None,
     list_separator: Union[str, None] = None,
     color: str = "",
     table: bool = False,
@@ -129,8 +130,11 @@ def autoformat(
     list_separator: str, optional
         List separator
     """
-    if jsonfmt:
+    if args and args.json:
         print_json(json.dumps(obj, default=str), indent=(indent + 1) * 2)
+    if args and args.yaml:
+        syntax = Syntax(yaml.dump(obj), "yaml", theme="fruity")
+        console.log(syntax)
     else:
         if isinstance(obj, dict):
             dict_formatter(obj, capitalize, indent, list_separator)

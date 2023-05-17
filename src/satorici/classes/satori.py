@@ -390,12 +390,12 @@ class Satori:
         if args.action == "":
             params = filter_params(args, ("id", "page", "limit", "filter"))
             res = self.api.reports("GET", args.id, "", params=params)
-            if isinstance(res, list) and not args.json:
+            if isinstance(res, list) and not args.json and not args.yaml:
                 for commit in res:
                     dict_formatter(commit)
                     puts(Fore.LIGHTBLACK_EX, ("_" * 48) + "\n")
             else:
-                autoformat(res, jsonfmt=args.json)
+                autoformat(res, args=args)
             if not args.json:
                 print(f"Current page: {args.page}")
         elif args.action == "output":
