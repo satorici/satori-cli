@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 import json
 import yaml
 import re
@@ -20,9 +20,9 @@ UUID4_REGEX = re.compile(
     re.I,
 )
 # Regex
-PASS_REGEX = re.compile(r"(pass|completed)", re.IGNORECASE)
+PASS_REGEX = re.compile(r"(pass|completed|^yes$)", re.IGNORECASE)
 RUNNING_REGEX = re.compile(r"(pending|running)", re.IGNORECASE)
-FAIL_REGEX = re.compile(r"(fail(\(\d+\))?|error)", re.IGNORECASE)
+FAIL_REGEX = re.compile(r"(fail(\(\d+\))?|(?<!\w)error(?!\w)|^no$)", re.IGNORECASE)
 UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
 SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
 KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)")  # ex: "key: "
@@ -85,7 +85,7 @@ def list_formatter(
     obj: list,
     capitalize: bool = False,
     indent: int = 0,
-    list_separator: Union[str, None] = None,
+    list_separator: Optional[str] = None,
 ):
     for item in obj:
         indent_text = get_decoration(indent)
@@ -110,7 +110,7 @@ def autoformat(
     capitalize: bool = False,
     indent: int = 0,
     jsonfmt: bool = False,
-    list_separator: Union[str, None] = None,
+    list_separator: Optional[str] = None,
     color: str = "",
     table: bool = False,
 ) -> None:
@@ -241,7 +241,12 @@ def autosyntax(item: str, indent: int) -> bool:
         return True
 
 
-def table_generator(headers: list[str], items: list[list], header_style=None):
+def table_generator(
+    headers: list[str],
+    items: list[list],
+    header_style: Optional[str] = None,
+    widths: Union[tuple, list] = [None],
+):
     """Print a rich table
 
     Parameters
@@ -250,12 +255,18 @@ def table_generator(headers: list[str], items: list[list], header_style=None):
         A list of the headers names, ex: ["header1","header2"]
     items : list
         A list of rows with cells, ex: [["row1-1","row1-2"],["row2-1","row2-2"]]
-    header_style : _type_, optional
+    header_style : str, optional
         Rich Table header style, by default None
     """
-    table = Table(show_header=True, header_style=header_style)
+    widths_iter = iter_loop(widths)
+    table = Table(
+        show_header=True,
+        header_style=header_style,
+        row_styles=["on #222222", "on black"],
+        expand=True,
+    )
     for header in headers:
-        table.add_column(header)
+        table.add_column(header, width=next(widths_iter))
     for item in items:
         cells = []
         for raw_i in item:
@@ -275,14 +286,19 @@ def table_generator(headers: list[str], items: list[list], header_style=None):
     console.log(table)
 
 
-def autotable(items: list[dict], header_style=None, numerate=False) -> None:
+def autotable(
+    items: list[dict],
+    header_style: Optional[str] = None,
+    numerate: Optional[bool] = False,
+    widths: Union[tuple, list] = [None],
+) -> None:
     """Print a list of dictionaries like a table
 
     Parameters
     ----------
     items : list[dict]
         The list, ex: [{"id":1,"name":"one"},{"id":2,"name":"two"}]
-    header_style : _type_, optional
+    header_style : str, optional
         Rich Table header style, by default None
     numerate : bool, optional
         Add numeration, by default False
@@ -290,7 +306,7 @@ def autotable(items: list[dict], header_style=None, numerate=False) -> None:
     h = get_headers(items)
     headers = ["N°", *h] if numerate else h
     rows = get_rows(items, headers)
-    table_generator(capitalize_list(headers), rows, header_style)
+    table_generator(capitalize_list(headers), rows, header_style, widths)
 
 
 def get_headers(items: list[dict]) -> list[str]:
@@ -323,3 +339,12 @@ def get_rows(items: list[dict], headers: list[str]) -> list[list]:
 def capitalize_list(items: list[str]) -> list[str]:
     new_list = map(lambda x: x.capitalize() if len(x) > 2 else x.upper(), items)
     return list(new_list)
+
+
+def iter_loop(data: Union[tuple[Any], list[Any]]):
+    i = 0
+    while True:
+        yield data[i]
+        i += 1
+        if i >= len(data):
+            i = 0

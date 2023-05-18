@@ -372,10 +372,10 @@ class Satori:
             autoformat(info, jsonfmt=args.json, list_separator="-" * 48)
         else:  # Default command (satori-cli repo)
             if len(info["pending"]) > 1:
-                print("Pending actions:")
-                autotable(info["pending"], "bold red")
-            print("\nRepos:")
-            autotable(info["list"], "bold blue")
+                console.rule("[b red]Pending actions", style="red")
+                autotable(info["pending"], "bold red", widths=(50, 50))
+            console.rule("[b green]Repos", style="green")
+            autotable(info["list"], "bold blue", widths=(None, 8, 20, 10, 40))
         if args.action == "run" and args.sync:
             if isinstance(info, list):
                 info = info[0]
@@ -428,10 +428,10 @@ class Satori:
             autoformat(info, jsonfmt=args.json, list_separator="*" * 48)
         else:  # Default command (satori-cli monitor)
             if len(info["pending"]) > 1:
-                print("Pending actions:")
-                autotable(info["pending"], "bold red")
-            print("\nMonitors:")
-            autotable(info["list"], "bold blue")
+                console.rule("[b red]Pending actions", style="red")
+                autotable(info["pending"], "b red")
+            console.rule("[b blue]Monitors", style="blue")
+            autotable(info["list"], "b blue")
 
     def output(self, args: arguments, params):
         """Returns commands output"""
@@ -476,19 +476,30 @@ class Satori:
             if len_mon > 0 or len_rep > 0:
                 # print pending actions
                 if len_mon > 0:
-                    print("Monitors(Actions required):")
-                    autotable(info["monitors"]["pending"], "bold green")
+                    console.rule(
+                        "[b][blue]Monitors[/blue](Actions required)", style="white"
+                    )
+                    autotable(
+                        info["monitors"]["pending"], "b blue", widths=(20, 20, None)
+                    )
                 if len_rep > 0:
-                    print("Repos(Actions required):")
-                    autotable(info["repos"]["pending"], "bold green")
+                    console.rule(
+                        "[b][green]Repos[/green](Actions required)", style="white"
+                    )
+                    autotable(info["repos"]["pending"], "b green", widths=(50, 50))
             if len(info["monitors"]["list"]) == 0:
-                print("\nMonitors: no active monitors defined")
+                console.log("[b]Monitors:[red] no active monitors defined")
             else:
-                print("Monitors:")
-                autotable(info["monitors"]["list"], "bold blue", True)
+                console.rule("[b blue]Monitors", style="blue")
+                autotable(info["monitors"]["list"], "b blue", True)
             if len(info["repos"]["list"]) > 0:
-                print("Repos:")
-                autotable(info["repos"]["list"], "bold blue", True)
+                console.rule("[b green]Repos", style="green")
+                autotable(
+                    info["repos"]["list"],
+                    "b green",
+                    True,
+                    widths=(3, None, 8, 20, 10, 40),
+                )
 
     def playbook(self, args: arguments):
         """Get playbooks"""
