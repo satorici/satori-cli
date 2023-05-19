@@ -61,8 +61,8 @@ class SatoriAPI:
             return resp
         sys.exit(1)
 
-    def runs(self, run_type: str, secrets: str) -> Any:
-        res = self.request("POST", f"runs/{run_type}", json={"secrets": secrets})
+    def runs(self, run_type: str, data: dict) -> Any:
+        res = self.request("POST", f"runs/{run_type}", json=data)
         return res.json()
 
     def repos(self, method: str, repo: str, action: str, **kwargs) -> Any:
