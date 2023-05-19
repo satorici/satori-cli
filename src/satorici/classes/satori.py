@@ -115,6 +115,9 @@ class Satori:
         puts(Fore.LIGHTGREEN_EX, key.capitalize() + " saved")
 
     def run(self, args: arguments):
+        if args.path.startswith("satori://"):
+            self.run_url(args)
+
         path = Path(args.path)
         params = set()
 
@@ -162,7 +165,7 @@ class Satori:
         playbook = args.path
         bundle = make_bundle(playbook)
         is_monitor = check_monitor(playbook)
-        url = self.api.runs("bundle", args.data)
+        url = self.api.runs("bundle", {"secrets": args.data})
         log.debug(url)
         res = requests.post(
             url["url"], url["fields"], files={"file": bundle}, timeout=None
@@ -203,7 +206,7 @@ class Satori:
             puts(FAIL_COLOR, f"Could not compress directory: {e}")
             sys.exit(1)
 
-        res = self.api.runs("archive", args.data)
+        res = self.api.runs("archive", {"secrets": args.data})
         log.debug(res)
         arc = res["archive"]
         bun = res["bundle"]
@@ -212,7 +215,7 @@ class Satori:
         try:
             with progress_open(full_path, "rb", description="Uploading...") as f:
                 res = requests.post(
-                    arc["url"], arc["fields"], files={"file": f}, timeout=None  # type: ignore
+                    arc["url"], arc["fields"], files={"file": f}, timeout=None
                 )
         finally:
             os.remove(full_path)
@@ -244,6 +247,15 @@ class Satori:
                 )
             )
         return {"type": exec_type, "id": exec_id}
+
+    def run_url(self, args: arguments):
+        info = self.api.runs("url", {"secrets": args.data, "url": args.path})
+        exec_data = {"type": "report", "id": info["report_id"]}
+        if args.sync:
+            self.run_sync(exec_data)
+        else:
+            autoformat(exec_data, jsonfmt=args.json)
+            sys.exit(0)
 
     def run_sync(self, exec_data: dict) -> None:
         if exec_data["type"] == "monitor":
