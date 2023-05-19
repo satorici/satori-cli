@@ -9,8 +9,7 @@ from pathlib import Path
 import time
 import requests
 import yaml
-from tqdm import tqdm
-from tqdm.utils import CallbackIOWrapper
+from rich.progress import open as progress_open
 from colorama import Fore
 
 from satorici.classes.api import SatoriAPI
@@ -211,17 +210,9 @@ class Satori:
         mon = res["monitor"]
 
         try:
-            bar_params = {
-                "total": os.stat(full_path).st_size,
-                "unit": "B",
-                "desc": "Archive upload",
-                "unit_scale": True,
-            }
-            with tqdm(**bar_params) as t, open(full_path, "rb") as f:
-                w = CallbackIOWrapper(t.update, f, "read")
-                file = {"file": w}
+            with progress_open(full_path, "rb", description="Uploading...") as f:
                 res = requests.post(
-                    arc["url"], arc["fields"], files=file, timeout=None  # type: ignore
+                    arc["url"], arc["fields"], files={"file": f}, timeout=None  # type: ignore
                 )
         finally:
             os.remove(full_path)
