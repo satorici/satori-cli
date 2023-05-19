@@ -435,11 +435,6 @@ class Satori:
 
     def output(self, args: arguments, params):
         """Returns commands output"""
-        try:
-            uuid.UUID(args.id)
-        except ValueError:
-            puts(FAIL_COLOR, f"{args.id} is not a valid report ID")
-            sys.exit(1)
         data = self.api.reports("GET", args.id, args.action, params=params)
 
         if not args.json:  # default output
