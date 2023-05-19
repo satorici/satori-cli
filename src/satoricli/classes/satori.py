@@ -250,12 +250,11 @@ class Satori:
 
     def run_url(self, args: arguments):
         info = self.api.runs("url", {"secrets": args.data, "url": args.path})
-        exec_data = {"type": "report", "id": info["report_id"]}
+        autoformat({"Running with the ID": info.get("report_id")}, jsonfmt=args.json)
         if args.sync:
+            exec_data = {"type": "report", "id": info["report_id"]}
             self.run_sync(exec_data)
-        else:
-            autoformat(exec_data, jsonfmt=args.json)
-            sys.exit(0)
+        sys.exit(0)
 
     def run_sync(self, exec_data: dict) -> None:
         if exec_data["type"] == "monitor":
