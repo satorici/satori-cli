@@ -1,19 +1,5 @@
-import re
-
 from flatdict import FlatDict
-
-INPUT_REGEX = re.compile(r"\$\(([\w-]+)\)")
-
-
-def is_command_block(value):
-    if isinstance(value, list):
-        if all(
-            (
-                isinstance(v, list) and len(v) == 1 and isinstance(v[0], str)
-                for v in value
-            )
-        ):
-            return True
+from satorici.validator import INPUT_REGEX, command_schema
 
 
 def get_unbound(commands: list[list[str]], key: str, flat_config: dict[str]):
@@ -43,7 +29,7 @@ def get_parameters(config: dict):
     parameters: set[str] = set()
 
     for key, value in flat_config.items():
-        if is_command_block(value):
+        if command_schema.is_valid(value):
             parameters.update(get_unbound(value, key, flat_config))
 
     return parameters
