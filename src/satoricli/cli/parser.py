@@ -5,8 +5,8 @@ import sys
 from importlib import metadata
 from colorama import just_fix_windows_console, Fore, Back
 
-from satorici.classes.satori import Satori
-from satorici.classes.utils import puts
+from ..classes.satori import Satori
+from ..classes.utils import puts
 
 VERSION = metadata.version("satori-ci")
 just_fix_windows_console()
@@ -44,7 +44,7 @@ def main():
         "--version", "-v", action="version", version=f"%(prog)s {VERSION}"
     )
 
-    parser = ArgumentParser(parents=[baseparser])
+    parser = ArgumentParser(parents=[baseparser], prog="satori-cli")
     subparsers = parser.add_subparsers(dest="subcommand")
 
     # config token "user_token"
@@ -148,7 +148,3 @@ def main():
     except KeyboardInterrupt:
         puts(Back.RED, "Interrupted by user")
         sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()

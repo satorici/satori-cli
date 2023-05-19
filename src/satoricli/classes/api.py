@@ -4,8 +4,8 @@ from requests import Response
 from requests.exceptions import HTTPError
 from typing import Union, Any
 
-from satorici.classes.utils import FAIL_COLOR, puts, autoformat, log
-from satorici.classes.data import arguments
+from .utils import FAIL_COLOR, puts, autoformat, log
+from .data import arguments
 
 HOST = "https://api.satori-ci.com"
 

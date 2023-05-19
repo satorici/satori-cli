@@ -12,9 +12,9 @@ import yaml
 from rich.progress import open as progress_open
 from colorama import Fore
 
-from satorici.classes.api import SatoriAPI
-from satorici.classes.bundler import make_bundle
-from satorici.classes.utils import (
+from .api import SatoriAPI
+from .bundler import make_bundle
+from .utils import (
     dict_formatter,
     filter_params,
     autoformat,
@@ -31,9 +31,9 @@ from satorici.classes.utils import (
     console,
     UNKNOWN_COLOR,
 )
-from satorici.classes.validations import get_parameters, validate_parameters
-from satorici.classes.playbooks import display_public_playbooks
-from satorici.classes.data import arguments
+from .validations import get_parameters, validate_parameters
+from .playbooks import display_public_playbooks
+from .data import arguments
 
 
 class Satori:
