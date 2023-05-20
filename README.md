@@ -48,11 +48,7 @@ First, login at https://www.satori-ci.com using your Github account to be able t
 You will use that token to setup your account with our CLI tool
 
 ```sh
-git clone git@github.com:satorici/satori-cli.git
-cd satori-cli/
-apt install python3.10
-pip3 install -f requirements.txt
-# TBD: pip3 install satori-cli
+pip3 install satori-ci
 satori-cli config default YOUR_TOKEN
 ```
 
