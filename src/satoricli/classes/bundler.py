@@ -1,35 +1,22 @@
 import io
 import os
-import re
 from pathlib import Path
 from zipfile import ZipFile
 
 import yaml
-
-
-IMPORT_REGEX = re.compile(r"(satori|file):\/(\/[\w-]+)+\.ya?ml")
-
-
-def is_import(value):
-    return isinstance(value, list) and (
-        all(isinstance(e, str) and IMPORT_REGEX.fullmatch(e) for e in value)
-    )
-
-
-def is_input(value):
-    return isinstance(value, list) and (all(isinstance(e, (str, dict)) for e in value))
+from satorici.validator import import_schema, input_schema, test_schema
 
 
 def get_local_files(config: dict):
     paths = {"imports": set(), "inputs": set()}
     for value in config.values():
-        if is_import(value):
+        if import_schema.is_valid(value):
             paths["imports"].update([p[7:] for p in value if p.startswith("file")])
-        elif is_input(value):
+        elif input_schema.is_valid(value):
             paths["inputs"].update(
                 [p.get("file") for p in value if isinstance(p, dict) and p.get("file")]
             )
-        elif isinstance(value, dict):
+        elif test_schema.is_valid(value, dict):
             paths.update(get_local_files(value))
     return paths
 
