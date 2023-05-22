@@ -385,7 +385,7 @@ class Satori:
                 console.rule("[b red]Pending actions", style="red")
                 autotable(info["pending"], "bold red", widths=(50, 50))
             console.rule("[b green]Repos", style="green")
-            autotable(info["list"], "bold blue", widths=(None, 8, 20, 10, 40))
+            autotable(info["list"], "bold blue", widths=(None, 10, 12, 20, 10, 40))
         if args.action == "run" and args.sync:
             if isinstance(info, list):
                 info = info[0]
@@ -503,7 +503,7 @@ class Satori:
                     info["repos"]["list"],
                     "b green",
                     True,
-                    widths=(3, None, 8, 20, 10, 40),
+                    widths=(3, None, 10, 12, 20, 10, 40),
                 )
 
     def playbook(self, args: arguments):
