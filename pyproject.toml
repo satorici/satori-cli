@@ -12,7 +12,7 @@ dependencies = [
     "flatdict>=4.0.1",
     "rich>=13.0",
     "gitpython>=3.1.31",
-    "satori-playbook-validator==1.0.2",
+    "satori-playbook-validator==1.0.5",
 ]
 requires-python = ">=3.9"
 readme = "README.md"

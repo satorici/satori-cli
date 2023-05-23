@@ -121,7 +121,7 @@ dependencies = [
 
 [[package]]
 name = "satori-playbook-validator"
-version = "1.0.2"
+version = "1.0.5"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
@@ -145,7 +145,7 @@ summary = "HTTP library with thread-safe connection pooling, file post, and more
 lock_version = "4.2"
 cross_platform = true
 groups = ["default"]
-content_hash = "sha256:a29581965a08fe92e3214ec111461d0187cd5cb8b6e28078c410a2dac2614115"
+content_hash = "sha256:f6ac80fe6f492689d2d3eac89edddcc1da21a9dc8fc293d75c0c27483696cdb9"
 
 [metadata.files]
 "attrs 23.1.0" = [
@@ -274,9 +274,9 @@ content_hash = "sha256:a29581965a08fe92e3214ec111461d0187cd5cb8b6e28078c410a2dac
     {url = "https://files.pythonhosted.org/packages/39/03/6de23bdd88f5ee7f8b03f94f6e88108f5d7ffe6d207e95cdb06d9aa4cd57/rich-13.3.5-py3-none-any.whl", hash = "sha256:69cdf53799e63f38b95b9bf9c875f8c90e78dd62b2f00c13a911c7a3b9fa4704"},
     {url = "https://files.pythonhosted.org/packages/3d/0b/8dd34d20929c4b5e474db2e64426175469c2b7fea5ba71c6d4b3397a9729/rich-13.3.5.tar.gz", hash = "sha256:2d11b9b8dd03868f09b4fffadc84a6a8cda574e40dc90821bd845720ebb8e89c"},
 ]
-"satori-playbook-validator 1.0.2" = [
-    {url = "https://files.pythonhosted.org/packages/33/a7/342bad785dbc3e196772e0b068ea5e962d8c65136bf2b440fbf85bda2a8a/satori_playbook_validator-1.0.2.tar.gz", hash = "sha256:0c7353cadd851a4eee3924f8071ae5e7e82cab5d69a37c434d8fbf6987f6ffcf"},
-    {url = "https://files.pythonhosted.org/packages/8f/66/d10218c51b7a1c2fb9576db0b8295bdce180bb66b69a8c9a397069477782/satori_playbook_validator-1.0.2-py3-none-any.whl", hash = "sha256:7c867bf93de4cc38248c6e50a605e199ba41bdfdf8e9588bd6812e14ac76e58b"},
+"satori-playbook-validator 1.0.5" = [
+    {url = "https://files.pythonhosted.org/packages/38/75/57a6d26b129ea08a045872d1be6f3a07dfacf9ea6368ccaefa1f40f7b59e/satori_playbook_validator-1.0.5.tar.gz", hash = "sha256:d7e0b32438c9e349e5d43ee988a53dfb70f00af09e71e672e04689cd2c68503e"},
+    {url = "https://files.pythonhosted.org/packages/cc/26/2a9ce158aff14a9a5a24b019419253814ff09535f6e0ebf1598454cdf540/satori_playbook_validator-1.0.5-py3-none-any.whl", hash = "sha256:a4c9c1034bbf287207c128a1f2d4a7b0c0e9551216a8ef6ab9d6f93733dbabda"},
 ]
 "smmap 5.0.0" = [
     {url = "https://files.pythonhosted.org/packages/21/2d/39c6c57032f786f1965022563eec60623bb3e1409ade6ad834ff703724f3/smmap-5.0.0.tar.gz", hash = "sha256:c840e62059cd3be204b0c9c9f74be2c09d5648eddd4580d9314c3ecde0b30936"},
