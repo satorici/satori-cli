@@ -1,13 +1,16 @@
-from textual.app import App, ComposeResult
-from textual.containers import VerticalScroll
+from textual.app import App, ComposeResult  # , events
 from textual.widgets import Footer, Header, MarkdownViewer, Markdown
+
 from pathlib import Path
 
 from .satori import Satori
 
+DOCS_FOLDER = str(Path(__file__).parent) + "/../../../docs/"
+
 
 class GuiApp(App):
     BINDINGS = [
+        # ("b", "back", "Back"),
         ("h", "home", "Home"),
         ("d", "toggle_dark", "Toggle dark mode"),
         ("q", "quit", "Quit"),
@@ -22,7 +25,7 @@ class GuiApp(App):
         """Create child widgets for the app."""
         yield Header(show_clock=True)
         yield Footer()
-        yield VerticalScroll(VerticalScroll(id="cont"), id="info_c")
+        yield Markdown2(id="markdown")
 
     def on_mount(self) -> None:
         self.action_home()
@@ -32,20 +35,24 @@ class GuiApp(App):
         self.dark = not self.dark
 
     def action_home(self) -> None:
-        info = self.query_one("#cont")
-        info.remove()
-        path = str(Path(__file__).parent)
-        with open(path + "/../../../docs/README.md") as f:
+        md: Markdown2 = self.query_one("#markdown")  # type: ignore
+        with open(DOCS_FOLDER + "README.md") as f:
             readme = f.read()
-            new_info = Markdown2(readme, id="cont")
-        self.query_one("#info_c").mount(new_info)
-        new_info.scroll_visible()
+        md.document.update(readme)
+
+    # def action_back(self) -> None:
+    #     md: Markdown2 = self.query_one("#markdown")  # type: ignore
+    #     md.back()
 
 
 class Markdown2(MarkdownViewer):
     def _on_markdown_link_clicked(self, message: Markdown.LinkClicked) -> None:
-        path = str(Path(__file__).parent)
-        path = path + "/../../../docs/" + message.href
+        path = DOCS_FOLDER + message.href
         with open(path) as f:
             readme = f.read()
         self.document.update(readme)
+
+    # def _on_key(self, event: events.Key) -> None:
+    #     self.table_of_contents.set_table_of_contents([(1, "str", "link")])
+    #     if event.key == "tab":
+    #         pass
