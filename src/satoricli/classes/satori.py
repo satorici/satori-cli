@@ -389,7 +389,7 @@ class Satori:
             if len(info["pending"]) > 1:
                 console.rule("[b red]Pending actions", style="red")
                 autotable(info["pending"], "bold red", widths=(50, 50))
-            console.rule("[b green]Repos", style="green")
+            console.rule("[b green]GitHub Repositories", style="green")
             autotable(info["list"], "bold blue", widths=(None, 10, 12, 20, 10, 40))
         if args.action == "run" and args.sync:
             if isinstance(info, list):
@@ -487,14 +487,14 @@ class Satori:
                 # print pending actions
                 if len_mon > 0:
                     console.rule(
-                        "[b][blue]Monitors[/blue](Actions required)", style="white"
+                        "[b][blue]Monitors[/blue] (Actions required)", style="white"
                     )
                     autotable(
                         info["monitors"]["pending"], "b blue", widths=(20, 20, None)
                     )
                 if len_rep > 0:
                     console.rule(
-                        "[b][green]Repos[/green](Actions required)", style="white"
+                        "[b][green]GitHub Repositories[/green] (Actions required)", style="white"
                     )
                     autotable(info["repos"]["pending"], "b green", widths=(50, 50))
             if len(info["monitors"]["list"]) == 0:
@@ -503,7 +503,7 @@ class Satori:
                 console.rule("[b blue]Monitors", style="blue")
                 autotable(info["monitors"]["list"], "b blue", True)
             if len(info["repos"]["list"]) > 0:
-                console.rule("[b green]Repos", style="green")
+                console.rule("[b green]Github Repositories", style="green")
                 autotable(
                     info["repos"]["list"],
                     "b green",
