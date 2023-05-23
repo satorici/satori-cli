@@ -1,6 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
-from textual.widgets import Footer, Header, MarkdownViewer
+from textual.widgets import Footer, Header, MarkdownViewer, Markdown
 from pathlib import Path
 
 from .satori import Satori
@@ -8,9 +8,9 @@ from .satori import Satori
 
 class GuiApp(App):
     BINDINGS = [
+        ("h", "home", "Home"),
         ("d", "toggle_dark", "Toggle dark mode"),
         ("q", "quit", "Quit"),
-        ("h", "home", "Home"),
     ]
     TITLE = "Satori CLI"
 
@@ -37,6 +37,15 @@ class GuiApp(App):
         path = str(Path(__file__).parent)
         with open(path + "/../../../docs/README.md") as f:
             readme = f.read()
-            new_info = MarkdownViewer(readme, id="cont", show_table_of_contents=True)
+            new_info = Markdown2(readme, id="cont")
         self.query_one("#info_c").mount(new_info)
         new_info.scroll_visible()
+
+
+class Markdown2(MarkdownViewer):
+    def _on_markdown_link_clicked(self, message: Markdown.LinkClicked) -> None:
+        path = str(Path(__file__).parent)
+        path = path + "/../../../docs/" + message.href
+        with open(path) as f:
+            readme = f.read()
+        self.document.update(readme)
