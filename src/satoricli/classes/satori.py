@@ -12,6 +12,7 @@ import yaml
 from rich.progress import open as progress_open
 from colorama import Fore
 from satorici.validator import validate_playbook
+from satorici.validator.exceptions import PlaybookVariableError, PlaybookValidationError
 
 from .api import SatoriAPI
 from .bundler import make_bundle
@@ -144,18 +145,22 @@ class Satori:
 
         playbook_text = playbook.read_text()
         try:
-            config = validate_playbook(yaml.safe_load(playbook_text))
-            variables = get_parameters(config)
+            config = yaml.safe_load(playbook_text)
+            validate_playbook(config)
         except yaml.YAMLError as e:
             console.log(
                 f"Error parsing the playbook [bold]{playbook.name}[/bold]:\n", e
             )
             sys.exit(1)
-        except Exception as e:
+        except PlaybookValidationError as e:
             console.log(
                 f"Validation error on playbook [bold]{playbook.name}[/bold]:\n", e
             )
             sys.exit(1)
+        except PlaybookVariableError:
+            pass
+
+        variables = get_parameters(config)
 
         if variables - params:
             puts(FAIL_COLOR, f"Required parameters: {variables - params}")
