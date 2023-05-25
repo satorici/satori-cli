@@ -35,7 +35,7 @@ TBC
 
 ## [Repo](repo.md)
 
-### [CI](repo_ci.md)
+### [CI App](repo_ci.md)
 We have a [Github Application](https://github.com/apps/satorici) to analyze your [repositories](repo.md).
 You can automatically scan your latest pushes when connected to the Github CI process. We can also be connected using our CLI tool within your [Github Actions](execution_github_action.md)
 
