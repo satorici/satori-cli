@@ -23,6 +23,37 @@ def add_satori_arguments(cmd: ArgumentParser):
     )
 
 
+def upgrade():
+    import pkg_resources
+    import subprocess
+    import requests
+    from packaging import version
+
+    # Name of your package
+    package_name = 'satori-ci'
+
+    # Get the current version
+    try:
+        current_version = pkg_resources.get_distribution(package_name).version
+    except pkg_resources.DistributionNotFound:
+        print(f"{package_name} is not installed.")
+        current_version = None
+
+    # Get the latest version
+    response = requests.get(f'https://pypi.org/pypi/{package_name}/json')
+    if response.status_code == 200:
+        latest_version = response.json()['info']['version']
+    else:
+        print("Unable to get the latest version of the package.")
+        latest_version = None
+
+    print(f'Current version is {current_version}. Latest version is: {latest_version}')
+
+    # Compare the versions and upgrade if necessary
+    if current_version and latest_version and version.parse(current_version) < version.parse(latest_version):
+        print(f'Upgrading {package_name}...')
+        subprocess.call(f'pip install --upgrade {package_name}', shell=True)
+
 def main():
     puts(
         Fore.LIGHTBLACK_EX,
@@ -37,6 +68,8 @@ def main():
             "https://computingforgeeks.com/how-to-install-python-on-ubuntu-linux-system"
         )
         sys.exit(0)
+
+    upgrade()
 
     baseparser = ArgumentParser(add_help=False)
     baseparser.add_argument("-p", "--profile", default="default")
