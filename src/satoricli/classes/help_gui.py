@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .satori import Satori
 
-DOCS_FOLDER = str(Path(__file__).parent) + "/../../../docs/"
+DOCS_FOLDER = str(Path(__file__).parent) + "/../docs/"
 
 
 class HelpGui(App):
