@@ -1,14 +1,16 @@
 # Intro
 ## User Accounts
 
-There are three types of user accounts on Satori-CI:
+These are the possible user accounts on Satori-CI:
 
-----------------------------------------------------------------------------
-| Name |                       Daily Executions | Restrictions             |
-----------------------------------------------------------------------------
-| Free |                                     10 | - No internet connection |
-|      |                                        | - No monitor with cron   |
-|      |                                        | - Lower priority         |
-| User |                                   1000 |                          |
-| Pro  |                                   5000 |                          |
-
+| Name       | Daily Executions | Benefits                                   | Monthly Fee                        |
+|------------|------------------|--------------------------------------------|------------------------------------|
+| User       |             1000 | + Run                                      | Free for the first year, then 20u$s|
+|            |                  | + CI                                       |                                    |
+|            |                  | + Monitor                                  |                                    |
+|            |                  | + Notifications                            |                                    |
+|            |                  | + Multiple UIs (CLI, Web, Grafana, API)    |                                    |
+|            |                  | + Playbook Marketplace                     |                                    |
+|            |                  | + Discord/Email Support                    |                                    |
+| Pro        |             5000 | + Live Human Support                       |                             100u$s |
+| Enterprise |  Accounts * 5000 | + Testing as a Service Support             |                                Ask |
