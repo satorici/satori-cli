@@ -367,6 +367,11 @@ class Satori:
             params["url"] = args.id
             info = self.api.repos_scan("GET", "", "last", params=params)
             if args.sync:
+                if len(info) == 1:
+                    console.log(
+                        "Report: [link]https://www.satori-ci.com/report_details/?n="
+                        + info[0]["status"].replace("Report running ", "")
+                    )
                 self.sync_reports_list(info)
         elif args.action == "scan-stop":
             info = self.api.repos_scan("GET", args.id, "stop", params=params)
@@ -494,7 +499,8 @@ class Satori:
                     )
                 if len_rep > 0:
                     console.rule(
-                        "[b][green]GitHub Repositories[/green] (Actions required)", style="white"
+                        "[b][green]GitHub Repositories[/green] (Actions required)",
+                        style="white",
                     )
                     autotable(info["repos"]["pending"], "b green", widths=(50, 50))
             if len(info["monitors"]["list"]) == 0:
