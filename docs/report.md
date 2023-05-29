@@ -9,11 +9,11 @@ The following satori-cli commands will help:
 - `satori-cli report id delete`: stop the execution of the report id
 
 The filter parameter allows you to specify:
-- repo associated (ie, satorici/satori-cli)
-- playbook URLs (ie, satori://code/semgrep.yml)
-- status (ie, completed or running)
-- result (ie, pass o fail)
-- **TBC**
+- repo: which repo is associated (ie, satorici/satori-cli)
+- playbook: the playbook URLs (ie, satori://code/semgrep.yml)
+- status: what is the status (ie, completed or running)
+- result: was the report a pass or a fail?
+- **Marian TBC**: **Fernando TBC** 
 
 Then this parameters can be used to check specific reports that you are looking for:
 
