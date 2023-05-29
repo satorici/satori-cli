@@ -9,7 +9,7 @@ from importlib import metadata
 from colorama import just_fix_windows_console, Fore, Back
 from pkg_resources import get_distribution # autoupgrade
 from packaging import version # autoupgrade
-from subprocess import call # autoupgrade
+#from subprocess import call # autoupgrade
 from ..classes.satori import Satori
 from ..classes.utils import puts, console
 from ..classes.help_gui import HelpGui, DOCS_FOLDER
@@ -27,7 +27,7 @@ def add_satori_arguments(cmd: ArgumentParser):
 
 
 def upgrade():
-    """Verify the current version and the latest version. If it is higher, upgrade"""
+    """Verify the current version and the latest version"""
     # Name of your package
     package_name = 'satori-ci'
 
@@ -47,10 +47,11 @@ def upgrade():
 
     # Compare the versions and upgrade if necessary
     if current_version and latest_version and version.parse(current_version) < version.parse(latest_version):
-        print(f'Upgrading {package_name} from {current_version} to {latest_version}')
-        call(f'pip install --upgrade {package_name}', shell=True)
-        print("\n\nSatori-cli has been upgraded. Please execute your last command again to use the newer version")
-        sys.exit()
+        puts(Fore.YELLOW, f"WARNING: Newer version found, upgrade with: pip install -U satori-cli")
+        # Upgrade {package_name} from {current_version} to {latest_version} with: pip install -U satori-cli')
+        #call(f'pip install --upgrade {package_name}', shell=True)
+        #print("\n\nSatori-cli has been upgraded. Please execute your last command again to use the newer version")
+        #sys.exit()
 
 def main():
     puts(
