@@ -1,4 +1,5 @@
-#Intro
+# Intro
+
 ## Reports
 
 The following satori-cli commands will help:
@@ -9,11 +10,17 @@ The following satori-cli commands will help:
 - `satori-cli report id delete`: stop the execution of the report id
 
 The filter parameter allows you to specify:
-- repo: which repo is associated (ie, satorici/satori-cli)
-- playbook: the playbook URLs (ie, satori://code/semgrep.yml)
-- status: what is the status (ie, completed or running)
-- result: was the report a pass or a fail?
-- **Marian TBC**: **Fernando TBC** 
+
+- **repo**: which repo is associated (ie, satorici/satori-cli)
+- **playbook**: the playbook URLs (ie, satori*//code/semgrep.yml)
+- **status**: what is the status (Pending, Running, Completed or Undefined)
+- **result**: was the report a pass or a fail? (Pass or Fail)
+- **from**: limit to commits from this specific date (format: year-month-day, ie: 2020-12-30)
+- **to**: limit to commits until this specific date (format: year-month-day, ie: 2023-01-10)
+- **satori_error**: an error occurred during report generation? (True or False)
+- **email**: filter by pusher email
+- **user**: filter by satori user name
+- **type**: the report execution type (monitor, github or playbook_bundle)
 
 Then this parameters can be used to check specific reports that you are looking for:
 
