@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
 import sys
+import requests # autoupgrade
 from functools import partial
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from importlib import metadata
 from colorama import just_fix_windows_console, Fore, Back
-
+from pkg_resources import get_distribution # autoupgrade
+from packaging import version # autoupgrade
+from subprocess import call # autoupgrade
 from ..classes.satori import Satori
 from ..classes.utils import puts, console
 from ..classes.help_gui import HelpGui, DOCS_FOLDER
@@ -24,17 +27,13 @@ def add_satori_arguments(cmd: ArgumentParser):
 
 
 def upgrade():
-    import pkg_resources
-    import subprocess
-    import requests
-    from packaging import version
-
+    """Verify the current version and the latest version. If it is higher, upgrade"""
     # Name of your package
     package_name = 'satori-ci'
 
     # Get the current version
     try:
-        current_version = pkg_resources.get_distribution(package_name).version
+        current_version = get_distribution(package_name).version
     except pkg_resources.DistributionNotFound:
         print(f"{package_name} is not installed.")
         current_version = None
@@ -44,15 +43,14 @@ def upgrade():
     if response.status_code == 200:
         latest_version = response.json()['info']['version']
     else:
-        print("Unable to get the latest version of the package.")
-        latest_version = None
-
-    print(f'Current version is {current_version}. Latest version is: {latest_version}')
+        print(f"Unable to get the latest version of the package ${package_name}.")
 
     # Compare the versions and upgrade if necessary
     if current_version and latest_version and version.parse(current_version) < version.parse(latest_version):
-        print(f'Upgrading {package_name}...')
-        subprocess.call(f'pip install --upgrade {package_name}', shell=True)
+        print(f'Upgrading {package_name} from {current_version} to {latest_version}')
+        call(f'pip install --upgrade {package_name}', shell=True)
+        print("\n\nSatori-cli has been upgraded. Please execute your last command again to use the newer version")
+        sys.exit()
 
 def main():
     puts(
