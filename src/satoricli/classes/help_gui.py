@@ -8,7 +8,7 @@ from .satori import Satori
 DOCS_FOLDER = str(Path(__file__).parent) + "/../../../docs/"
 
 
-class GuiApp(App):
+class HelpGui(App):
     BINDINGS = [
         # ("b", "back", "Back"),
         ("h", "home", "Home"),

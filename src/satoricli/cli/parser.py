@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
 import sys
+from functools import partial
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 from importlib import metadata
 from colorama import just_fix_windows_console, Fore, Back
 
 from ..classes.satori import Satori
-from ..classes.utils import puts
-from ..classes.help_gui import GuiApp
+from ..classes.utils import puts, console
+from ..classes.help_gui import HelpGui, DOCS_FOLDER
 
 VERSION = metadata.version("satori-ci")
 just_fix_windows_console()
@@ -124,6 +126,7 @@ def main():
 
     # help
     help_cmd = subparsers.add_parser("help", parents=[baseparser])
+    help_cmd.add_argument("-w", "--web", default=False, action="store_true")
     add_satori_arguments(help_cmd)
 
     args = parser.parse_args()
@@ -150,9 +153,15 @@ def main():
             instance.team(args)
         elif args.subcommand in (None, "dashboard"):
             instance.dashboard(args)
-        elif args.subcommand in ("help"):
-            gui = GuiApp(instance)
-            gui.run()
+        elif args.subcommand == "help":
+            if args.web:
+                handler = partial(SimpleHTTPRequestHandler, directory=DOCS_FOLDER)
+                httpd = HTTPServer(("localhost", 9090), handler)
+                console.print("Docs server running on: [link]http://localhost:9090")
+                httpd.serve_forever()
+            else:
+                gui = HelpGui(instance)
+                gui.run()
     except KeyboardInterrupt:
         puts(Back.RED, "Interrupted by user")
         sys.exit(1)
