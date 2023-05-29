@@ -1,5 +1,0 @@
-# Playbooks
-
-## Public
-
-## Private
