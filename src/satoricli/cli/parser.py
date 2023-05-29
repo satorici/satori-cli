@@ -49,7 +49,7 @@ def upgrade():
     if current_version and latest_version and version.parse(current_version) < version.parse(latest_version):
         print(f'Upgrading {package_name} from {current_version} to {latest_version}')
         call(f'pip install --upgrade {package_name}', shell=True)
-        print("\n\nSatori-cli has been upgraded. Please execute your last command again to use the newer version")
+        print("\nSatori-cli has been upgraded. Please execute your last command again to use the newer version")
         sys.exit()
 
 def main():
