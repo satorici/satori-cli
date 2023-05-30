@@ -31,7 +31,7 @@ If you define a cron schedule for a playbook, it will execute with the defined f
 
 ```yml
 settings:
-    schedule: 5 8 * * 0 # Run this playbook every Sunday at 8:05am
+    cron: 5 8 * * 0 # Run this playbook every Sunday at 8:05am
 ```
 
 #### Log
