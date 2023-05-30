@@ -25,7 +25,7 @@ semgrep:
 
 Having this information associated to the playbook's execution is valuable for context and follow up on the understanding of the situation and the potential following actions required in case it fails and a mitigation is required.
 
-#### Schedule
+#### Cron
 
 If you define a cron schedule for a playbook, it will execute with the defined frequency:
 
@@ -33,6 +33,34 @@ If you define a cron schedule for a playbook, it will execute with the defined f
 settings:
     cron: 5 8 * * 0 # Run this playbook every Sunday at 8:05am
 ```
+
+As another example, this playbook runs an nmap every 10 minutes and notifies in case the expected result output changes:
+
+```yml
+settings:
+    name: "Nmap: did any service changed?"
+    cron: "*/10 * * * *"
+    logOnFail: telegram-ciso
+    mitigation: Verify the latest Pass execution to confirm what services changed their status
+install:
+    assertReturnCode:0
+    nmap:
+    - [ apt install -y nmap]
+    ips:
+    - [ "echo -e \"host1\nhost2\" > domains"]
+nmap:
+    assertReturnCode:0 
+    run:
+    - [ "nmap -n -iL domains -Pn -p21,22,80,443,3000,3306,5432 -sT -oG nmap" ]
+    services: 
+        # The SHA256 hash "e3b0c4..." of the `running` execution represents the expected working state of the `ips`'s ports. In case it changes, it means that there are more open or closed ports than expected. This value needs to be verified first for the output before putting this on a production environment.
+        assertStdoutSHA256:
+        - "e3b0c44298fc1c149afbf4c7996fb92427ae41e4649b934ca495991b7852b855"
+        running:
+        - [ "grep Ports nmap | sort -u" ]
+```
+
+For more details on the `assertReturnCode` and `assertStdoutSHA256` please check the [asserts](language_asserts.md) section and for more details on the `nmap`, `ips` and `running` [executions](language_execution.md) please check the corresponding section.
 
 #### Log
 
@@ -102,33 +130,3 @@ host:
   after_siege:
   - [ curl -s $(URL) -m 3 ]
 ```
-
-#### Example Section:
-
-Run an nmap playbook every 10 minutes and get notified in case the results output hash changes:
-
-```yml
-settings:
-    name: "Nmap: did any service changed?"
-    cron: "*/10 * * * *"
-    logOnFail: telegram-ciso
-    mitigation: Verify the latest Pass execution to confirm what services changed their status
-install:
-    assertReturnCode:0
-    nmap:
-    - [ apt install -y nmap]
-    ips:
-    - [ "echo -e \"hostname1\nhostname2\" > domains"]
-nmap:
-    assertReturnCode:0 
-    run:
-    - [ "nmap -n -iL domains -Pn -p21,22,80,443,3000,3306,5432 -sT -oG nmap" ]
-    services: 
-        # The SHA256 hash "e3b0c4..." of the `running` execution represents the expected working state of the `ips`'s ports. In case it changes, it means that there are more open or closed ports than expected. This value needs to be verified first for the output before putting this on a production environment.
-        assertStdoutSHA256:
-        - "e3b0c44298fc1c149afbf4c7996fb92427ae41e4649b934ca495991b7852b855"
-        running:
-        - [ "grep Ports nmap | sort -u" ]
-```
-
-For more details on the `assertReturnCode` and `assertStdoutSHA256` please check the [asserts](language_asserts.md) section and for more details on the `nmap`, `ips` and `running` [executions](language_execution.md) please check the corresponding section.
