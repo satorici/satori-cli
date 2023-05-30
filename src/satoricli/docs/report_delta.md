@@ -1,5 +1,0 @@
-# Delta
-
-## Time
-
-## Executions

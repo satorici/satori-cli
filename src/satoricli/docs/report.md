@@ -1,13 +1,33 @@
 # Intro
-
 ## Reports
 
-The following satori-cli commands will help:
+As a high level reminder, this is the syntax for `satori-cli`:
+
+satori-cli [category] [object] [action] [options]
+
+For the reports category, these are the possibilities:
 
 - `satori-cli report`: list all your reports
-- `satori-cli report id`: show the report id
+- `satori-cli report id`: shows the report id
+- `satori-cli report id output`: shows the output associated to the report
 - `satori-cli report id stop`: stop the execution of the report id
-- `satori-cli report id delete`: stop the execution of the report id
+- `satori-cli report id delete`: delete the execution of the report id
+
+### List
+
+The following command will list your reports on the command line:
+
+`satori-cli report`
+
+They are listed on the website as well:
+
+- https://www.satori-ci.com/reports/
+
+In both cases you can get the report ids of them if you would like to see the results
+
+### List Options
+
+#### Filter
 
 The filter parameter allows you to specify:
 
@@ -31,3 +51,33 @@ Then this parameters can be used to check specific reports that you are looking 
 - Example: _"I want to see a list of reports related to the playbook trufflehog"_
 
   `satori-cli report --filter="playbook=satori://code/trufflehog"`
+
+#### Page
+
+If more than 10 results are found, then the first page will be shown. To show subsequent pages, please use the `-n X` command, where X represents the page that you would like to access. 
+
+### Report
+
+They are available on command line:
+
+```sh
+$ satori-cli report ID
+```
+
+They are also available on our website:
+
+- https://www.satori-ci.com/report_details/?n=ID
+
+### Output
+
+When developing playbooks, it is important to be able to access the raw contents of an execution. This action will expose the output, errors, return codes and other information available for the execution:
+
+`satori-cli report id output`
+
+### Files
+
+They can be seen with the following action:
+
+```sh
+$ satori-cli report ID files
+```

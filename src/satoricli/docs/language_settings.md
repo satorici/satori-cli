@@ -62,6 +62,25 @@ nmap:
 
 For more details on the `assertReturnCode` and `assertStdoutSHA256` please check the [asserts](language_asserts.md) section and for more details on the `nmap`, `ips` and `running` [executions](language_execution.md) please check the corresponding section.
 
+#### Rate
+
+Another terminology that may be easier than `cron` is the `rate` setting. You can define a time lapse such as `30 minutes` or 
+
+**Rate expression examples**:
+
+|Frequency	       | Expression       |
+|------------------|------------------|
+| Every 10 minutes | rate: 10 minutes |
+| Every hour       | rate: 1 hour     |
+| Every seven days | rate: 7 days     |
+
+For example:
+
+```yml
+settings:
+    rate: 10 minutes
+```
+
 #### Log
 
 You can choose between the three different results and how you would like to be notified once the execution is complete. These are your options:
@@ -130,3 +149,13 @@ host:
   after_siege:
   - [ curl -s $(URL) -m 3 ]
 ```
+
+#### Report
+
+Do you want to save yourself a click? Send a PDF version of our report with this setting:
+
+```yml
+settings:
+    report: pdf
+```
+    
