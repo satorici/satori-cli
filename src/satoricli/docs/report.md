@@ -1,13 +1,13 @@
 # Intro
 ## Reports
 
-As a high level reminder, this is the syntax for `satori-cli`:
+You can take different actions on your reports with the satori-cli command and with the web interface:
 
-satori-cli [category] [object] [action] [options]
+satori-cli report [report_id] [action] [options]
 
 For the reports category, these are the possibilities:
 
-- `satori-cli report`: list all your reports
+- `satori-cli report [--filter] [-n]`: list all your reports
 - `satori-cli report id`: shows the report id
 - `satori-cli report id output`: shows the output associated to the report
 - `satori-cli report id stop`: stop the execution of the report id
