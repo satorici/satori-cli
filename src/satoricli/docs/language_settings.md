@@ -111,7 +111,7 @@ Run an nmap playbook every 10 minutes and get notified in case the results outpu
 settings:
     name: "Nmap: did any service changed?"
     cron: "*/10 * * * *"
-    logOnFail: telegram-ceo
+    logOnFail: telegram-ciso
     mitigation: Verify the latest Pass execution to confirm what services changed their status
 install:
     assertReturnCode:0
