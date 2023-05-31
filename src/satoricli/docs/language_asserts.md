@@ -336,4 +336,4 @@ test:
 ```
 ---
 
-Please let us know if you need asserts not currently covered
+If you need any help, please reach out to us on [Discord](https://discord.gg/F6Uzz7fc2s) or via [Email](mailto:support@satori-ci.com)

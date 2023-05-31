@@ -123,3 +123,5 @@ The optional `--report` parameter will run satori synchronously and print its re
 
 If you want to use some of our public playbooks, you can do so referencing by referencing any of the public list (`satori-cli playbook --public`) 
 `satori-cli repo satorici/satori-cli run --playbook "satori://code/trufflehog.yml" --report`
+
+If you need any help, please reach out to us on [Discord](https://discord.gg/F6Uzz7fc2s) or via [Email](mailto:support@satori-ci.com)

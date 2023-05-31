@@ -62,6 +62,8 @@ nmap:
 
 For more details on the `assertReturnCode` and `assertStdoutSHA256` please check the [asserts](language_asserts.md) section and for more details on the `nmap`, `ips` and `running` [executions](language_execution.md) please check the corresponding section.
 
+For more details on the logOnFail, please check the [notifications](notifications.md) section.
+
 #### Rate
 
 Another terminology that may be easier than `cron` is the `rate` setting. You can define a time lapse such as `30 minutes` or 
@@ -116,7 +118,7 @@ settings:
     timeout: 60 # the default value is 3600 seconds
 ```
 
-In case it reaches the timeout without completing, the instance will be shutdown even though it may the executions are not completed.
+In case it reaches the timeout without completing, the instance will be shutdown killing current executions.
 
 #### Count
 
@@ -127,11 +129,7 @@ settings:
   name: "Siege - Load testing web servers"
   description: "Knowing how much traffic your web server can handle when under stress is essential for planning 
                 future grow of your website or application. By using tool called siege, you can run a load test 
-                on your server and see how your system performs under different circumstances.
-                You can use siege to evaluate the amount of data transferred, response time, transaction rate, 
-                throughput, concurrency and how many times the server returned responses. 
-                The tool has three modes, in which it can operate – regression, internet simulation and brute force.
-                Siege must only be ran against servers you own or on such you have explicit permission to test. "
+                on your server and see how your system performs under different circumstances."
   mitigation: "Use an anti DDoS service such as CloudFlare to prevent network attacks"
   count: 100 # maximum amount of concurrent instances for a playbook
 install:
@@ -158,4 +156,5 @@ Do you want to save yourself a click? Send a PDF version of our report with this
 settings:
     report: pdf
 ```
-    
+
+If you need any help, please reach out to us on [Discord](https://discord.gg/F6Uzz7fc2s) or via [Email](mailto:support@satori-ci.com)

@@ -30,3 +30,5 @@ The following satori-cli commands will help:
 - `satori-cli monitor id`: show the reports of the monitor id
 - `satori-cli monitor id stop`: stop the monitor id
 - `satori-cli monitor id delete`:delete the monitor id
+
+If you need any help, please reach out to us on [Discord](https://discord.gg/F6Uzz7fc2s) or via [Email](mailto:support@satori-ci.com)

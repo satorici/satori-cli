@@ -14,7 +14,7 @@ Satori can execute tests synchronously or asynchronously in various ways:
 
 ## [Language](language.md)
 
-Our YAML-based [language](language.md) allows you to define [executions](language_execution.md), specify their [inputs](language_inputs.md), and [assert](language_asserts.md) whether their behavior aligns with your expectations. Tests are encapsulated within files called [playbooks](language_playbooks.md), with different [settings](language_settings.md) depending on the [execution mode](execution.md): [Run](execution_run.md), [CI](execution_ci.md), and/or [Monitor](execution_monitor.md).
+Our YAML-based [language](language.md) allows you to define [executions](language_execution.md), specify their [inputs](language_inputs.md), and [assert](language_asserts.md) whether their behavior aligns with your expectations. Tests are encapsulated within files called [playbooks](language_playbooks.md), with different [settings](language_settings.md) depending on the [execution mode](mode.md): [Run](execution_run.md), [CI](execution_ci.md), and/or [Monitor](monitor.md).
 
 All our tests are stored in what we call playbooks. You can check our online playbooks in our [Github repository](https://github.com/satorici/playbooks/) for our public marketplace.
 
@@ -43,4 +43,4 @@ We process the [output](output.md) to produce [reports](reports.md) based on the
 
 ## Support
 
-If you need any help, please don't hesitate to reach out on our [Discord](https://discord.gg/F6Uzz7fc2s) server or via [Email](support@satori-ci.com)
+If you need any help, please reach out to us on [Discord](https://discord.gg/F6Uzz7fc2s) or via [Email](mailto:support@satori-ci.com)

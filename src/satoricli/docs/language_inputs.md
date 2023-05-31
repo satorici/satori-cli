@@ -55,4 +55,6 @@ echo:
     - [ echo $(input) ]
 ```
 
-The previous playbook will generate 10 different mutations of the string "Hello World" that will be echoed to the standard output.
+The previous playbook will generate 10 different mutations of the string "Hello World" that will be echoed to the standard output. 
+
+If you need any help, please reach out to us on [Discord](https://discord.gg/F6Uzz7fc2s) or via [Email](mailto:support@satori-ci.com)

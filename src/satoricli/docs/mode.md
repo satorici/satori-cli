@@ -22,3 +22,5 @@ You would normally use this to perform static or dynamic testing of your reposit
 Certain tests must be executed with a certain frequency. For example:
 - Every 5 minutes when you are testing if your live systems are working as expected
 - Daily when you are monitoring the security of an AWS environment
+
+If you need any help, please reach out to us on [Discord](https://discord.gg/F6Uzz7fc2s) or via [Email](mailto:support@satori-ci.com)
