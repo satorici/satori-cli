@@ -1,17 +1,15 @@
-# Intro
+# [Intro](README.md)
 ## Reports
 
-You can take different actions on your reports with the satori-cli command and with the web interface:
+Satori is a automated testing platform that runs playbooks to assert conditions. Once the execution of a playbook is completed, we deliver a report with either a *Pass* or *Fail* state. In case there were errors on the execution, the result will be flagged as *Unknown*.
 
-satori-cli report [report_id] [action] [options]
-
-For the reports category, these are the possibilities:
+You can take different actions on your reports with the satori-cli command and with the web interface. Here is a list of commands that can be run with the CLI tool:
 
 - `satori-cli report [--filter] [-n]`: list all your reports
 - `satori-cli report id`: shows the report id
 - `satori-cli report id output`: shows the output associated to the report
-- `satori-cli report id stop`: stop the execution of the report id
-- `satori-cli report id delete`: delete the execution of the report id
+- `satori-cli report id stop`: stops the execution of the report id
+- `satori-cli report id delete`: deletes the execution of the report id
 
 ### List
 
@@ -78,7 +76,11 @@ When developing playbooks, it is important to be able to access the raw contents
 
 Between consecutive reports you can measure on the time that it took to execute and the test results to understand if bugs were fixed or introduced.
 
+TBC
+
 ### Files
+
+TBC
 
 They can be seen with the following action:
 

@@ -1,6 +1,12 @@
 # [Intro](README.md)
 ## Run
 
+Satori is an automatic testing platform that can run tests on demand with the `run` command. By default, it works asynchronous by launching the process in background and providing a report ID that can be followed up to get the results of the test. If synchronous execution is required, either because the execution may block future actions or because you want to get the report or the output that will be generated, that can 
+
+--sync: returns a short response
+--report: TBC
+--output: TBC
+
 There are some general guidances on Run:
 - Executions run asynchronous by default or synchronous with the parameter `--report` and `--output`
 

@@ -1,23 +1,26 @@
-# Intro
+# [Intro](README.md)
 ## Execution Mode
 
-Satori is a testing platform that can run on demand, on CI/CD and scheduled also known as monitoring
+Satori is a testing platform that can:
+- Run on demand, 
+- on CI/CD,
+- and scheduled, also known as monitoring
 
-### Run
+### [Run](run.md)
 
-You can run your playbooks on demand with Satori CLI. You can:
-- Run a playbook that is not related to a repository: stress testing
-- Upload a directory with a playbook to test its content when you are not developing on a repository.
+You can run your playbooks on demand with Satori CLI whenver you want to:
+- Run a playbook that is not related to a repository. For example, you want to stress test a server or assert what is the status of previously found vulnerabilities of a penetration test.
+- Upload a directory with a playbook to test its content. This is particularly useful when working with code that is not part of a cloud repository, for example when using Jenkins.
 
 ### CI
 
-Whenever you want to test your software automatically, you can attach Satori to the GitHub CI/CD pipeline with:
-- [Satori GitHub App](mode_ci_github.md)
-- [Satori CLI running on Github Actions](mode_ci_action.md)
+Whenever you want to test your software automatically, you can use Satori as part of a CI/CD pipeline with:
+- [Satori GitHub App](ci.md)
+- [Satori CLI running on Github Actions or Jenkins](action.md)
 
-You would normally use this to perform static or dynamic testing of your repository code.
+Tests can range from static to dynamic testing of your code.
 
-### Monitor
+### [Monitor](monitor.md)
 
 Certain tests must be executed with a certain frequency. For example:
 - Every 5 minutes when you are testing if your live systems are working as expected
