@@ -2,7 +2,9 @@
 ## [Language](language.md)
 ### Playbooks
 
-Playbooks can have undefined inputs that will be considered to be parameters to be supplied for them to be executed. Consider the following example:
+Playbooks store tests that will [execute](language_execute.md) commands to [assert](language_asserts.md) its behavior with potentially different forms of [inputs](language_input.md). 
+
+Playbooks can have undefined variables that can be supplied as dynamic parameters. Consider the following playbook that uses the undefined VAR variable:
 
 echo.yml:
 ```yml
@@ -10,7 +12,7 @@ test:
     - [ echo $(VAR) ]
 ```
 
-The previous playbook would be executed on the following way by Satori CLI:
+The previous playbook can be executed on the following way by Satori CLI:
 
 ```sh
 $ satori-cli run echo.yml --data="{'VAR':'Hello World'}"
@@ -18,7 +20,12 @@ $ satori-cli run echo.yml --data="{'VAR':'Hello World'}"
 
 #### Public Playbooks
 
-You can check the list of public playbooks with the command:
+At Satori we have defined multiple playbooks to execute some of the most common functionalities of devops and secdevops processes, such as:
+- Static source code analyzers
+- Dynamic security testing
+- Third party libraries checks
+
+You can check the complete list of public playbooks with the command:
 
 `satori-cli playbook --public`
 
@@ -38,11 +45,18 @@ If you notice, some playbooks have predefined parameters that will be expected t
 
 #### Private Playbooks
 
-Your playbooks are private by default. The following command prints the playbooks executed by run, ci and/or monitor:
+In case you need to check your previously executed playbooks, you may do so with the following command:
 `satori-cli playbook`
 
+Your playbooks are private by default, and you can further interact with them with their id to read them:
 
-#### Examples
+`satori-cli playbook ID`
+
+Or to delete them:
+
+`satori-cli playbook ID delete`
+
+#### Import Playbooks
 
 Playbooks can be imported by other playbooks. Local files or publicly available playbooks from Satori can be imported by other playbooks. They are executed on the order that they were introduced on the YAML file.
 
@@ -88,9 +102,11 @@ import:
     - "satori://code/trufflehog.yml"
 ```
 
+#### Run referencing Playbooks
+
 ##### Run Local Playbook
 
-HelloWorld.yml:
+If you create the following HelloWorld.yml playbook file:
 ```
 test:
     assertStdoutEqual: "Hello World"
@@ -98,8 +114,12 @@ test:
     - [ echo Hello World ]
 ```
 
+You can execute it with the following oneliner to check its output:
 `satori-cli run HelloWorld.yml --report"`
+
+The optional `--report` parameter will run satori synchronously and print its report. If you want to check the output instead, you would use `--output`
 
 ##### Run Public Playbook
 
+If you want to use some of our public playbooks, you can do so referencing by referencing any of the public list (`satori-cli playbook --public`) 
 `satori-cli repo satorici/satori-cli run --playbook "satori://code/trufflehog.yml" --report`

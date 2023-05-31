@@ -74,6 +74,10 @@ When developing playbooks, it is important to be able to access the raw contents
 
 `satori-cli report id output`
 
+### Delta
+
+Between consecutive reports you can measure on the time that it took to execute and the test results to understand if bugs were fixed or introduced.
+
 ### Files
 
 They can be seen with the following action:

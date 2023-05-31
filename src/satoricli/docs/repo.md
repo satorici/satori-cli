@@ -1,7 +1,7 @@
 # [Intro](README.md)
 ## Repo
 
-Satori provides automatic testing for repositories, in particular when they are connected to CI. At the same time, we also have the possibility of testing repositories that are not connected to your CI, but that you have access to.
+Satori provides automatic testing for repositories, in particular when they are connected to our [GitHub Application](https://github.com/apps/satorici). At the same time, we also have the possibility of testing repositories that are not connected to your CI, but that you have access to.
 
 Whenever you want to check the status of your repositories, the Satori CLI repo command can assist you. It will execute the `.satori.yml` playbook within your repo unless you are using public playbooks (you can list them with `satori-cli playbook --public`)
 
@@ -41,7 +41,7 @@ Run the repository's playbook on a specific commit (in whatever branch you want)
 
 ### Scan
 
-Whenever you want to run an execution on each of the individual commits of a repository, you can use the scan functionality. The optional parameter `-c` is used to indicate the commit coverage from 0 to 100% that you would like to achieve. For example, if you only want to run Satori on all of the repository commits, you would run:
+Whenever you want to run an execution on each of the individual commits of a repository, you can use the scan functionality. The optional parameter `-c` is used to indicate the percentage of repository commits to include in the scan. For example, if you only want to run Satori on all of the repository commits, you would run:
 
 - `satori-cli repo githubUsername/repository scan -c 100`
 
@@ -63,8 +63,6 @@ The scan status output will look like this:
 % satori-cli repo satorici/satori-cli scan-status
 Satori CI 1.2.25 - Automated Software Testing Platform 
 ▢ status: Stopped
-▢ id: 198
-▢ rule_id: None
 ▢ commits: 281
 ▢ commits scanned: 273
 ▢ commits being scanned: 0
@@ -81,7 +79,7 @@ If at any point you want to cancel the scan, you use the `scan-stop` action:
 
 **Clean**
 
-If you want to delete all the reports associated to a repository, you can do so with the `clean` command:
+Warning: this commmand will delete all the reports associated to a certain repository:
 - `satori-cli repo githubUsername/repository clean`
 
-You may want to do this to analyze with a different playbook the entire playbook to gather information, but be mindful that they cannot be recovered once they are deleted.
+You may want to do this when analyzing your repo with a different playbook.

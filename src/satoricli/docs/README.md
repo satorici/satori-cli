@@ -1,80 +1,40 @@
 # Intro
 
-Satori is a language and a testing platform. Using our language you can test software and systems to assert their behavior from oneliners to more complex scenarios.
+Satori is an automated testing platform to assert the behavior of command executions. You can test software and systems using simple oneliners of our Playbook marketplace.
 
 ## [Install](install.md)
 
+We test synchronously or asynchronously on multiple ways:
+- With our [Github Application](https://github.com/apps/satorici) to analyze your [repositories](repo.md).
+- With our [CLI tool](https://github.com/satorici/satori-cli), which can be installed with `pip install satori-ci`
+- With our [Website](https://www.satori-ci.com)
+- Within a [GitHub action](action.md) using Satori CLI
+- Or on demand with [Satori CLI Run](run.md)
+
 ## [Language](language.md)
-Satori uses a [language](language.md) that allows you to define [executions](language_execution.md), how their [inputs](language_inputs.md) should be and [assert](language_asserts.md) if their behavior is what you would expect. Tests are encapsulated within files called [playbooks](language_playbooks.md) with different [settings](language_settings.md) depending on the [execution mode](execution.md): [Run](execution_run.md), [CI](execution_ci.md) and/or [Monitor](execution_monitor.md)
+
+Using our YAML [language](language.md) that allows you to define [executions](language_execution.md), how their [inputs](language_inputs.md) should be and [assert](language_asserts.md) if their behavior is what you would expect. Tests are encapsulated within files called [playbooks](language_playbooks.md) with different [settings](language_settings.md) depending on the [execution mode](execution.md): [Run](execution_run.md), [CI](execution_ci.md) and/or [Monitor](execution_monitor.md)
 
 All our tests are stored on what we called playbooks. You can check our online playbooks [Github repository](https://github.com/satorici/playbooks/) for our public marketplace.
 
-## Mode
+## [Repo](repo.md)
 
-### [Run](execution_run.md)
+We provide a comprehensive approach to test code repositories on Github, whether you have your repositories attached to our CI process or not. You can perform tests from the command line in one or all your repositories to assert that they are how you expect (ie, without passwords stored, that are being built appropriately, with secure coding standards, etc). You can visualize the results using our [Web](https://www.satori-ci.com) or with our CLI (`satori-cli repo`) 
 
-TBC
+## [Monitor](monitor.md)
 
-#### Playbook
+It is important to note that you can define a `cron` or a `rate` to your playbooks. The frequency may be important for different types of tests. Then the results can be later checked using our [Web](https://www.satori-ci.com), CLI (`satori-cli monitor`) or [Grafana](TBC)
 
-TBC
+## [Notifications](notifications.md)
 
-#### Bundle
-
-TBC
-
-### [Repo](repo.md)
-
-#### [CI App](repo_ci.md)
-We have a [Github Application](https://github.com/apps/satorici) to analyze your [repositories](repo.md).
-You can automatically scan your latest pushes when connected to the Github CI process. We can also be connected using our CLI tool within your [Github Actions](execution_github_action.md)
-
-#### [Scan](repo_scan.md)
-
-#### [Action](repo_action.md)
-
-
-TBC
-
-### [Monitor](execution_monitor.md)
-
-You can define a [schedule](settings.md) for your playbook that will run with a certain frequency. You can then [monitor](execution_monitor.md) the behavior of them with a predefined frequency: 5 minutes, weekly, etc.
-
-## UI
-
-We offer multiples interfaces:
-
-### [CLI](ui_cli.md)
-
-TBC
-
-
-### [Web](ui_web.md)
-
-TBC
-
-### Notifications
-
-We will [notify](notifications.md) you whenever you want. 
-
-### API
-
-Please refer to http://api.satori-ci.com/schema/swagger
+We will notify you when you want, the way that you prefer. We support a variety of different ways of communicating results:
+- Slack
+- Discord
+- Email
+- Telegram
+- Github Issues
 
 ## [Reports](reports.md)
 
 We process the [output](output.md) to produce [reports](reports.md) based on the [files](files.md) that were generated. We can let you know about the [deltas](delta.md) between your reports whenever you need to know how the execution time and results are changing.
 
-### [Filter](report_filter.md)
-
-### [Delta](report_delta.md)
-
-Between consecutive reports you can measure on the time that it took to execute and the test results to understand if bugs were fixed or introduced.
-
-### [Output](report_output.md)
-
-Get the output of your executions
-
-### [Files](report_files.md)
-
-Get the files of your executions
