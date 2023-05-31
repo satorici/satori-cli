@@ -2,8 +2,10 @@
 ## [Language](language.md)
 ### Asserts
 
-| Assert                  | Value          | Description                             |
-|-------------------------|----------------|-----------------------------------------|
+You can assert what will be the behavior of [executions](language_execution.md):
+
+| Assert                  | Value          | Description                                                            |
+|-------------------------|----------------|------------------------------------------------------------------------|
 | assertStdout            | Boolean        | Is output produced?
 | assertStdoutEquals      | String\*       | Is the output equal to the String?
 | assertStdoutNotEquals   | String         | Is the output different than String?
@@ -28,8 +30,8 @@
 ---
 
 #### assertStdout
-| Input | Description |
-|-------|--------------
+| Input   | Description                            |
+|---------|-----------------------------------------
 | Boolean | Asserts if an output has been produced |
 
 - <span style="color:green">Example Pass Test</span>: the program should deliver output, and it does:
@@ -52,8 +54,8 @@ test:
 ---
   
 #### assertStdoutEquals
-| Input | Description |
-|-------|--------------
+| Input  | Description                                    |
+|--------|-------------------------------------------------
 | String | Asserts that the output is equal to the String |
 
 - <span style="color:green">Example Pass Test</span>: the program should only output "Hello World", and it does:
@@ -74,11 +76,11 @@ test:
 
 ---
 
-####  assertStdoutNotEquals
+#### assertStdoutNotEquals
 
-| Input | Description |
-|-------|--------------
-|String         | Is the output different than String?
+| Input | Description                          |
+|-------|---------------------------------------
+|String | Is the output different than String? |
 
 - <span style="color:green">Example Pass Test</span>: the program output should not be equal to "Hello World", and is not:
 ```yml
@@ -93,7 +95,7 @@ test:
   
 ---
 
-####  assertStdoutContains
+#### assertStdoutContains
 | Input | Description |
 |-------|--------------
 | String         | Does the output contains the String?
@@ -108,10 +110,10 @@ test:
 
 ---
 
-####  assertStdoutNotContains
-| Input | Description |
-|-------|--------------
-| String         | Does the output not contain the String?
+#### assertStdoutNotContains
+| Input  | Description                             |
+|--------|------------------------------------------
+| String | Does the output not contain the String? |
 - <span style="color:green">Example Pass Test</span>: the program output should not contain the string "Error", and it does not:
 ```yml
 test:
@@ -122,10 +124,10 @@ test:
 
 ---
 
-####  assertStdoutSHA256
-| Input | Description |
-|-------|--------------
-| SHA256Checksum | Is the output equal to this SHA256 hash?
+#### assertStdoutSHA256
+| Input          | Description                              |
+|----------------|-------------------------------------------
+| SHA256Checksum | Is the output equal to this SHA256 hash? |
 - <span style="color:green">Example Pass Test</span>: Network ports of , and it does:
 ```yml
 settings: 
@@ -147,10 +149,10 @@ nmap:
 
 ---
 
-####  assertStdoutRegex
-| Input | Description |
-|-------|--------------
-| Regex          | Does the output matches your regexp?
+#### assertStdoutRegex
+| Input | Description                          |
+|-------|---------------------------------------
+| Regex | Does the output matches your regexp? |
 
 - <span style="color:green">Example Pass Test</span>: the program output should contain the string "Hello " and additional characters, and it does:
 ```yml
@@ -162,9 +164,9 @@ test:
 ---
 
 ####  assertStdoutNotRegex
-| Input | Description |
-|-------|--------------
-| Regex          | Does the output not match your regexp?
+| Input | Description                            |
+|-------|-----------------------------------------
+| Regex | Does the output not match your regexp? |
 
 - <span style="color:gray">Example Unknown Test</span>: the program output should not contain the string "Hello World" anywhere on the output, but the input could be mutated to "somethingHello World" and the result depends on the mutation:
 ```yml
@@ -179,10 +181,10 @@ test:
 
 ---
 
-####  assertStderr
-| Input | Description |
-|-------|--------------
-| Boolean        | Are errors produced?
+#### assertStderr
+| Input   | Description           |
+|---------|-----------------------|
+| Boolean | Are errors produced?  | 
 - <span style="color:green">Example Pass Test</span>: the program output should not output errors, and it does not:
 ```yml
 test:
@@ -192,24 +194,24 @@ test:
 ```
 ---
 
-####  assertStderrEquals
-| Input | Description |
-|-------|--------------
-| String\*       | Is the error equal to the String?
+#### assertStderrEquals
+| Input    | Description                       |
+|----------|------------------------------------
+| String\* | Is the error equal to the String? |
 
 ---
 
-####  assertStderrNotEquals
-| Input | Description |
-|-------|--------------
-| String         | Is the error different than String?
+#### assertStderrNotEquals
+| Input  | Description                         |
+|--------|--------------------------------------
+| String | Is the error different than String? |
 
 ---
 
-####  assertStderrContains
-| Input | Description |
-|-------|--------------
-| String         | Does the error contains the String?
+#### assertStderrContains
+| Input  | Description                         |
+|--------|--------------------------------------
+| String | Does the error contains the String? |
 - <span style="color:pass">Example Pass Test</span>: the programs errors should contain the string Traceback, and it does:
 ```yml
 install:
@@ -221,10 +223,10 @@ test:
 ```
 ---
 
-####  assertStderrNotContains
-| Input | Description |
-|-------|--------------
-| String         | Does the error not contain the String?
+#### assertStderrNotContains
+| Input  | Description                            |
+|--------|-----------------------------------------
+| String | Does the error not contain the String? |
 - <span style="color:fail">Example Fail Test</span>: the programs errors should not contain the string Traceback, but it does:
 ```yml
 install:
@@ -237,9 +239,9 @@ test:
 ---
 
 ####  assertStderrSHA256
-| Input | Description |
-|-------|--------------
-| SHA256Checksum | Is the error equal to this SHA256 hash?
+| Input          | Description                             |
+|----------------|------------------------------------------
+| SHA256Checksum | Is the error equal to this SHA256 hash? |
 - <span style="color:fail">Example Fail Test</span>: the programs errors should not contain the string Traceback, but it does:
 ```yml
 install:
@@ -251,10 +253,10 @@ test:
 ```
 ---
 
-####  assertStderrRegex
-| Input | Description |
-|-------|--------------
-| Regex          | Does the error matches your regexp?
+#### assertStderrRegex
+| Input | Description                         |
+|-------|--------------------------------------
+| Regex | Does the error matches your regexp? |
 - <span style="color:gray">Example Unknown Test</span>: the Python script my_script.py might throw a KeyError exception with 'unexpected_key' if a certain condition in the script isn't met:
 ```yml
 RunPythonScriptTest:
@@ -264,10 +266,10 @@ RunPythonScriptTest:
 ```
 ---
 
-####  assertStderrNotRegex
-| Input | Description |
-|-------|--------------
-| Regex          | Does the error not match your regexp?
+#### assertStderrNotRegex
+| Input | Description                           |
+|-------|----------------------------------------
+| Regex | Does the error not match your regexp? |
 - <span style="color:green">Example Pass Test</span>: the programs errors should  not throw a Traceback, and it doesn't:
 ```yml
 install:
@@ -279,10 +281,10 @@ test:
 ```
 ---
 
-####  assertReturnCode
-| Input | Description |
-|-------|--------------
-| Integer        | Is the return code equal to the Integer?
+#### assertReturnCode
+| Input   | Description                              |
+|---------|-------------------------------------------
+| Integer | Is the return code equal to the Integer? |
 - <span style="color:green">Example Pass Test</span>: the programs should return the code 0, and it does:
 ```yml
 test:
@@ -292,7 +294,7 @@ test:
 ```
 ---
 
-####  assertSoftwareExists
+#### assertSoftwareExists
 | Input | Description |
 |-------|--------------
 | Boolean        | Does the software being executed exists? True by default
@@ -305,10 +307,10 @@ test:
 ```
 ---
 
-####  assertDifferent
-| Input | Description |
-|-------|--------------
-| Boolean        | Does the execution behaves differently when using different inputs?
+#### assertDifferent
+| Input   | Description                                                         |
+|---------|----------------------------------------------------------------------
+| Boolean | Does the execution behaves differently when using different inputs? |
 - <span style="color:fail">Example Fail Test</span>: the production and staging environment should look the same, and it does not:
 ```yml
 API:
@@ -321,10 +323,10 @@ test:
 ```
 ---
 
-####  assertKilled
-| Input | Description |
-|-------|--------------
-| Boolean        | Did the software timed out?
+#### assertKilled
+| Input   | Description                 |
+|---------|------------------------------
+| Boolean | Did the software timed out? |
 - <span style="color:fail">Example Fail Test</span>: the software should finished execution within 10 seconds, and it does not:
 ```yml
 settings:
