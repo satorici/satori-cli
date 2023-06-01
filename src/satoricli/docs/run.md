@@ -10,6 +10,7 @@ Satori is an automatic testing platform that can run tests on demand with the `r
 There are some general guidances on Run:
 - Executions run asynchronous by default or synchronous with the parameter `--report` and `--output`
 
+### Non-Repo
 **Local Playbook**
 Run allows you to run Satori Playbooks on demand. Whenever your playbook by itself is enough, you can simply run it with:
 
@@ -35,3 +36,12 @@ And then you can execute them like this:
 ```sh
 satori-cli run --playbook satori://some/playbook.yml
 ```
+
+### Repo
+
+**Scan repositories of a GitHub account for secrets**
+```sh
+satori-cli run mercadolibre/* --playbook satori://code/trufflehog.yml
+```
+
+
