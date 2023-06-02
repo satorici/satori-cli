@@ -47,7 +47,7 @@ def upgrade():
 
     # Compare the versions and upgrade if necessary
     if current_version and latest_version and version.parse(current_version) < version.parse(latest_version):
-        puts(Fore.YELLOW, f"WARNING: Newer version found, upgrade with: pip install -U satori-cli")
+        puts(Fore.YELLOW, f"WARNING: Newer version found, upgrade with: pip install -U satori-ci")
         # Upgrade {package_name} from {current_version} to {latest_version} with: pip install -U satori-cli')
         # call(f'pip install --upgrade {package_name}', shell=True)
         # print("\n\nSatori-cli has been upgraded. Please execute your last command again to use the newer version")
