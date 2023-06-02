@@ -41,9 +41,23 @@ Run the repository's playbook on a specific commit (in whatever branch you want)
 
 ### Scan
 
-Whenever you want to run an execution on each of the individual commits of a repository, you can use the scan functionality. The optional parameter `-c` is used to indicate the percentage of repository commits to include in the scan. For example, if you only want to run Satori on all of the repository commits, you would run:
+Whenever you want to run an execution on each of the individual commits of a repository, you can use the scan functionality. 
 
+**Single Commit**
+
+On its most simple form, you can scan a single commit using the following approach:
+
+`satori-cli repo https://github.com/satorici/satori-cli/commit/226f19d5eb0e2dd1bd6449f452c8e7e725c04c00 run`
+
+**Multiple Commits**
+
+If you target a repo, the optional parameter `-c` is used to indicate the percentage of repository commits to include in the scan. For example, if you only want to just take a sample, when not using the `-c` parameter, is the equivalent to `-c 1` "scan 1% of the repository commits". This is useful for sampling large repositories:
+
+- `satori-cli repo githubUsername/repository scan`
+
+If you however want to be sure that everything was tested, you can target full scan coverage on all the repository commits, you would:
 - `satori-cli repo githubUsername/repository scan -c 100`
+
 
 The previous command, initially starts by checking which are the repository commits for the repo. The task can be individually launched without the scan if you wish:
 - `satori-cli repo githubUsername/repository check-commits`

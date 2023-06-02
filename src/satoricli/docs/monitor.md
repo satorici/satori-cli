@@ -27,6 +27,12 @@ services:
     - [ "grep Ports nmap | sort -u" ]
 ```
 
+To install this playbook, you just need to run it:
+
+```sh
+$ satori-cli run nmap-cron.yml 
+```
+
 ### Rate
 
 Another terminology that may be easier than `cron` is the `rate` setting. You can define a time lapse such as `30 minutes` or 
@@ -48,14 +54,39 @@ settings:
     ...
 ```
 
-### Additional related commands
+Again, to install this playbook, you just need to run it:
 
-The following satori-cli commands will help:
+```sh
+$ satori-cli run nmap-rate.yml 
+```
 
-- `satori-cli monitor`: list all your monitors, active or not
-- `satori-cli monitor id`: show the reports of the monitor id
-- `satori-cli monitor id stop`: disable the monitor id
-- `satori-cli monitor id run`: run a monitor id that was on a stopped state
-- `satori-cli monitor id delete`: delete a monitor id that is on a stopped state
+### List your monitors
+
+Once you have added a monitor, you can list them with the `monitor` command like this:
+
+```sh
+$ satori-cli monitor
+```
+
+**Stop Monitor**
+Now, besides listing your monitors, you may want to stop them. - 
+
+```sh
+$ satori-cli monitor ID stop`: disable the monitor id
+
+**Start Monitor**
+
+You can start again your monitors when they are stopped by doing:
+
+```sh
+$ satori-cli monitor ID run
+```
+
+**Delete Monitor**
+
+Delete a monitor id that is on a stopped state:
+```sh
+$ satori-cli monitor id delete
+```
 
 If you need any help, please reach out to us on [Discord](https://discord.gg/F6Uzz7fc2s) or via [Email](mailto:support@satori-ci.com)
