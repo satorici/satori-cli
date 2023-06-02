@@ -1,3 +1,4 @@
+# satori-cli repo satorici/satori-cli run --data="{'TOKEN':'`grep token ~/.satori_credentials.yml|awk '{print $2}'|head -n1`'}" --sync
 settings:
   name: Satori CLI Tests
   #report: pdf
@@ -12,14 +13,9 @@ import:
 tests:
   assertReturnCode: 0
   pip_install:
-    assertStdoutContains: "Successfully installed satori-ci"
+    assertStdoutContains: "Successfully built satori-ci"
     test:
     - [ pip install . ]
-
-  dashboard:
-    assertStdoutContains: "Actions required"
-    test:
-    - [ satori-cli ]
 
   config:
     assertStdoutContains: "Token saved"
@@ -27,6 +23,11 @@ tests:
     - [ satori-cli config token "$(TOKEN)" ]
     profile:
     - [ satori-cli config token "not_a_token" -p test_user]
+
+  dashboard:
+    assertStdoutContains: "Actions required"
+    test:
+    - [ satori-cli ]
 
   playbook:
     assertStdoutContains: "id: p"
@@ -47,3 +48,7 @@ tests:
     assertStdoutContains: "Monitors"
     test:
     - [ satori-cli monitor ]
+  monitor_id:
+    assertStdoutContains: "id: r"
+    test:
+    - [ "satori-cli monitor `satori-cli monitor --json|jq -r '.list[1].id'`" ]
