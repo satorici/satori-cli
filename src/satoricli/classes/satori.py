@@ -112,6 +112,7 @@ class Satori:
         config.setdefault(self.profile, {})[key] = value
 
         with open(config_file, "w") as f:
+            os.chmod(config_file, 0o600)
             f.write(yaml.safe_dump(config))
 
         puts(Fore.LIGHTGREEN_EX, key.capitalize() + " saved")
