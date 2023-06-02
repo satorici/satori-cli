@@ -17,7 +17,9 @@ def get_local_files(config: dict):
                 [p.get("file") for p in value if isinstance(p, dict) and p.get("file")]
             )
         elif test_schema.is_valid(value):
-            paths.update(get_local_files(value))
+            subtest_files = get_local_files(value)
+            paths["imports"].update(subtest_files["imports"])
+            paths["inputs"].update(subtest_files["inputs"])
     return paths
 
 
