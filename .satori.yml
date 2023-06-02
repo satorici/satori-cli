@@ -1,7 +1,7 @@
 settings:
   name: Satori CLI Test
-  report: pdf
-  log: slack
+  #report: pdf
+  #log: slack
 
 import:
   - "satori://code/trufflehog.yml"
