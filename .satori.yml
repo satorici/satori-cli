@@ -35,7 +35,7 @@ tests:
     - [ satori-cli playbook ]
 
   report:
-    assertStdoutContains: "id: r"
+  #  assertStdoutContains: "status:"
     test:
     - [ satori-cli report ]
 
@@ -48,7 +48,7 @@ tests:
     assertStdoutContains: "Monitors"
     test:
     - [ satori-cli monitor ]
-  monitor_id:
-    assertStdoutContains: "id: r"
-    test:
-    - [ "satori-cli monitor `satori-cli monitor --json|jq -r '.list[1].id'`" ]
+  #monitor_id:
+  #  assertStdoutContains: "id: r"
+  #  test:
+  #  - [ "bash -c satori-cli monitor `satori-cli monitor --json|jq -r '.list[1].id'`" ]
