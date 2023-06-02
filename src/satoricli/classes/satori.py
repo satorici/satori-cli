@@ -195,7 +195,7 @@ class Satori:
         else:
             exec_type = "report"
             exec_id = url["fields"]["key"].split("/")[1]
-            print(KEYNAME_COLOR + "UUID: " + VALUE_COLOR + f"{exec_id}")
+            print(KEYNAME_COLOR + "Report ID: " + VALUE_COLOR + f"{exec_id}")
             print(
                 KEYNAME_COLOR
                 + "Report: "
@@ -253,7 +253,7 @@ class Satori:
         else:
             exec_type = "report"
             exec_id = bun["fields"]["key"].split("/")[1]
-            print(KEYNAME_COLOR + "UUID: " + VALUE_COLOR + f"{exec_id}")
+            print(KEYNAME_COLOR + "Report ID: " + VALUE_COLOR + f"{exec_id}")
             print(
                 autocolor(
                     f"Report: https://www.satori-ci.com/report_details/?n={exec_id}"
