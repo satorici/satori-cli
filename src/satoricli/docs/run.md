@@ -18,6 +18,11 @@ Run allows you to run Satori Playbooks on demand. Whenever your playbook by itse
 satori-cli run playbook.yml
 ```
 
+You would run it like this when:
+- you are developing a playbook and you are debugging its [report and output](report.md)
+- it is a playbook that needs to be run ocasionally. For example, you want to test something with `curl` that showed up as part of a pentest and you want to verify that is fixed on a certain system automatically.
+- that will become a [monitor](monitor.md) once the `cron` or `rate` is introduced in `settings`. 
+
 **Local Directory with Playbook**
 In case you are working on a directory with source code, where you are interested in understanding how the files behave with the code, you want to save your playbook as `.satori.yml` and then run:
 
@@ -25,23 +30,17 @@ In case you are working on a directory with source code, where you are intereste
 satori-cli run ./
 ```
 
-**Public Playbook**
-You can run on demand public playbooks. You can see a list of the publicly available playbooks with:
+You would run it like this when:
+- your code lives locally, before it is being pushed to a [repo](repo.md)
+- your code lives remotely, and you are executing it within a [GitHub Action or as part of a Jenkins process](action.md)
 
-```sh
-satori-cli playbook --public
-```
+**Public Playbook**
+You can run on demand public playbooks. You can see a list of the publicly available playbooks with: `satori-cli playbook --public`
 
 And then you can execute them like this:
 ```sh
 satori-cli run --playbook satori://some/playbook.yml
 ```
 
-### Repo
-
-**Scan repositories of a GitHub account for secrets**
-```sh
-satori-cli run mercadolibre/* --playbook satori://code/trufflehog.yml
-```
-
+You would run it like this when there is a public playbook that already addresses your problem. 
 

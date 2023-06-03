@@ -43,13 +43,13 @@ Run the repository's playbook on a specific commit (in whatever branch you want)
 
 Whenever you want to run an execution on each of the individual commits of a repository, you can use the scan functionality. 
 
-**Single Commit**
+#### Single Commit
 
 On its most simple form, you can scan a single commit using the following approach:
 
 `satori-cli repo https://github.com/satorici/satori-cli/commit/226f19d5eb0e2dd1bd6449f452c8e7e725c04c00 run`
 
-**Multiple Commits**
+#### Multiple Commits
 
 If you target a repo, the optional parameter `-c` is used to indicate the percentage of repository commits to include in the scan. For example, if you only want to just take a sample, when not using the `-c` parameter, is the equivalent to `-c 1` "scan 1% of the repository commits". This is useful for sampling large repositories:
 
@@ -67,7 +67,14 @@ You can also request the list of forks associated to the repo. Again, the task c
 
 You can see how the results of your playbook affect different commits and forks of your repository.
 
-**Status**
+#### Multiple Repos
+
+Scan repositories of a GitHub account for secrets
+```sh
+satori-cli repo mercadolibre/* run --playbook satori://code/trufflehog.yml
+```
+
+#### Status
 
 Since normally repositories have a lot of commits, you may want to check what is the execution status with this command:
 - `satori-cli repo githubUsername/repository scan-status`
@@ -86,12 +93,12 @@ Satori CI 1.2.25 - Automated Software Testing Platform
 
 It shows the current status, the amount of commits found, which ones were scanned, which ones are being scanned and which ones are scheduled to be scanned. Since no scan is being run at the time of executing this command, there is no progress but in other cases it would be a percentage.
 
-**Stop**
+#### Stop
 
 If at any point you want to cancel the scan, you use the `scan-stop` action:
 - `satori-cli repo githubUsername/repository scan-stop`
 
-**Clean**
+#### Clean
 
 Warning: this commmand will delete all the reports associated to a certain repository:
 - `satori-cli repo githubUsername/repository clean`
