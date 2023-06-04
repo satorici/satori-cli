@@ -63,6 +63,8 @@ HelloWorld:
   - [ echo Hello World ]
 ```
 
+#### Quantity
+
 Now you may need to add the weight of how many occurrence are affecting your assertion. The amount of blockers within a report should depic the priority of the test:
 
 ```yml
