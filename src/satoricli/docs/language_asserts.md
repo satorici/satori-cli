@@ -29,6 +29,57 @@ You can assert what will be the behavior of [executions](language_execution.md):
 
 ---
 
+### Parametrized Asserts
+
+Whenever you need to define addicional settings for an assert, you start by defining its value. For example, lets start by asserting that the output will be "Hello World"
+
+```yml
+HelloWorld: 
+  assertStdoutContains: "Hello World"
+  echo:
+  - [ echo Hello World ]
+```
+
+You would define its value first:
+
+```yml
+HelloWorld: 
+  assertStdoutContains: 
+  - value: "Hello World"
+  echo:
+  - [ echo Hello World ]
+```
+
+#### Severity
+
+Now lets define its severity
+
+```yml
+HelloWorld: 
+  assertStdoutContains: 
+  - value: "Hello World"
+  - severity: 1
+  echo:
+  - [ echo Hello World ]
+```
+
+Now you may need to add the weight of how many occurrence are affecting your assertion. The amount of blockers within a report should depic the priority of the test:
+
+```yml
+Blocker:
+  assertStdoutContains: 
+    - value: whatever
+    - severity: 1
+    - count: 
+       [ wc - l whatever ]
+   run:
+    - [ “echo Whatever\nwhatever >> whatever” ]
+```
+
+This technique is used for [testing AWS environments with ScoutSuite using the playbook satori://code/scoutsuite.yml](https://github.com/satorici/playbooks/blob/main/aws/scoutsuite.yml)
+
+---
+
 #### assertStdout
 | Input   | Description                            |
 |---------|-----------------------------------------
