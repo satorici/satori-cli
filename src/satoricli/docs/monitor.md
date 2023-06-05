@@ -5,7 +5,20 @@ Monitors are playbooks that contain either a `cron` or a `rate` setting in the `
 
 ### Cron
 
-Consider the following example playbook that runs nmap every 10 minutes to identify any services that may have changed their port status, and you have a SHA256 hash on the initial valid state:
+As a quick and easy example, consider the possibility of monitoring satori's website:
+
+```yml
+settings:
+    name: "Verify Satori's website"
+    rate: 10 minutes
+
+test:
+    assertStdoutContains: "Satori CI"
+    curl:
+    - [ curl -s http://www.satori-ci.com ]
+```
+
+As a more advanced example, consider the following example playbook that runs nmap every 10 minutes to identify any services that may have changed their port status, and you have a SHA256 hash on the initial valid state:
 
 ```yml
 settings:
@@ -73,6 +86,7 @@ Now, besides listing your monitors, you may want to stop them. -
 
 ```sh
 $ satori-cli monitor ID stop`: disable the monitor id
+```
 
 **Start Monitor**
 
