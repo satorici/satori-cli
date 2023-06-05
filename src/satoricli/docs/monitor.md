@@ -1,11 +1,21 @@
 # [Intro](README.md)
 ## Monitor
 
-Monitors are playbooks that contain either a `cron` or a `rate` setting in the `settings` section. They will be executed to return the number of fails that were found. They are specially useful to assert that the behavior of live systems is working as expected, when running a playbook that will test them with a certain frequency.
+Monitors are playbooks that contain either a `cron` or a `rate` setting in the `settings` section. They are specially useful to assert that the behavior of live systems is working as expected with a certain frequency.
 
-### Cron
+### Rate
 
-As a quick and easy example, consider the possibility of monitoring satori's website:
+This is the easiest way of speaking of frequency:
+
+**Rate expression examples**:
+
+|Frequency             | Expression       |
+|------------------|------------------|
+| Every 10 minutes | rate: 10 minutes |
+| Every hour       | rate: 1 hour     |
+| Every seven days | rate: 7 days     |
+
+For example, the following file `monitor.yml` checks that the Satori's website is live and showing its name every 10 minutes:
 
 ```yml
 settings:
@@ -18,7 +28,15 @@ test:
     - [ curl -s http://www.satori-ci.com ]
 ```
 
-As a more advanced example, consider the following example playbook that runs nmap every 10 minutes to identify any services that may have changed their port status, and you have a SHA256 hash on the initial valid state:
+To install this playbook, you just need to run it:
+
+```sh
+$ satori-cli run monitor.yml 
+```
+
+### Cron
+
+As a more advanced example, consider the following example playbook that runs nmap every 10 minutes to identify any services that may have changed their port status. We check the SHA256 hash of what is the expected output of the port status:
 
 ```yml
 settings:
@@ -44,33 +62,6 @@ To install this playbook, you just need to run it:
 
 ```sh
 $ satori-cli run nmap-cron.yml 
-```
-
-### Rate
-
-Another terminology that may be easier than `cron` is the `rate` setting. You can define a time lapse such as `30 minutes` or 
-
-**Rate expression examples**:
-
-|Frequency             | Expression       |
-|------------------|------------------|
-| Every 10 minutes | rate: 10 minutes |
-| Every hour       | rate: 1 hour     |
-| Every seven days | rate: 7 days     |
-
-For example, the beginning of the previous playbook could have been written with the `rate` setting instead of `cron` like this:
-
-```yml
-settings:
-    name: "Nmap: did any service changed?"
-    rate: 10 minutes
-    ...
-```
-
-Again, to install this playbook, you just need to run it:
-
-```sh
-$ satori-cli run nmap-rate.yml 
 ```
 
 ### List your monitors
