@@ -2,7 +2,7 @@ import requests
 import sys
 from requests import Response
 from requests.exceptions import HTTPError
-from typing import Union, Any
+from typing import Union, Any, Optional
 
 from .utils import FAIL_COLOR, puts, autoformat, log
 from .data import arguments
@@ -104,12 +104,14 @@ class SatoriAPI:
         res = self.request("GET", "dashboard")
         return res.json()
 
-    def playbook_get(self, parameters: dict) -> Any:
-        res = self.request("GET", "playbooks", params=parameters)
-        return res.json()
-
-    def playbook_delete(self, parameters: dict) -> None:
-        self.request("DELETE", "playbooks", params=parameters)
+    def playbook(
+        self, method: str, obj_id: str, params: Optional[dict] = None
+    ) -> Union[dict, str, None]:
+        res = self.request(method, f"playbooks/{obj_id}", params=params)
+        if obj_id != "":
+            return res.text
+        if method != "DELETE":
+            return res.json()
 
     def teams(self, method: str, name: str, action: str, **kwargs) -> Any:
         res = self.request(method, f"teams/{name}/{action}", **kwargs)
