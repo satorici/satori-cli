@@ -114,8 +114,11 @@ class Satori:
             with open(config_file, "w") as f:
                 os.chmod(config_file, 0o600)
                 f.write(yaml.safe_dump(config))
-        except:
-            puts(FAIL_COLOR, "Could not write to home directory, writing into current directory")
+        except Exception:
+            puts(
+                FAIL_COLOR,
+                "Could not write to home directory, writing into current directory",
+            )
             config_file = self.config_paths[1]
             with open(config_file, "w") as f:
                 os.chmod(config_file, 0o600)
@@ -525,8 +528,8 @@ class Satori:
 
     def playbook(self, args: arguments):
         """Get playbooks"""
-        if args.public:
-            display_public_playbooks()
+        if args.public or args.id.startswith("satori://"):
+            display_public_playbooks(args.id)
 
         if args.action == "":
             if args.id == "":

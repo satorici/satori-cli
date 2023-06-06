@@ -8,16 +8,17 @@ try:
 except ImportError:
     git = None
 import yaml
-from rich.console import Console
-from rich.table import Table
 
 from .validations import get_parameters
+from .utils import console, autosyntax, autotable
 
 
 def clone(directoryName):
     """Clone or pull the playbooks repo"""
     if git is None:
-        print("The git package could not be imported. Please make sure that git is installed in your system.")
+        print(
+            "The git package could not be imported. Please make sure that git is installed in your system."
+        )
         return 1
     if os.path.exists(directoryName):
         repo = git.Repo(directoryName)
@@ -29,7 +30,7 @@ def clone(directoryName):
     return 0
 
 
-def file_finder(directoryName):
+def file_finder(directoryName) -> list[dict]:
     """File finder"""
     playbooks = []
     list_dirs = os.walk(directoryName)
@@ -77,32 +78,27 @@ def get_playbook_name(filename):
             return "None"
 
 
-def display_public_playbooks():
+def display_public_playbooks(playbook_id: str = "") -> None:
     directoryName = Path(gettempdir(), "satori-public-playbooks")
 
     if clone(directoryName) == 0:
         playbooks = file_finder(directoryName)
         playbooks.sort(key=lambda x: x["filename"])
 
-        rows = []
-        for playbook in playbooks:
-            rows.append(
-                (
-                    playbook["filename"],
-                    playbook["name"],
-                    playbook["parameters"],
-                )
-            )
-
-        table = Table(title="Public playbooks")
-
-        table.add_column("Filename", no_wrap=True)
-        table.add_column("Name")
-        table.add_column("Parameters", justify="right")
-
-        for row in rows:
-            table.add_row(*row)
-
-        console = Console()
-        console.print(table)
+        if playbook_id == "":  # satori-cli playbook --public
+            # Print table with playbooks data by default
+            autotable(playbooks)
+        else:  # satori-cli playbook satori://x
+            # print the content of a playbook
+            playbook_path = None
+            for playbook in playbooks:
+                if playbook["filename"] == playbook_id:
+                    playbook_path = Path(
+                        str(directoryName)
+                        + playbook["filename"].replace("satori://", "/")
+                    )
+                    autosyntax(playbook_path.read_text(), 0)
+                    break
+            if playbook_path is None:
+                console.log("[red]Playbook not found")
     sys.exit(0)
