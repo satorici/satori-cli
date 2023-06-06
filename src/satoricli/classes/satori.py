@@ -110,11 +110,16 @@ class Satori:
             config_file = self.config_paths[0]
 
         config.setdefault(self.profile, {})[key] = value
-
-        with open(config_file, "w") as f:
-            os.chmod(config_file, 0o600)
-            f.write(yaml.safe_dump(config))
-
+        try:
+            with open(config_file, "w") as f:
+                os.chmod(config_file, 0o600)
+                f.write(yaml.safe_dump(config))
+        except:
+            puts(FAIL_COLOR, "Could not write to home directory, writing into current directory")
+            config_file = self.config_paths[1]
+            with open(config_file, "w") as f:
+                os.chmod(config_file, 0o600)
+                f.write(yaml.safe_dump(config))
         puts(Fore.LIGHTGREEN_EX, key.capitalize() + " saved")
 
     def run(self, args: arguments):
