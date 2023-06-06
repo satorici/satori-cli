@@ -524,14 +524,16 @@ class Satori:
             display_public_playbooks()
 
         if args.action == "":
-            params = filter_params(args, ("id", "limit", "page"))
-            data = self.api.playbook_get(params)
-            if args.json:
-                autoformat(data, jsonfmt=True)
-                sys.exit(1)
+            if args.id == "":
+                # Default: get list of user playbooks
+                params = filter_params(args, ("limit", "page"))
+                data = self.api.playbook("GET", "", params)
+            else:
+                data = self.api.playbook("GET", args.id)
         elif args.action == "delete":
-            params = filter_params(args, ("id",))
-            data = self.api.playbook_delete(params)
+            data = self.api.playbook("DELETE", args.id)
+            print("Playbook Deleted")
+            sys.exit(0)
         else:
             print("Unknown subcommand")
             sys.exit(1)
