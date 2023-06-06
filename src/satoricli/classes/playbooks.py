@@ -3,7 +3,10 @@ import sys
 from pathlib import Path
 from tempfile import gettempdir
 
-import git
+try:
+    import git
+except ImportError:
+    git = None
 import yaml
 from rich.console import Console
 from rich.table import Table
@@ -13,6 +16,9 @@ from .validations import get_parameters
 
 def clone(directoryName):
     """Clone or pull the playbooks repo"""
+    if git is None:
+        print("The git package could not be imported. Please make sure that git is installed in your system.")
+        return 1
     if os.path.exists(directoryName):
         repo = git.Repo(directoryName)
         repo.remotes.origin.pull()
@@ -20,9 +26,10 @@ def clone(directoryName):
     else:
         git.Repo.clone_from("https://github.com/satorici/playbooks.git", directoryName)
         print("Satori Playbooks repo clone started")
+    return 0
 
 
-def fileFinder(directoryName):
+def file_finder(directoryName):
     """File finder"""
     playbooks = []
     list_dirs = os.walk(directoryName)
@@ -45,7 +52,7 @@ def fileFinder(directoryName):
                     except Exception:
                         pass
 
-                names = getPlaybookName(filenames)
+                names = get_playbook_name(filenames)
                 playbooks.append(
                     {
                         "filename": filenames.replace(str(directoryName), "satori:/"),
@@ -56,7 +63,7 @@ def fileFinder(directoryName):
     return playbooks
 
 
-def getPlaybookName(filename):
+def get_playbook_name(filename):
     """Function to load files desc in list"""
     playbook = ""
     with open(filename, "r") as file:
@@ -73,30 +80,29 @@ def getPlaybookName(filename):
 def display_public_playbooks():
     directoryName = Path(gettempdir(), "satori-public-playbooks")
 
-    clone(directoryName)
+    if clone(directoryName) == 0:
+        playbooks = file_finder(directoryName)
+        playbooks.sort(key=lambda x: x["filename"])
 
-    playbooks = fileFinder(directoryName)
-    playbooks.sort(key=lambda x: x["filename"])
-
-    rows = []
-    for playbook in playbooks:
-        rows.append(
-            (
-                playbook["filename"],
-                playbook["name"],
-                playbook["parameters"],
+        rows = []
+        for playbook in playbooks:
+            rows.append(
+                (
+                    playbook["filename"],
+                    playbook["name"],
+                    playbook["parameters"],
+                )
             )
-        )
 
-    table = Table(title="Public playbooks")
+        table = Table(title="Public playbooks")
 
-    table.add_column("Filename", no_wrap=True)
-    table.add_column("Name")
-    table.add_column("Parameters", justify="right")
+        table.add_column("Filename", no_wrap=True)
+        table.add_column("Name")
+        table.add_column("Parameters", justify="right")
 
-    for row in rows:
-        table.add_row(*row)
+        for row in rows:
+            table.add_row(*row)
 
-    console = Console()
-    console.print(table)
+        console = Console()
+        console.print(table)
     sys.exit(0)
