@@ -8,7 +8,6 @@ try:
 except ImportError:
     git = None
 import yaml
-from rich.syntax import Syntax
 
 from .validations import get_parameters
 from .utils import console, autosyntax, autotable
@@ -98,13 +97,7 @@ def display_public_playbooks(playbook_id: str = "") -> None:
                         str(directoryName)
                         + playbook["filename"].replace("satori://", "/")
                     )
-                    yml_text = Syntax(
-                        playbook_path.read_text(),
-                        "YAML",
-                        theme="fruity",
-                        word_wrap=True,
-                    )
-                    console.log(yml_text)
+                    autosyntax(playbook_path.read_text(), lexer="YAML")
                     break
             if playbook_path is None:
                 console.log("[red]Playbook not found")

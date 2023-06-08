@@ -416,17 +416,16 @@ class Satori:
     def report(self, args: arguments):
         """Show a list of reports"""
         params = filter_params(args, ("id",))
-        if args.action == "":
+        if args.action == "":  # default: print reports
             params = filter_params(args, ("id", "page", "limit", "filter"))
             res = self.api.reports("GET", args.id, "", params=params)
-            if isinstance(res, list) and not args.json:
-                for commit in res:
-                    dict_formatter(commit)
-                    puts(Fore.LIGHTBLACK_EX, ("_" * 48) + "\n")
-            else:
+            if args.id == "" and not args.json:  # default: print list
+                autoformat(res["list"])
+                console.log(
+                    f"[b]Page:[/] {res['current_page']} of {res['total_pages']}"
+                )
+            else:  # single report or json output
                 autoformat(res, jsonfmt=args.json)
-            if not args.json:
-                print(f"Current page: {args.page}")
         elif args.action == "output":
             self.output(args, params)
         elif args.action == "stop":

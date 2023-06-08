@@ -221,24 +221,27 @@ def autocolor(txt: str) -> str:
     return txt
 
 
-def autosyntax(item: str, indent: int) -> bool:
+def autosyntax(item: str, indent: int = 0, lexer: Optional[str] = None) -> bool:
     ind = (indent) * 2
-    try:
-        json.loads(item)
-    except Exception:
+    lang = None
+    if lexer is None:
         try:
-            yaml.safe_load(item)
-        except Exception:  # Not YAML/JSON
-            return False
-        else:  # Is YAML
-            yml = Syntax(item, "YAML", padding=(0, ind), theme="fruity", word_wrap=True)
-            print()
-            console.log(yml)
-            return True
-    else:  # Is JSON
-        print()
-        print_json(item, indent=ind)
-        return True
+            json.loads(item)
+        except Exception:
+            try:
+                yaml.safe_load(item)
+            except Exception:  # Not YAML/JSON
+                return False
+            else:  # Is YAML
+                lang = "YAML"
+        else:  # Is JSON
+            lang = "JSON"
+    final_lexer = lexer or lang
+    if final_lexer is None:
+        return False
+    yml = Syntax(item, final_lexer, padding=(0, ind), theme="fruity", word_wrap=True)
+    console.log(yml)
+    return True
 
 
 def table_generator(
