@@ -17,6 +17,8 @@ class args:
     playbook: str
     page: int
     public: bool
+    report: bool
+    output: bool
 
 
 arguments = Union[Namespace, args]

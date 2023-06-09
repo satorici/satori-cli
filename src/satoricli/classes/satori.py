@@ -9,6 +9,7 @@ from pathlib import Path
 import time
 import requests
 import yaml
+from argparse import Namespace
 from rich.progress import open as progress_open
 from colorama import Fore
 from satorici.validator import validate_playbook
@@ -17,7 +18,6 @@ from satorici.validator.exceptions import PlaybookVariableError, PlaybookValidat
 from .api import SatoriAPI
 from .bundler import make_bundle
 from .utils import (
-    dict_formatter,
     filter_params,
     autoformat,
     check_monitor,
@@ -31,7 +31,6 @@ from .utils import (
     log,
     autotable,
     console,
-    UNKNOWN_COLOR,
 )
 from .validations import get_parameters, validate_parameters
 from .playbooks import display_public_playbooks
@@ -153,34 +152,35 @@ class Satori:
             sys.exit(1)
 
         playbook_text = playbook.read_text()
+        config = None
         try:
             config = yaml.safe_load(playbook_text)
             validate_playbook(config)
         except yaml.YAMLError as e:
-            console.log(
-                f"Error parsing the playbook [bold]{playbook.name}[/bold]:\n", e
-            )
+            console.log(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
             sys.exit(1)
         except PlaybookValidationError as e:
-            console.log(
-                f"Validation error on playbook [bold]{playbook.name}[/bold]:\n", e
-            )
+            console.log(f"Validation error on playbook [bold]{playbook.name}[/]:\n", e)
             sys.exit(1)
         except PlaybookVariableError:
             pass
 
+        if not isinstance(config, dict):
+            console.print("[error]Failed to load the playbook")
+            sys.exit(1)
+
         variables = get_parameters(config)
 
         if variables - params:
-            puts(FAIL_COLOR, f"Required parameters: {variables - params}")
+            console.print(f"[error]Required parameters: {variables - params}")
             sys.exit(1)
 
         if path.is_dir():
             exec_data = self.run_folder(args)
         else:  # is file
             exec_data = self.run_file(args)
-        if args.sync and exec_data:
-            self.run_sync(exec_data)
+        if (args.sync or args.output or args.report) and exec_data:
+            self.run_sync(exec_data, args)
 
     def run_file(self, args: arguments) -> dict:
         """Just run"""
@@ -189,7 +189,7 @@ class Satori:
         is_monitor = check_monitor(playbook)
         url = self.api.runs("bundle", {"secrets": args.data})
         log.debug(url)
-        res = requests.post(
+        res = requests.post(  # nosec
             url["url"], url["fields"], files={"file": bundle}, timeout=None
         )
         log.debug(res.text)
@@ -236,7 +236,7 @@ class Satori:
 
         try:
             with progress_open(full_path, "rb", description="Uploading...") as f:
-                res = requests.post(
+                res = requests.post(  # nosec
                     arc["url"], arc["fields"], files={"file": f}, timeout=None
                 )
         finally:
@@ -246,7 +246,7 @@ class Satori:
             print("Archive upload failed")
             sys.exit(1)
 
-        res = requests.post(
+        res = requests.post(  # nosec
             bun["url"], bun["fields"], files={"file": bundle}, timeout=None
         )
         log.debug(res.text)
@@ -273,16 +273,16 @@ class Satori:
     def run_url(self, args: arguments):
         info = self.api.runs("url", {"secrets": args.data, "url": args.path})
         autoformat({"Running with the ID": info.get("report_id")}, jsonfmt=args.json)
-        if args.sync:
+        if args.sync or args.output or args.report:
             exec_data = {"type": "report", "id": info["report_id"]}
-            self.run_sync(exec_data)
+            self.run_sync(exec_data, args)
         sys.exit(0)
 
-    def run_sync(self, exec_data: dict) -> None:
+    def run_sync(self, exec_data: dict, args: arguments) -> None:
         if exec_data["type"] == "monitor":
-            puts(UNKNOWN_COLOR, "Sync mode is not supported for monitors")
+            console.print("[warning]Sync mode is not supported for monitors")
             sys.exit(0)
-        puts(KEYNAME_COLOR, "Fetching data...", end="\r")
+        console.print("[key]Fetching data...", end="\r")
         start_time = time.time()
         spin = "-\\|/"
         pos = 0
@@ -308,7 +308,7 @@ class Satori:
                     )
                     continue
                 else:
-                    puts(FAIL_COLOR, f"Failed to get data\nStatus code: {code}")
+                    console.print(f"[error]Failed to get data\n[/]Status code: {code}")
                     sys.exit(1)
 
             status = report_data.get("status", "Unknown")
@@ -324,26 +324,35 @@ class Satori:
                     ),
                     end="\r\n",
                 )
-                report_out = []
-                # Remove keys
-                json_data = report_data.get("json") or []
-                for report in json_data:
-                    report.pop("gfx", None)
-                    report_out.append(report)
-                    asserts = []
-                    for asrt in report["asserts"]:
-                        asrt.pop("count", None)
-                        asrt.pop("description", None)
-                        if len(asrt.get("data", [])) == 0:
-                            asrt.pop("data", None)
-                        asserts.append(asrt)
-                autoformat(report_out, list_separator="- " * 20)
+                if args.report:  # --report or -r
+                    report_out = []
+                    # Remove keys
+                    json_data = report_data.get("json") or []
+                    for report in json_data:
+                        report.pop("gfx", None)
+                        report_out.append(report)
+                        asserts = []
+                        for asrt in report["asserts"]:
+                            asrt.pop("count", None)
+                            asrt.pop("description", None)
+                            if len(asrt.get("data", [])) == 0:
+                                asrt.pop("data", None)
+                            asserts.append(asrt)
+                    autoformat(report_out, list_separator="- " * 20)
+                elif args.output:
+                    out_args = Namespace(
+                        id=exec_data["id"], action="output", json=args.json
+                    )
+                    self.output(out_args, {})
+                else:  # --sync or -s
+                    # TODO: print something else?
+                    pass  # already printed
                 if status == "Undefined":
                     comments = report_data.get("comments")
                     if comments:
                         puts(FAIL_COLOR, f"Error: {comments}")
                     sys.exit(1)
-                else:
+                else:  # Completed
                     # Return code 0 if report status==pass else 1
                     sys.exit(0 if report_data["fails"] == 0 else 1)
             else:
@@ -411,7 +420,7 @@ class Satori:
             report = info.get("status", "")
             match = UUID4_REGEX.findall(report)
             if match:
-                self.run_sync({"type": "report", "id": match[0]})
+                self.run_sync({"type": "report", "id": match[0]}, args)
 
     def report(self, args: arguments):
         """Show a list of reports"""
