@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
 import sys
-import requests # autoupgrade
+import requests  # autoupgrade
 from functools import partial
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from importlib import metadata
-from colorama import just_fix_windows_console, Fore, Back
-from pkg_resources import get_distribution # autoupgrade
-from packaging import version # autoupgrade
-#from subprocess import call # autoupgrade
+from colorama import just_fix_windows_console
+from rich import print
+from pkg_resources import get_distribution, DistributionNotFound  # autoupgrade
+from packaging import version  # autoupgrade
+
+# from subprocess import call # autoupgrade
 from ..classes.satori import Satori
-from ..classes.utils import puts, console
+from ..classes.utils import console
 from ..classes.help_gui import HelpGui, DOCS_FOLDER
 
 VERSION = metadata.version("satori-ci")
@@ -29,42 +31,46 @@ def add_satori_arguments(cmd: ArgumentParser):
 def upgrade():
     """Verify the current version and the latest version"""
     # Name of your package
-    package_name = 'satori-ci'
+    package_name = "satori-ci"
 
     # Get the current version
     try:
         current_version = get_distribution(package_name).version
-    except pkg_resources.DistributionNotFound:
+    except DistributionNotFound:
         print(f"{package_name} is not installed.")
         current_version = None
 
     # Get the latest version
-    response = requests.get(f'https://pypi.org/pypi/{package_name}/json')
+    latest_version = None
+    response = requests.get(f"https://pypi.org/pypi/{package_name}/json", timeout=10)
     if response.status_code == 200:
-        latest_version = response.json()['info']['version']
+        latest_version = response.json()["info"]["version"]
     else:
         print(f"Unable to get the latest version of the package ${package_name}.")
 
     # Compare the versions and upgrade if necessary
-    if current_version and latest_version and version.parse(current_version) < version.parse(latest_version):
-        puts(Fore.YELLOW, f"WARNING: Newer version found, upgrade with: pip install -U satori-ci")
-        # Upgrade {package_name} from {current_version} to {latest_version} with: pip install -U satori-cli')
-        # call(f'pip install --upgrade {package_name}', shell=True)
-        # print("\n\nSatori-cli has been upgraded. Please execute your last command again to use the newer version")
-        # sys.exit()
+    if (
+        current_version
+        and latest_version
+        and version.parse(current_version) < version.parse(latest_version)
+    ):
+        console.print(
+            "[warning]WARNING:[/] Newer version found, upgrade with "
+            "[b]pip install -U satori-ci"
+        )
+
 
 def main():
-    puts(
-        Fore.LIGHTBLACK_EX,
-        f"Satori CI {VERSION} - Automated Software Testing Platform",
+    print(
+        f"[dim]Satori CI {VERSION} - Automated Software Testing Platform",
         file=sys.stderr,
     )
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
-        print(
-            "Minimum Python version 3.9 required, the current version is "
-            f"{sys.version_info.major}.{sys.version_info.minor}\n"
+        console.print(
+            "[danger]Minimum Python version 3.9 required, the current version is "
+            f"{sys.version_info.major}.{sys.version_info.minor}[/]\n"
             "How To Install Python 3.10 on Ubuntu:\n"
-            "https://computingforgeeks.com/how-to-install-python-on-ubuntu-linux-system"
+            "[link]https://computingforgeeks.com/how-to-install-python-on-ubuntu-linux-system"
         )
         sys.exit(0)
 
@@ -195,5 +201,5 @@ def main():
                 gui = HelpGui(instance)
                 gui.run()
     except KeyboardInterrupt:
-        puts(Back.RED, "Interrupted by user")
+        console.print("[critical]Interrupted by user")
         sys.exit(1)

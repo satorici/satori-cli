@@ -10,6 +10,7 @@ from rich import print_json
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
+from rich.theme import Theme
 import random
 
 __decorations = "▢•○░"
@@ -26,7 +27,8 @@ FAIL_REGEX = re.compile(r"(fail(\(\d+\))?|(?<!\w)error(?!\w)|^no$)", re.IGNORECA
 UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
 SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
 KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)")  # ex: "key: "
-# Colors outputs
+
+# Colors outputs | TODO: remove this
 PASS_COLOR = Fore.LIGHTGREEN_EX
 FAIL_COLOR = Fore.LIGHTRED_EX
 UNKNOWN_COLOR = Fore.LIGHTYELLOW_EX
@@ -36,13 +38,33 @@ SATORIURL_COLOR = Fore.LIGHTBLUE_EX
 VALUE_COLOR = Fore.CYAN
 MULTILINE_COLOR = Fore.YELLOW
 
+# Set rich theme and console
+# https://rich.readthedocs.io/en/latest/appendix/colors.html#appendix-colors
+satori_theme = Theme(
+    {
+        "debug": "dim blue",
+        "info": "dim cyan",
+        "warning": "yellow",
+        "danger": "bold red",
+        "error": "red",
+        "critical": "on red",
+        "pass": "bright_blue",
+        "fail": "bright_red",
+        "unknown": "bright_yellow",
+        "running": "bright_blue",
+        "key": "white",
+        "value": "cyan",
+        "multiline": "yellow",
+    }
+)
+console = Console(log_path=False, log_time=False, theme=satori_theme)
+
 logging.basicConfig(
     level="CRITICAL",
     format="%(message)s",
     handlers=[RichHandler(rich_tracebacks=True, show_time=False)],
 )
 log = logging.getLogger()
-console = Console(log_path=False, log_time=False)
 
 
 def get_decoration(indent):
@@ -177,7 +199,8 @@ def check_monitor(playbook):
 
 
 def puts(color: str = Style.NORMAL, *args, **kargs):
-    """Print with colors, resets the color after printing
+    """[deprecated] Print with colors, resets the color after printing.
+    Use console.print(str) or console.log(object) instead
 
     Parameters
     ----------
