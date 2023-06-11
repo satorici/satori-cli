@@ -30,6 +30,38 @@ default_options = [
 ]
 
 
+def upgrade():
+    """Verify the current version and the latest version"""
+    # Name of your package
+    package_name = "satori-ci"
+
+    # Get the current version
+    try:
+        current_version = get_distribution(package_name).version
+    except DistributionNotFound:
+        print(f"{package_name} is not installed.")
+        current_version = None
+
+    # Get the latest version
+    latest_version = None
+    response = requests.get(f"https://pypi.org/pypi/{package_name}/json", timeout=10)
+    if response.status_code == 200:
+        latest_version = response.json()["info"]["version"]
+    else:
+        print(f"Unable to get the latest version of the package ${package_name}.")
+
+    # Compare the versions and upgrade if necessary
+    if (
+        current_version
+        and latest_version
+        and version.parse(current_version) < version.parse(latest_version)
+    ):
+        console.print(
+            "[warning]WARNING:[/] Newer version found, upgrade with "
+            "[b]pip install -U satori-ci"
+        )
+
+
 def add_options(options):
     def _add_options(func):
         for option in reversed(options):
@@ -39,15 +71,38 @@ def add_options(options):
     return _add_options
 
 
+def display_messages():
+    print(
+        f"[dim]Satori CI {VERSION} - Automated Software Testing Platform",
+        file=sys.stderr,
+    )
+    if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
+        console.print(
+            "[danger]Minimum Python version 3.9 required, the current version is "
+            f"{sys.version_info.major}.{sys.version_info.minor}[/]\n"
+            "How To Install Python 3.10 on Ubuntu:\n"
+            "[link]https://computingforgeeks.com/how-to-install-python-on-ubuntu-linux-system"
+        )
+        sys.exit(0)
+    upgrade()
+
+def display_dashboard(**kargs):
+    args = Args(**kargs)
+    instance = Satori(args)
+    instance.dashboard(args)
+
 @tui()
-@click.group()
+@click.group(invoke_without_command=True)
 @add_options(default_options)
-def main(**kargs):
-    pass
+@click.pass_context
+def main(ctx: Context, **kargs):
+    display_messages()
+    if ctx.invoked_subcommand is None:
+        display_dashboard(**kargs)
 
 
 @click.command
-@click.argument("key")
+@click.argument("key", type=click.Choice(["token", "server"]))
 @click.argument("value")
 def config(key, value, **kargs):
     instance = Satori(Args(**kargs), config=True)
@@ -57,9 +112,7 @@ def config(key, value, **kargs):
 @click.command
 @add_options(default_options)
 def dashboard(**kargs):
-    args = Args(**kargs)
-    instance = Satori(args, config=True)
-    instance.dashboard(args)
+    display_dashboard(**kargs)
 
 
 @click.command
@@ -76,8 +129,8 @@ def run(**kargs):
 
 
 @click.command
-@click.argument("id")
-@click.argument("action", type=click.Choice(["", "delete"]))
+@click.argument("id", default="")
+@click.argument("action", default="", type=click.Choice(["", "delete"]))
 @click.option("-n", "--page", type=int, default=1, help="Playbooks page number")
 @click.option("-l", "--limit", type=int, default=5, help="Page limit number")
 @click.option("--public", is_flag=True, help="Fetch public satori playbooks")
@@ -89,9 +142,10 @@ def playbook(**kargs):
 
 
 @click.command
-@click.argument("id")
+@click.argument("id", default="")
 @click.argument(
     "action",
+    default="",
     type=click.Choice(
         [
             "",
@@ -127,8 +181,10 @@ def repo(**kargs):
 
 
 @click.command
-@click.argument("id")
-@click.argument("action", type=click.Choice(["", "output", "stop", "delete"]))
+@click.argument("id", default="")
+@click.argument(
+    "action", default="", type=click.Choice(["", "output", "stop", "delete"])
+)
 @click.option("-n", "--page", type=int, default=1, help="Commit page number")
 @click.option("-l", "--limit", type=int, default=20, help="Page limit number")
 @click.option(
@@ -146,8 +202,10 @@ def report(**kargs):
 
 
 @click.command
-@click.argument("id")
-@click.argument("action", type=click.Choice(["", "stop", "start", "delete"]))
+@click.argument("id", default="")
+@click.argument(
+    "action", default="", type=click.Choice(["", "stop", "start", "delete"])
+)
 @add_options(default_options)
 def monitor(**kargs):
     args = Args(**kargs)
@@ -156,9 +214,10 @@ def monitor(**kargs):
 
 
 @click.command
-@click.argument("id")
+@click.argument("id", default="")
 @click.argument(
     "action",
+    default="",
     type=click.Choice(["", "create", "members", "add_member", "repos", "add_repo"]),
 )
 @click.option("--email", type=str, help="User email")
