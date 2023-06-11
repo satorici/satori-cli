@@ -4,21 +4,22 @@ from argparse import Namespace
 
 
 @dataclass
-class args:
-    id: str
-    action: str
-    profile: str
-    debug: bool
-    json: bool
-    path: str
-    data: Any
-    sync: bool
-    timeout: int
-    playbook: str
-    page: int
-    public: bool
-    report: bool
-    output: bool
+class Args:
+    profile: str = "default"
+    debug: bool = False
+    json: bool = False
+    timeout: int = 180
+    id: str = ""
+    action: str = ""
+    path: str = ""
+    data: Any = None
+    sync: bool = False
+    playbook: str = ""
+    page: int = 1
+    public: bool = False
+    report: bool = False
+    output: bool = False
+    web: bool = False
 
 
-arguments = Union[Namespace, args]
+arguments = Union[Namespace, Args]

@@ -20,6 +20,15 @@ requires_python = ">=3.6.0"
 summary = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
 
 [[package]]
+name = "click"
+version = "8.1.3"
+requires_python = ">=3.7"
+summary = "Composable command line interface toolkit"
+dependencies = [
+    "colorama; platform_system == \"Windows\"",
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
@@ -199,6 +208,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "trogon"
+version = "0.4.0"
+requires_python = ">=3.7,<4.0"
+summary = "Automatically generate a Textual TUI for your Click CLI"
+dependencies = [
+    "click>=8.0.0",
+    "textual>=0.26.0",
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.6.0"
 requires_python = ">=3.7"
@@ -224,8 +243,9 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.2"
+cross_platform = true
 groups = ["default"]
-content_hash = "sha256:8450cec9f7dd6b7be1f37c5bae5cafd046944041047a24e0b54cad6af91c462f"
+content_hash = "sha256:017b8846372196d9878d39d09ff8bc9f15cc01c01084a28ee15ad61b93f2aa50"
 
 [metadata.files]
 "attrs 23.1.0" = [
@@ -239,6 +259,10 @@ content_hash = "sha256:8450cec9f7dd6b7be1f37c5bae5cafd046944041047a24e0b54cad6af
 "charset-normalizer 2.1.0" = [
     {url = "https://files.pythonhosted.org/packages/93/1d/d9392056df6670ae2a29fcb04cfa5cee9f6fbde7311a1bb511d4115e9b7a/charset-normalizer-2.1.0.tar.gz", hash = "sha256:575e708016ff3a5e3681541cb9d79312c416835686d054a23accb873b254f413"},
     {url = "https://files.pythonhosted.org/packages/94/69/64b11e8c2fb21f08634468caef885112e682b0ebe2908e74d3616eb1c113/charset_normalizer-2.1.0-py3-none-any.whl", hash = "sha256:5189b6f22b01957427f35b6a08d9a0bc45b46d3788ef5a92e978433c7a35f8a5"},
+]
+"click 8.1.3" = [
+    {url = "https://files.pythonhosted.org/packages/59/87/84326af34517fca8c58418d148f2403df25303e02736832403587318e9e8/click-8.1.3.tar.gz", hash = "sha256:7682dc8afb30297001674575ea00d1814d808d6a36af415a82bd481d37ba7b8e"},
+    {url = "https://files.pythonhosted.org/packages/c2/f1/df59e28c642d583f7dacffb1e0965d0e00b218e0186d7858ac5233dce840/click-8.1.3-py3-none-any.whl", hash = "sha256:bb4d8133cb15a609f44e8213d9b391b0809795062913b383c62be0ee95b1db48"},
 ]
 "colorama 0.4.6" = [
     {url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
@@ -385,6 +409,10 @@ content_hash = "sha256:8450cec9f7dd6b7be1f37c5bae5cafd046944041047a24e0b54cad6af
 "textual 0.27.0" = [
     {url = "https://files.pythonhosted.org/packages/49/ad/b01e219dbcdd8030a84ab5aca90d5de29d292af095648e05e09744f229bb/textual-0.27.0.tar.gz", hash = "sha256:8bdcb09dc35a706ef939b1276ccfdec10eaaee6147b41cb7587cf33298a8dd33"},
     {url = "https://files.pythonhosted.org/packages/d5/cb/67247d103df6c7d7b15c2ee60115d7cfe3acf670f4bbb6fbc8a365f5aab8/textual-0.27.0-py3-none-any.whl", hash = "sha256:dc45eaf7da330686c56d6f76f59d05fd216ce6aad90fa44ee269881efc622151"},
+]
+"trogon 0.4.0" = [
+    {url = "https://files.pythonhosted.org/packages/0e/f2/ad49c97be91449ae06061b556371f2d424b8d92c34031e40e9e5bcce7972/trogon-0.4.0-py3-none-any.whl", hash = "sha256:65fadb5bc25dbd3a2e2f49235fb16735f7b822e24d88b5c68980bb38e1124f99"},
+    {url = "https://files.pythonhosted.org/packages/9b/b1/e3796582a94a738a8e0d4f3b162cc61eb0523ff0104519217c3130fd7f7e/trogon-0.4.0.tar.gz", hash = "sha256:b87736dfebf011e7b7c541e30105d2ecc0ed09fb0b874d4fa09a6416fa83db34"},
 ]
 "typing-extensions 4.6.0" = [
     {url = "https://files.pythonhosted.org/packages/85/d2/949d324c348014f0fd2e8e6d8efd3c0adefdcecd28990d4144f2cfc8105e/typing_extensions-4.6.0-py3-none-any.whl", hash = "sha256:6ad00b63f849b7dcc313b70b6b304ed67b2b2963b3098a33efe18056b1a9a223"},
