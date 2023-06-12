@@ -1,11 +1,21 @@
 # [Intro](README.md)
 ## Asynchronous and Synchronous Executions
 
-Satori CI allows you to perform both synchronous and asynchronous testing in combination with other continuous integration (CI) executions. 
+Satori CI allows you to perform synchronous and asynchronous testing. Satori CLI runs asynhronously by default and returns a report ID associated to the process. You would run it like this when you are including Satori as part of another continuous integration execution and testing is not a blocker for the process, or when you want to check the results later
+
+The syncrhonous part is enabled with the following parameters: 
+- **--output**: 
+  You are developing a playbook and you want to see what the output is going to be.
+- **--report**: 
+  You are developing a playbook and you want to see how the report is going to look
+- **--sync**:
+  You are including Satori as part of another continuous integration execution (i.e., Github Actions, Gitlab, etc), or
+  you just need to see the results of the playbook's execution
+
 
 ## Sample Ping YAML Playbook
 
-Here's a Satori Playbook that asserts that 4 packets have been received when issuing a ping to a certain `HOST`:
+This Playbook will asserts that 4 packets have been received when issuing a ping to a certain `HOST`:
 
 ```yaml
 install:
