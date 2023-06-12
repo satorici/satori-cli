@@ -3,6 +3,8 @@
 
 The definition of where you will be notified starts on your playbook settings. In there, depending if you want to be notified every time (`log`), on every fail (`logOnFail`) or every time it passes (`logOnPass`) you will define if you want to be notified via email, via a Github Issue on your repo, via slack or via discord.
 
+By default, you will get notified with emails unless you change your playbook settings.
+
 ## Playbook Settings
 
 ```yml

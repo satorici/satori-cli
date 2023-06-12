@@ -5,7 +5,7 @@ Satori is an automated testing platform designed to assert the behavior of comma
 
 ## [Install](install.md)
 
-Satori can execute tests synchronously or asynchronously in various ways:
+Satori can execute tests [synchronously or asynchronously](asynchronous_and_synchronous_executions.md) in various ways:
 - With our [Github Application](https://github.com/apps/satorici) to analyze your [repositories](repo.md).
 - With our [CLI tool](https://github.com/satorici/satori-cli), which can be installed with `pip install satori-ci`.
 - Through our [Website](https://www.satori-ci.com).
