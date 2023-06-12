@@ -220,10 +220,10 @@ class Satori:
         bundle = make_bundle(str(satori_yml), from_dir=True)
         is_monitor = check_monitor(satori_yml)
         temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
-        full_path = f"{temp_file}.zip"
+        full_path = f"{temp_file}.tar.gz"
 
         try:
-            shutil.make_archive(str(temp_file), "zip", directory)
+            shutil.make_archive(str(temp_file), "gztar", directory)
         except Exception as e:
             puts(FAIL_COLOR, f"Could not compress directory: {e}")
             sys.exit(1)
