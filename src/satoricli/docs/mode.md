@@ -15,8 +15,8 @@ You can run your playbooks on demand with Satori CLI whenver you want to:
 ### CI
 
 Whenever you want to test your software automatically, you can use Satori as part of a CI/CD pipeline with:
-- [Satori GitHub App](ci.md)
-- [Satori CLI running on Github Actions or Jenkins](action.md)
+- [Satori GitHub CI](github_ci.md)
+- [Satori CLI running on Github Actions or Jenkins](github_action.md)
 
 Tests can range from static to dynamic testing of your code.
 

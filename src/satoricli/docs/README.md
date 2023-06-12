@@ -14,7 +14,7 @@ Satori can execute tests [synchronously or asynchronously](asynchronous_and_sync
 
 ## [Language](language.md)
 
-Our YAML-based [language](language.md) allows you to define [executions](language_execution.md), specify their [inputs](language_inputs.md), and [assert](language_asserts.md) whether their behavior aligns with your expectations. Tests are encapsulated within files called [playbooks](language_playbooks.md), with different [settings](language_settings.md) depending on the [execution mode](mode.md): [Run](execution_run.md), [CI](execution_ci.md), and/or [Monitor](monitor.md).
+Our YAML-based [language](language.md) allows you to define [executions](language_execution.md), specify their [inputs](language_inputs.md), and [assert](language_asserts.md) whether their behavior aligns with your expectations. Tests are encapsulated within files called [playbooks](language_playbooks.md), with different [settings](language_settings.md) depending on the [execution mode](mode.md): [Run](run.md), [Github CI](github_ci.md), and/or [Monitor](monitor.md).
 
 All our tests are stored in what we call playbooks. You can check our online playbooks in our [Github repository](https://github.com/satorici/playbooks/) for our public marketplace.
 

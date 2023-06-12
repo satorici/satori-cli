@@ -3,7 +3,7 @@
 
 All Satori CI users get the common benefits of the platform:
 - [Run](mode_run.md)
-- [CI](mode_ci.md)
+- [CI](github_ci.md)
 - [Monitor](mode_monitor.md)
 - [Notifications](notifications.md)
 - Multiple UIs ([CLI](https://github.com/satorici/satori-cli), [Web](https://www.satori-ci.com), Grafana, [API](http://api.satori-ci.com/schema/swagger)
