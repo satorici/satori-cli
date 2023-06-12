@@ -20,6 +20,8 @@ class Args:
     report: bool = False
     output: bool = False
     web: bool = False
+    limit: int = 20
+    filter: str = ""
 
 
 arguments = Union[Namespace, Args]
