@@ -18,4 +18,4 @@ The difference between account roles is related to the amount of daily execution
 | Pro        |                           5000 |                                  100 USD | Live Human Support                               |
 | Enterprise | 5000 per account (shared pool) | [Contact Us](mailto:sales@satori-ci.com) | Testing as a Service Support                     |
 
-* Free user accounts' instances cannot perform internet connections
+* Free community edition accounts are not allowed to perform internet connections
