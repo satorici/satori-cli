@@ -22,17 +22,14 @@ settings:
   name: CI Tests for every push of my Repo
   description: Find secrets on the code, static source code audit and run an end to end test asserting the expected output for your project
   onLogFail: slack-monitor # Send a message to the monitor channel on Slack if the test Fails
-# Importing public playbooks
-import:
+import: # public playbooks
   - "satori://search/trufflehog.yml" # will search for secrets on your code with Trufflehog (https://github.com/trufflesecurity/trufflehog)
   - "satori://code/semgrep.yml" # will perform a static source code analysis with Semgrep (https://github.com/returntocorp/semgrep)
-# Install required software
-install:
-  assertReturnCode: 0
+install: # the required software to execute your tests
+  assertReturnCode: 0 # the return code or something else of the software that you need to install
   - [ make ]
-# Assert the expected output of an end to end execution of your project
 execute:
-  assertStdoutContains: "An expected output"
+  assertStdoutContains: "An expected output" # assert the output of the main system execution of your project
   - [ ./your_project ]
 ```
 
