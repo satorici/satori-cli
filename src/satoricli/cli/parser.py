@@ -169,6 +169,10 @@ def main():
     help_cmd.add_argument("-w", "--web", default=False, action="store_true")
     add_satori_arguments(help_cmd)
 
+    # user {id} TODO: <delete|disable|enable?>
+    user_cmd = subparsers.add_parser("user", parents=[baseparser])
+    add_satori_arguments(user_cmd)
+
     args = parser.parse_args()
 
     if args.subcommand == "config":
@@ -191,6 +195,8 @@ def main():
             instance.monitor(args)
         elif args.subcommand == "team":
             instance.team(args)
+        elif args.subcommand == "user":
+            instance.user(args)
         elif args.subcommand in (None, "dashboard"):
             instance.dashboard(args)
         elif args.subcommand == "help":

@@ -618,3 +618,8 @@ class Satori:
                 if n >= len(report_list):
                     n = 0
         sys.exit(0)
+
+    def user(self, args: arguments):
+        """Get information about the"""
+        info = self.api.users("GET", args.action, args.id)
+        autoformat(info, jsonfmt=args.json, table=True)

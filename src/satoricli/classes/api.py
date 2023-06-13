@@ -116,3 +116,7 @@ class SatoriAPI:
     def teams(self, method: str, name: str, action: str, **kwargs) -> Any:
         res = self.request(method, f"teams/{name}/{action}", **kwargs)
         return res.json()
+
+    def users(self, method: str, user: str, action: str, **kwargs) -> Any:
+        res = self.request(method, f"users/{user}/{action}", **kwargs)
+        return res.json()
