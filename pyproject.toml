@@ -12,7 +12,7 @@ dependencies = [
     "flatdict>=4.0.1",
     "rich>=13.0",
     "gitpython>=3.1.31",
-    "satori-playbook-validator==1.0.8",
+    "satori-playbook-validator>=2.0.0",
     "textual>=0.26.0",
     "packaging>=23.1",
     "setuptools>=67.8.0",

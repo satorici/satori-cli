@@ -1,5 +1,5 @@
 from flatdict import FlatDict
-from satorici.validator import INPUT_REGEX, command_schema
+from satorici.validator import INPUT_REGEX, validate_commands
 
 
 def get_unbound(commands: list[list[str]], key: str, flat_config: dict[str]):
@@ -29,7 +29,7 @@ def get_parameters(config: dict):
     parameters: set[str] = set()
 
     for key, value in flat_config.items():
-        if command_schema.is_valid(value):
+        if validate_commands(value):
             parameters.update(get_unbound(value, key, flat_config))
 
     return parameters

@@ -4,19 +4,19 @@ from pathlib import Path
 from zipfile import ZipFile
 
 import yaml
-from satorici.validator import import_schema, input_schema, test_schema
+from satorici.validator import validate_imports, validate_inputs, validate_test
 
 
 def get_local_files(config: dict):
     paths = {"imports": set(), "inputs": set()}
     for value in config.values():
-        if import_schema.is_valid(value):
+        if validate_imports(value):
             paths["imports"].update([p[7:] for p in value if p.startswith("file")])
-        elif input_schema.is_valid(value):
+        elif validate_inputs(value):
             paths["inputs"].update(
                 [p.get("file") for p in value if isinstance(p, dict) and p.get("file")]
             )
-        elif test_schema.is_valid(value):
+        elif validate_test(value):
             subtest_files = get_local_files(value)
             paths["imports"].update(subtest_files["imports"])
             paths["inputs"].update(subtest_files["inputs"])
