@@ -10,7 +10,7 @@ import:
   #- "satori://code/semgrep.yml"
   #- "satori://code/python/pylint.yml"
 
-tests:
+Tests:
   assertReturnCode: 0
   pip_install:
     assertStdoutContains: "Successfully built satori-ci"
@@ -44,6 +44,11 @@ tests:
     test:
     - [ satori-cli repo ]
 
+  repo-run:
+    assertStdoutNotContains: "Failed to scan commit"
+    test:
+    - [ satori-cli repo satorici/playbooks run ]
+
   monitor:
     assertStdoutContains: "Monitors"
     test:
@@ -52,3 +57,4 @@ tests:
   #  assertStdoutContains: "id: r"
   #  test:
   #  - [ "bash -c satori-cli monitor `satori-cli monitor --json|jq -r '.list[1].id'`" ]
+
