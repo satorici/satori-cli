@@ -139,17 +139,17 @@ dependencies = [
 
 [[package]]
 name = "rich"
-version = "13.4.1"
+version = "13.4.2"
 requires_python = ">=3.7.0"
 summary = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 dependencies = [
-    "markdown-it-py<3.0.0,>=2.2.0",
+    "markdown-it-py>=2.2.0",
     "pygments<3.0.0,>=2.13.0",
 ]
 
 [[package]]
 name = "satori-playbook-validator"
-version = "2.1.0"
+version = "2.1.1"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
@@ -316,13 +316,13 @@ content_hash = "sha256:9b1400b0b37a9e4ab83e3db72d6753f1629bde8ea2702e2267667cd21
     {url = "https://files.pythonhosted.org/packages/70/8e/0e2d847013cb52cd35b38c009bb167a1a26b2ce6cd6965bf26b47bc0bf44/requests-2.31.0-py3-none-any.whl", hash = "sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f"},
     {url = "https://files.pythonhosted.org/packages/9d/be/10918a2eac4ae9f02f6cfe6414b7a155ccd8f7f9d4380d62fd5b955065c3/requests-2.31.0.tar.gz", hash = "sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1"},
 ]
-"rich 13.4.1" = [
-    {url = "https://files.pythonhosted.org/packages/02/97/0046b5e3c6a5057b5817e5e6c51a776d410b953e6a9c67ae249dafdd2999/rich-13.4.1.tar.gz", hash = "sha256:76f6b65ea7e5c5d924ba80e322231d7cb5b5981aa60bfc1e694f1bc097fe6fe1"},
-    {url = "https://files.pythonhosted.org/packages/ea/93/c68645c689d10a035010e3ae314b6b2855d040ce0d11fdfdfbb8be416581/rich-13.4.1-py3-none-any.whl", hash = "sha256:d204aadb50b936bf6b1a695385429d192bc1fdaf3e8b907e8e26f4c4e4b5bf75"},
+"rich 13.4.2" = [
+    {url = "https://files.pythonhosted.org/packages/e3/12/67d0098eb77005f5e068de639e6f4cfb8f24e6fcb0fd2037df0e1d538fee/rich-13.4.2.tar.gz", hash = "sha256:d653d6bccede5844304c605d5aac802c7cf9621efd700b46c7ec2b51ea914898"},
+    {url = "https://files.pythonhosted.org/packages/fc/1e/482e5eec0b89b593e81d78f819a9412849814e22225842b598908e7ac560/rich-13.4.2-py3-none-any.whl", hash = "sha256:8f87bc7ee54675732fa66a05ebfe489e27264caeeff3728c945d25971b6485ec"},
 ]
-"satori-playbook-validator 2.1.0" = [
-    {url = "https://files.pythonhosted.org/packages/78/28/ba788800275fc7c5473d71e0e4797b5b4767e1cd9fd7727bd059b1feb308/satori_playbook_validator-2.1.0.tar.gz", hash = "sha256:10f364503a4a056043d85be6f01b58e28c707f34c83d2f9ddafc7f24adee441d"},
-    {url = "https://files.pythonhosted.org/packages/cf/d3/c37164d30f4786898699ab10d5d374f22f66bce63db4e1e0944b76eeb040/satori_playbook_validator-2.1.0-py3-none-any.whl", hash = "sha256:835c6eb944a93391c703495d8ea60c532b2beeffe1005d7dd31ac37ca50303e1"},
+"satori-playbook-validator 2.1.1" = [
+    {url = "https://files.pythonhosted.org/packages/01/d5/be1d140323ea51df26fdf5dea004a9c7bf726e700d452a0307b63a132763/satori_playbook_validator-2.1.1-py3-none-any.whl", hash = "sha256:0db1141f03600769360c0cc31705672343441cea2201fafd9fcf24cf7bebbe95"},
+    {url = "https://files.pythonhosted.org/packages/47/54/60c5ec879531ffaeed8bda58e8304fbc4cb71a7d17f806958937a1234e9c/satori_playbook_validator-2.1.1.tar.gz", hash = "sha256:27568a0951678f5bb4d7fcb413721f207c939e30701562cc5345b5c7715c0ae3"},
 ]
 "setuptools 67.8.0" = [
     {url = "https://files.pythonhosted.org/packages/03/20/630783571e76e5fa5f3e9f29398ca3ace377207b8196b54e0ffdf09f12c1/setuptools-67.8.0.tar.gz", hash = "sha256:62642358adc77ffa87233bc4d2354c4b2682d214048f500964dbe760ccedf102"},
