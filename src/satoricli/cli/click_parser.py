@@ -33,6 +33,7 @@ default_options = [
 def upgrade():
     """Verify the current version and the latest version"""
     
+    upgrade_packages = ""
     for package_name in ["satori-ci", "satori-playbook-validator"]:
         # Get the current version
         try:
@@ -55,10 +56,12 @@ def upgrade():
             and latest_version
             and version.parse(current_version) < version.parse(latest_version)
         ):
-            console.print(
-                "[warning]WARNING:[/] Newer version found, upgrade with "
-                "[b]pip install -U " + package_name
-            )
+            upgrade_packages += " " + package_name
+    if upgrade_packages:
+        console.print(
+            "[warning]WARNING:[/] Newer version found, upgrade with: "
+            "[b]pip install -U" + upgrade_packages
+        )
 
 
 def add_options(options):
