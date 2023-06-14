@@ -15,7 +15,7 @@ The syncrhonous part is enabled with the following parameters:
 
 ## Sample Ping YAML Playbook
 
-This Playbook will asserts that 4 packets have been received when issuing a ping to a certain `HOST`:
+This [Playbook](examples/ping.yml) will asserts that 4 packets have been received when issuing a ping to a certain `HOST`:
 
 ```yaml
 install:

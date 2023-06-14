@@ -50,12 +50,12 @@ class SatoriAPI:
             if self.debug:
                 autoformat(status, capitalize=True, color=FAIL_COLOR, jsonfmt=self.json)
             else:
-                msg = "Error"
+                msg = "Error when connecting to Satori servers"
                 if isinstance(status, dict) and "detail" in status:
                     msg += f": {status['detail']}"
                 puts(FAIL_COLOR, msg)
         except Exception as e:
-            puts(FAIL_COLOR, "Error")
+            puts(FAIL_COLOR, "Error when connecting to Satori servers")
             log.debug(e)
         else:  # response is 20x
             return resp
