@@ -32,34 +32,33 @@ default_options = [
 
 def upgrade():
     """Verify the current version and the latest version"""
-    # Name of your package
-    package_name = "satori-ci"
+    
+    for package_name in ["satori-ci", "satori-playbook-validator"]:
+        # Get the current version
+        try:
+            current_version = get_distribution(package_name).version
+        except DistributionNotFound:
+            print(f"{package_name} is not installed.")
+            current_version = None
 
-    # Get the current version
-    try:
-        current_version = get_distribution(package_name).version
-    except DistributionNotFound:
-        print(f"{package_name} is not installed.")
-        current_version = None
+        # Get the latest version
+        latest_version = None
+        response = requests.get(f"https://pypi.org/pypi/{package_name}/json", timeout=10)
+        if response.status_code == 200:
+            latest_version = response.json()["info"]["version"]
+        else:
+            print(f"Unable to get the latest version of the package ${package_name}.")
 
-    # Get the latest version
-    latest_version = None
-    response = requests.get(f"https://pypi.org/pypi/{package_name}/json", timeout=10)
-    if response.status_code == 200:
-        latest_version = response.json()["info"]["version"]
-    else:
-        print(f"Unable to get the latest version of the package ${package_name}.")
-
-    # Compare the versions and upgrade if necessary
-    if (
-        current_version
-        and latest_version
-        and version.parse(current_version) < version.parse(latest_version)
-    ):
-        console.print(
-            "[warning]WARNING:[/] Newer version found, upgrade with "
-            "[b]pip install -U satori-ci"
-        )
+        # Compare the versions and upgrade if necessary
+        if (
+            current_version
+            and latest_version
+            and version.parse(current_version) < version.parse(latest_version)
+        ):
+            console.print(
+                "[warning]WARNING:[/] Newer version found, upgrade with "
+                "[b]pip install -U " + package_name
+            )
 
 
 def add_options(options):
