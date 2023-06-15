@@ -10,6 +10,7 @@ from colorama import just_fix_windows_console
 from rich import print
 from pkg_resources import get_distribution, DistributionNotFound  # autoupgrade
 from packaging import version  # autoupgrade
+from datetime import datetime
 
 # from subprocess import call # autoupgrade
 from ..classes.satori import Satori
@@ -61,8 +62,9 @@ def upgrade():
 
 
 def main():
+    timestamp = (datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
     print(
-        f"[dim]Satori CI {VERSION} - Automated Software Testing Platform",
+        f"[dim]{timestamp} - Satori CI {VERSION} - Automated Software Testing Platform",
         file=sys.stderr,
     )
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
