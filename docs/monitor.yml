@@ -1,0 +1,8 @@
+settings:
+    name: "Satori's Login Check"
+    rate: 10 minutes
+
+test:
+    assertStdoutContains: "Log In"
+    curl:
+    - [ "curl -s https://satorici.us.auth0.com/login?state=hKFo2SBibnkwVkp3UnZNQy1UalhUWUdNYzIydmNPT1VrMFZSaqFupWxvZ2luo3RpZNkgcEJrVFBHZGRoWW5KUUg0b2N5N3ViS2hNRUY5ZzJGMEyjY2lk2SBOOGtvaGs3QXFZbVN0Y3RuTGZYaUhkSXUwTjc0dXYxYQ&client=N8kohk7AqYmStctnLfXiHdIu0N74uv1a&protocol=oauth2&scope=openid%20email%20profile&nonce=c482c599ee3fbd436487738ecb1df091d1d96471f06fb9510391816888729109&response_type=code&response_mode=query&redirect_uri=https%3A%2F%2Fwww.satori-ci.com%2Findex.php%3Fauth0%3D1" ]

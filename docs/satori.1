@@ -23,68 +23,68 @@ satori-cli config token YOUR_TOKEN                             \fBSets user toke
 
 .IP \fBRepository:\fR
 
-satori-cli repo                                             \fBShows Repos dashboard.\fR 
+satori-cli repo                                             \fB\fR 
 
-satori-cli repo satoridev01/HelloWorld                      --
+satori-cli repo satoridev01/HelloWorld                      \fB\fR 
 
-satori-cli repo satoridev01/HelloWorld commits              --
+satori-cli repo satoridev01/HelloWorld commits              \fB\fR 
 
-satori-cli repo satoridev01/HelloWorld check-commits        --
+satori-cli repo satoridev01/HelloWorld check-commits        \fB\fR 
 
-satori-cli repo satoridev01/HelloWorld check-forks          --
+satori-cli repo satoridev01/HelloWorld check-forks          \fB\fR 
 
-satori-cli repo satoridev01/HelloWorld scan                 --
+satori-cli repo satoridev01/HelloWorld scan                 \fB\fR 
 
-satori-cli repo satoridev01/HelloWorld scan-stop            --
+satori-cli repo satoridev01/HelloWorld scan-stop            \fB\fR 
 
-satori-cli repo satoridev01/HelloWorld run                  --
+satori-cli repo satoridev01/HelloWorld run                  \fB\fR 
 
-satori-cli repo satoridev01/HelloWorld/commit123 run        --
+satori-cli repo satoridev01/HelloWorld/commit123 run        \fB\fR 
 
-satori-cli repo satoridev01/HelloWorld clean                --
+satori-cli repo satoridev01/HelloWorld clean                \fB\fR 
 
 
 .IP \fBMonitor:\fR
 
-satori-cli monitor                      \fB tbc \fR 
+satori-cli monitor                      \fB\fR 
 
-satori-cli monitor ABC123               --
+satori-cli monitor ABC123               \fB\fR 
 
-satori-cli monitor ABC123 start         --
+satori-cli monitor ABC123 start         \fB\fR 
 
-satori-cli monitor ABC123 stop          --
+satori-cli monitor ABC123 stop          \fB\fR 
 
-satori-cli monitor ABC123 delete        --
+satori-cli monitor ABC123 delete        \fB\fR 
 
-.IP \fB**Report: /api/report/**\fR
+.IP \fBReport:\fR
 
-satori-cli report                       --
+satori-cli report                       \fB\fR 
 
-satori-cli report DEF456                --
+satori-cli report DEF456                \fB\fR 
 
-satori-cli report DEF456 output         --
+satori-cli report DEF456 output         \fB\fR 
 
-satori-cli report DEF456 stop           --
+satori-cli report DEF456 stop           \fB\fR 
 
-satori-cli report DEF456 delete         --
+satori-cli report DEF456 delete         \fB\fR 
 
 
 .IP \fBRun:\fR
 
-satori-cli run [path]                     \fBCreate report - tbc\fR 
+satori-cli run [path]          \fB Run command allows user to run tests on demand. By default, it works asynchronous by launching the process in background and providing a report ID that can be followed up to get the results of the test. \fR 
 
-satori-cli run playbook.yml         --
+satori-cli run playbook.yml    \fB Allows user to run Satori Playbooks on demand. Whenever your playbook by itself is enough, you can simply run it with this syntax.\fR
 
-satori-cli run ./                   --
+satori-cli run ./              \fB In case you are working on a directory with source code, where you are interested in understanding how the files behave with the code, you want to save your playbook as .satori.yml and then just run this syntax.\fR
 
 
 .IP \fBPlaybook:\fR
 
-satori-cli playbook                     \fBShows to user playbook attributes [id, hash, url,etc.].\fR 
+satori-cli playbook                 \fB Previously executed playbooks can be retrieved with the command. It will show to user a list of playbooks that have been previously executed.\fR 
 
-satori-cli playbook GHI456              --
+satori-cli playbook GHI456          \fB If user wants to get more information about any playbook should request it by writing playbook ID beside playbook command syntax.\fR 
 
-satori-cli playbook GHI456 delete       --
+satori-cli playbook GHI456 delete    \fB And eventually if user wants to remove any playbook they can do so with this command.\fR 
 
 .SH OPTIONS
 The following options are available for Satori-CLI:

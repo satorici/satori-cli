@@ -1,0 +1,10 @@
+settings:
+  log|logOnFail|logOnPass: slack
+
+import:
+  - "satori://code/trufflehog.yml"
+
+test:
+  assertReturnCode: 0
+  execute:
+  - [man ./satori.1]
