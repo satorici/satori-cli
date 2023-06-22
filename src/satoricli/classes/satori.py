@@ -7,6 +7,7 @@ import tempfile
 import uuid
 from pathlib import Path
 import time
+import warnings
 import requests
 import yaml
 from argparse import Namespace
@@ -14,6 +15,7 @@ from rich.progress import open as progress_open
 from colorama import Fore
 from satorici.validator import validate_playbook
 from satorici.validator.exceptions import PlaybookVariableError, PlaybookValidationError
+from satorici.validator.warnings import NoLogMonitorWarning
 
 from .api import SatoriAPI
 from .bundler import make_bundle
@@ -153,17 +155,26 @@ class Satori:
 
         playbook_text = playbook.read_text()
         config = None
+
+        warnings.filterwarnings("error")
+
         try:
             config = yaml.safe_load(playbook_text)
             validate_playbook(config)
         except yaml.YAMLError as e:
             console.log(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
             sys.exit(1)
+        except PlaybookVariableError:
+            pass
         except PlaybookValidationError as e:
             console.log(f"Validation error on playbook [bold]{playbook.name}[/]:\n", e)
             sys.exit(1)
-        except PlaybookVariableError:
-            pass
+        except NoLogMonitorWarning:
+            console.print(
+                "[warning]No notifications (log, onLogFail or onLogPass) were defined for the Monitor"
+            )
+
+        warnings.resetwarnings()
 
         if not isinstance(config, dict):
             console.print("[error]Failed to load the playbook")
