@@ -156,11 +156,17 @@ class Satori:
         playbook_text = playbook.read_text()
         config = None
 
-        warnings.filterwarnings("error")
-
         try:
             config = yaml.safe_load(playbook_text)
-            validate_playbook(config)
+
+            with warnings.catch_warnings(record=True) as w:
+                validate_playbook(config)
+
+            for warning in w:
+                if warning.category == NoLogMonitorWarning:
+                    console.print(
+                        "[warning]No notifications (log, onLogFail or onLogPass) were defined for the Monitor"
+                    )
         except yaml.YAMLError as e:
             console.log(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
             sys.exit(1)
@@ -169,12 +175,6 @@ class Satori:
         except PlaybookValidationError as e:
             console.log(f"Validation error on playbook [bold]{playbook.name}[/]:\n", e)
             sys.exit(1)
-        except NoLogMonitorWarning:
-            console.print(
-                "[warning]No notifications (log, onLogFail or onLogPass) were defined for the Monitor"
-            )
-
-        warnings.resetwarnings()
 
         if not isinstance(config, dict):
             console.print("[error]Failed to load the playbook")
