@@ -31,40 +31,45 @@ def add_satori_arguments(cmd: ArgumentParser):
 
 def upgrade():
     """Verify the current version and the latest version"""
+    upgrade_required = ""
+
     # Name of your package
-    package_name = "satori-ci"
+    package_names = ["satori-ci", "satori-playbook-validator"]
 
-    # Get the current version
-    try:
-        current_version = get_distribution(package_name).version
-    except DistributionNotFound:
-        print(f"{package_name} is not installed.")
-        current_version = None
+    for package_name in package_names:
+        # Get the current version
+        try:
+            current_version = get_distribution(package_name).version
+        except DistributionNotFound:
+            print(f"{package_name} is not installed.")
+            current_version = None
 
-    # Get the latest version
-    latest_version = None
-    response = requests.get(f"https://pypi.org/pypi/{package_name}/json", timeout=10)
-    if response.status_code == 200:
-        latest_version = response.json()["info"]["version"]
-    else:
-        print(f"Unable to get the latest version of the package ${package_name}.")
+        # Get the latest version
+        latest_version = None
+        response = requests.get(f"https://pypi.org/pypi/{package_name}/json", timeout=10)
+        if response.status_code == 200:
+            latest_version = response.json()["info"]["version"]
+        else:
+            print(f"Unable to get the latest version of the package ${package_name}.")
 
-    # Compare the versions and upgrade if necessary
-    if (
-        current_version
-        and latest_version
-        and version.parse(current_version) < version.parse(latest_version)
-    ):
+        # Compare the versions and upgrade if necessary
+        if (
+            current_version
+            and latest_version
+            and version.parse(current_version) < version.parse(latest_version)
+        ):
+            upgrade_required += package_name + " "
+    if upgrade_required:
         console.print(
-            "[warning]WARNING:[/] Newer version found, upgrade with "
-            "[b]pip install -U satori-ci"
+            "[warning]WARNING:[/] Newer version found, upgrade with: "
+            "[b]pip install -U " + upgrade_required
         )
 
 
 def main():
     timestamp = (datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
     print(
-        f"[dim]{timestamp} - Satori CI {VERSION} - Automated Software Testing Platform",
+        f"[dim]Satori CI {VERSION} - Automated Software Testing Platform - Started on {timestamp}",
         file=sys.stderr,
     )
     if not (sys.version_info.major == 3 and sys.version_info.minor >= 9):
