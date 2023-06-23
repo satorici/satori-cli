@@ -46,7 +46,9 @@ def upgrade():
 
         # Get the latest version
         latest_version = None
-        response = requests.get(f"https://pypi.org/pypi/{package_name}/json", timeout=10)
+        response = requests.get(
+            f"https://pypi.org/pypi/{package_name}/json", timeout=10
+        )
         if response.status_code == 200:
             latest_version = response.json()["info"]["version"]
         else:
@@ -170,6 +172,9 @@ def main():
     team_cmd.add_argument("--role", type=str, default="READ", help="User role")
     team_cmd.add_argument("--repo", type=str, default=None, help="Repo name")
     add_satori_arguments(team_cmd)
+    # Add config args
+    team_cmd.add_argument("config_name", nargs="?", type=str, default="")
+    team_cmd.add_argument("config_value", nargs="?", type=str, default="")
 
     # help
     help_cmd = subparsers.add_parser("help", parents=[baseparser])

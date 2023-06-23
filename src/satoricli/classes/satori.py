@@ -36,7 +36,7 @@ from .utils import (
 )
 from .validations import get_parameters, validate_parameters
 from .playbooks import display_public_playbooks
-from .data import arguments
+from .models import arguments
 
 
 class Satori:
@@ -570,7 +570,7 @@ class Satori:
         """Get information about the"""
         params = filter_params(args, ("id",))
         if args.action == "":
-            info = self.api.teams("GET", "", "", params=params)
+            info = self.api.teams("GET", args.id, "", params=params)
         elif args.action == "create":
             info = self.api.teams("PUT", args.id, "", data=params)
         elif args.action == "members":
@@ -583,6 +583,17 @@ class Satori:
         elif args.action == "add_repo":
             params = filter_params(args, ("id", "repo"))
             info = self.api.teams("PUT", args.id, "repos", data=params)
+        elif args.action == "get_config":
+            info = self.api.teams("GET", args.id, f"config/{args.config_name}")
+            console.print(f"[b]{args.config_name}:[/] {info}")
+            sys.exit(1)
+        elif args.action == "set_config":
+            info = self.api.teams(
+                "PUT",
+                args.id,
+                "config",
+                json={"name": args.config_name, "value": args.config_value},
+            )
         else:
             print("Unknown subcommand")
             sys.exit(1)

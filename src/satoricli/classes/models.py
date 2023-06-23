@@ -19,6 +19,8 @@ class args:
     public: bool
     report: bool
     output: bool
+    config_name: str
+    config_value: str
 
 
 arguments = Union[Namespace, args]

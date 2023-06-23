@@ -5,7 +5,7 @@ from requests.exceptions import HTTPError
 from typing import Union, Any, Optional
 
 from .utils import FAIL_COLOR, puts, autoformat, log
-from .data import arguments
+from .models import arguments
 
 HOST = "https://api.satori-ci.com"
 
@@ -115,7 +115,10 @@ class SatoriAPI:
 
     def teams(self, method: str, name: str, action: str, **kwargs) -> Any:
         res = self.request(method, f"teams/{name}/{action}", **kwargs)
-        return res.json()
+        try:
+            return res.json()
+        except Exception:
+            return res.text
 
     def users(self, method: str, user: str, action: str, **kwargs) -> Any:
         res = self.request(method, f"users/{user}/{action}", **kwargs)
