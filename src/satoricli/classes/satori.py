@@ -165,7 +165,7 @@ class Satori:
             for warning in w:
                 if warning.category == NoLogMonitorWarning:
                     console.print(
-                        "[warning]No notifications (log, onLogFail or onLogPass) were defined for the Monitor"
+                        "[warning]WARNING:[/] No notifications (log, onLogFail or onLogPass) were defined for the Monitor"
                     )
         except yaml.YAMLError as e:
             console.log(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
