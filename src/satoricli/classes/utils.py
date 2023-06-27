@@ -329,6 +329,9 @@ def autotable(
     numerate : bool, optional
         Add numeration, by default False
     """
+    if len(items) == 0:
+        console.print("No items found")
+        return
     h = get_headers(items)
     headers = ["N°", *h] if numerate else h
     rows = get_rows(items, headers)
