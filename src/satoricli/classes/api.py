@@ -97,6 +97,12 @@ class SatoriAPI:
                 e.pop("gfx", None)
         return report
 
+    def get_report_output(self, report_id: str):
+        r = self.request("GET", f"reports/{report_id}/output", stream=True)
+
+        if r.ok:
+            yield from r.iter_lines()
+
     def report_delete(self, parameters: dict) -> None:
         self.request("DELETE", f"reports/{parameters['id']}")
 

@@ -4,39 +4,42 @@ import os
 import shutil
 import sys
 import tempfile
-import uuid
-from pathlib import Path
 import time
+import uuid
 import warnings
+from argparse import Namespace
+from base64 import b64decode
+from pathlib import Path
+
 import requests
 import yaml
-from argparse import Namespace
-from rich.progress import open as progress_open
 from colorama import Fore
+from rich.progress import open as progress_open
+from rich.table import Table
 from satorici.validator import validate_playbook
-from satorici.validator.exceptions import PlaybookVariableError, PlaybookValidationError
+from satorici.validator.exceptions import PlaybookValidationError, PlaybookVariableError
 from satorici.validator.warnings import NoLogMonitorWarning
 
 from .api import SatoriAPI
 from .bundler import make_bundle
+from .models import arguments
+from .playbooks import display_public_playbooks
 from .utils import (
-    filter_params,
-    autoformat,
-    check_monitor,
     FAIL_COLOR,
     KEYNAME_COLOR,
     SATORIURL_COLOR,
-    VALUE_COLOR,
     UUID4_REGEX,
+    VALUE_COLOR,
     autocolor,
-    puts,
-    log,
+    autoformat,
     autotable,
+    check_monitor,
     console,
+    filter_params,
+    log,
+    puts,
 )
 from .validations import get_parameters, validate_parameters
-from .playbooks import display_public_playbooks
-from .models import arguments
 
 
 class Satori:
@@ -354,7 +357,7 @@ class Satori:
                     out_args = Namespace(
                         id=exec_data["id"], action="output", json=args.json
                     )
-                    self.output(out_args, {})
+                    self.output(out_args.id)
                 else:  # --sync or -s
                     # TODO: print something else?
                     pass  # already printed
@@ -447,7 +450,7 @@ class Satori:
             else:  # single report or json output
                 autoformat(res, jsonfmt=args.json)
         elif args.action == "output":
-            self.output(args, params)
+            self.output(args.id)
         elif args.action == "stop":
             res = self.api.reports("GET", args.id, "stop")
             autoformat(res, jsonfmt=args.json)
@@ -481,32 +484,36 @@ class Satori:
             console.rule("[b blue]Monitors", style="blue")
             autotable(info["list"], "b blue")
 
-    def output(self, args: arguments, params):
+    def output(self, report_id: str):
         """Returns commands output"""
-        data = self.api.reports("GET", args.id, args.action, params=params)
+        current_path = ""
 
-        if not args.json:  # default output
-            outputs = data.pop("output", [])
-            for key, value in data.items():
-                print(f"{key}: {value}")
+        for line in self.api.get_report_output(report_id):
+            output = json.loads(line)
 
-            for row in outputs:
-                puts(Fore.LIGHTBLACK_EX, "-" * 48)
-                puts(Fore.CYAN, f"test_name: {row['test_name']}")
-                puts(KEYNAME_COLOR, "command: ", Fore.LIGHTBLUE_EX, row["command"])
-                for key, value in row.items():
-                    if key in ("test_name", "command"):
-                        continue
-                    val_color = VALUE_COLOR
-                    if key == "stdout":
-                        val_color = Fore.LIGHTGREEN_EX
-                    elif key == "stderr":
-                        val_color = Fore.LIGHTRED_EX
-                    elif key == "return_code":
-                        val_color = Fore.YELLOW
-                    puts(KEYNAME_COLOR, f"{key}: ", val_color, str(value))
-        else:
-            print(json.dumps(data, indent=2))
+            if current_path != output["path"]:
+                console.rule(f"[b]{output['path']}[/b]")
+                current_path = output["path"]
+
+            console.print(f"[b][green]Command:[/green] {output['original']}[/b]")
+
+            if output["testcase"]:
+                testcase = Table(show_header=False, show_edge=False)
+
+                testcase.add_column(style="b")
+                testcase.add_column()
+
+                for key, value in output["testcase"].items():
+                    testcase.add_row(key, b64decode(value).decode(errors="ignore"))
+
+                console.print("[blue]Testcase:[/blue]")
+                console.print(testcase)
+
+            console.print("[blue]Return code:[/blue]", output["output"]["return_code"])
+            console.print("[blue]Stdout:[/blue]")
+            console.out(b64decode(output["output"]["stdout"]).decode(errors="ignore"))
+            console.print("[blue]Stderr:[/blue]")
+            console.out(b64decode(output["output"]["stderr"]).decode(errors="ignore"))
 
     def dashboard(self, args: arguments):
         """Get user dashboard"""
