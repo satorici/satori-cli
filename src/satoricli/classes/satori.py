@@ -511,9 +511,9 @@ class Satori:
 
             console.print("[blue]Return code:[/blue]", output["output"]["return_code"])
             console.print("[blue]Stdout:[/blue]")
-            console.out(b64decode(output["output"]["stdout"]).decode(errors="ignore"))
+            console.out(b64decode(output["output"]["stdout"]).decode(errors="ignore").strip())
             console.print("[blue]Stderr:[/blue]")
-            console.out(b64decode(output["output"]["stderr"]).decode(errors="ignore"))
+            console.out(b64decode(output["output"]["stderr"]).decode(errors="ignore").strip())
 
     def dashboard(self, args: arguments):
         """Get user dashboard"""
