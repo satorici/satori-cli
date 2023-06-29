@@ -149,7 +149,7 @@ dependencies = [
 
 [[package]]
 name = "satori-playbook-validator"
-version = "3.1.0"
+version = "3.1.1"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
@@ -320,9 +320,9 @@ content_hash = "sha256:c06bfbd4218b3c8a2d0a1c35560a2d2da8e3338c284888d9dca636741
     {url = "https://files.pythonhosted.org/packages/e3/12/67d0098eb77005f5e068de639e6f4cfb8f24e6fcb0fd2037df0e1d538fee/rich-13.4.2.tar.gz", hash = "sha256:d653d6bccede5844304c605d5aac802c7cf9621efd700b46c7ec2b51ea914898"},
     {url = "https://files.pythonhosted.org/packages/fc/1e/482e5eec0b89b593e81d78f819a9412849814e22225842b598908e7ac560/rich-13.4.2-py3-none-any.whl", hash = "sha256:8f87bc7ee54675732fa66a05ebfe489e27264caeeff3728c945d25971b6485ec"},
 ]
-"satori-playbook-validator 3.1.0" = [
-    {url = "https://files.pythonhosted.org/packages/1a/99/ef2096537b32b1f367aa65c6e1640c09e54d715ea15c8e276e68fdc51a27/satori_playbook_validator-3.1.0.tar.gz", hash = "sha256:e91d0b9c60e1139aba1a121283c9862d3b1a258957cc92409b4b10f893e4dfab"},
-    {url = "https://files.pythonhosted.org/packages/4f/52/f6a17dfa28aec45bb15abdc541ba0bc4de03974253bca75af23f1cc0e6cc/satori_playbook_validator-3.1.0-py3-none-any.whl", hash = "sha256:539d102edbb320b89a0dadb2d4ef1525b7c059281bc93628a49cc2eda0babf04"},
+"satori-playbook-validator 3.1.1" = [
+    {url = "https://files.pythonhosted.org/packages/6c/df/d51e5256ce5b4a78bb4a8e57adb0ded2ca547af52a2a2a9616be289ff337/satori_playbook_validator-3.1.1-py3-none-any.whl", hash = "sha256:62f07fa4583fde7bf7f53cb5a65fc0e67eed5968d06027f1fe7207c458185b14"},
+    {url = "https://files.pythonhosted.org/packages/8a/3f/b49c37c84431c82e8dbe7e34cb2933c18d22fccdc2a6d7084f33945cbdb2/satori_playbook_validator-3.1.1.tar.gz", hash = "sha256:2869048bd65c8785b275640c0d9becefcf283d305b5828d6ddc4bebd14b86b41"},
 ]
 "setuptools 67.8.0" = [
     {url = "https://files.pythonhosted.org/packages/03/20/630783571e76e5fa5f3e9f29398ca3ace377207b8196b54e0ffdf09f12c1/setuptools-67.8.0.tar.gz", hash = "sha256:62642358adc77ffa87233bc4d2354c4b2682d214048f500964dbe760ccedf102"},
