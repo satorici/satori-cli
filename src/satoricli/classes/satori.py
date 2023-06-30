@@ -603,6 +603,14 @@ class Satori:
                 "config",
                 json={"name": args.config_name, "value": args.config_value},
             )
+        elif args.action == "get_token":
+            info = self.api.request("GET", f"teams/{args.id}/token")
+            console.log(info.text)
+            sys.exit(0)
+        elif args.action == "refresh_token":
+            info = self.api.request("PUT", f"teams/{args.id}/token")
+            console.log(info.text)
+            sys.exit(0)
         else:
             print("Unknown subcommand")
             sys.exit(1)

@@ -166,7 +166,7 @@ def main():
     monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])
     add_satori_arguments(monitor_cmd)
 
-    # team {id} create|members|add_member|repos|add_repo
+    # team {id} create|members|add_member|repos|add_repo|get_token|refresh_token
     team_cmd = subparsers.add_parser("team", parents=[baseparser])
     team_cmd.add_argument("--email", type=str, help="User email")
     team_cmd.add_argument("--role", type=str, default="READ", help="User role")
