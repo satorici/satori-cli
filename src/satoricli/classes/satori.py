@@ -588,7 +588,7 @@ class Satori:
             params = filter_params(args, ("id", "email", "role"))
             info = self.api.teams("PUT", args.id, "members", data=params)
         elif args.action == "repos":
-            info = self.api.teams("PUT", args.id, "repos", data=params)
+            info = self.api.teams("GET", args.id, "repos", data=params)
         elif args.action == "add_repo":
             params = filter_params(args, ("id", "repo"))
             info = self.api.teams("PUT", args.id, "repos", data=params)
