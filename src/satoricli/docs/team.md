@@ -36,9 +36,9 @@ $ satori-cli team Private add_member --email member_email@yourdomain.com
 $ satori-cli team Private del_member --email member_email@yourdomain.com
 ```
 
-### Get Config
+### Notifications
 
-You can get the config for the following options: 
+You can get the following notification configurations:
 - slack_workspace
 - slack_channel
 - discord_channel
@@ -49,4 +49,10 @@ And it would be used like this:
 $ satori-cli team SatoriCI get_config discord_channel
 Satori CI 1.2.51 - Automated Software Testing Platform - Started on 2023-07-03 16:50:40
 discord_channel: 87654
+```
+
+The previous value, was defined like this:
+```sh
+satori-cli team Private set_config discord_channel 87654
+True
 ```
