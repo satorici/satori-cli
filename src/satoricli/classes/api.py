@@ -4,10 +4,11 @@ from requests import Response
 from requests.exceptions import HTTPError
 from typing import Union, Any, Optional
 
-from .utils import FAIL_COLOR, puts, autoformat, log
+from .utils import FAIL_COLOR, autoformat, log, console
 from .models import arguments
 
 HOST = "https://api.satori-ci.com"
+ERROR_MESSAGE = "An error occurred"
 
 
 class SatoriAPI:
@@ -50,12 +51,12 @@ class SatoriAPI:
             if self.debug:
                 autoformat(status, capitalize=True, color=FAIL_COLOR, jsonfmt=self.json)
             else:
-                msg = "Error when connecting to Satori servers"
+                msg = ERROR_MESSAGE
                 if isinstance(status, dict) and "detail" in status:
                     msg += f": {status['detail']}"
-                puts(FAIL_COLOR, msg)
+                console.print("[error]" + msg)
         except Exception as e:
-            puts(FAIL_COLOR, "Error when connecting to Satori servers")
+            console.print("[error]" + ERROR_MESSAGE)
             log.debug(e)
         else:  # response is 20x
             return resp
