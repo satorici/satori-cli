@@ -163,9 +163,11 @@ def autoformat(
                 return None
             list_formatter(obj, capitalize, indent, list_separator)
         elif isinstance(obj, str):
-            if obj.count("\n") > 0:
-                if not autosyntax(obj, indent):
+            if obj.count("\n") > 0:  # multiline
+                if not autosyntax(obj, indent):  # autodetect syntax and print
                     print(obj)
+            else:  # singleline
+                print(obj)
         else:
             print(color + str(obj) + Style.RESET_ALL)
 

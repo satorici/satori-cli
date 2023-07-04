@@ -512,10 +512,18 @@ class Satori:
             console.print("[blue]Return code:[/blue]", output["output"]["return_code"])
             console.print("[blue]Stdout:[/blue]")
             if output["output"]["stdout"]:
-                console.out(b64decode(output["output"]["stdout"]).decode(errors="ignore").strip())
+                console.out(
+                    b64decode(output["output"]["stdout"])
+                    .decode(errors="ignore")
+                    .strip()
+                )
             console.print("[blue]Stderr:[/blue]")
             if output["output"]["stderr"]:
-                console.out(b64decode(output["output"]["stderr"]).decode(errors="ignore").strip())
+                console.out(
+                    b64decode(output["output"]["stderr"])
+                    .decode(errors="ignore")
+                    .strip()
+                )
 
     def dashboard(self, args: arguments):
         """Get user dashboard"""
@@ -594,8 +602,6 @@ class Satori:
             info = self.api.teams("POST", args.id, "repos", json=params)
         elif args.action == "get_config":
             info = self.api.teams("GET", args.id, f"config/{args.config_name}")
-            console.print(f"[b]{args.config_name}:[/] {info}")
-            sys.exit(1)
         elif args.action == "set_config":
             info = self.api.teams(
                 "PUT",
@@ -604,13 +610,9 @@ class Satori:
                 json={"name": args.config_name, "value": args.config_value},
             )
         elif args.action == "get_token":
-            info = self.api.request("GET", f"teams/{args.id}/token")
-            console.log(info.text)
-            sys.exit(0)
+            info = self.api.teams("GET", args.id, "token")
         elif args.action == "refresh_token":
-            info = self.api.request("PUT", f"teams/{args.id}/token")
-            console.log(info.text)
-            sys.exit(0)
+            info = self.api.teams("PUT", args.id, "token")
         elif args.action == "delete":
             self.api.request("DELETE", f"teams/{args.id}")
             console.print("Team deleted")

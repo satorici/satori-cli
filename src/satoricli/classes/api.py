@@ -119,9 +119,9 @@ class SatoriAPI:
 
     def teams(self, method: str, name: str, action: str, **kwargs) -> Any:
         res = self.request(method, f"teams/{name}/{action}", **kwargs)
-        try:
+        if "application/json" in res.headers["content-type"]:
             return res.json()
-        except Exception:
+        else:
             return res.text
 
     def users(self, method: str, user: str, action: str, **kwargs) -> Any:
