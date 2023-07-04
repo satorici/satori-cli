@@ -581,17 +581,17 @@ class Satori:
         if args.action == "":
             info = self.api.teams("GET", args.id, "", params=params)
         elif args.action == "create":
-            info = self.api.teams("PUT", args.id, "", json=params)
+            info = self.api.teams("POST", args.id, "", json=params)
         elif args.action == "members":
             info = self.api.teams("GET", args.id, "members", params=params)
         elif args.action == "add_member":
             params = filter_params(args, ("id", "email", "role"))
-            info = self.api.teams("PUT", args.id, "members", json=params)
+            info = self.api.teams("POST", args.id, "members", json=params)
         elif args.action == "repos":
             info = self.api.teams("GET", args.id, "repos", data=params)
         elif args.action == "add_repo":
             params = filter_params(args, ("id", "repo"))
-            info = self.api.teams("PUT", args.id, "repos", json=params)
+            info = self.api.teams("POST", args.id, "repos", json=params)
         elif args.action == "get_config":
             info = self.api.teams("GET", args.id, f"config/{args.config_name}")
             console.print(f"[b]{args.config_name}:[/] {info}")
