@@ -2,7 +2,7 @@
 ## [Language](language.md)
 ### Settings
 
-There are several settings that can be applied to your Satori CI playbooks to better define the information and conditions that need to be met by your test.
+There are several settings that can be applied to your Satori CI playbooks to better define the information and conditions that need to be met by your test. They can only be defined for the root playbook, not within imported playbooks.
 
 #### Name, Description, Mitigation
 
@@ -100,13 +100,13 @@ Which can be used with the following parameters:
 
 The previous aliases can be defined on your [Team Settings](https://www.satori-ci.com/team-settings/) when adding a notification
 
-Multiple log types can be specified simultaneously to notify people on different ways:
+Different log types can be specified simultaneously to notify people on different ways:
 
 ```yml
 settings:
-    log: slack-monitor
-    logOnFail: telegram-ceo
-    logOnPass: email-auditor
+    #log: slack-logs
+    logOnFail: slack-fails
+    #logOnPass: email-auditor
 ```
 
 #### Timeout
