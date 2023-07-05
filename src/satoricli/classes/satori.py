@@ -617,6 +617,12 @@ class Satori:
             self.api.request("DELETE", f"teams/{args.id}")
             console.print("Team deleted")
             sys.exit(0)
+        elif args.action == "del_member":
+            self.api.request(
+                "DELETE", f"teams/{args.id}/members", json={"email": args.email}
+            )
+            console.print("Team member deleted")
+            sys.exit(0)
         else:
             print("Unknown subcommand")
             sys.exit(1)

@@ -53,7 +53,7 @@ class SatoriAPI:
             else:
                 msg = ERROR_MESSAGE
                 if isinstance(status, dict) and "detail" in status:
-                    msg += f": {status['detail']}"
+                    msg += f":[/] {status['detail']}"
                 console.print("[error]" + msg)
         except Exception as e:
             console.print("[error]" + ERROR_MESSAGE)

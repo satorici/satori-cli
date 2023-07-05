@@ -21,6 +21,7 @@ class args:
     output: bool
     config_name: str
     config_value: str
+    email: str
 
 
 arguments = Union[Namespace, args]
