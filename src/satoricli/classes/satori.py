@@ -171,12 +171,14 @@ class Satori:
                         "[warning]WARNING:[/] No notifications (log, onLogFail or onLogPass) were defined for the Monitor"
                     )
         except yaml.YAMLError as e:
-            console.log(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
+            console.print(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
             sys.exit(1)
         except PlaybookVariableError:
             pass
         except PlaybookValidationError as e:
-            console.log(f"Validation error on playbook [bold]{playbook.name}[/]:\n", e)
+            console.print(
+                f"Validation error on playbook [bold]{playbook.name}[/]:\n", e
+            )
             sys.exit(1)
 
         if not isinstance(config, dict):
@@ -400,7 +402,7 @@ class Satori:
             info = self.api.repos_scan("GET", "", "last", params=params)
             if args.sync:
                 if len(info) == 1:
-                    console.log(
+                    console.print(
                         "Report: [link]https://www.satori-ci.com/report_details/?n="
                         + info[0]["status"].replace("Report running ", "")
                     )
@@ -444,7 +446,7 @@ class Satori:
             res = self.api.reports("GET", args.id, "", params=params)
             if args.id == "" and not args.json:  # default: print list
                 autoformat(res["list"])
-                console.log(
+                console.print(
                     f"[b]Page:[/] {res['current_page']} of {res['total_pages']}"
                 )
             else:  # single report or json output
@@ -549,7 +551,7 @@ class Satori:
                     )
                     autotable(info["repos"]["pending"], "b green", widths=(50, 50))
             if len(info["monitors"]["list"]) == 0:
-                console.log("[b]Monitors:[red] no active monitors defined")
+                console.print("[b]Monitors:[red] no active monitors defined")
             else:
                 console.rule("[b blue]Monitors", style="blue")
                 autotable(info["monitors"]["list"], "b blue", True)
@@ -637,7 +639,7 @@ class Satori:
                 repo = report_list[n]["repo"]
                 if repo not in completed:
                     if report == "Failed to scan commit":
-                        console.log(f"[bold]{repo}[/bold] [red]Failed to start")
+                        console.print(f"[bold]{repo}[/bold] [red]Failed to start")
                         completed.append(repo)
                     try:
                         report_data = self.api.reports(
@@ -646,7 +648,9 @@ class Satori:
                     except requests.HTTPError as e:
                         code = e.response.status_code
                         if code not in (404, 403):
-                            console.log(f"[red]Failed to get data\nStatus code: {code}")
+                            console.print(
+                                f"[red]Failed to get data\nStatus code: {code}"
+                            )
                             sys.exit(1)
                     else:
                         report_status = report_data.get("status", "Unknown")
@@ -660,7 +664,7 @@ class Satori:
                                     if fails == 0
                                     else f"[red]Fail({fails})"
                                 )
-                            console.log(
+                            console.print(
                                 f"[bold]{repo}[/bold] Completed | Result: {result}"
                             )
                             completed.append(repo)

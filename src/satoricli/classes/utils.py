@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.theme import Theme
+from rich.highlighter import RegexHighlighter
 import random
 
 __decorations = "▢•○░"
@@ -40,6 +41,22 @@ MULTILINE_COLOR = Fore.YELLOW
 
 # Set rich theme and console
 # https://rich.readthedocs.io/en/latest/appendix/colors.html#appendix-colors
+class SatoriHighlighter(RegexHighlighter):
+    base_style = "satori."
+    highlights = [
+        r"(?P<value>(?<=:\s)\w+$)",
+        r"(?P<email>[\w-]+@([\w-]+\.)+[\w-]+)",
+        r"(?P<pass>(?<!\w)(pass|completed|yes|true)(?!\w))",
+        r"(?P<pending>(?<!\w)(pending|running)(?!\w))",
+        r"(?P<fail>(?<!\w)(fail(\(\d+\))?|error|no|false)(?!\w))",
+        r"(?P<unknown>(?<!\w)(unknown|undefined|null|None)(?!\w))",
+        r"(?P<satori_com>https?:\/\/(www\.)satori-ci\.com\S+)",
+        r"(?P<key>([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)",
+        r"(?P<number>(?<!\w)\-?[0-9]+\.?[0-9]*(e[-+]?\d+?)?\b|0x[0-9a-fA-F]*)",
+        r"(?P<uuid>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
+    ]
+
+
 satori_theme = Theme(
     {
         "debug": "dim blue",
@@ -48,16 +65,20 @@ satori_theme = Theme(
         "danger": "bold red",
         "error": "red",
         "critical": "on red",
-        "pass": "bright_blue",
-        "fail": "bright_red",
-        "unknown": "bright_yellow",
-        "running": "bright_blue",
-        "key": "white",
-        "value": "cyan",
         "multiline": "yellow",
+        "satori.email": "cyan",
+        "satori.pass": "chartreuse1",
+        "satori.pending": "dark_slate_gray3",
+        "satori.fail": "bright_red",
+        "satori.unknown": "bright_yellow",
+        "satori.satori_com": "turquoise2",
+        "satori.key": "white b",
+        "satori.value": "cyan1",
+        "satori.number": "deep_sky_blue1",
+        "satori.uuid": "purple",
     }
 )
-console = Console(log_path=False, log_time=False, theme=satori_theme)
+console = Console(highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False)
 
 logging.basicConfig(
     level="CRITICAL",
@@ -311,7 +332,7 @@ def table_generator(
                 styled = i
             cells.append(styled)
         table.add_row(*cells)
-    console.log(table)
+    console.print(table)
 
 
 def autotable(

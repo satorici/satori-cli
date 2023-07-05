@@ -100,5 +100,5 @@ def display_public_playbooks(playbook_id: str = "") -> None:
                     autosyntax(playbook_path.read_text(), lexer="YAML")
                     break
             if playbook_path is None:
-                console.log("[red]Playbook not found")
+                console.print("[red]Playbook not found")
     sys.exit(0)
