@@ -118,6 +118,7 @@ def dict_formatter(
             color = get_value_color(item)
             print(indent_text + KEYNAME_COLOR + f"{key_text}: ", end="")
             if item.count("\n") > 0:
+                print()#add empty line
                 if autosyntax(item, indent + 2):
                     continue
             # Not JSON or YAML
@@ -285,8 +286,8 @@ def autosyntax(item: str, indent: int = 0, lexer: Optional[str] = None) -> bool:
     final_lexer = lexer or lang
     if final_lexer is None:
         return False
-    yml = Syntax(item, final_lexer, padding=(0, ind), theme="fruity", word_wrap=True)
-    console.log(yml)
+    yml = Syntax(item, final_lexer, padding=(0, ind), theme="ansi_dark", word_wrap=True)
+    console.print(yml)
     return True
 
 
