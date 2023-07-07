@@ -164,6 +164,12 @@ def main():
 
     # monitor {id} <start|stop|delete>
     monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])
+    monitor_cmd.add_argument(
+        "--clean", default=False, action="store_true", help="Clean all report related"
+    )
+    monitor_cmd.add_argument(
+        "--deleted", default=False, action="store_true", help="Display deleted monitors"
+    )
     add_satori_arguments(monitor_cmd)
 
     # team {id} create|members|add_member|repos|

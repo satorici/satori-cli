@@ -467,11 +467,13 @@ class Satori:
         """Get information about the"""
         params = filter_params(args, ("id",))
         if args.action == "delete":
+            params = filter_params(args, ("id", "clean"))
             self.api.monitor_delete(params)
             print("Monitor deleted")
             sys.exit(0)
         elif args.action == "":
-            info = self.api.monitors("GET", args.id, "")
+            params = filter_params(args, ("id", "deleted"))
+            info = self.api.monitors("GET", args.id, "", params=params)
         elif args.action in ("start", "stop"):
             info = self.api.monitors("PATCH", args.id, args.action)
         else:

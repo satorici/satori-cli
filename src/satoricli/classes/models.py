@@ -22,6 +22,8 @@ class args:
     config_name: str
     config_value: str
     email: str
+    clean: bool
+    deleted: bool
 
 
 arguments = Union[Namespace, args]
