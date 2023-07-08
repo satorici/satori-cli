@@ -14,7 +14,7 @@ from pathlib import Path
 import requests
 import yaml
 from colorama import Fore
-from rich.progress import open as progress_open
+from rich.progress import open as progress_open, Progress
 from rich.table import Table
 from satorici.validator import validate_playbook
 from satorici.validator.exceptions import PlaybookValidationError, PlaybookVariableError
@@ -453,6 +453,8 @@ class Satori:
                 autoformat(res, jsonfmt=args.json)
         elif args.action == "output":
             self.output(args.id)
+        elif args.action == "files":
+            self.output_files(args.id)
         elif args.action == "stop":
             res = self.api.reports("GET", args.id, "stop")
             autoformat(res, jsonfmt=args.json)
@@ -528,6 +530,18 @@ class Satori:
                     .decode(errors="ignore")
                     .strip()
                 )
+
+    def output_files(self, report_id: str):
+        r = self.api.get_report_files(report_id)
+        total = int(r.headers["Content-Length"])
+
+        with Progress() as progress:
+            task = progress.add_task("Downloading...", total=total)
+
+            with open(f"files-{report_id}.tar.gz", "wb") as f:
+                for chunk in r.iter_content():
+                    progress.update(task, advance=len(chunk))
+                    f.write(chunk)
 
     def dashboard(self, args: arguments):
         """Get user dashboard"""

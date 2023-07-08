@@ -102,6 +102,9 @@ class SatoriAPI:
         r = self.request("GET", f"reports/{report_id}/output", stream=True)
         return r.iter_lines()
 
+    def get_report_files(self, report_id: str):
+        return self.request("GET", f"reports/{report_id}/files", stream=True)
+
     def report_delete(self, parameters: dict) -> None:
         self.request("DELETE", f"reports/{parameters['id']}")
 
