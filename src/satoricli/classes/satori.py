@@ -360,6 +360,8 @@ class Satori:
                         id=exec_data["id"], action="output", json=args.json
                     )
                     self.output(out_args.id)
+                elif args.files:
+                    self.output_files(exec_data["id"])
                 else:  # --sync or -s
                     # TODO: print something else?
                     pass  # already printed

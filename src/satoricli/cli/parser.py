@@ -111,6 +111,7 @@ def main():
     run_cmd.add_argument("-s", "--sync", default=False, action="store_true")
     run_cmd.add_argument("-o", "--output", default=False, action="store_true")
     run_cmd.add_argument("-r", "--report", default=False, action="store_true")
+    run_cmd.add_argument("-f", "--files", default=False, action="store_true")
     run_cmd.add_argument("-d", "--data", type=str, default="", help="Secrets")
 
     # playbook {id} <delete>
