@@ -114,7 +114,7 @@ def dict_formatter(
             print(indent_text + KEYNAME_COLOR + f"{key_text}:" + Style.RESET_ALL)
             list_formatter(obj[key], capitalize, indent + 1, list_separator)
         else:
-            item = str(obj[key])
+            item = str(obj[key]).strip()
             color = get_value_color(item)
             print(indent_text + KEYNAME_COLOR + f"{key_text}: ", end="")
             if item.count("\n") > 0:
@@ -138,7 +138,7 @@ def list_formatter(
         elif isinstance(item, list):
             list_formatter(item, capitalize, indent + 1, list_separator)
         else:
-            item = str(item)
+            item = str(item).strip()
             print(indent_text + get_value_color(item) + item + Style.RESET_ALL)
         if list_separator:
             print(
