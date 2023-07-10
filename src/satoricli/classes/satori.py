@@ -195,7 +195,7 @@ class Satori:
             exec_data = self.run_folder(args)
         else:  # is file
             exec_data = self.run_file(args)
-        if (args.sync or args.output or args.report) and exec_data:
+        if (args.sync or args.output or args.report or args.files) and exec_data:
             self.run_sync(exec_data, args)
 
     def run_file(self, args: arguments) -> dict:
