@@ -153,7 +153,7 @@ class Satori:
         elif path.is_file():
             playbook = path
         else:
-            puts(FAIL_COLOR, "Satori can not access to file/folder")
+            puts(FAIL_COLOR, "File or folder not found")
             sys.exit(1)
 
         playbook_text = playbook.read_text()
