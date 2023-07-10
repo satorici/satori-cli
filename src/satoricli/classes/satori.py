@@ -296,7 +296,9 @@ class Satori:
 
     def run_sync(self, exec_data: dict, args: arguments) -> None:
         if exec_data["type"] == "monitor":
-            console.print("[warning]WARNING:[/] Sync mode is not supported for monitors")
+            console.print(
+                "[warning]WARNING:[/] Sync mode is not supported for monitors"
+            )
             sys.exit(0)
         console.print("[key]Fetching data...", end="\r")
         start_time = time.time()
@@ -471,8 +473,8 @@ class Satori:
         """Get information about the"""
         params = filter_params(args, ("id",))
         if args.action == "delete":
-            params = filter_params(args, ("id", "clean"))
-            self.api.monitor_delete(params)
+            params = filter_params(args, ("clean",))
+            self.api.request("DELETE", f"monitors/{args.id}", params=params)
             print("Monitor deleted")
             sys.exit(0)
         elif args.action == "":

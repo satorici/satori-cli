@@ -78,9 +78,6 @@ class SatoriAPI:
         res = self.request(method, f"monitors/{monitor_id}/{action}", **kwargs)
         return res.json()
 
-    def monitor_delete(self, parameters: dict) -> None:
-        self.request("DELETE", f"monitors/{parameters['id']}")
-
     def reports(
         self,
         method: str,
