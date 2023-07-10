@@ -296,7 +296,7 @@ class Satori:
 
     def run_sync(self, exec_data: dict, args: arguments) -> None:
         if exec_data["type"] == "monitor":
-            console.print("[warning]Sync mode is not supported for monitors")
+            console.print("[warning]WARNING:[/] Sync mode is not supported for monitors")
             sys.exit(0)
         console.print("[key]Fetching data...", end="\r")
         start_time = time.time()
