@@ -538,7 +538,7 @@ class Satori:
         with Progress() as progress:
             task = progress.add_task("Downloading...", total=total)
 
-            with open(f"files-{report_id}.tar.gz", "wb") as f:
+            with open(f"satorici-files-{report_id}.tar.gz", "wb") as f:
                 for chunk in r.iter_content():
                     progress.update(task, advance=len(chunk))
                     f.write(chunk)
