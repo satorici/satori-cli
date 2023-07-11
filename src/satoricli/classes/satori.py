@@ -332,10 +332,10 @@ class Satori:
             status = report_data.get("status", "Unknown")
             if status in ("Completed", "Undefined"):
                 fails = report_data["fails"]
-                if fails is None:
-                    result = "Unknown"
-                else:
+                if isinstance(fails, int):
                     result = "Pass" if fails == 0 else f"Fail({fails})"
+                else:
+                    result = "Unknown"
                 print(
                     autocolor(
                         f"- Report status: {status} | Result: {result} | {elapsed_text}"
