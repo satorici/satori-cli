@@ -21,7 +21,7 @@ from satorici.validator.exceptions import PlaybookValidationError, PlaybookVaria
 from satorici.validator.warnings import NoLogMonitorWarning
 
 from .api import SatoriAPI
-from .bundler import make_bundle
+from .bundler import get_local_files, make_bundle
 from .models import arguments
 from .playbooks import display_public_playbooks
 from .utils import (
@@ -237,6 +237,15 @@ class Satori:
         is_monitor = check_monitor(satori_yml)
         temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
         full_path = f"{temp_file}.tar.gz"
+
+        local_ymls = list(
+            filter(lambda p: p.is_file(), Path(args.path).rglob(".satori.yml"))
+        )
+
+        imported = get_local_files(yaml.safe_load(satori_yml.read_text()))["imports"]
+
+        if len(local_ymls) > 1 and len(local_ymls) - 1 > len(imported):
+            console.print("[warning]There are some .satori.yml not imported")
 
         try:
             shutil.make_archive(str(temp_file), "gztar", directory)
