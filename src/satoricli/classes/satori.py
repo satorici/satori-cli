@@ -245,7 +245,7 @@ class Satori:
         imported = get_local_files(yaml.safe_load(satori_yml.read_text()))["imports"]
 
         if len(local_ymls) > 1 and len(local_ymls) - 1 > len(imported):
-            console.print("[warning]There are some .satori.yml not imported")
+            console.print("[warning]WARNING:[/] There are some .satori.yml outside the root folder that have not been imported.")
 
         try:
             shutil.make_archive(str(temp_file), "gztar", directory)
