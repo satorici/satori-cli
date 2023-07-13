@@ -2,6 +2,12 @@
 # It is not intended for manual editing.
 
 [[package]]
+name = "aws-cron-expression-validator"
+version = "1.1.6"
+requires_python = ">=3.7"
+summary = "ValidatesAWS EventBridge cron expressions, which are similar to, but not compatible with Unix style cron expressions"
+
+[[package]]
 name = "certifi"
 version = "2022.6.15"
 requires_python = ">=3.6"
@@ -149,10 +155,11 @@ dependencies = [
 
 [[package]]
 name = "satori-playbook-validator"
-version = "3.1.1"
+version = "3.1.2"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
+    "aws-cron-expression-validator>=1.1.6",
     "fastjsonschema>=2.17.1",
 ]
 
@@ -211,6 +218,10 @@ groups = ["default"]
 content_hash = "sha256:c06bfbd4218b3c8a2d0a1c35560a2d2da8e3338c284888d9dca636741c0e60bd"
 
 [metadata.files]
+"aws-cron-expression-validator 1.1.6" = [
+    {url = "https://files.pythonhosted.org/packages/86/35/fda6050ccff7afcae83500fd65e63bfab395c0d0b82205381c877f32919a/aws_cron_expression_validator-1.1.6.tar.gz", hash = "sha256:2f1b832f3853e01cd9a29f327235a46aad5d12bc1e7069de0367577e0b1cd5c4"},
+    {url = "https://files.pythonhosted.org/packages/c4/b9/ebd9eb7f7da4c1570e9403ba73a1d17b2d0763ade3f8a57a95ebf359f6f4/aws_cron_expression_validator-1.1.6-py3-none-any.whl", hash = "sha256:29e22db82257aed7eb73f9bec074914474ae955db9d7f0f162ad27784620810b"},
+]
 "certifi 2022.6.15" = [
     {url = "https://files.pythonhosted.org/packages/cc/85/319a8a684e8ac6d87a1193090e06b6bbb302717496380e225ee10487c888/certifi-2022.6.15.tar.gz", hash = "sha256:84c85a9078b11105f04f3036a9482ae10e4621616db313fe045dd24743a0820d"},
     {url = "https://files.pythonhosted.org/packages/e9/06/d3d367b7af6305b16f0d28ae2aaeb86154fa91f144f036c2d5002a5a202b/certifi-2022.6.15-py3-none-any.whl", hash = "sha256:fe86415d55e84719d75f8b69414f6438ac3547d2078ab91b67e779ef69378412"},
@@ -320,9 +331,9 @@ content_hash = "sha256:c06bfbd4218b3c8a2d0a1c35560a2d2da8e3338c284888d9dca636741
     {url = "https://files.pythonhosted.org/packages/e3/12/67d0098eb77005f5e068de639e6f4cfb8f24e6fcb0fd2037df0e1d538fee/rich-13.4.2.tar.gz", hash = "sha256:d653d6bccede5844304c605d5aac802c7cf9621efd700b46c7ec2b51ea914898"},
     {url = "https://files.pythonhosted.org/packages/fc/1e/482e5eec0b89b593e81d78f819a9412849814e22225842b598908e7ac560/rich-13.4.2-py3-none-any.whl", hash = "sha256:8f87bc7ee54675732fa66a05ebfe489e27264caeeff3728c945d25971b6485ec"},
 ]
-"satori-playbook-validator 3.1.1" = [
-    {url = "https://files.pythonhosted.org/packages/6c/df/d51e5256ce5b4a78bb4a8e57adb0ded2ca547af52a2a2a9616be289ff337/satori_playbook_validator-3.1.1-py3-none-any.whl", hash = "sha256:62f07fa4583fde7bf7f53cb5a65fc0e67eed5968d06027f1fe7207c458185b14"},
-    {url = "https://files.pythonhosted.org/packages/8a/3f/b49c37c84431c82e8dbe7e34cb2933c18d22fccdc2a6d7084f33945cbdb2/satori_playbook_validator-3.1.1.tar.gz", hash = "sha256:2869048bd65c8785b275640c0d9becefcf283d305b5828d6ddc4bebd14b86b41"},
+"satori-playbook-validator 3.1.2" = [
+    {url = "https://files.pythonhosted.org/packages/6a/48/3cacdb08532376f789cbae583505e38d9317811bafa0d6f75a1bdaa2ac5d/satori_playbook_validator-3.1.2-py3-none-any.whl", hash = "sha256:a4772382bc6a9c5cb9803b6bbba3ce514d517a6fd6ffdab9bf8733ecb13250c9"},
+    {url = "https://files.pythonhosted.org/packages/bd/81/6a70c24fa9000a1ef88eca3e1fc8cacf26fa24c63a5088fad4420ce77a77/satori_playbook_validator-3.1.2.tar.gz", hash = "sha256:cb94b861780d5bf9a9378ca905d53fbfae4cf94a8e2920b1dc278a3761c021ee"},
 ]
 "setuptools 67.8.0" = [
     {url = "https://files.pythonhosted.org/packages/03/20/630783571e76e5fa5f3e9f29398ca3ace377207b8196b54e0ffdf09f12c1/setuptools-67.8.0.tar.gz", hash = "sha256:62642358adc77ffa87233bc4d2354c4b2682d214048f500964dbe760ccedf102"},
