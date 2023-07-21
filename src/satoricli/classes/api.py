@@ -96,7 +96,7 @@ class SatoriAPI:
         return report
 
     def get_report_output(self, report_id: str):
-        r = self.request("GET", f"reports/{report_id}/output", stream=True)
+        r = self.request("GET", f"outputs/{report_id}", stream=True)
         return r.iter_lines()
 
     def get_report_files(self, report_id: str):

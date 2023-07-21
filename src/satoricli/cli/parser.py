@@ -9,7 +9,7 @@ from colorama import just_fix_windows_console
 from rich import print
 from pkg_resources import get_distribution, DistributionNotFound  # autoupgrade
 from packaging import version  # autoupgrade
-from datetime import datetime
+from datetime import date, datetime
 
 # from subprocess import call # autoupgrade
 from ..classes.satori import Satori
@@ -161,6 +161,32 @@ def main():
     )
     add_satori_arguments(report_cmd)
 
+    # outputs
+    outputs_cmd = subparsers.add_parser("outputs", parents=[baseparser])
+    output_filters = outputs_cmd.add_argument_group("filters")
+    output_filters.add_argument(
+        "--from",
+        type=date.fromisoformat,
+        help="Date in ISO format",
+        metavar="DATE",
+        dest="from_date",
+    )
+    output_filters.add_argument(
+        "--to",
+        type=date.fromisoformat,
+        help="Date in ISO format",
+        metavar="DATE",
+        dest="to_date",
+    )
+    output_filters.add_argument("-n", "--name", help="Playbook name")
+    output_filters.add_argument(
+        "-f",
+        "--failed",
+        action="store_const",
+        const=True,
+        help="Fetch only failed reports outputs",
+    )
+
     # monitor {id} <start|stop|delete>
     monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])
     monitor_cmd.add_argument(
@@ -222,6 +248,8 @@ def main():
                 subprocess.run(["satori-docs", "--web"])
             else:
                 subprocess.run(["satori-docs"])
+        elif args.subcommand == "outputs":
+            instance.get_outputs(**vars(args))
     except KeyboardInterrupt:
         console.print("[critical]Interrupted by user")
         sys.exit(1)

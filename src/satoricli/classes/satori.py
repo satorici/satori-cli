@@ -1,21 +1,20 @@
 import ast
-import json
+from datetime import date
 import os
 import shutil
 import sys
 import tempfile
 import time
+from typing import Optional
 import uuid
 import warnings
 from argparse import Namespace
-from base64 import b64decode
 from pathlib import Path
 
 import requests
 import yaml
 from colorama import Fore
 from rich.progress import open as progress_open, Progress
-from rich.table import Table
 from satorici.validator import validate_playbook
 from satorici.validator.exceptions import PlaybookValidationError, PlaybookVariableError
 from satorici.validator.warnings import NoLogMonitorWarning
@@ -36,6 +35,7 @@ from .utils import (
     check_monitor,
     console,
     filter_params,
+    format_outputs,
     log,
     puts,
 )
@@ -505,44 +505,36 @@ class Satori:
 
     def output(self, report_id: str):
         """Returns commands output"""
-        current_path = ""
+        format_outputs(self.api.get_report_output(report_id))
 
-        for line in self.api.get_report_output(report_id):
-            output = json.loads(line)
+    def get_outputs(
+        self,
+        from_date: Optional[date] = None,
+        to_date: Optional[date] = None,
+        name: Optional[str] = None,
+        failed: Optional[bool] = None,
+        **kwargs,
+    ):
+        res = self.api.request(
+            "GET",
+            "/outputs",
+            params={
+                "from_date": from_date,
+                "to_date": to_date,
+                "name": name,
+                "failed": failed,
+            },
+        )
 
-            if current_path != output["path"]:
-                console.rule(f"[b]{output['path']}[/b]")
-                current_path = output["path"]
+        for item in res.json():
+            output = requests.get(item["url"], stream=True)
 
-            console.print(f"[b][green]Command:[/green] {output['original']}[/b]")
+            if not output.ok:
+                continue
 
-            if output["testcase"]:
-                testcase = Table(show_header=False, show_edge=False)
-
-                testcase.add_column(style="b")
-                testcase.add_column()
-
-                for key, value in output["testcase"].items():
-                    testcase.add_row(key, b64decode(value).decode(errors="ignore"))
-
-                console.print("[blue]Testcase:[/blue]")
-                console.print(testcase)
-
-            console.print("[blue]Return code:[/blue]", output["output"]["return_code"])
-            console.print("[blue]Stdout:[/blue]")
-            if output["output"]["stdout"]:
-                console.out(
-                    b64decode(output["output"]["stdout"])
-                    .decode(errors="ignore")
-                    .strip()
-                )
-            console.print("[blue]Stderr:[/blue]")
-            if output["output"]["stderr"]:
-                console.out(
-                    b64decode(output["output"]["stderr"])
-                    .decode(errors="ignore")
-                    .strip()
-                )
+            console.print(f"Report: {item['report_id']}")
+            format_outputs(output.iter_lines())
+            console.print()
 
     def output_files(self, report_id: str):
         r = self.api.get_report_files(report_id)

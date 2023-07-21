@@ -1,3 +1,4 @@
+from base64 import b64decode
 from typing import Union, Optional
 import json
 import yaml
@@ -401,3 +402,40 @@ def iter_loop(data: Union[tuple[Any], list[Any]]):
         i += 1
         if i >= len(data):
             i = 0
+
+
+def format_outputs(outputs):
+    current_path = ""
+
+    for line in outputs:
+        output = json.loads(line)
+
+        if current_path != output["path"]:
+            console.rule(f"[b]{output['path']}[/b]")
+            current_path = output["path"]
+
+        console.print(f"[b][green]Command:[/green] {output['original']}[/b]")
+
+        if output["testcase"]:
+            testcase = Table(show_header=False, show_edge=False)
+
+            testcase.add_column(style="b")
+            testcase.add_column()
+
+            for key, value in output["testcase"].items():
+                testcase.add_row(key, b64decode(value).decode(errors="ignore"))
+
+            console.print("[blue]Testcase:[/blue]")
+            console.print(testcase)
+
+        console.print("[blue]Return code:[/blue]", output["output"]["return_code"])
+        console.print("[blue]Stdout:[/blue]")
+        if output["output"]["stdout"]:
+            console.out(
+                b64decode(output["output"]["stdout"]).decode(errors="ignore").strip()
+            )
+        console.print("[blue]Stderr:[/blue]")
+        if output["output"]["stderr"]:
+            console.out(
+                b64decode(output["output"]["stderr"]).decode(errors="ignore").strip()
+            )
