@@ -1,0 +1,7 @@
+settings:
+  name: Pass playbook
+
+test:
+  assertStdoutContains: "Hello World"
+  echo:
+  - [ echo Hello World ]
