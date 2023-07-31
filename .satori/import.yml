@@ -1,0 +1,6 @@
+settings:
+  name: Import playbooks
+
+import:
+  - "file://pass.yml"
+  - "satori://code/trufflehog.yml"
