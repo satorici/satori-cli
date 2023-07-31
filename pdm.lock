@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:c06bfbd4218b3c8a2d0a1c35560a2d2da8e3338c284888d9dca636741c0e60bd"
+content_hash = "sha256:f98841ad2289e482e88c4d8b646fa4ceaf4ecc03a2cf61874987d73a3acd4bb8"
 
 [[package]]
 name = "aws-cron-expression-validator"
@@ -275,6 +275,17 @@ dependencies = [
 files = [
     {file = "rich-13.4.2-py3-none-any.whl", hash = "sha256:8f87bc7ee54675732fa66a05ebfe489e27264caeeff3728c945d25971b6485ec"},
     {file = "rich-13.4.2.tar.gz", hash = "sha256:d653d6bccede5844304c605d5aac802c7cf9621efd700b46c7ec2b51ea914898"},
+]
+
+[[package]]
+name = "satori-docs"
+version = "1.0"
+requires_python = ">=3.9"
+git = "https://github.com/satorici/satori-docs"
+revision = "17c15b1385652cbe2b69b2726e962b972ca3b370"
+summary = "Satori CI - Automated Software Testing Platform Documents"
+dependencies = [
+    "textual>=0.27.0",
 ]
 
 [[package]]

@@ -1,6 +1,6 @@
 [project]
 name = "satori-ci"
-version = "1.2.64"
+version = "1.2.65"
 description = "Satori CI - Automated Software Testing Platform"
 authors = [
     {name = "Satori CI CLI", email = "info@satori-ci.com"},
@@ -16,6 +16,7 @@ dependencies = [
     "textual>=0.26.0",
     "packaging>=23.1",
     "setuptools>=67.8.0",
+    "satori-docs @ git+https://github.com/satorici/satori-docs",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
