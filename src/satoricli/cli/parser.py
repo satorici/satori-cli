@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
+import os
 import sys
 import requests  # autoupgrade
-from functools import partial
-from http.server import HTTPServer, SimpleHTTPRequestHandler
 from importlib import metadata
 from colorama import just_fix_windows_console
 from rich import print
@@ -15,7 +14,6 @@ from datetime import datetime
 # from subprocess import call # autoupgrade
 from ..classes.satori import Satori
 from ..classes.utils import console
-from ..classes.help_gui import HelpGui, DOCS_FOLDER
 
 VERSION = metadata.version("satori-ci")
 just_fix_windows_console()
@@ -221,13 +219,9 @@ def main():
             instance.dashboard(args)
         elif args.subcommand == "help":
             if args.web:
-                handler = partial(SimpleHTTPRequestHandler, directory=DOCS_FOLDER)
-                httpd = HTTPServer(("localhost", 9090), handler)
-                console.print("Docs server running on: [link]http://localhost:9090")
-                httpd.serve_forever()
+                os.system("satori-docs")
             else:
-                gui = HelpGui(instance)
-                gui.run()
+                os.system("satori-docs --web")
     except KeyboardInterrupt:
         console.print("[critical]Interrupted by user")
         sys.exit(1)
