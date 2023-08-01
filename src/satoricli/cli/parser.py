@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
-import os
+import subprocess
 import sys
 import requests  # autoupgrade
 from importlib import metadata
@@ -219,9 +219,9 @@ def main():
             instance.dashboard(args)
         elif args.subcommand == "help":
             if args.web:
-                os.system("satori-docs")
+                subprocess.run(["satori-docs", "--web"])
             else:
-                os.system("satori-docs --web")
+                subprocess.run(["satori-docs"])
     except KeyboardInterrupt:
         console.print("[critical]Interrupted by user")
         sys.exit(1)
