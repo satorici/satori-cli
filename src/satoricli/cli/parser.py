@@ -32,7 +32,7 @@ def upgrade():
     upgrade_required = ""
 
     # Name of your package
-    package_names = ["satori-ci", "satori-playbook-validator"]
+    package_names = ["satori-ci", "satori-playbook-validator", "satori-docs"]
 
     for package_name in package_names:
         # Get the current version
