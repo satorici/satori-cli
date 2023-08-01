@@ -24,6 +24,7 @@ class args:
     email: str
     clean: bool
     deleted: bool
+    files: bool
 
 
 arguments = Union[Namespace, args]

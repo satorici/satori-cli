@@ -15,8 +15,7 @@ jobs:
         run: |
           pip3 install satori-ci
           satori-cli config token $TOKEN
-          echo satori-cli run ./ --data="{'TOKEN':'$TOKEN'} -s
-          satori-cli run ./ --data="{'TOKEN':'$TOKEN'} -s
+          satori-cli run ./ --data="{'TOKEN':'$TOKEN'}" -s
   pdm-upload:
     runs-on: ubuntu-latest
     strategy:
