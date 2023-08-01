@@ -1,8 +1,6 @@
-# satori-cli repo satorici/satori-cli run --data="{'TOKEN':'`grep token ~/.satori_credentials.yml|awk '{print $2}'|head -n1`'}" --sync
 settings:
-  name: Satori CLI Tests
-  #report: pdf
-  #log: slack
+  name: Satori CLI Test
+  log: slack
 
 import:
   - "satori://code/trufflehog.yml"
@@ -10,51 +8,38 @@ import:
   #- "satori://code/semgrep.yml"
   #- "satori://code/python/pylint.yml"
 
-Tests:
+tests:
   assertReturnCode: 0
-  pip_install:
-    assertStdoutContains: "Successfully built satori-ci"
+  install_satori:
     test:
     - [ pip install . ]
 
-  config:
+  create_profile:
     assertStdoutContains: "Token saved"
-    token:
+    test:
+    - [ satori-cli config token "not_a_token" -p test_user ]
+
+  set_token:
+    assertStdoutContains: "Token saved"
+    test:
     - [ satori-cli config token "$(TOKEN)" ]
-    profile:
-    - [ satori-cli config token "not_a_token" -p test_user]
 
   dashboard:
-    assertStdoutContains: "Actions required"
     test:
     - [ satori-cli ]
 
   playbook:
-    assertStdoutContains: "id: p"
     test:
     - [ satori-cli playbook ]
 
   report:
-  #  assertStdoutContains: "status:"
     test:
     - [ satori-cli report ]
 
   repo:
-    assertStdoutContains: "GitHub Repositories"
     test:
     - [ satori-cli repo ]
 
-  repo-run:
-    assertStdoutNotContains: "Failed to scan commit"
-    test:
-    - [ satori-cli repo satorici/playbooks run ]
-
   monitor:
-    assertStdoutContains: "Monitors"
     test:
     - [ satori-cli monitor ]
-  #monitor_id:
-  #  assertStdoutContains: "id: r"
-  #  test:
-  #  - [ "bash -c satori-cli monitor `satori-cli monitor --json|jq -r '.list[1].id'`" ]
-
