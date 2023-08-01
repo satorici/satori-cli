@@ -134,9 +134,9 @@ def list_formatter(
     for item in obj:
         indent_text = get_decoration(indent)
         if isinstance(item, dict):
-            dict_formatter(item, capitalize, indent + 1, list_separator)
+            dict_formatter(item, capitalize, indent + 1)
         elif isinstance(item, list):
-            list_formatter(item, capitalize, indent + 1, list_separator)
+            list_formatter(item, capitalize, indent + 1)
         else:
             item = str(item).strip()
             print(indent_text + get_value_color(item) + item + Style.RESET_ALL)

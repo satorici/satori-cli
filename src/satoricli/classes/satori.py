@@ -458,7 +458,7 @@ class Satori:
             params = filter_params(args, ("id", "page", "limit", "filter"))
             res = self.api.reports("GET", args.id, "", params=params)
             if args.id == "" and not args.json:  # default: print list
-                autoformat(res["list"])
+                autoformat(res["list"], list_separator="-" * 48)
                 console.print(
                     f"[b]Page:[/] {res['current_page']} of {res['total_pages']}"
                 )
