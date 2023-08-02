@@ -32,6 +32,10 @@ tests:
     test:
     - [ satori-cli playbook ]
 
+  playbook_public:
+    test:
+    - [ satori-cli playbook --public ]
+
   report:
     test:
     - [ satori-cli report ]
@@ -43,3 +47,25 @@ tests:
   monitor:
     test:
     - [ satori-cli monitor ]
+
+  pass:
+    test:
+    - [ satori-cli run .satori/pass.yml --report ]
+
+  fail:
+    assertReturnCode: 1
+    test:
+    - [ satori-cli run .satori/fail.yml --report ]
+
+  empty:
+    assertReturnCode: 1
+    test:
+    - [ satori-cli run .satori/empty.yml --report ]
+
+  import:
+    test:
+    - [ satori-cli run .satori/import.yml --sync ]
+
+  run_url:
+    test:
+    - [ "satori-cli run satori://web/testssl.yml --data=\"{'URL':'https://www.satori-ci.com'}\" --output" ]
