@@ -203,7 +203,7 @@ def main():
     )
     add_satori_arguments(monitor_cmd)
 
-    # team {id} create|members|add_member|repos|
+    # team {id} create|members|delete|add_member|repos|
     # add_repo|get_token|refresh_token|del_member
     team_cmd = subparsers.add_parser("team", parents=[baseparser])
     team_cmd.add_argument("--email", type=str, help="User email")
