@@ -526,15 +526,16 @@ class Satori:
             },
         )
 
-        for item in res.json():
-            output = requests.get(item["url"], stream=True)
+        with requests.Session() as s:
+            for item in res.json():
+                output = s.get(item["url"], stream=True)
 
-            if not output.ok:
-                continue
+                if not output.ok:
+                    continue
 
-            console.print(f"Report: {item['report_id']}")
-            format_outputs(output.iter_lines())
-            console.print()
+                console.print(f"Report: {item['report_id']}")
+                format_outputs(output.iter_lines())
+                console.print()
 
     def output_files(self, report_id: str):
         r = self.api.get_report_files(report_id)
