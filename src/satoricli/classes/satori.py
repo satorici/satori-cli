@@ -509,6 +509,7 @@ class Satori:
 
     def get_outputs(
         self,
+        raw: bool,
         from_date: Optional[date] = None,
         to_date: Optional[date] = None,
         name: Optional[str] = None,
@@ -533,9 +534,13 @@ class Satori:
                 if not output.ok:
                     continue
 
-                console.print(f"Report: {item['report_id']}")
-                format_outputs(output.iter_lines())
-                console.print()
+                if raw:
+                    console.rule()
+                    console.print(output.text)
+                else:
+                    console.print(f"Report: {item['report_id']}")
+                    format_outputs(output.iter_lines())
+                    console.print()
 
     def output_files(self, report_id: str):
         r = self.api.get_report_files(report_id)

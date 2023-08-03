@@ -166,6 +166,9 @@ def main():
 
     # outputs
     outputs_cmd = subparsers.add_parser("outputs", parents=[baseparser])
+    outputs_cmd.add_argument(
+        "--raw", action="store_true", help="Print without formatting"
+    )
     output_filters = outputs_cmd.add_argument_group("filters")
     output_filters.add_argument(
         "--from",
