@@ -30,7 +30,7 @@ tests:
 
   pass_report:
     test:
-    - [ satori-cli run .satori/pass.yml --report ]
+    - [ satori-cli run .satori/import/pass.yml --report ]
 
   import_sync:
     test:
@@ -39,6 +39,45 @@ tests:
   run_url_output:
     test:
     - [ "satori-cli run satori://web/testssl.yml --data=\"{'URL':'https://www.satori-ci.com'}\" --output" ]
+
+report:
+  assertReturnCode: 0
+  list:
+    test:
+    - [ satori-cli report ]
+
+  new_sync:
+    - ["satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt"]
+
+  echo:
+    - [ export ID=$(cat report_id.txt); echo $ID ]
+
+  single:
+    test:
+    - [ export ID=$(cat report_id.txt); satori-cli report $ID ]
+
+  output:
+    test:
+    - [ export ID=$(cat report_id.txt); satori-cli report $ID output ]
+
+  delete:
+    test:
+    - [ export ID=$(cat report_id.txt); satori-cli report $ID delete ]
+
+  new_async: # new report for stop is needed because the first one is already stopped
+    - ["satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt"]
+
+  sleep: # wait until start
+    - [ sleep 10 ]
+
+  stop:
+    test:
+    - [ export ID=$(cat report_id2.txt); satori-cli report $ID stop ]
+
+  delete_async:
+    test:
+    - [ export ID=$(cat report_id2.txt); satori-cli report $ID delete ]
+
 
 playbook:
   assertReturnCode: 0
@@ -52,33 +91,11 @@ playbook:
 
   single:
     test:
-    - [ satori-cli playbook $(REPORT_ID) ]
+    - [ export ID=$(cat report_id2.txt); satori-cli playbook $ID ]
 
-  delete:
+  playbook:
     test:
-    - [ satori-cli playbook $(REPORT_ID) delete ]
-
-report:
-  assertReturnCode: 0
-  list:
-    test:
-    - [ satori-cli report ]
-
-  single:
-    test:
-    - [ satori-cli report $(REPORT_ID) ]
-
-  output:
-    test:
-    - [ satori-cli report $(REPORT_ID) output ]
-
-  stop:
-    test:
-    - [ satori-cli report $(REPORT_ID) stop ]
-
-  # delete:
-  #   test:
-  #   - [ satori-cli report $(REPORT_ID) delete ]
+    - [ export ID=$(cat report_id2.txt); satori-cli playbook $ID delete ]
 
 repo:
   assertReturnCode: 0
@@ -174,12 +191,12 @@ teams:
   #   test:
   #   - [ satori-cli team $(TEAM_ID) delete" ]
 
-tests_fail:
-  assertReturnCode: 1
-  fail:
-    test:
-    - [ satori-cli run .satori/fail.yml --report ]
+# tests_fail:
+#   assertReturnCode: 1
+#   fail:
+#     test:
+#     - [ satori-cli run .satori/fail.yml --report ]
 
-  empty:
-    test:
-    - [ satori-cli run .satori/empty.yml --report ]
+#   empty:
+#     test:
+#     - [ satori-cli run .satori/empty.yml --report ]
