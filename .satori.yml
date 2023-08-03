@@ -28,6 +28,8 @@ tests:
     test:
     - [ satori-cli ]
 
+run:
+  assertReturnCode: 0
   pass_report:
     test:
     - [ satori-cli run .satori/import/pass.yml --report ]
@@ -36,7 +38,7 @@ tests:
     test:
     - [ satori-cli run .satori/import --sync ]
 
-  run_url_output:
+  url_output:
     test:
     - [ "satori-cli run satori://web/testssl.yml --data=\"{'URL':'https://www.satori-ci.com'}\" --output" ]
 
@@ -74,11 +76,6 @@ report:
     test:
     - [ export ID=$(cat report_id2.txt); satori-cli report $ID stop ]
 
-  delete_async:
-    test:
-    - [ export ID=$(cat report_id2.txt); satori-cli report $ID delete ]
-
-
 playbook:
   assertReturnCode: 0
   list:
@@ -89,11 +86,14 @@ playbook:
     test:
     - [ satori-cli playbook --public ]
 
+  echo:
+    - [ export ID=$(cat report_id2.txt); echo $ID ]
+
   single:
     test:
     - [ export ID=$(cat report_id2.txt); satori-cli playbook $ID ]
 
-  playbook:
+  delete:
     test:
     - [ export ID=$(cat report_id2.txt); satori-cli playbook $ID delete ]
 
@@ -105,35 +105,36 @@ repo:
 
   single:
     test:
-    - [ satori-cli repo satorici/satori-cli ]
+    - [ satori-cli repo satorici/hello_world ]
 
-  commits:
-    test:
-    - [ satori-cli repo satorici/satori-cli commits ]
-
-  # check_commits:
+  # TODO: needs sync mode
+  # check_commits: 
   #   test:
-  #   - [ satori-cli repo satorici/satori-cli check_commits ]
+  #   - [ satori-cli repo satorici/hello_world check_commits ]
+
+  # commits:
+  #   test:
+  #   - [ satori-cli repo satorici/hello_world commits ]
 
   # check_forks:
   #   test:
-  #   - [ satori-cli repo satorici/satori-cli check_forks ]
+  #   - [ satori-cli repo satorici/hello_world check_forks ]
 
   # scan:
   #   test:
-  #   - [ satori-cli repo satorici/satori-cli scan ]
+  #   - [ satori-cli repo satorici/hello_world scan ]
 
   # scan_stop:
   #   test:
-  #   - [ satori-cli repo satorici/satori-cli scan-stop ]
+  #   - [ satori-cli repo satorici/hello_world scan-stop ]
 
-  # run:
-  #   test:
-  #   - [ satori-cli repo satorici/satori-cli run ]
+  run:
+    test:
+    - [ satori-cli repo satorici/hello_world run ]
 
-  # clean:
+  # clean: # needs sync mode
   #   test:
-  #   - [ satori-cli repo satorici/satori-cli clean ]
+  #   - [ satori-cli repo satorici/hello_world clean ]
 
 monitor:
   assertReturnCode: 0
@@ -141,21 +142,30 @@ monitor:
     test:
     - [ satori-cli monitor ]
 
-  # single:
-  #   test:
-  #   - [ satori-cli monitor $(MONITOR_ID) ]
+  new:
+    - ["satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt"]
 
-  # start:
-  #   test:
-  #   - [ satori-cli monitor $(MONITOR_ID) start ]
+  echo:
+    - [ export ID=$(cat monitor_id.txt); echo $ID ]
 
-  # stop:
-  #   test:
-  #   - [ satori-cli monitor $(MONITOR_ID) stop ]
+  sleep: # wait until start
+    - [ sleep 10 ]
 
-  # delete:
-  #   test:
-  #   - [ satori-cli monitor $(MONITOR_ID) delete ]
+  single:
+    test:
+    - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID ]
+
+  start:
+    test:
+    - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID start ]
+
+  stop:
+    test:
+    - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID stop ]
+
+  delete:
+    test:
+    - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete ]
 
 teams:
   assertReturnCode: 0
@@ -163,40 +173,43 @@ teams:
     test:
     - [ satori-cli team ]
 
-  # create:
-  #   test:
-  #   - [ satori-cli team $(TEAM_ID) create ]
+  clean:
+    - [ satori-cli team test_team delete || true ]
 
-  # single:
-  #   test:
-  #   - [ satori-cli team $(TEAM_ID) ]
+  create:
+    test:
+    - [ satori-cli team test_team create ]
 
-  # members:
-  #   test:
-  #   - [ satori-cli team $(TEAM_ID) members ]
+  single:
+    test:
+    - [ satori-cli team test_team ]
 
-  # add_member:
-  #   test:
-  #   - [ satori-cli team $(TEAM_ID) add_member --email="user@email.com" ]
+  members:
+    test:
+    - [ satori-cli team test_team members ]
 
-  # repos:
-  #   test:
-  #   - [ satori-cli team $(TEAM_ID) repos ]
+  add_member:
+    test:
+    - [ satori-cli team test_team add_member --email="user@email.com" ]
 
-  # add_repo:
-  #   test:
-  #   - [ satori-cli team $(TEAM_ID) add_repo --repo="non/repo" ]
+  repos:
+    test:
+    - [ satori-cli team test_team repos ]
 
-  # delete:
-  #   test:
-  #   - [ satori-cli team $(TEAM_ID) delete" ]
+  add_repo:
+    test:
+    - [ satori-cli team test_team add_repo --repo="satorici/hello_world" ]
 
-# tests_fail:
-#   assertReturnCode: 1
-#   fail:
-#     test:
-#     - [ satori-cli run .satori/fail.yml --report ]
+  delete:
+    test:
+    - [ satori-cli team test_team delete ]
 
-#   empty:
-#     test:
-#     - [ satori-cli run .satori/empty.yml --report ]
+tests_fail:
+  assertReturnCode: 1
+  fail:
+    test:
+    - [ satori-cli run .satori/fail.yml --report ]
+
+  empty:
+    test:
+    - [ satori-cli run .satori/empty.yml --report ]

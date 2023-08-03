@@ -1,6 +1,6 @@
 settings:
   name: Monitor playbook
-  rate: 1 hour
+  rate: 12 hours
 
 test:
   assertStdoutContains: "Hello World"
