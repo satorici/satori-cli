@@ -60,9 +60,12 @@ def upgrade():
         ):
             upgrade_required += package_name + " "
     if upgrade_required:
-        console.print(
-            "[warning]WARNING:[/] Newer version found, upgrade with: "
-            "[b]pip install -U " + upgrade_required
+        print(
+            (
+                "[yellow]WARNING:[/] Newer version found, upgrade with: "
+                f"[b]pip install -U {upgrade_required}"
+            ),
+            file=sys.stderr,
         )
 
 
