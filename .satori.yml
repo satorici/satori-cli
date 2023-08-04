@@ -3,7 +3,6 @@ settings:
   log: slack
 
 import:
-  - "satori://code/trufflehog.yml"
   - "satori://code/semgrep-secrets.yml"
   #- "satori://code/semgrep.yml"
   #- "satori://code/python/pylint.yml"
@@ -48,7 +47,7 @@ positive:
       - [ satori-cli report ]
 
     new_sync:
-    - ["satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt"]
+    - ["satori-cli run .satori/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt"]
 
     echo_ID:
     - [ export ID=$(cat report_id.txt); echo $ID ]
