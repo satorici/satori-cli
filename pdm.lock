@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:179356e09ce7f5f74fd68d406ce6c445b0ba35d39f3f9d06cee2092aadf2a259"
+content_hash = "sha256:6dc3c5b0555860b0839caed5a62a4b7df3ccc245e572cbe4e89fdd2c8726f668"
 
 [[package]]
 name = "aws-cron-expression-validator"
@@ -368,6 +368,16 @@ summary = "HTTP library with thread-safe connection pooling, file post, and more
 files = [
     {file = "urllib3-1.26.10-py2.py3-none-any.whl", hash = "sha256:8298d6d56d39be0e3bc13c1c97d133f9b45d797169a0e11cdd0e0489d786f7ec"},
     {file = "urllib3-1.26.10.tar.gz", hash = "sha256:879ba4d1e89654d9769ce13121e0f94310ea32e8d2f8cf587b77c08bbcdb30d6"},
+]
+
+[[package]]
+name = "websocket-client"
+version = "1.6.1"
+requires_python = ">=3.7"
+summary = "WebSocket client for Python with low level API options"
+files = [
+    {file = "websocket-client-1.6.1.tar.gz", hash = "sha256:c951af98631d24f8df89ab1019fc365f2227c0892f12fd150e935607c79dd0dd"},
+    {file = "websocket_client-1.6.1-py3-none-any.whl", hash = "sha256:f1f9f2ad5291f0225a49efad77abf9e700b6fef553900623060dad6e26503b9d"},
 ]
 
 [[package]]
