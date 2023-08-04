@@ -9,7 +9,7 @@ import:
 
 positive:
   assertReturnCode: 0
-  install_satori:
+  install:
     test:
     - [ pip install . ]
 
@@ -47,7 +47,7 @@ positive:
       - [ satori-cli report ]
 
     new_sync:
-    - ["satori-cli run .satori/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt"]
+    - ["satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt"]
 
     echo_ID:
     - [ export ID=$(cat report_id.txt); echo $ID ]
@@ -81,7 +81,7 @@ positive:
 
     list_public:
       test:
-     - [ satori-cli playbook --public ]
+      - [ satori-cli playbook --public ]
 
     echo:
     - [ export ID=$(cat report_id2.txt); echo $ID ]
@@ -160,7 +160,7 @@ positive:
 
     delete:
       test:
-     - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete ]
+      - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete ]
 
   teams:
     assertReturnCode: 0
