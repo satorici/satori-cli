@@ -10,7 +10,9 @@ import:
 positive:
   assertReturnCode: 0
   install:
-    test:
+    git:
+    - [ apt install -y git ]
+    satori-cli:
     - [ pip install . ]
 
   create_profile:
@@ -47,7 +49,7 @@ positive:
       - [ satori-cli report ]
 
     new_sync:
-    - ["satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt"]
+    - ["satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt"]
 
     echo_ID:
     - [ export ID=$(cat report_id.txt); echo $ID ]
@@ -65,7 +67,7 @@ positive:
       - [ export ID=$(cat report_id.txt); satori-cli report $ID delete ]
 
     new_async: # new report for stop is needed because the first one is already stopped
-    - ["satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt"]
+    - [ "satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt" ]
 
     sleep: # wait until start
     - [ sleep 10 ]
@@ -197,7 +199,7 @@ positive:
 
     add_repo:
       test:
-      - [ satori-cli team test_team add_repo --repo="satorici/hello_world" ]
+      - [ satori-cli team test_team add_repo --repo_name="satorici/hello_world" ]
 
     delete:
       test:
@@ -205,16 +207,17 @@ positive:
 
 negative:
   assertReturnCode: 1
+  
   run:
     fail:
       test:
       - [ satori-cli run .satori/fail.yml --report ]
 
-    empty:
+    empty_playbook:
       test:
       - [ satori-cli run .satori/empty.yml --report ]
-      
-  report:
-    delete:
+
+    empty_directory:
       test:
-      - [ satori-cli report fruta delete ]
+      - [ mkdir test; cd test; satori-cli run ./ ]
+
