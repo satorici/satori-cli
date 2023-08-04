@@ -190,7 +190,11 @@ teams:
 
   add_member:
     test:
-    - [ satori-cli team test_team add_member --email="user@email.com" ]
+    - [ satori-cli team test_team add_member --email="test@satori-ci.com" ]
+
+  del_member:
+    test:
+    - [ satori-cli team test_team del_member --email="user@satori-ci.com" ]
 
   repos:
     test:
