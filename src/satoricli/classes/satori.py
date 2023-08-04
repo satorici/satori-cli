@@ -21,7 +21,7 @@ from satorici.validator.warnings import NoLogMonitorWarning
 
 from .api import SatoriAPI
 from .bundler import get_local_files, make_bundle
-from .models import arguments
+from .models import WebsocketArgs, arguments
 from .playbooks import display_public_playbooks
 from .utils import (
     FAIL_COLOR,
@@ -423,7 +423,11 @@ class Satori:
         elif args.action == "scan-stop":
             info = self.api.repos_scan("GET", args.id, "stop", params=params)
         elif args.action == "scan-status":
-            info = self.api.repos_scan("GET", args.id, "status", params=params)
+            if args.sync:
+                self.api.ws_connect(WebsocketArgs(action="scan-status",id=args.id))
+                sys.exit(0)
+            else:
+                info = self.api.repos_scan("GET", args.id, "status", params=params)
         elif args.action == "check-forks":
             info = self.api.repos_scan("GET", args.id, args.action, params=params)
         elif args.action == "check-commits":

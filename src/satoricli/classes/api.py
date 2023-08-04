@@ -1,11 +1,13 @@
+import re
 import requests
 import sys
 from requests import Response
 from requests.exceptions import HTTPError
 from typing import Union, Any, Optional
+from websocket import WebSocketApp, WebSocketBadStatusException
 
 from .utils import FAIL_COLOR, autoformat, log, console
-from .models import arguments
+from .models import arguments, WebsocketArgs
 
 HOST = "https://api.satori-ci.com"
 ERROR_MESSAGE = "An error occurred"
@@ -61,6 +63,48 @@ class SatoriAPI:
         else:  # response is 20x
             return resp
         sys.exit(1)
+
+    def ws_connect(self, args: WebsocketArgs):
+        headers = self.__session__.headers
+        log.debug(headers)
+        url = re.sub(r"https?://", "ws://", self.server)
+        log.debug(url+"/")
+        try:
+            ws = WebSocketApp(
+                url,
+                header=[f"Authorization: Bearer {headers.get('Authorization')}"],
+                on_open=self.ws_on_open,
+                on_message=self.ws_on_message,
+                on_error=self.ws_on_error,
+                on_close=self.ws_on_close,
+            )
+        except Exception as e:
+            console.print(e)
+            sys.exit(1)
+        else:
+            self.ws_args = args
+            ws.run_forever()
+            if ws.has_errored:
+                sys.exit(1)
+
+    def ws_on_open(self, app: WebSocketApp):
+        log.debug("Connected")
+        app.send(self.ws_args.to_json())
+
+    def ws_on_message(self, app: WebSocketApp, message):
+        log.debug("message")
+        log.debug(message)
+
+    def ws_on_error(self, app: WebSocketApp, error):
+        console.print("[error]Error:[/] " + str(error))
+        app.has_errored = True
+
+    def ws_on_close(self, app: WebSocketApp, status_code, message):
+        log.debug("Disconnected")
+        log.debug(status_code)
+        log.debug(message)
+        if status_code != 1000:
+            self.ws_on_error(app, message)
 
     def runs(self, run_type: str, data: dict) -> Any:
         res = self.request("POST", f"runs/{run_type}", json=data)
