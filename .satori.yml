@@ -205,10 +205,16 @@ positive:
 
 negative:
   assertReturnCode: 1
-  fail:
-    test:
-    - [ satori-cli run .satori/fail.yml --report ]
+  run:
+    fail:
+      test:
+      - [ satori-cli run .satori/fail.yml --report ]
 
-  empty:
-    test:
-    - [ satori-cli run .satori/empty.yml --report ]
+    empty:
+      test:
+      - [ satori-cli run .satori/empty.yml --report ]
+      
+  report:
+    delete:
+      test:
+      - [ satori-cli report fruta delete ]
