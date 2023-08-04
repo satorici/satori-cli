@@ -9,6 +9,7 @@ import:
 
 positive:
   assertReturnCode: 0
+  assertStderrNotContains: Traceback
   install:
     git:
     - [ apt install -y git ]
@@ -199,7 +200,7 @@ positive:
 
     add_repo:
       test:
-      - [ satori-cli team test_team add_repo --repo_name="satorici/hello_world" ]
+      - [ satori-cli team test_team add_repo --repo="satorici/hello_world" ]
 
     delete:
       test:
@@ -207,7 +208,8 @@ positive:
 
 negative:
   assertReturnCode: 1
-  
+  assertStderrNotContains: Traceback
+
   run:
     fail:
       test:
