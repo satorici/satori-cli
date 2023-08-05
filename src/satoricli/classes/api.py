@@ -1,10 +1,12 @@
+import json
 import re
+import time
 import requests
 import sys
 from requests import Response
 from requests.exceptions import HTTPError
-from typing import Union, Any, Optional
-from websocket import WebSocketApp, WebSocketBadStatusException
+from typing import Callable, Union, Any, Optional
+from websocket import WebSocketApp
 
 from .utils import FAIL_COLOR, autoformat, log, console
 from .models import arguments, WebsocketArgs
@@ -64,17 +66,17 @@ class SatoriAPI:
             return resp
         sys.exit(1)
 
-    def ws_connect(self, args: WebsocketArgs):
+    def ws_connect(self, args: WebsocketArgs, on_message: Optional[Callable] = None):
         headers = self.__session__.headers
         log.debug(headers)
         url = re.sub(r"https?://", "ws://", self.server)
-        log.debug(url+"/")
+        log.debug(url + "/")
         try:
             ws = WebSocketApp(
                 url,
                 header=[f"Authorization: Bearer {headers.get('Authorization')}"],
                 on_open=self.ws_on_open,
-                on_message=self.ws_on_message,
+                on_message=on_message or self.ws_on_message,
                 on_error=self.ws_on_error,
                 on_close=self.ws_on_close,
             )
@@ -91,9 +93,11 @@ class SatoriAPI:
         log.debug("Connected")
         app.send(self.ws_args.to_json())
 
-    def ws_on_message(self, app: WebSocketApp, message):
+    def ws_on_message(self, app: WebSocketApp, message: str):
         log.debug("message")
-        log.debug(message)
+        autoformat(json.loads(message))
+        time.sleep(1)
+        app.send(self.ws_args.to_json())
 
     def ws_on_error(self, app: WebSocketApp, error):
         console.print("[error]Error:[/] " + str(error))
