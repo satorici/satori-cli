@@ -134,6 +134,14 @@ positive:
   #   test:
   #   - [ satori-cli repo satorici/hello_world clean ]
 
+  # delete-commits: # needs sync mode
+  #   test:
+  #   - [ satori-cli repo satorici/hello_world clean --delete-commits ]
+
+  # currently not being tested:
+  # 133     repo_cmd.add_argument("-c", "--coverage", type=float, default=1, help="coverage")
+  # 134     repo_cmd.add_argument("--skip-check", default=False, action="store_true")
+  
   monitor:
     assertReturnCode: 0
     list:
