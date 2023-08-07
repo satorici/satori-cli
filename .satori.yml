@@ -11,6 +11,8 @@ positive:
   assertReturnCode: 0
   assertStderrNotContains: Traceback
   install:
+    update:
+    - [ apt update ] 
     git:
     - [ apt install -y git ]
     satori-cli:
