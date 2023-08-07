@@ -463,11 +463,6 @@ class Satori:
     def scan_sync_mode(self, app: WebSocketApp, message: str):
         stats = json.loads(message)
         autoformat(stats)
-        if stats["status"] != "Stopped":  # Running/Checking is possible
-            time.sleep(1)
-            app.send(self.ws_args.to_json())
-        else:
-            app.close()
 
     def report(self, args: arguments):
         """Show a list of reports"""
