@@ -1,12 +1,14 @@
 import json
 import re
-import time
 import requests
 import sys
 from requests import Response
 from requests.exceptions import HTTPError
 from typing import Callable, Union, Any, Optional
 from websocket import WebSocketApp
+from rich.live import Live
+from rich.syntax import Syntax
+import yaml
 
 from .utils import FAIL_COLOR, autoformat, log, console
 from .models import arguments, WebsocketArgs
@@ -71,12 +73,14 @@ class SatoriAPI:
         log.debug(headers)
         url = re.sub(r"https?://", "ws://", self.server)
         log.debug(url + "/")
+        self.on_message = on_message
+        self.live = Live("Loading data...", console=console, auto_refresh=False)
         try:
             ws = WebSocketApp(
                 url,
                 header=[f"Authorization: Bearer {headers.get('Authorization')}"],
                 on_open=self.ws_on_open,
-                on_message=on_message or self.ws_on_message,
+                on_message=self.ws_on_message,
                 on_error=self.ws_on_error,
                 on_close=self.ws_on_close,
             )
@@ -84,6 +88,7 @@ class SatoriAPI:
             console.print(e)
             sys.exit(1)
         else:
+            self.live.start(True)
             self.ws_args = args
             ws.run_forever()
             if ws.has_errored:
@@ -95,20 +100,34 @@ class SatoriAPI:
 
     def ws_on_message(self, app: WebSocketApp, message: str):
         log.debug("message")
-        autoformat(json.loads(message))
-        time.sleep(1)
-        app.send(self.ws_args.to_json())
+        if self.on_message:
+            self.on_message(app, message, self.live)
+        else:
+            try:
+                # try to load the message as a json
+                stats = json.loads(message)
+                # make text readable
+                stats_yml = yaml.dump(stats)
+            except Exception:
+                # if fail print plain text
+                self.live.update(message)
+            else:
+                # highlight the yaml syntax
+                output = Syntax(stats_yml, "YAML", theme="ansi_dark")
+                self.live.update(output)
+            finally:
+                self.live.refresh()
 
     def ws_on_error(self, app: WebSocketApp, error):
         console.print("[error]Error:[/] " + str(error))
         app.has_errored = True
 
-    def ws_on_close(self, app: WebSocketApp, status_code, message):
+    def ws_on_close(self, app: WebSocketApp, status_code: int, reason: str):
         log.debug("Disconnected")
-        log.debug(status_code)
-        log.debug(message)
+        log.debug(f"{status_code = }")
+        log.debug(f"{reason = }")
         if status_code != 1000:
-            self.ws_on_error(app, message)
+            self.ws_on_error(app, reason)
 
     def runs(self, run_type: str, data: dict) -> Any:
         res = self.request("POST", f"runs/{run_type}", json=data)

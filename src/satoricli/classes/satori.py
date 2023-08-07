@@ -12,7 +12,6 @@ import warnings
 from argparse import Namespace
 from pathlib import Path
 
-from websocket import WebSocketApp
 import requests
 import yaml
 from colorama import Fore
@@ -429,7 +428,7 @@ class Satori:
         elif args.action == "scan-status":
             if args.sync:
                 self.ws_args = WebsocketArgs(action="scan-status", id=args.id)
-                self.api.ws_connect(self.ws_args, self.scan_sync_mode)
+                self.api.ws_connect(self.ws_args)
                 sys.exit(0)
             else:
                 info = self.api.repos_scan("GET", args.id, "status", params=params)
@@ -459,10 +458,6 @@ class Satori:
             match = UUID4_REGEX.findall(report)
             if match:
                 self.run_sync({"type": "report", "id": match[0]}, args)
-
-    def scan_sync_mode(self, app: WebSocketApp, message: str):
-        stats = json.loads(message)
-        autoformat(stats)
 
     def report(self, args: arguments):
         """Show a list of reports"""
