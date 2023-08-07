@@ -47,9 +47,6 @@ positive:
 
   report:
     assertReturnCode: 0
-    list:
-      test:
-      - [ satori-cli report ]
 
     new_sync:
     - [ "satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt" ]
@@ -57,6 +54,10 @@ positive:
     echo_ID:
     - [ export ID=$(cat report_id.txt); echo $ID ]
 
+    list:
+      test:
+      - [ satori-cli report ]
+      
     single:
       test:
       - [ export ID=$(cat report_id.txt); satori-cli report $ID ]
@@ -203,15 +204,17 @@ positive:
     del_member:
       test:
       - [ satori-cli team test_team del_member --email="user@satori-ci.com" ]
-
-  repos:
-    test:
+      
+    team_without_repos:
     - [ satori-cli team test_team repos ]
 
     add_repo:
       test:
       - [ satori-cli team test_team add_repo --repo="satorici/hello_world" ]
 
+    team_with_repos:
+    - [ satori-cli team test_team repos ]
+    
     delete:
       test:
       - [ satori-cli team test_team delete ]
