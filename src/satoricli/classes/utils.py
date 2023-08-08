@@ -47,14 +47,19 @@ class SatoriHighlighter(RegexHighlighter):
     highlights = [
         r"(?P<value>(?<=:\s)\w+$)",
         r"(?P<email>[\w-]+@([\w-]+\.)+[\w-]+)",
-        r"(?P<pass>(?<!\w)(pass|completed|yes|true)(?!\w))",
-        r"(?P<pending>(?<!\w)(pending|running)(?!\w))",
-        r"(?P<fail>(?<!\w)(fail(\(\d+\))?|error|no|false)(?!\w))",
-        r"(?P<unknown>(?<!\w)(unknown|undefined|null|None)(?!\w))",
+        r"(?P<pass>(?<!\w)((p|P)ass|(c|C)ompleted|(y|Y)es|(t|T)rue)(?!\w))",
+        r"(?P<pending>(?<!\w)((p|P)ending|(r|R)unning)(?!\w))",
+        r"(?P<fail>(?<!\w)((f|F)ail(\(\d+\))?|(e|E)rror|(n|N)o|(f|F)alse)(?!\w))",
+        r"(?P<unknown>(?<!\w)((u|U)nknown|undefined|null|None)(?!\w))",
         r"(?P<satori_com>https?:\/\/(www\.)satori-ci\.com\S+)",
+        r"(?P<satori_uri>satori:\/\/\S+)",
         r"(?P<key>([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)",
         r"(?P<number>(?<!\w)\-?[0-9]+\.?[0-9]*(e[-+]?\d+?)?\b|0x[0-9a-fA-F]*)",
         r"(?P<uuid>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
+        r"(?P<testcase_pass>\w+ > [^:]+: Pass$)",
+        r"(?P<testcase_fail>\w+ > [^:]+: Fail$)",
+        r"(?P<db_date>\d{4}-\d?\d-\d?\d\w\d{2}:\d{2}:\d{2})",
+        r"(?P<id>(r|m|p)\w{15}$)"
     ]
 
 
@@ -73,10 +78,15 @@ satori_theme = Theme(
         "satori.fail": "bright_red",
         "satori.unknown": "bright_yellow",
         "satori.satori_com": "turquoise2",
+        "satori.satori_uri": "dark_turquoise",
         "satori.key": "white b",
         "satori.value": "cyan1",
         "satori.number": "deep_sky_blue1",
         "satori.uuid": "purple",
+        "satori.testcase_pass": "green",
+        "satori.testcase_fail": "red",
+        "satori.db_date": "bright_magenta",
+        "satori.id": "blue",
     }
 )
 console = Console(highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False)

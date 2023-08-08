@@ -107,12 +107,13 @@ class SatoriAPI:
                 # try to load the message as a json
                 stats = json.loads(message)
                 # make text readable
-                output = autoformat(stats,echo=False)
+                output = autoformat(stats, echo=False)
             except Exception:
                 # if fail print plain text
                 self.live.update(message)
             else:
-                self.live.update(output)
+                if output:
+                    self.live.update(output)
             finally:
                 self.live.refresh()
 
