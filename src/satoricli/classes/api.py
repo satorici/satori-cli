@@ -107,13 +107,11 @@ class SatoriAPI:
                 # try to load the message as a json
                 stats = json.loads(message)
                 # make text readable
-                stats_yml = yaml.dump(stats)
+                output = autoformat(stats,echo=False)
             except Exception:
                 # if fail print plain text
                 self.live.update(message)
             else:
-                # highlight the yaml syntax
-                output = Syntax(stats_yml, "YAML", theme="ansi_dark")
                 self.live.update(output)
             finally:
                 self.live.refresh()

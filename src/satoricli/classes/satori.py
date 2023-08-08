@@ -1,6 +1,5 @@
 import ast
 from datetime import date
-import json
 import os
 import shutil
 import sys

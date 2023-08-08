@@ -91,11 +91,7 @@ log = logging.getLogger()
 
 def get_decoration(indent):
     return (
-        Style.DIM
-        + "  " * indent
-        + __decorations[indent % len(__decorations)]
-        + " "
-        + Style.RESET_ALL
+        "[dim]" + "  " * indent + __decorations[indent % len(__decorations)] + " [/dim]"
     )
 
 
@@ -104,26 +100,33 @@ def dict_formatter(
     capitalize: bool = False,
     indent: int = 0,
     list_separator: Union[str, None] = None,
-):
+) -> list:
+    lines = list()
     for key in obj.keys():
         indent_text = get_decoration(indent)
         key_text = key.capitalize() if capitalize else key
         if isinstance(obj[key], dict):
-            print(indent_text + KEYNAME_COLOR + f"{key_text}:" + Style.RESET_ALL)
-            dict_formatter(obj[key], capitalize, indent + 1, list_separator)
+            lines.append(indent_text + f"{key_text}:")
+            lines.append(
+                dict_formatter(obj[key], capitalize, indent + 1, list_separator)
+            )
         elif isinstance(obj[key], list):
-            print(indent_text + KEYNAME_COLOR + f"{key_text}:" + Style.RESET_ALL)
-            list_formatter(obj[key], capitalize, indent + 1, list_separator)
+            lines.append(indent_text + f"{key_text}:")
+            lines.append(
+                list_formatter(obj[key], capitalize, indent + 1, list_separator)
+            )
         else:
             item = str(obj[key]).strip()
-            color = get_value_color(item)
-            print(indent_text + KEYNAME_COLOR + f"{key_text}: ", end="")
+            lines.append((indent_text + f"{key_text}: ", ""))
             if item.count("\n") > 0:
-                print()#add empty line
-                if autosyntax(item, indent + 2):
+                lines.append("")  # add empty line
+                syntax = autosyntax(item, indent + 2, echo=False)
+                if syntax:
+                    lines.append(syntax)
                     continue
             # Not JSON or YAML
-            print(color + item + Style.RESET_ALL)
+            lines.append(item)
+    return lines
 
 
 def list_formatter(
@@ -131,23 +134,20 @@ def list_formatter(
     capitalize: bool = False,
     indent: int = 0,
     list_separator: Optional[str] = None,
-):
+) -> list:
+    lines = []
     for item in obj:
         indent_text = get_decoration(indent)
         if isinstance(item, dict):
-            dict_formatter(item, capitalize, indent + 1)
+            lines.append(dict_formatter(item, capitalize, indent + 1))
         elif isinstance(item, list):
-            list_formatter(item, capitalize, indent + 1)
+            lines.append(list_formatter(item, capitalize, indent + 1))
         else:
             item = str(item).strip()
-            print(indent_text + get_value_color(item) + item + Style.RESET_ALL)
+            lines.append(indent_text + item)
         if list_separator:
-            print(
-                "  " * (indent + 1)
-                + Fore.LIGHTBLACK_EX
-                + list_separator
-                + Style.RESET_ALL
-            )
+            lines.append("  " * (indent + 1) + list_separator)
+    return lines
 
 
 def autoformat(
@@ -158,7 +158,8 @@ def autoformat(
     list_separator: Optional[str] = None,
     color: str = "",
     table: bool = False,
-) -> None:
+    echo: bool = True,
+) -> Union[None, str]:
     """Format and print a dict, list or other var
 
     Parameters
@@ -174,25 +175,53 @@ def autoformat(
     list_separator: str, optional
         List separator
     """
+    lines = []
     if jsonfmt:
         print_json(json.dumps(obj, default=str), indent=(indent + 1) * 2)
     else:
         if isinstance(obj, dict):
-            dict_formatter(obj, capitalize, indent, list_separator)
+            lines = dict_formatter(obj, capitalize, indent, list_separator)
         elif isinstance(obj, list):
-            if table and len(obj) > 0 and isinstance(obj[0], dict):
+            if table and len(obj) > 0 and isinstance(obj[0], dict) and echo:
+                # is a list of dict
                 head_color = random.choice(__random_colors)  # nosec
                 autotable(obj, f"bold {head_color}")
                 return None
-            list_formatter(obj, capitalize, indent, list_separator)
+            lines = list_formatter(obj, capitalize, indent, list_separator)
         elif isinstance(obj, str):
             if obj.count("\n") > 0:  # multiline
-                if not autosyntax(obj, indent):  # autodetect syntax and print
-                    print(obj)
+                lines = [autosyntax(obj, indent, echo=False)]
             else:  # singleline
-                print(obj)
+                lines = [obj]
         else:
-            print(color + str(obj) + Style.RESET_ALL)
+            lines = [str(obj)]
+    lines = flatten_list(lines)
+    if echo:
+        for line in lines:
+            if isinstance(line, tuple):
+                console.print(line[0], end=line[1])
+            else:
+                console.print(line)
+    else:
+        text = ""
+        for line in lines:
+            if isinstance(line, tuple):
+                text += line[0] + line[1]
+            elif isinstance(line, Syntax):
+                text += str(line.__doc__) + "\n"
+            else:
+                text += str(line) + "\n"
+        return text
+
+
+def flatten_list(items: list) -> list:
+    out = []
+    for item in items:
+        if isinstance(item, list):
+            out.extend(flatten_list(item))
+        else:
+            out.append(item)
+    return out
 
 
 def filter_params(params: Any, filter_keys: Union[tuple, list]) -> dict:
@@ -236,25 +265,6 @@ def puts(color: str = Style.NORMAL, *args, **kargs):
     print(color + "".join(args), Style.RESET_ALL, **kargs)
 
 
-def get_value_color(item: Any) -> str:
-    item = str(item)
-    color = VALUE_COLOR
-    if item.count("\n") > 0:
-        color = f"\n{MULTILINE_COLOR}"
-    else:
-        if PASS_REGEX.search(item):
-            color = PASS_COLOR
-        elif FAIL_REGEX.search(item):
-            color = FAIL_COLOR
-        elif UNKNOWN_REGEX.search(item):
-            color = UNKNOWN_COLOR
-        elif RUNNING_REGEX.search(item):
-            color = RUNNING_COLOR
-        elif SATORIURL_REGEX.search(item):
-            color = SATORIURL_COLOR
-    return color
-
-
 def autocolor(txt: str) -> str:
     rst = Style.RESET_ALL
     if txt.count("\n") > 0:
@@ -269,7 +279,12 @@ def autocolor(txt: str) -> str:
     return txt
 
 
-def autosyntax(item: str, indent: int = 0, lexer: Optional[str] = None) -> bool:
+def autosyntax(
+    item: str,
+    indent: int = 0,
+    lexer: Optional[str] = None,
+    echo: bool = True,
+) -> Union[bool, Syntax]:
     ind = (indent) * 2
     lang = None
     if lexer is None:
@@ -288,8 +303,11 @@ def autosyntax(item: str, indent: int = 0, lexer: Optional[str] = None) -> bool:
     if final_lexer is None:
         return False
     yml = Syntax(item, final_lexer, padding=(0, ind), theme="ansi_dark", word_wrap=True)
-    console.print(yml)
-    return True
+    if echo:
+        console.print(yml)
+        return True
+    else:
+        return yml
 
 
 def table_generator(
