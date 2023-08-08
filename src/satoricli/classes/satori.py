@@ -13,7 +13,6 @@ from pathlib import Path
 
 import requests
 import yaml
-from colorama import Fore
 from rich.progress import open as progress_open, Progress
 from satorici.validator import validate_playbook
 from satorici.validator.exceptions import PlaybookValidationError, PlaybookVariableError
@@ -24,12 +23,10 @@ from .bundler import get_local_files, make_bundle
 from .models import WebsocketArgs, arguments
 from .playbooks import display_public_playbooks
 from .utils import (
-    FAIL_COLOR,
     KEYNAME_COLOR,
     SATORIURL_COLOR,
     UUID4_REGEX,
     VALUE_COLOR,
-    autocolor,
     autoformat,
     autotable,
     check_monitor,
@@ -37,7 +34,6 @@ from .utils import (
     filter_params,
     format_outputs,
     log,
-    puts,
 )
 from .validations import get_parameters, validate_parameters
 
@@ -75,19 +71,19 @@ class Satori:
         with config_file.open(encoding="utf-8") as f:
             config: dict[str, dict[str, str]] = yaml.safe_load(f)
             if not isinstance(config, dict):
-                puts(FAIL_COLOR, "Invalid config format")
+                console.print("[error]Invalid config format")
                 sys.exit(1)
 
             profile = config.get(self.profile)
 
             if not (profile and isinstance(profile, dict)):
-                puts(FAIL_COLOR, "Invalid or non existent profile")
+                console.print("[error]Invalid or non existent profile")
                 profile_list = list(config.keys())
                 print(f"Profiles list: {', '.join(profile_list)}")
                 sys.exit(1)
 
             if not profile.get("token"):
-                puts(FAIL_COLOR, f"No token in profile: {self.profile}\n")
+                console.print(f"[error]No token in profile: {self.profile}\n")
                 print("satori-cli [-p PROFILE] config token TOKEN")
                 sys.exit(1)
 
@@ -107,7 +103,7 @@ class Satori:
             with config_file.open() as f:
                 config = yaml.safe_load(f)
                 if not isinstance(config, dict):
-                    puts(FAIL_COLOR, "Invalid config format")
+                    console.print("[error]Invalid config format")
                     sys.exit(1)
         else:
             config = {}
@@ -119,15 +115,14 @@ class Satori:
                 os.chmod(config_file, 0o600)
                 f.write(yaml.safe_dump(config))
         except Exception:
-            puts(
-                FAIL_COLOR,
-                "Could not write to home directory, writing into current directory",
+            console.print(
+                "[error]Could not write to home directory, writing into current directory",
             )
             config_file = self.config_paths[1]
             with open(config_file, "w") as f:
                 os.chmod(config_file, 0o600)
                 f.write(yaml.safe_dump(config))
-        puts(Fore.LIGHTGREEN_EX, key.capitalize() + " saved")
+        console.print("[info]" + key.capitalize() + " saved")
 
     def run(self, args: arguments):
         if args.path.startswith("satori://"):
@@ -145,7 +140,7 @@ class Satori:
 
                 params.update(data.keys())
             except Exception as e:
-                puts(FAIL_COLOR, str(e))
+                console.print("[error]" + str(e))
                 sys.exit(1)
 
         if path.is_dir():
@@ -153,7 +148,7 @@ class Satori:
         elif path.is_file():
             playbook = path
         else:
-            puts(FAIL_COLOR, "Playbook file or folder not found")
+            console.print("[error]Playbook file or folder not found")
             sys.exit(1)
 
         playbook_text = playbook.read_text()
@@ -210,13 +205,13 @@ class Satori:
         )
         log.debug(res.text)
         if not res.ok:
-            puts(FAIL_COLOR, "File upload failed")
+            console.print("[error]File upload failed")
             sys.exit(1)
         if is_monitor:
             exec_type = "monitor"
             exec_id = url["monitor"]
-            print(KEYNAME_COLOR + "Monitor ID: " + VALUE_COLOR + f"{exec_id}")
-            print(autocolor(f"Status: https://www.satori-ci.com/status?id={exec_id}"))
+            console.print(f"Monitor ID: {exec_id}")
+            console.print(f"Status: https://www.satori-ci.com/status?id={exec_id}")
         else:
             exec_type = "report"
             exec_id = url["fields"]["key"].split("/")[1]
@@ -252,7 +247,7 @@ class Satori:
         try:
             shutil.make_archive(str(temp_file), "gztar", directory)
         except Exception as e:
-            puts(FAIL_COLOR, f"Could not compress directory: {e}")
+            console.print(f"[error]Could not compress directory: {e}")
             sys.exit(1)
 
         res = self.api.runs("archive", {"secrets": args.data})
@@ -284,16 +279,14 @@ class Satori:
         if is_monitor:
             exec_type = "monitor"
             exec_id = mon
-            print(KEYNAME_COLOR + "Monitor ID: " + VALUE_COLOR + f"{mon}")
-            print(autocolor(f"Status: https://www.satori-ci.com/status?id={mon}"))
+            console.print(f"Monitor ID: {mon}")
+            console.print(f"Status: https://www.satori-ci.com/status?id={mon}")
         else:
             exec_type = "report"
             exec_id = bun["fields"]["key"].split("/")[1]
-            print(KEYNAME_COLOR + "Report ID: " + VALUE_COLOR + f"{exec_id}")
-            print(
-                autocolor(
-                    f"Report: https://www.satori-ci.com/report_details/?n={exec_id}"
-                )
+            console.print(f"Report ID: {exec_id}")
+            console.print(
+                f"Report: https://www.satori-ci.com/report_details/?n={exec_id}"
             )
         return {"type": exec_type, "id": exec_id}
 
@@ -329,10 +322,8 @@ class Satori:
             except requests.HTTPError as e:
                 code = e.response.status_code
                 if code in (404, 403):
-                    print(
-                        autocolor(
-                            f"{spin[pos]} Report status: Unknown | {elapsed_text}"
-                        ),
+                    console.print(
+                        f"{spin[pos]} Report status: Unknown | {elapsed_text}",
                         end="\r",
                     )
                     continue
@@ -347,10 +338,8 @@ class Satori:
                     result = "Pass" if fails == 0 else f"Fail({fails})"
                 else:
                     result = "Unknown"
-                print(
-                    autocolor(
-                        f"- Report status: {status} | Result: {result} | {elapsed_text}"
-                    ),
+                console.print(
+                    f"- Report status: {status} | Result: {result} | {elapsed_text}",
                     end="\r\n",
                 )
                 if args.report:  # --report or -r
@@ -381,14 +370,14 @@ class Satori:
                 if status == "Undefined":
                     comments = report_data.get("comments")
                     if comments:
-                        puts(FAIL_COLOR, f"Error: {comments}")
+                        console.print(f"[error]Error: {comments}")
                     sys.exit(1)
                 else:  # Completed
                     # Return code 0 if report status==pass else 1
                     sys.exit(0 if report_data["fails"] == 0 else 1)
             else:
-                print(
-                    autocolor(f"{spin[pos]} Report status: {status} | {elapsed_text}"),
+                console.print(
+                    f"{spin[pos]} Report status: {status} | {elapsed_text}",
                     end="\r",
                 )
 
@@ -439,7 +428,7 @@ class Satori:
         elif args.action in ("commits", "", "download", "pending"):
             info = self.api.repos("GET", args.id, args.action, params=params)
         else:
-            puts(FAIL_COLOR, "Unknown subcommand")
+            console.print("[error]Unknown subcommand")
             sys.exit(1)
 
         if args.id != "" or args.action != "" or args.json:

@@ -59,7 +59,7 @@ class SatoriHighlighter(RegexHighlighter):
         r"(?P<testcase_pass>\w+ > [^:]+: Pass$)",
         r"(?P<testcase_fail>\w+ > [^:]+: Fail$)",
         r"(?P<db_date>\d{4}-\d?\d-\d?\d\w\d{2}:\d{2}:\d{2})",
-        r"(?P<id>(r|m|p)\w{15}$)"
+        r"(?P<id>(r|m|p)\w{15}$)",
     ]
 
 
@@ -260,33 +260,6 @@ def check_monitor(playbook):
         config = yaml.safe_load(stream)
         settings = config.get("settings", {})
         return set() != {"rate", "cron"} & settings.keys()
-
-
-def puts(color: str = Style.NORMAL, *args, **kargs):
-    """[deprecated] Print with colors, resets the color after printing.
-    Use console.print(str) or console.log(object) instead
-
-    Parameters
-    ----------
-    color : Any, optional
-        Color of the text, by default Style.NORMAL
-    """
-    # color, args adds an empty space??
-    print(color + "".join(args), Style.RESET_ALL, **kargs)
-
-
-def autocolor(txt: str) -> str:
-    rst = Style.RESET_ALL
-    if txt.count("\n") > 0:
-        txt = KEYNAME_REGEX.sub(rf"{KEYNAME_COLOR}\1\n{MULTILINE_COLOR}", txt + rst, 1)
-        return txt
-    txt = KEYNAME_REGEX.sub(rf"{KEYNAME_COLOR}\1{VALUE_COLOR}", txt)
-    txt = PASS_REGEX.sub(rf"{PASS_COLOR}\1{rst}", txt)
-    txt = RUNNING_REGEX.sub(rf"{RUNNING_COLOR}\1{rst}", txt)
-    txt = FAIL_REGEX.sub(rf"{FAIL_COLOR}\1{rst}", txt)
-    txt = UNKNOWN_REGEX.sub(rf"{UNKNOWN_COLOR}\1{rst}", txt)
-    txt = SATORIURL_REGEX.sub(rf"{SATORIURL_COLOR}\1{rst}", txt)
-    return txt
 
 
 def autosyntax(
