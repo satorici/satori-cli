@@ -34,16 +34,16 @@ positive:
 
   run:
     pass_report:
-      test:
       - [ satori-cli run .satori/import/pass.yml --report ]
 
     import_sync:
-      test:
       - [ satori-cli run .satori/import --sync ]
 
     url_output:
-      test:
       - [ "satori-cli run satori://web/testssl.yml --data=\"{'URL':'https://www.satori-ci.com'}\" --output" ]
+      
+    input:
+    - [ satori-cli run .satori/input.yml --sync ]
 
   report:
     assertReturnCode: 0
