@@ -159,7 +159,7 @@ class Satori:
         try:
             playbook_text = playbook.read_text()
         except FileNotFoundError:
-            console.print(f"Error: playbook not found", e)
+            console.print(f"Error: playbook not found")
             sys.exit(1)
 
         config = None
@@ -171,7 +171,7 @@ class Satori:
                 try:
                     validate_playbook(config)
                 except TypeError:
-                    console.print(f"Error: playbook not found or invalid", e)
+                    console.print(f"Error: playbook not found or invalid")
                     sys.exit(1)
             for warning in w:
                 if warning.category == NoLogMonitorWarning:
