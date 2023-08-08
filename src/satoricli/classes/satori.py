@@ -155,16 +155,24 @@ class Satori:
         else:
             puts(FAIL_COLOR, "Playbook file or folder not found")
             sys.exit(1)
+        
+        try:
+            playbook_text = playbook.read_text()
+        except FileNotFoundError:
+            console.print(f"Error: playbook not found", e)
+            sys.exit(1)
 
-        playbook_text = playbook.read_text()
         config = None
 
         try:
             config = yaml.safe_load(playbook_text)
 
             with warnings.catch_warnings(record=True) as w:
-                validate_playbook(config)
-
+                try:
+                    validate_playbook(config)
+                except TypeError:
+                    console.print(f"Error: playbook not found or invalid", e)
+                    sys.exit(1)
             for warning in w:
                 if warning.category == NoLogMonitorWarning:
                     console.print(
