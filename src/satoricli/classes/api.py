@@ -7,10 +7,8 @@ from requests.exceptions import HTTPError
 from typing import Callable, Union, Any, Optional
 from websocket import WebSocketApp
 from rich.live import Live
-from rich.syntax import Syntax
-import yaml
 
-from .utils import FAIL_COLOR, autoformat, log, console
+from .utils import  autoformat, log, console
 from .models import arguments, WebsocketArgs
 
 HOST = "https://api.satori-ci.com"
@@ -55,7 +53,7 @@ class SatoriAPI:
             except Exception:
                 status = res.text
             if self.debug:
-                autoformat(status, capitalize=True, color=FAIL_COLOR, jsonfmt=self.json)
+                autoformat(status, capitalize=True,  jsonfmt=self.json)
             else:
                 msg = ERROR_MESSAGE
                 if isinstance(status, dict) and "detail" in status:

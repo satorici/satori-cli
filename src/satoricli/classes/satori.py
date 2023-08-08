@@ -23,10 +23,7 @@ from .bundler import get_local_files, make_bundle
 from .models import WebsocketArgs, arguments
 from .playbooks import display_public_playbooks
 from .utils import (
-    KEYNAME_COLOR,
-    SATORIURL_COLOR,
     UUID4_REGEX,
-    VALUE_COLOR,
     autoformat,
     autotable,
     check_monitor,
@@ -215,12 +212,9 @@ class Satori:
         else:
             exec_type = "report"
             exec_id = url["fields"]["key"].split("/")[1]
-            print(KEYNAME_COLOR + "Report ID: " + VALUE_COLOR + f"{exec_id}")
-            print(
-                KEYNAME_COLOR
-                + "Report: "
-                + SATORIURL_COLOR
-                + f"https://www.satori-ci.com/report_details/?n={exec_id}"
+            console.print(f"Report ID: {exec_id}")
+            console.print(
+                f"Report: https://www.satori-ci.com/report_details/?n={exec_id}"
             )
         return {"type": exec_type, "id": exec_id}
 

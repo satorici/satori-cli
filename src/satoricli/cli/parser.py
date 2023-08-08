@@ -5,7 +5,6 @@ import subprocess
 import sys
 import requests  # autoupgrade
 from importlib import metadata
-from colorama import just_fix_windows_console
 from rich import print
 from pkg_resources import get_distribution, DistributionNotFound  # autoupgrade
 from packaging import version  # autoupgrade
@@ -16,7 +15,6 @@ from ..classes.satori import Satori
 from ..classes.utils import console
 
 VERSION = metadata.version("satori-ci")
-just_fix_windows_console()
 
 
 def add_satori_arguments(cmd: ArgumentParser):

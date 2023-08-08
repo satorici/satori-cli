@@ -4,7 +4,6 @@ import json
 import yaml
 import re
 from typing import Any
-from colorama import Fore, Style
 from rich.logging import RichHandler
 import logging
 from rich import print_json
@@ -29,16 +28,6 @@ FAIL_REGEX = re.compile(r"(fail(\(\d+\))?|(?<!\w)error(?!\w)|^no$)", re.IGNORECA
 UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
 SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
 KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)")  # ex: "key: "
-
-# Colors outputs | TODO: remove this
-PASS_COLOR = Fore.LIGHTGREEN_EX
-FAIL_COLOR = Fore.LIGHTRED_EX
-UNKNOWN_COLOR = Fore.LIGHTYELLOW_EX
-RUNNING_COLOR = Fore.LIGHTBLUE_EX
-KEYNAME_COLOR = Fore.WHITE
-SATORIURL_COLOR = Fore.LIGHTBLUE_EX
-VALUE_COLOR = Fore.CYAN
-MULTILINE_COLOR = Fore.YELLOW
 
 # Set rich theme and console
 # https://rich.readthedocs.io/en/latest/appendix/colors.html#appendix-colors
