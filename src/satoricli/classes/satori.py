@@ -388,6 +388,8 @@ class Satori:
             )
             params["url"] = args.id
             info = self.api.repos_scan("GET", "", "", params=params)
+            if args.sync:
+                self.scan_sync(args.id)
         elif args.action == "clean":
             params = filter_params(args, ("id", "delete_commits"))
             info = self.api.repos("GET", args.id, args.action, params=params)
@@ -409,16 +411,18 @@ class Satori:
             info = self.api.repos_scan("GET", args.id, "stop", params=params)
         elif args.action == "scan-status":
             if args.sync:
-                self.ws_args = WebsocketArgs(action="scan-status", id=args.id)
-                self.api.ws_connect(self.ws_args)
-                sys.exit(0)
+                self.scan_sync(args.id)
             else:
                 info = self.api.repos_scan("GET", args.id, "status", params=params)
         elif args.action == "check-forks":
             info = self.api.repos_scan("GET", args.id, args.action, params=params)
+            if args.sync:
+                self.scan_sync(args.id)
         elif args.action == "check-commits":
             params = filter_params(args, ("id", "branch"))
             info = self.api.repos_scan("GET", args.id, args.action, params=params)
+            if args.sync:
+                self.scan_sync(args.id)
         elif args.action in ("commits", "", "download", "pending"):
             info = self.api.repos("GET", args.id, args.action, params=params)
         else:
@@ -440,6 +444,11 @@ class Satori:
             match = UUID4_REGEX.findall(report)
             if match:
                 self.run_sync({"type": "report", "id": match[0]}, args)
+
+    def scan_sync(self, id_):
+        self.ws_args = WebsocketArgs(action="scan-status", id=id_)
+        self.api.ws_connect(self.ws_args)
+        sys.exit(0)
 
     def report(self, args: arguments):
         """Show a list of reports"""
