@@ -32,13 +32,13 @@ positive:
 
   run:
     pass_report:
-      - [ satori-cli run .satori/import/pass.yml --report ]
+    - [ satori-cli run .satori/import/pass.yml --report ]
 
     import_sync:
-      - [ satori-cli run .satori/import --sync ]
+    - [ satori-cli run .satori/import --sync ]
 
     url_output:
-      - [ "satori-cli run satori://web/testssl.yml --data=\"{'URL':'https://www.satori-ci.com'}\" --output" ]
+    - [ "satori-cli run satori://web/testssl.yml --data=\"{'URL':'https://www.satori-ci.com'}\" --output" ]
       
     input:
     - [ satori-cli run .satori/input.yml --sync ]
@@ -131,17 +131,14 @@ positive:
   monitor:
     assertReturnCode: 0
     list:
-      test:
-      - [ satori-cli monitor ]
+    - [ satori-cli monitor ]
 
     new:
-    - ["satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt"]
+    - [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt" ]
 
     echo:
-    - [ export ID=$(cat monitor_id.txt); echo $ID ]
-
-    - [ ]
-
+    - [ "export ID=$(cat monitor_id.txt); echo $ID" ]
+    
     single: # wait until start
     - [ "sleep 10; export ID=$(cat monitor_id.txt); satori-cli monitor $ID" ]
 
@@ -181,7 +178,7 @@ positive:
     - [ satori-cli team test_team repos ]
 
     add_repo:
-    - [ satori-cli team test_team add_repo --repo="satorici/hello_world" ]
+    - [ satori-cli team test_team add_repo --repo='satorici/hello_world' ]
 
     team_with_repos:
     - [ satori-cli team test_team repos ]
@@ -202,4 +199,3 @@ negative:
 
     empty_directory:
     - [ mkdir test; cd test; satori-cli run ./ ]
-
