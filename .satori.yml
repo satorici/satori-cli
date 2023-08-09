@@ -143,16 +143,16 @@ positive:
     - [ ]
 
     single: # wait until start
-    - [ "sleep 10; export ID=$(cat monitor_id.txt); satori-cli monitor $ID ]
+    - [ "sleep 10; export ID=$(cat monitor_id.txt); satori-cli monitor $ID" ]
 
     start:
-    - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID start ]
+    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID start" ]
 
     stop:
-    - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID stop ]
+    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID stop" ]
 
     delete:
-    - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete ]
+    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete" ]
 
   teams:
     assertReturnCode: 0
@@ -172,10 +172,10 @@ positive:
     - [ satori-cli team test_team members ]
 
     add_member:
-    - [ satori-cli team test_team add_member --email="test@satori-ci.com" ]
+    - [ satori-cli team test_team add_member --email='test@satori-ci.com' ]
 
     del_member:
-    - [ satori-cli team test_team del_member --email="user@satori-ci.com" ]
+    - [ satori-cli team test_team del_member --email='test@satori-ci.com' ]
       
     team_without_repos:
     - [ satori-cli team test_team repos ]
