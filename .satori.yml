@@ -1,11 +1,9 @@
 settings:
-  name: Satori CLI Test 
+  name: "Satori CLI Tests"
   log: slack
 
 import:
   - "satori://code/semgrep-secrets.yml"
-  #- "satori://code/semgrep.yml"
-  #- "satori://code/python/pylint.yml"
 
 positive:
   assertReturnCode: 0
@@ -74,36 +72,29 @@ positive:
 
   playbook:
     list:
-      test:
-      - [ satori-cli playbook ]
+    - [ satori-cli playbook ]
 
     list_public:
-      test:
-      - [ satori-cli playbook --public ]
+    - [ satori-cli playbook --public ]
 
     echo:
-    - [ export ID=$(cat report_id2.txt); echo $ID ]
+    - [ "export ID=$(cat report_id2.txt); echo $ID" ]
 
     single:
-      test:
-      - [ export ID=$(cat report_id2.txt); satori-cli playbook $ID ]
+    - [ "export ID=$(cat report_id2.txt); satori-cli playbook $ID" ]
 
     delete:
-      test:
-      - [ export ID=$(cat report_id2.txt); satori-cli playbook $ID delete ]
+    - [ "export ID=$(cat report_id2.txt); satori-cli playbook $ID delete" ]
 
   repo:
     list:
-      test:
-      - [ satori-cli repo ]
+    - [ satori-cli repo ]
 
     single:
-      test:
-      - [ satori-cli repo satorici/hello_world ]
+    - [ satori-cli repo satorici/hello_world ]
 
     run:
-      test:
-      - [ satori-cli repo satorici/hello_world run ]
+    - [ satori-cli repo satorici/hello_world run ]
   # TODO: needs sync mode
   # check_commits: 
   #   test:
@@ -149,67 +140,54 @@ positive:
     echo:
     - [ export ID=$(cat monitor_id.txt); echo $ID ]
 
-    sleep: # wait until start
-    - [ sleep 10 ]
+    - [ ]
 
-    single:
-      test:
-      - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID ]
+    single: # wait until start
+    - [ "sleep 10; export ID=$(cat monitor_id.txt); satori-cli monitor $ID ]
 
     start:
-      test:
-      - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID start ]
+    - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID start ]
 
     stop:
-      test:
-      - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID stop ]
+    - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID stop ]
 
     delete:
-      test:
-      - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete ]
+    - [ export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete ]
 
   teams:
     assertReturnCode: 0
     list:
-      test:
-      - [ satori-cli team ]
+    - [ satori-cli team ]
 
     clean:
     - [ satori-cli team test_team delete || true ]
 
     create:
-      test:
-      - [ satori-cli team test_team create ]
+    - [ satori-cli team test_team create ]
 
     single:
-      test:
-      - [ satori-cli team test_team ]
+    - [ satori-cli team test_team ]
 
     members:
-      test:
-      - [ satori-cli team test_team members ]
+    - [ satori-cli team test_team members ]
 
     add_member:
-      test:
-      - [ satori-cli team test_team add_member --email="test@satori-ci.com" ]
+    - [ satori-cli team test_team add_member --email="test@satori-ci.com" ]
 
     del_member:
-      test:
-      - [ satori-cli team test_team del_member --email="user@satori-ci.com" ]
+    - [ satori-cli team test_team del_member --email="user@satori-ci.com" ]
       
     team_without_repos:
     - [ satori-cli team test_team repos ]
 
     add_repo:
-      test:
-      - [ satori-cli team test_team add_repo --repo="satorici/hello_world" ]
+    - [ satori-cli team test_team add_repo --repo="satorici/hello_world" ]
 
     team_with_repos:
     - [ satori-cli team test_team repos ]
     
     delete:
-      test:
-      - [ satori-cli team test_team delete ]
+    - [ satori-cli team test_team delete ]
 
 negative:
   assertReturnCode: 1
@@ -217,14 +195,11 @@ negative:
 
   run:
     fail:
-      test:
-      - [ satori-cli run .satori/fail.yml --report ]
+    - [ satori-cli run .satori/fail.yml --report ]
 
     empty_playbook:
-      test:
-      - [ satori-cli run .satori/empty.yml --report ]
+    - [ satori-cli run .satori/empty.yml --report ]
 
     empty_directory:
-      test:
-      - [ mkdir test; cd test; satori-cli run ./ ]
+    - [ mkdir test; cd test; satori-cli run ./ ]
 
