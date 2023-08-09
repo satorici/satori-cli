@@ -65,7 +65,7 @@ positive:
     - [ "export ID=$(cat report_id.txt); satori-cli report $ID delete" ]
 
     new_async: # new report for stop is needed because the first one is already stopped
-    - [ "satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep \"r\\[a-zA-Z0-9]{15}\" -o >> report_id2.txt" ]
+    - [ "satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt" ]
 
     stop: # wait until start
     - [ "sleep 10; export ID=$(cat report_id2.txt); satori-cli report $ID stop --debug" ]
