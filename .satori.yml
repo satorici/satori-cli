@@ -33,6 +33,9 @@ positive:
     pass_report:
     - [ satori-cli run .satori/import/pass.yml --report ]
 
+    pass_old-async:
+    - [ cp .satori/import/pass.yml .satori/import/pass_old.yml; touch -t 197001010000 .satori/import/pass_old.yml; satori-cli run .satori/import/pass_old.yml ]
+    
     import_sync:
     - [ satori-cli run .satori/import --sync ]
 
