@@ -134,7 +134,7 @@ positive:
     - [ satori-cli monitor ]
 
     new:
-    - [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | egrep \"m\\[a-zA-Z0-9]{15}\" -o >> monitor_id.txt" ]
+    - [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt" ]
 
     echo:
     - [ "export ID=$(cat monitor_id.txt); echo $ID" ]
