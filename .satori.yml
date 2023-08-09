@@ -27,8 +27,7 @@ positive:
     - [ satori-cli config token "$(TOKEN)" ]
 
   dashboard:
-    test:
-    - [ satori-cli ]
+  - [ satori-cli ]
 
   run:
     pass_report:
@@ -130,17 +129,17 @@ positive:
   
   monitor:
     assertReturnCode: 0
-    list:
-    - [ satori-cli monitor ]
-
     new:
     - [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt" ]
 
     echo:
     - [ "export ID=$(cat monitor_id.txt); echo $ID" ]
     
+    list:
+    - [ "sleep 5; satori-cli monitor" ]
+    
     single: # wait until start
-    - [ "sleep 10; export ID=$(cat monitor_id.txt); satori-cli monitor $ID --debug" ]
+    - [ "sleep 5; export ID=$(cat monitor_id.txt); satori-cli monitor $ID --debug" ]
 
     start:
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID start" ]
