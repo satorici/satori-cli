@@ -1,6 +1,6 @@
 settings:
   name: "Satori CLI Tests"
-  log: slack
+  #log: slack
 
 import:
   - "satori://code/semgrep-secrets.yml"
@@ -47,7 +47,7 @@ positive:
     assertReturnCode: 0
 
     new_sync:
-    - [ satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt ]
+    - [ "satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep \"r\\[a-zA-Z0-9\\]{15}\" -o >> report_id.txt" ]
 
     echo_ID:
     - [ "export ID=$(cat report_id.txt); echo $ID" ]
@@ -65,7 +65,7 @@ positive:
     - [ "export ID=$(cat report_id.txt); satori-cli report $ID delete" ]
 
     new_async: # new report for stop is needed because the first one is already stopped
-    - [ satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt ]
+    - [ "satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep \"r\\[a-zA-Z0-9\\]{15}\" -o >> report_id2.txt" ]
 
     stop: # wait until start
     - [ "sleep 10; export ID=$(cat report_id2.txt); satori-cli report $ID stop --debug" ]
@@ -134,7 +134,7 @@ positive:
     - [ satori-cli monitor ]
 
     new:
-    - [ satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt ]
+    - [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | egrep \"m\\[a-zA-Z0-9\\]{15}\" -o >> monitor_id.txt" ]
 
     echo:
     - [ "export ID=$(cat monitor_id.txt); echo $ID" ]
