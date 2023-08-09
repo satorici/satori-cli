@@ -140,7 +140,7 @@ positive:
     - [ "export ID=$(cat monitor_id.txt); echo $ID" ]
     
     single: # wait until start
-    - [ "sleep 10; export ID=$(cat monitor_id.txt); satori-cli monitor $ID" ]
+    - [ "sleep 10; export ID=$(cat monitor_id.txt); satori-cli monitor $ID --debug" ]
 
     start:
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID start" ]
