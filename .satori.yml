@@ -47,8 +47,8 @@ positive:
     assertReturnCode: 0
 
     new_sync:
-    - [ "satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep \"r\\[a-zA-Z0-9]{15}\" -o >> report_id.txt" ]
-
+    - [ "satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt" ]
+    
     echo_ID:
     - [ "export ID=$(cat report_id.txt); echo $ID" ]
 
