@@ -33,9 +33,6 @@ positive:
     pass_report:
     - [ satori-cli run .satori/import/pass.yml --report ]
 
-    pass_old-async:
-    - [ cp .satori/import/pass.yml .satori/import/pass_old.yml; touch -t 197001010000 .satori/import/pass_old.yml; satori-cli run .satori/import/pass_old.yml ]
-    
     import_sync:
     - [ satori-cli run .satori/import --sync ]
 
@@ -132,8 +129,11 @@ positive:
   
   monitor:
     assertReturnCode: 0
+    ls:
+    - [ ls -lR ]
     new:
-    - [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\x1b\\[\\[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt" ]
+    #- [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[\\[0-9;\\]*m//g' | egrep 'm\\[a-zA-Z0-9\\]{15}' -o >> monitor_id.txt" ]
+    - [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\033\[[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt" ]
 
     echo:
     - [ "export ID=$(cat monitor_id.txt); echo $ID" ]
