@@ -87,7 +87,7 @@ The code and the Satori playbook instructions were executed on a new Docker inst
   
   Is output produced? 
   
-  * **assertStdoutEquals**: String*
+  * **assertStdoutEqual**: String*
   
   Is the output equal to the String?
   
