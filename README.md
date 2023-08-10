@@ -22,7 +22,7 @@ pip3 install satori-ci
 3. Replace the string YOUR_TOKEN with your clipboard on the next command: 
 
 ```console 
-satori-cli config token YOUR_TOKEN`
+satori-cli config token YOUR_TOKEN
 ```
 
 ## Actions
