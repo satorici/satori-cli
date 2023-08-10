@@ -56,7 +56,7 @@ How can you test aumatically that that piece of software behaves according to sp
 ```console
 foo@bar:~$ cat .satori.yml
 test:
-    assertStdoutEqual: Hello World
+    assertStdoutEqual: "Hello World\n"
     python:
     - [ python hello_world.py ]
 ```
