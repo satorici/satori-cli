@@ -173,7 +173,7 @@ positive:
     - [ satori-cli team test_team repos ]
 
     add_repo:
-    - [ satori-cli team test_team add_repo --repo_name='satorici/hello_world' ]
+    - [ satori-cli team test_team add_repo --repo='satorici/hello_world' ]
 
     team_with_repos:
     - [ satori-cli team test_team repos ]
