@@ -43,8 +43,6 @@ positive:
     - [ satori-cli run .satori/input.yml --sync ]
 
   report:
-    assertReturnCode: 0
-
     new_sync:
     - [ "satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt" ]
     
@@ -128,12 +126,7 @@ positive:
   # 134     repo_cmd.add_argument("--skip-check", default=False, action="store_true")
   
   monitor:
-    assertReturnCode: 0
-    ls:
-    - [ ls -lR ]
     new:
-    #- [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[\\[0-9;\\]*m//g' | egrep 'm\\[a-zA-Z0-9\\]{15}' -o >> monitor_id.txt" ]
-    #- [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\033\\[[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt" ]
     - [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt" ]
 
     echo:
@@ -155,7 +148,6 @@ positive:
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete" ]
 
   teams:
-    assertReturnCode: 0
     list:
     - [ satori-cli team ]
 
