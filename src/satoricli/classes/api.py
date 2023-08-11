@@ -8,7 +8,7 @@ from typing import Callable, Union, Any, Optional
 from websocket import WebSocketApp
 from rich.live import Live
 
-from .utils import  autoformat, log, console
+from .utils import autoformat, log, console
 from .models import arguments, WebsocketArgs
 
 HOST = "https://api.satori-ci.com"
@@ -53,7 +53,7 @@ class SatoriAPI:
             except Exception:
                 status = res.text
             if self.debug:
-                autoformat(status, capitalize=True,  jsonfmt=self.json)
+                autoformat(status, capitalize=True, jsonfmt=self.json)
             else:
                 msg = ERROR_MESSAGE
                 if isinstance(status, dict) and "detail" in status:
@@ -69,8 +69,12 @@ class SatoriAPI:
     def ws_connect(self, args: WebsocketArgs, on_message: Optional[Callable] = None):
         headers = self.__session__.headers
         log.debug(headers)
-        url = re.sub(r"https?://", "ws://", self.server)
-        log.debug(url + "/")
+        url = self.server
+        if url.startswith("https://"):
+            url = url.replace("https://", "wss://")
+        elif url.startswith("http://"):
+            url = url.replace("http://", "ws://")
+        log.debug(f"{url = }")
         self.on_message = on_message
         self.live = Live("Loading data...", console=console, auto_refresh=False)
         try:
