@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from typing import Any, Union
+import json
+from typing import Any, Optional, Union
 from argparse import Namespace
 
 
 @dataclass
-class args:
+class Args:
     id: str
     action: str
     profile: str
@@ -26,5 +27,13 @@ class args:
     deleted: bool
     files: bool
 
+@dataclass
+class WebsocketArgs:
+    action: str
+    id: str
+    params: Optional[dict] = None
 
-arguments = Union[Namespace, args]
+    def to_json(self):
+        return json.dumps(self.__dict__)
+
+arguments = Union[Namespace, Args]

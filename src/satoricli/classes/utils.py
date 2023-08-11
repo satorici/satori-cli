@@ -4,7 +4,6 @@ import json
 import yaml
 import re
 from typing import Any
-from colorama import Fore, Style
 from rich.logging import RichHandler
 import logging
 from rich import print_json
@@ -30,16 +29,6 @@ UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
 SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
 KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)")  # ex: "key: "
 
-# Colors outputs | TODO: remove this
-PASS_COLOR = Fore.LIGHTGREEN_EX
-FAIL_COLOR = Fore.LIGHTRED_EX
-UNKNOWN_COLOR = Fore.LIGHTYELLOW_EX
-RUNNING_COLOR = Fore.LIGHTBLUE_EX
-KEYNAME_COLOR = Fore.WHITE
-SATORIURL_COLOR = Fore.LIGHTBLUE_EX
-VALUE_COLOR = Fore.CYAN
-MULTILINE_COLOR = Fore.YELLOW
-
 # Set rich theme and console
 # https://rich.readthedocs.io/en/latest/appendix/colors.html#appendix-colors
 class SatoriHighlighter(RegexHighlighter):
@@ -47,14 +36,19 @@ class SatoriHighlighter(RegexHighlighter):
     highlights = [
         r"(?P<value>(?<=:\s)\w+$)",
         r"(?P<email>[\w-]+@([\w-]+\.)+[\w-]+)",
-        r"(?P<pass>(?<!\w)(pass|completed|yes|true)(?!\w))",
-        r"(?P<pending>(?<!\w)(pending|running)(?!\w))",
-        r"(?P<fail>(?<!\w)(fail(\(\d+\))?|error|no|false)(?!\w))",
-        r"(?P<unknown>(?<!\w)(unknown|undefined|null|None)(?!\w))",
+        r"(?P<pass>(?<!\w)((p|P)ass|(c|C)ompleted|(y|Y)es|(t|T)rue)(?!\w))",
+        r"(?P<pending>(?<!\w)((p|P)ending|(r|R)unning)(?!\w))",
+        r"(?P<fail>(?<!\w)((f|F)ail(\(\d+\))?|(e|E)rror|(n|N)o|(f|F)alse)(?!\w))",
+        r"(?P<unknown>(?<!\w)((u|U)nknown|undefined|null|None)(?!\w))",
         r"(?P<satori_com>https?:\/\/(www\.)satori-ci\.com\S+)",
+        r"(?P<satori_uri>satori:\/\/\S+)",
         r"(?P<key>([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)",
         r"(?P<number>(?<!\w)\-?[0-9]+\.?[0-9]*(e[-+]?\d+?)?\b|0x[0-9a-fA-F]*)",
         r"(?P<uuid>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
+        r"(?P<testcase_pass>\w+ > [^:]+: Pass$)",
+        r"(?P<testcase_fail>\w+ > [^:]+: Fail$)",
+        r"(?P<db_date>\d{4}-\d?\d-\d?\d\w\d{2}:\d{2}:\d{2})",
+        r"(?P<id>(r|m|p)\w{15}$)",
     ]
 
 
@@ -73,10 +67,15 @@ satori_theme = Theme(
         "satori.fail": "bright_red",
         "satori.unknown": "bright_yellow",
         "satori.satori_com": "turquoise2",
+        "satori.satori_uri": "dark_turquoise",
         "satori.key": "white b",
         "satori.value": "cyan1",
         "satori.number": "deep_sky_blue1",
         "satori.uuid": "purple",
+        "satori.testcase_pass": "green",
+        "satori.testcase_fail": "red",
+        "satori.db_date": "bright_magenta",
+        "satori.id": "blue",
     }
 )
 console = Console(highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False)
@@ -91,11 +90,7 @@ log = logging.getLogger()
 
 def get_decoration(indent):
     return (
-        Style.DIM
-        + "  " * indent
-        + __decorations[indent % len(__decorations)]
-        + " "
-        + Style.RESET_ALL
+        "[dim]" + "  " * indent + __decorations[indent % len(__decorations)] + " [/dim]"
     )
 
 
@@ -104,26 +99,33 @@ def dict_formatter(
     capitalize: bool = False,
     indent: int = 0,
     list_separator: Union[str, None] = None,
-):
+) -> list:
+    lines = list()
     for key in obj.keys():
         indent_text = get_decoration(indent)
         key_text = key.capitalize() if capitalize else key
         if isinstance(obj[key], dict):
-            print(indent_text + KEYNAME_COLOR + f"{key_text}:" + Style.RESET_ALL)
-            dict_formatter(obj[key], capitalize, indent + 1, list_separator)
+            lines.append(indent_text + f"{key_text}:")
+            lines.append(
+                dict_formatter(obj[key], capitalize, indent + 1, list_separator)
+            )
         elif isinstance(obj[key], list):
-            print(indent_text + KEYNAME_COLOR + f"{key_text}:" + Style.RESET_ALL)
-            list_formatter(obj[key], capitalize, indent + 1, list_separator)
+            lines.append(indent_text + f"{key_text}:")
+            lines.append(
+                list_formatter(obj[key], capitalize, indent + 1, list_separator)
+            )
         else:
             item = str(obj[key]).strip()
-            color = get_value_color(item)
-            print(indent_text + KEYNAME_COLOR + f"{key_text}: ", end="")
+            lines.append((indent_text + f"{key_text}: ", ""))
             if item.count("\n") > 0:
-                print()#add empty line
-                if autosyntax(item, indent + 2):
+                lines.append("")  # add empty line
+                syntax = autosyntax(item, indent + 2, echo=False)
+                if syntax:
+                    lines.append(syntax)
                     continue
             # Not JSON or YAML
-            print(color + item + Style.RESET_ALL)
+            lines.append(item)
+    return lines
 
 
 def list_formatter(
@@ -131,23 +133,20 @@ def list_formatter(
     capitalize: bool = False,
     indent: int = 0,
     list_separator: Optional[str] = None,
-):
+) -> list:
+    lines = []
     for item in obj:
         indent_text = get_decoration(indent)
         if isinstance(item, dict):
-            dict_formatter(item, capitalize, indent + 1)
+            lines.append(dict_formatter(item, capitalize, indent + 1))
         elif isinstance(item, list):
-            list_formatter(item, capitalize, indent + 1)
+            lines.append(list_formatter(item, capitalize, indent + 1))
         else:
             item = str(item).strip()
-            print(indent_text + get_value_color(item) + item + Style.RESET_ALL)
+            lines.append(indent_text + item)
         if list_separator:
-            print(
-                "  " * (indent + 1)
-                + Fore.LIGHTBLACK_EX
-                + list_separator
-                + Style.RESET_ALL
-            )
+            lines.append("  " * (indent + 1) + list_separator)
+    return lines
 
 
 def autoformat(
@@ -158,7 +157,8 @@ def autoformat(
     list_separator: Optional[str] = None,
     color: str = "",
     table: bool = False,
-) -> None:
+    echo: bool = True,
+) -> Union[None, str]:
     """Format and print a dict, list or other var
 
     Parameters
@@ -174,25 +174,53 @@ def autoformat(
     list_separator: str, optional
         List separator
     """
+    lines = []
     if jsonfmt:
         print_json(json.dumps(obj, default=str), indent=(indent + 1) * 2)
     else:
         if isinstance(obj, dict):
-            dict_formatter(obj, capitalize, indent, list_separator)
+            lines = dict_formatter(obj, capitalize, indent, list_separator)
         elif isinstance(obj, list):
-            if table and len(obj) > 0 and isinstance(obj[0], dict):
+            if table and len(obj) > 0 and isinstance(obj[0], dict) and echo:
+                # is a list of dict
                 head_color = random.choice(__random_colors)  # nosec
                 autotable(obj, f"bold {head_color}")
                 return None
-            list_formatter(obj, capitalize, indent, list_separator)
+            lines = list_formatter(obj, capitalize, indent, list_separator)
         elif isinstance(obj, str):
             if obj.count("\n") > 0:  # multiline
-                if not autosyntax(obj, indent):  # autodetect syntax and print
-                    print(obj)
+                lines = [autosyntax(obj, indent, echo=False)]
             else:  # singleline
-                print(obj)
+                lines = [obj]
         else:
-            print(color + str(obj) + Style.RESET_ALL)
+            lines = [str(obj)]
+    lines = flatten_list(lines)
+    if echo:
+        for line in lines:
+            if isinstance(line, tuple):
+                console.print(line[0], end=line[1])
+            else:
+                console.print(line)
+    else:
+        text = ""
+        for line in lines:
+            if isinstance(line, tuple):
+                text += line[0] + line[1]
+            elif isinstance(line, Syntax):
+                text += str(line.__doc__) + "\n"
+            else:
+                text += str(line) + "\n"
+        return text
+
+
+def flatten_list(items: list) -> list:
+    out = []
+    for item in items:
+        if isinstance(item, list):
+            out.extend(flatten_list(item))
+        else:
+            out.append(item)
+    return out
 
 
 def filter_params(params: Any, filter_keys: Union[tuple, list]) -> dict:
@@ -223,53 +251,12 @@ def check_monitor(playbook):
         return set() != {"rate", "cron"} & settings.keys()
 
 
-def puts(color: str = Style.NORMAL, *args, **kargs):
-    """[deprecated] Print with colors, resets the color after printing.
-    Use console.print(str) or console.log(object) instead
-
-    Parameters
-    ----------
-    color : Any, optional
-        Color of the text, by default Style.NORMAL
-    """
-    # color, args adds an empty space??
-    print(color + "".join(args), Style.RESET_ALL, **kargs)
-
-
-def get_value_color(item: Any) -> str:
-    item = str(item)
-    color = VALUE_COLOR
-    if item.count("\n") > 0:
-        color = f"\n{MULTILINE_COLOR}"
-    else:
-        if PASS_REGEX.search(item):
-            color = PASS_COLOR
-        elif FAIL_REGEX.search(item):
-            color = FAIL_COLOR
-        elif UNKNOWN_REGEX.search(item):
-            color = UNKNOWN_COLOR
-        elif RUNNING_REGEX.search(item):
-            color = RUNNING_COLOR
-        elif SATORIURL_REGEX.search(item):
-            color = SATORIURL_COLOR
-    return color
-
-
-def autocolor(txt: str) -> str:
-    rst = Style.RESET_ALL
-    if txt.count("\n") > 0:
-        txt = KEYNAME_REGEX.sub(rf"{KEYNAME_COLOR}\1\n{MULTILINE_COLOR}", txt + rst, 1)
-        return txt
-    txt = KEYNAME_REGEX.sub(rf"{KEYNAME_COLOR}\1{VALUE_COLOR}", txt)
-    txt = PASS_REGEX.sub(rf"{PASS_COLOR}\1{rst}", txt)
-    txt = RUNNING_REGEX.sub(rf"{RUNNING_COLOR}\1{rst}", txt)
-    txt = FAIL_REGEX.sub(rf"{FAIL_COLOR}\1{rst}", txt)
-    txt = UNKNOWN_REGEX.sub(rf"{UNKNOWN_COLOR}\1{rst}", txt)
-    txt = SATORIURL_REGEX.sub(rf"{SATORIURL_COLOR}\1{rst}", txt)
-    return txt
-
-
-def autosyntax(item: str, indent: int = 0, lexer: Optional[str] = None) -> bool:
+def autosyntax(
+    item: str,
+    indent: int = 0,
+    lexer: Optional[str] = None,
+    echo: bool = True,
+) -> Union[bool, Syntax]:
     ind = (indent) * 2
     lang = None
     if lexer is None:
@@ -288,8 +275,11 @@ def autosyntax(item: str, indent: int = 0, lexer: Optional[str] = None) -> bool:
     if final_lexer is None:
         return False
     yml = Syntax(item, final_lexer, padding=(0, ind), theme="ansi_dark", word_wrap=True)
-    console.print(yml)
-    return True
+    if echo:
+        console.print(yml)
+        return True
+    else:
+        return yml
 
 
 def table_generator(
