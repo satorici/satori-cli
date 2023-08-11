@@ -92,37 +92,36 @@ positive:
 
     run:
     - [ satori-cli repo satorici/hello_world run ]
-  # TODO: needs sync mode
-  # check_commits: 
-  #   test:
-  #   - [ satori-cli repo satorici/hello_world check_commits ]
 
-  # commits:
-  #   test:
-  #   - [ satori-cli repo satorici/hello_world commits ]
+    check_commits: 
+      test:
+      - [ satori-cli repo satorici/hello_world check-commits ]
 
-  # check_forks:
-  #   test:
-  #   - [ satori-cli repo satorici/hello_world check_forks ]
+    commits:
+      test:
+      - [ satori-cli repo satorici/hello_world commits ]
 
-  # scan:
-  #   test:
-  #   - [ satori-cli repo satorici/hello_world scan ]
+    check_forks:
+      test:
+      - [ satori-cli repo satorici/hello_world check-forks ]
 
-  # scan_stop:
-  #   test:
-  #   - [ satori-cli repo satorici/hello_world scan-stop ]
+    scan:
+      test:
+      - [ satori-cli repo satorici/hello_world scan -c 50 ]
 
-  # clean: # needs sync mode
-  #   test:
-  #   - [ satori-cli repo satorici/hello_world clean ]
+    scan_stop:
+      test:
+      - [ satori-cli repo satorici/hello_world scan-stop ]
 
-  # delete-commits: # needs sync mode
-  #   test:
-  #   - [ satori-cli repo satorici/hello_world clean --delete-commits ]
+    clean: # needs sync mode
+      test:
+      - [ satori-cli repo satorici/hello_world clean ]
+
+    delete_commits: # needs sync mode
+      test:
+      - [ satori-cli repo satorici/hello_world clean --delete-commits ]
 
   # currently not being tested:
-  # 133     repo_cmd.add_argument("-c", "--coverage", type=float, default=1, help="coverage")
   # 134     repo_cmd.add_argument("--skip-check", default=False, action="store_true")
   
   monitor:
