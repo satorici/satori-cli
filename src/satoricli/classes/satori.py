@@ -416,8 +416,6 @@ class Satori:
                 info = self.api.repos_scan("GET", args.id, "status", params=params)
         elif args.action == "check-forks":
             info = self.api.repos_scan("GET", args.id, args.action, params=params)
-            if args.sync:
-                self.scan_sync(args.id)
         elif args.action == "check-commits":
             params = filter_params(args, ("id", "branch"))
             info = self.api.repos_scan("GET", args.id, args.action, params=params)
