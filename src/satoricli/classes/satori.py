@@ -148,24 +148,23 @@ class Satori:
             console.print("[error]Playbook file or folder not found")
             sys.exit(1)
 
-        config = None
-
         try:
             config = yaml.safe_load(playbook.read_text())
+        except yaml.YAMLError as e:
+            console.print(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
+            sys.exit(1)
 
+        try:
             with warnings.catch_warnings(record=True) as w:
-                try:
-                    validate_playbook(config)
-                except TypeError:
-                    console.print(f"Error: playbook not found or invalid")
-                    sys.exit(1)
+                validate_playbook(config)
+
             for warning in w:
                 if warning.category == NoLogMonitorWarning:
                     console.print(
                         "[warning]WARNING:[/] No notifications (log, onLogFail or onLogPass) were defined for the Monitor"
                     )
-        except yaml.YAMLError as e:
-            console.print(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
+        except TypeError:
+            console.print(f"Error: playbook must be a mapping type")
             sys.exit(1)
         except PlaybookVariableError:
             pass
@@ -173,10 +172,6 @@ class Satori:
             console.print(
                 f"Validation error on playbook [bold]{playbook.name}[/]:\n", e
             )
-            sys.exit(1)
-
-        if not isinstance(config, dict):
-            console.print("[error]Failed to load the playbook")
             sys.exit(1)
 
         variables = get_parameters(config)
