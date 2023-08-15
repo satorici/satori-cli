@@ -140,24 +140,18 @@ class Satori:
                 console.print("[error]" + str(e))
                 sys.exit(1)
 
-        if path.is_dir():
+        if path.is_dir() and (path / ".satori.yml").is_file():
             playbook = path / ".satori.yml"
         elif path.is_file():
             playbook = path
         else:
             console.print("[error]Playbook file or folder not found")
             sys.exit(1)
-        
-        try:
-            playbook_text = playbook.read_text()
-        except FileNotFoundError:
-            console.print(f"Error: playbook not found")
-            sys.exit(1)
 
         config = None
 
         try:
-            config = yaml.safe_load(playbook_text)
+            config = yaml.safe_load(playbook.read_text())
 
             with warnings.catch_warnings(record=True) as w:
                 try:
