@@ -147,36 +147,51 @@ positive:
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete" ]
 
   teams:
+    # list teams and repos without teams
     list:
     - [ satori-cli team ]
-
+    
+    # delete team 'test_team'
     clean:
     - [ satori-cli team test_team delete || true ]
-
+    
+    # create team 'test_team'
     create:
     - [ satori-cli team test_team create ]
-
+    
+    # list the repos associated to the 'test_team' and their team members
     single:
     - [ satori-cli team test_team ]
-
+    
+    # list the members of the 'test_team'
     members:
     - [ satori-cli team test_team members ]
-
+    
+    # add the email 'test@satori-ci.com' as a member of the team 'test_team'
     add_member:
     - [ satori-cli team test_team add_member --email='test@satori-ci.com' ]
-
+    
+    # delete the email 'test@satori-ci.com' as a member of the team 'test_team'
     del_member:
     - [ satori-cli team test_team del_member --email='test@satori-ci.com' ]
-      
+    
+    # list the repos associated to the 'test_team'
     team_without_repos:
     - [ satori-cli team test_team repos ]
-
+    
+    # add the repo 'satorici/hello_world' to the team 'test_team'
     add_repo:
     - [ satori-cli team test_team add_repo --repo='satorici/hello_world' ]
-
+    
+    # TBD: delete the repo 'satorici/hello_world' from the team 'test_team'
+    #del_repo:
+    #- [ satori-cli team test_team add_repo --repo='satorici/hello_world' ]
+    
+    # list the repos associated to the 'test_team'
     team_with_repos:
     - [ satori-cli team test_team repos ]
-    
+
+    # delete the 'test_team'
     delete:
     - [ satori-cli team test_team delete ]
 
