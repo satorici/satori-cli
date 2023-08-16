@@ -216,7 +216,7 @@ class Satori:
             console.print(f"Status: https://www.satori-ci.com/status?id={exec_id}")
         else:
             exec_type = "report"
-            exec_id = url["fields"]["key"].split("/")[1]
+            exec_id = url["report_id"]
             console.print(f"Report ID: {exec_id}")
             console.print(
                 f"Report: https://www.satori-ci.com/report_details/?n={exec_id}"
@@ -282,7 +282,7 @@ class Satori:
             console.print(f"Status: https://www.satori-ci.com/status?id={mon}")
         else:
             exec_type = "report"
-            exec_id = bun["fields"]["key"].split("/")[1]
+            exec_id = bun["report_id"]
             console.print(f"Report ID: {exec_id}")
             console.print(
                 f"Report: https://www.satori-ci.com/report_details/?n={exec_id}"
