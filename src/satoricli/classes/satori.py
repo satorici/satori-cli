@@ -15,7 +15,11 @@ import requests
 import yaml
 from rich.progress import open as progress_open, Progress
 from satorici.validator import validate_playbook
-from satorici.validator.exceptions import PlaybookValidationError, PlaybookVariableError
+from satorici.validator.exceptions import (
+    PlaybookValidationError,
+    PlaybookVariableError,
+    NoExecutionsError,
+)
 from satorici.validator.warnings import NoLogMonitorWarning
 
 from .api import SatoriAPI
@@ -32,7 +36,7 @@ from .utils import (
     format_outputs,
     log,
 )
-from .validations import get_parameters, validate_parameters
+from .validations import get_parameters, validate_parameters, has_executions
 
 
 class Satori:
@@ -166,12 +170,16 @@ class Satori:
         except TypeError:
             console.print(f"Error: playbook must be a mapping type")
             sys.exit(1)
-        except PlaybookVariableError:
+        except (PlaybookVariableError, NoExecutionsError):
             pass
         except PlaybookValidationError as e:
             console.print(
                 f"Validation error on playbook [bold]{playbook.name}[/]:\n", e
             )
+            sys.exit(1)
+
+        if not has_executions(config, playbook.parent):
+            console.print("[error]No executions found")
             sys.exit(1)
 
         variables = get_parameters(config)

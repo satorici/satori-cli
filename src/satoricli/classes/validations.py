@@ -1,5 +1,14 @@
+from pathlib import Path
+
+import yaml
 from flatdict import FlatDict
-from satorici.validator import INPUT_REGEX, is_command_group
+from satorici.validator import (
+    INPUT_REGEX,
+    is_command_group,
+    is_import_group,
+    validate_playbook,
+)
+from satorici.validator.exceptions import NoExecutionsError, PlaybookVariableError
 
 
 def get_unbound(commands: list[list[str]], key: str, flat_config: dict[str]):
@@ -39,3 +48,34 @@ def validate_parameters(params: dict):
     if isinstance(params, dict):
         if all(isinstance(v, (str, int, list)) for v in params.values()):
             return True
+
+
+def has_executions(config: dict, base_dir: Path):
+    flat_config = FlatDict(config)
+    imports: set[str] = set()
+
+    for value in flat_config.values():
+        if is_import_group(value):
+            imports.update([i for i in value if i.startswith("file")])
+        elif is_command_group(value):
+            return True
+
+    for i in imports:
+        path = base_dir / i[7:]
+
+        if not path.is_file():
+            continue
+
+        try:
+            imported = yaml.safe_load((base_dir / i[7:]).read_text())
+            validate_playbook(imported)
+        except (PlaybookVariableError, NoExecutionsError):
+            pass
+        except Exception:
+            continue
+
+        for value in FlatDict(imported).values():
+            if is_command_group(value):
+                return True
+
+    return False
