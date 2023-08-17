@@ -15,30 +15,38 @@ positive:
     - [ apt install -y git ]
     satori-cli:
     - [ pip install . ]
-
+    
+  # TBU: the -P or --profile parameters allows you to use different Satori CI API Tokens
   create_profile:
     assertStdoutContains: "Token saved"
     test:
     - [ satori-cli config token "not_a_token" -p test_user ]
-
+    
+  # define the default token for the configuration
   set_token:
     assertStdoutContains: "Token saved"
     test:
     - [ satori-cli config token "$(TOKEN)" ]
-
+  
+  # TBU: show the user's dashboard (what about teams?)
   dashboard:
   - [ satori-cli ]
 
+  
   run:
+    # execute a Satori CI playbook and show the report once its done
     pass_report:
     - [ satori-cli run .satori/import/pass.yml --report ]
 
+    # upload a directory with a .satori.yml playbook
     import_sync:
     - [ satori-cli run .satori/import --sync ]
 
+    # run a public Satori CI playbook and pass parameters
     url_output:
     - [ "satori-cli run satori://web/testssl.yml --data=\"{'URL':'https://www.satori-ci.com'}\" --output" ]
-      
+
+    # define inputs on your playbook and execute it with different combination of parameters
     input:
     - [ satori-cli run .satori/input.yml --sync ]
 
