@@ -92,65 +92,78 @@ positive:
     - [ "export ID=$(cat report_id2.txt); satori-cli playbook $ID delete --debug" ]
 
   repo:
+    # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
     list:
     - [ satori-cli repo ]
 
+    # list the commits and the reports associated to a repository
     single:
     - [ satori-cli repo satorici/hello_world ]
 
+    # simulate a push from the latest version to run the .satori.yml playbook from the repo
     run:
     - [ satori-cli repo satorici/hello_world run ]
 
+    # get the commits of a certain repo (required for scans)
     check_commits: 
-      test:
-      - [ satori-cli repo satorici/hello_world check-commits ]
+    - [ satori-cli repo satorici/hello_world check-commits ]
 
+    # list the commits of a certain repo
     commits:
-      test:
-      - [ satori-cli repo satorici/hello_world commits ]
+    - [ satori-cli repo satorici/hello_world commits ]
 
+    # get the forks of a certain repo (required for fork-scan)
     check_forks:
-      test:
-      - [ satori-cli repo satorici/hello_world check-forks ]
+    - [ satori-cli repo satorici/hello_world check-forks ]
 
+    # run the .satori.yml playbook with a certain coverage on the repo
     scan:
-      test:
-      - [ satori-cli repo satorici/hello_world scan -c 50 ]
+    - [ satori-cli repo satorici/hello_world scan -c 50 ]
 
+    # stop the scan execution
     scan_stop:
-      test:
-      - [ satori-cli repo satorici/hello_world scan-stop ]
+    - [ satori-cli repo satorici/hello_world scan-stop ]
 
+    # delete the reports associated to a repo
     clean: # needs sync mode
-      test:
-      - [ satori-cli repo satorici/hello_world clean ]
+    - [ satori-cli repo satorici/hello_world clean ]
 
+    # delete the information related to the commits of a repo
     delete_commits: # needs sync mode
-      test:
-      - [ satori-cli repo satorici/hello_world clean --delete-commits ]
+    - [ satori-cli repo satorici/hello_world clean --delete-commits ]
 
   # currently not being tested:
   # 134     repo_cmd.add_argument("--skip-check", default=False, action="store_true")
   
   monitor:
+    # run a new monitor
     new:
     - [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt" ]
 
-    echo:
-    - [ "export ID=$(cat monitor_id.txt); echo $ID" ]
-    
+    #echo:
+    #- [ "export ID=$(cat monitor_id.txt); echo $ID" ]
+
+    # list the monitors
     list:
     - [ "sleep 5; satori-cli monitor" ]
-    
+
+    # list the reports associated to a monitor
     single: # wait until start
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID --debug" ]
 
+    # stop a monitor
     start:
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID start" ]
 
+    # start a monitor
     stop:
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID stop" ]
 
+    # delete the reports associated to a monitor
+    clean:
+    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID clean" ]
+
+    # delete the monitor
     delete:
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete" ]
 
