@@ -19,10 +19,8 @@ VERSION = metadata.version("satori-ci")
 
 def add_satori_arguments(cmd: ArgumentParser):
     # satori-cli repo|report|monitor|... {id} {action} ...
-    cmd.add_argument("id", nargs="?", type=str, default="", help="Object ID")
-    cmd.add_argument(
-        "action", nargs="?", type=str, default="", help="Action to perform"
-    )
+    cmd.add_argument("id", nargs="?", default="", help="Object ID")
+    cmd.add_argument("action", nargs="?", default="", help="Action to perform")
 
 
 def upgrade():
@@ -107,11 +105,11 @@ def main():
     # run playbook.yml
     run_cmd = subparsers.add_parser("run", parents=[baseparser])
     run_cmd.add_argument("path")
-    run_cmd.add_argument("-s", "--sync", default=False, action="store_true")
-    run_cmd.add_argument("-o", "--output", default=False, action="store_true")
-    run_cmd.add_argument("-r", "--report", default=False, action="store_true")
-    run_cmd.add_argument("-f", "--files", default=False, action="store_true")
-    run_cmd.add_argument("-d", "--data", type=str, default="", help="Secrets")
+    run_cmd.add_argument("-s", "--sync", action="store_true")
+    run_cmd.add_argument("-o", "--output", action="store_true")
+    run_cmd.add_argument("-r", "--report", action="store_true")
+    run_cmd.add_argument("-f", "--files", action="store_true")
+    run_cmd.add_argument("-d", "--data", default="", help="Secrets")
 
     # playbook {id} <delete>
     playbook_cmd = subparsers.add_parser("playbook", parents=[baseparser])
@@ -129,20 +127,18 @@ def main():
     # repo {id} <commits|check-commits|check-forks|scan|scan-stop|run|clean>
     repo_cmd = subparsers.add_parser("repo", parents=[baseparser])
     repo_cmd.add_argument("-c", "--coverage", type=float, default=1, help="coverage")
-    repo_cmd.add_argument("--skip-check", default=False, action="store_true")
-    repo_cmd.add_argument("-f", "--from", type=str, default="", help="From Date")
-    repo_cmd.add_argument("-t", "--to", dest="to", type=str, default="", help="To Date")
-    repo_cmd.add_argument("--delete-commits", default=False, action="store_true")
-    repo_cmd.add_argument("-s", "--sync", default=False, action="store_true")
-    repo_cmd.add_argument("-d", "--data", type=str, default="", help="Secrets")
-    repo_cmd.add_argument(
-        "-b", "--branch", type=str, default="main", help="Repo branch"
-    )
-    repo_cmd.add_argument("--filter", type=str, help="Filter names")
-    repo_cmd.add_argument("-a", "--all", default=False, action="store_true")
+    repo_cmd.add_argument("--skip-check", action="store_true")
+    repo_cmd.add_argument("-f", "--from", default="", help="From Date")
+    repo_cmd.add_argument("-t", "--to", dest="to", default="", help="To Date")
+    repo_cmd.add_argument("--delete-commits", action="store_true")
+    repo_cmd.add_argument("-s", "--sync", action="store_true")
+    repo_cmd.add_argument("-d", "--data", default="", help="Secrets")
+    repo_cmd.add_argument("-b", "--branch", default="main", help="Repo branch")
+    repo_cmd.add_argument("--filter", help="Filter names")
+    repo_cmd.add_argument("-a", "--all", action="store_true")
     repo_cmd.add_argument("-l", "--limit", type=int, default=100, help="Limit number")
-    repo_cmd.add_argument("--fail", default=False, action="store_true")
-    repo_cmd.add_argument("--playbook", type=str, help="Playbook")
+    repo_cmd.add_argument("--fail", action="store_true")
+    repo_cmd.add_argument("--playbook", help="Playbook")
     add_satori_arguments(repo_cmd)
 
     # report {id} <output|stop|delete>
@@ -156,7 +152,6 @@ def main():
     report_cmd.add_argument(
         "-f",
         "--filter",
-        type=str,
         default="",
         help="Filters: from,to,satori_error,status",
     )
@@ -194,27 +189,27 @@ def main():
     # monitor {id} <start|stop|delete>
     monitor_cmd = subparsers.add_parser("monitor", parents=[baseparser])
     monitor_cmd.add_argument(
-        "--clean", default=False, action="store_true", help="Clean all report related"
+        "--clean", action="store_true", help="Clean all report related"
     )
     monitor_cmd.add_argument(
-        "--deleted", default=False, action="store_true", help="Display deleted monitors"
+        "--deleted", action="store_true", help="Display deleted monitors"
     )
     add_satori_arguments(monitor_cmd)
 
     # team {id} create|members|delete|add_member|repos|
     # add_repo|get_token|refresh_token|del_member
     team_cmd = subparsers.add_parser("team", parents=[baseparser])
-    team_cmd.add_argument("--email", type=str, help="User email")
-    team_cmd.add_argument("--role", type=str, default="READ", help="User role")
-    team_cmd.add_argument("--repo", type=str, default=None, help="Repo name")
+    team_cmd.add_argument("--email", help="User email")
+    team_cmd.add_argument("--role", default="READ", help="User role")
+    team_cmd.add_argument("--repo", default=None, help="Repo name")
     add_satori_arguments(team_cmd)
     # Add config args
-    team_cmd.add_argument("config_name", nargs="?", type=str, default="")
-    team_cmd.add_argument("config_value", nargs="?", type=str, default="")
+    team_cmd.add_argument("config_name", nargs="?", default="")
+    team_cmd.add_argument("config_value", nargs="?", default="")
 
     # help
     help_cmd = subparsers.add_parser("help", parents=[baseparser])
-    help_cmd.add_argument("-w", "--web", default=False, action="store_true")
+    help_cmd.add_argument("-w", "--web", action="store_true")
     add_satori_arguments(help_cmd)
 
     # user {id} TODO: <delete|disable|enable?>
