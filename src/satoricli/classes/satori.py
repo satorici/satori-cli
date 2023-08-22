@@ -117,7 +117,8 @@ class Satori:
                 f.write(yaml.safe_dump(config))
         except Exception:
             console.print(
-                "[error]Could not write to home directory, writing into current directory",
+                "[error]Could not write to home directory, "
+                "writing into current directory"
             )
             config_file = self.config_paths[1]
             with open(config_file, "w") as f:
@@ -165,10 +166,11 @@ class Satori:
             for warning in w:
                 if warning.category == NoLogMonitorWarning:
                     console.print(
-                        "[warning]WARNING:[/] No notifications (log, onLogFail or onLogPass) were defined for the Monitor"
+                        "[warning]WARNING:[/] No notifications (log, onLogFail or "
+                        "onLogPass) were defined for the Monitor"
                     )
         except TypeError:
-            console.print(f"Error: playbook must be a mapping type")
+            console.print("Error: playbook must be a mapping type")
             sys.exit(1)
         except (PlaybookVariableError, NoExecutionsError):
             pass
@@ -240,7 +242,8 @@ class Satori:
 
         if len(local_ymls) > 1 and len(local_ymls) - 1 > len(imported):
             console.print(
-                "[warning]WARNING:[/] There are some .satori.yml outside the root folder that have not been imported."
+                "[warning]WARNING:[/] There are some .satori.yml outside the root "
+                "folder that have not been imported."
             )
 
         try:
@@ -384,6 +387,7 @@ class Satori:
     def repo(self, args: arguments):
         """Run Satori on multiple commits"""
         params = filter_params(args, ("id",))
+        info = {}
         if args.playbook:
             playbook = Path(args.playbook)
             if playbook.is_file():
