@@ -254,6 +254,7 @@ class Satori:
         arc = res["archive"]
         bun = res["bundle"]
         mon = res["monitor"]
+        report_id = res["report_id"]
 
         try:
             with progress_open(full_path, "rb", description="Uploading...") as f:
@@ -282,7 +283,7 @@ class Satori:
             console.print(f"Status: https://www.satori-ci.com/status?id={mon}")
         else:
             exec_type = "report"
-            exec_id = bun["fields"]["key"].split("/")[2]
+            exec_id = report_id
             console.print(f"Report ID: {exec_id}")
             console.print(
                 f"Report: https://www.satori-ci.com/report_details/?n={exec_id}"
