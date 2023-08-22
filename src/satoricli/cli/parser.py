@@ -61,7 +61,7 @@ def upgrade():
         print(
             (
                 "[yellow]WARNING:[/] Newer version found, upgrade with: "
-                f"[b]pip install -U {upgrade_required}"
+                f"[b]pip3 install -U {upgrade_required}"
             ),
             file=sys.stderr,
         )
