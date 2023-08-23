@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:80abf44ddcb4dcd77767a59f38dc38d19267abea98cc43e3f9400ff8e2414dfe"
+content_hash = "sha256:3d87a7134766d2aa001e3f9a4bf3fef786df7bafab0eb1ac24c04dfffefe61b4"
 
 [[package]]
 name = "aws-cron-expression-validator"
@@ -292,6 +292,16 @@ dependencies = [
 files = [
     {file = "satori_playbook_validator-3.2.0-py3-none-any.whl", hash = "sha256:a4afd4028c9921cf81a1e558f510146cc18cc26639c8ec4bb3098816136dadf4"},
     {file = "satori_playbook_validator-3.2.0.tar.gz", hash = "sha256:fa2a250f9f50dc42a077bdc56f1c073c110f88b09ca716860c21cff1076db6e5"},
+]
+
+[[package]]
+name = "setuptools"
+version = "68.1.2"
+requires_python = ">=3.8"
+summary = "Easily download, build, install, upgrade, and uninstall Python packages"
+files = [
+    {file = "setuptools-68.1.2-py3-none-any.whl", hash = "sha256:3d8083eed2d13afc9426f227b24fd1659489ec107c0e86cec2ffdde5c92e790b"},
+    {file = "setuptools-68.1.2.tar.gz", hash = "sha256:3d4dfa6d95f1b101d695a6160a7626e15583af71a5f52176efa5d39a054d475d"},
 ]
 
 [[package]]
