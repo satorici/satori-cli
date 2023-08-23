@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:3d87a7134766d2aa001e3f9a4bf3fef786df7bafab0eb1ac24c04dfffefe61b4"
+content_hash = "sha256:6999ac26d57fecc87248e4b08b24f54fbebafebb33d69db6421ed9c83fddd0f8"
 
 [[package]]
 name = "aws-cron-expression-validator"
@@ -282,7 +282,7 @@ files = [
 
 [[package]]
 name = "satori-playbook-validator"
-version = "3.2.0"
+version = "3.2.1"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
@@ -290,8 +290,8 @@ dependencies = [
     "fastjsonschema>=2.17.1",
 ]
 files = [
-    {file = "satori_playbook_validator-3.2.0-py3-none-any.whl", hash = "sha256:a4afd4028c9921cf81a1e558f510146cc18cc26639c8ec4bb3098816136dadf4"},
-    {file = "satori_playbook_validator-3.2.0.tar.gz", hash = "sha256:fa2a250f9f50dc42a077bdc56f1c073c110f88b09ca716860c21cff1076db6e5"},
+    {file = "satori_playbook_validator-3.2.1-py3-none-any.whl", hash = "sha256:53b2b98b5b9102aeafa37459d02e17f30d778d4d50765c3984fea72595919ef7"},
+    {file = "satori_playbook_validator-3.2.1.tar.gz", hash = "sha256:1f0b5b5668b6809d63439cb7db4549194b0a8d4732e00b4b6cce15d683f7b699"},
 ]
 
 [[package]]
