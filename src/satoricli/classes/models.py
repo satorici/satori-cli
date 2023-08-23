@@ -44,7 +44,7 @@ class WebsocketArgs(BaseArgs):
 @dataclass
 class RunArgs(BaseArgs):
     secrets: str
-    is_monitor: bool
+    is_monitor: Optional[bool] = None
     url: Optional[str] = None
 
 
