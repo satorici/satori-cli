@@ -5,6 +5,12 @@ from argparse import Namespace
 
 
 @dataclass
+class BaseArgs:
+    def to_json(self):
+        return json.dumps(self.__dict__)
+
+
+@dataclass
 class Args:
     id: str
     action: str
@@ -27,13 +33,19 @@ class Args:
     deleted: bool
     files: bool
 
+
 @dataclass
-class WebsocketArgs:
+class WebsocketArgs(BaseArgs):
     action: str
     id: str
     params: Optional[dict] = None
 
-    def to_json(self):
-        return json.dumps(self.__dict__)
+
+@dataclass
+class RunArgs(BaseArgs):
+    secrets: str
+    is_monitor: Optional[bool] = None
+    url: Optional[str] = None
+
 
 arguments = Union[Namespace, Args]

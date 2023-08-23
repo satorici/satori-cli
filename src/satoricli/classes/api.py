@@ -8,7 +8,7 @@ from websocket import WebSocketApp
 from rich.live import Live
 
 from .utils import autoformat, log, console
-from .models import arguments, WebsocketArgs
+from .models import RunArgs, arguments, WebsocketArgs
 
 HOST = "https://api.satori-ci.com"
 ERROR_MESSAGE = "An error occurred"
@@ -129,8 +129,8 @@ class SatoriAPI:
         if status_code != 1000:
             self.ws_on_error(app, reason)
 
-    def runs(self, run_type: str, data: dict) -> Any:
-        res = self.request("POST", f"runs/{run_type}", json=data)
+    def runs(self, run_type: str, data: RunArgs) -> Any:
+        res = self.request("POST", f"runs/{run_type}", json=data.__dict__)
         return res.json()
 
     def repos(self, method: str, repo: str, action: str, **kwargs) -> Any:

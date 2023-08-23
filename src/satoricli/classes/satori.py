@@ -24,7 +24,7 @@ from satorici.validator.warnings import NoLogMonitorWarning
 
 from .api import SatoriAPI
 from .bundler import get_local_files, make_bundle
-from .models import WebsocketArgs, arguments
+from .models import WebsocketArgs, arguments, RunArgs
 from .playbooks import display_public_playbooks
 from .utils import (
     UUID4_REGEX,
@@ -117,7 +117,8 @@ class Satori:
                 f.write(yaml.safe_dump(config))
         except Exception:
             console.print(
-                "[error]Could not write to home directory, writing into current directory",
+                "[error]Could not write to home directory, "
+                "writing into current directory"
             )
             config_file = self.config_paths[1]
             with open(config_file, "w") as f:
@@ -165,10 +166,11 @@ class Satori:
             for warning in w:
                 if warning.category == NoLogMonitorWarning:
                     console.print(
-                        "[warning]WARNING:[/] No notifications (log, onLogFail or onLogPass) were defined for the Monitor"
+                        "[warning]WARNING:[/] No notifications (log, onLogFail or "
+                        "onLogPass) were defined for the Monitor"
                     )
         except TypeError:
-            console.print(f"Error: playbook must be a mapping type")
+            console.print("Error: playbook must be a mapping type")
             sys.exit(1)
         except (PlaybookVariableError, NoExecutionsError):
             pass
@@ -200,7 +202,7 @@ class Satori:
         playbook = args.path
         bundle = make_bundle(playbook)
         is_monitor = check_monitor(playbook)
-        url = self.api.runs("bundle", {"secrets": args.data})
+        url = self.api.runs("bundle", RunArgs(secrets=args.data, is_monitor=is_monitor))
         log.debug(url)
         res = requests.post(  # nosec
             url["url"], url["fields"], files={"file": bundle}, timeout=None
@@ -240,7 +242,8 @@ class Satori:
 
         if len(local_ymls) > 1 and len(local_ymls) - 1 > len(imported):
             console.print(
-                "[warning]WARNING:[/] There are some .satori.yml outside the root folder that have not been imported."
+                "[warning]WARNING:[/] There are some .satori.yml outside the root "
+                "folder that have not been imported."
             )
 
         try:
@@ -249,7 +252,9 @@ class Satori:
             console.print(f"[error]Could not compress directory: {e}")
             sys.exit(1)
 
-        res = self.api.runs("archive", {"secrets": args.data})
+        res = self.api.runs(
+            "archive", RunArgs(secrets=args.data, is_monitor=is_monitor)
+        )
         log.debug(res)
         arc = res["archive"]
         bun = res["bundle"]
@@ -291,7 +296,9 @@ class Satori:
         return {"type": exec_type, "id": exec_id}
 
     def run_url(self, args: arguments):
-        info = self.api.runs("url", {"secrets": args.data, "url": args.path})
+        info = self.api.runs(
+            "url", RunArgs(secrets=args.data, is_monitor=False, url=args.path)
+        )
         autoformat({"Running with the ID": info.get("report_id")}, jsonfmt=args.json)
         if args.sync or args.output or args.report:
             exec_data = {"type": "report", "id": info["report_id"]}
@@ -384,6 +391,7 @@ class Satori:
     def repo(self, args: arguments):
         """Run Satori on multiple commits"""
         params = filter_params(args, ("id",))
+        info = {}
         if args.playbook:
             playbook = Path(args.playbook)
             if playbook.is_file():
