@@ -66,6 +66,10 @@ positive:
     single:
     - [ "export ID=$(cat report_id.txt); satori-cli report $ID --debug" ]
 
+    # make a report public
+    public:
+    - [ "export ID=$(cat report_id.txt); satori-cli report $ID public" ]
+
     # show the output associated to a report
     output:
     - [ "export ID=$(cat report_id.txt); satori-cli report $ID output" ]
@@ -161,6 +165,10 @@ positive:
     # list the reports associated to a monitor
     single: # wait until start
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID --debug" ]
+
+    # make a monitor's reports public
+    public: # 
+    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID public" ]
 
     # stop a monitor
     start:
