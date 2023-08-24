@@ -6,5 +6,5 @@ test:
   assertStdoutContains: "Hello World"
   echo:
   - [ echo Hello World ]
-  touch:
-  - [ touch Hello ]
+touch:
+- [ touch HelloWorld ]
