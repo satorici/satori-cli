@@ -1,7 +1,10 @@
 settings:
+  files: True
   name: Pass playbook
 
 test:
   assertStdoutContains: "Hello World"
   echo:
   - [ echo Hello World ]
+  touch:
+  - [ touch Hello ]
