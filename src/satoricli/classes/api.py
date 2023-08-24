@@ -176,10 +176,8 @@ class SatoriAPI:
         res = self.request("GET", "dashboard")
         return res.json()
 
-    def playbook(
-        self, method: str, obj_id: str, params: Optional[dict] = None
-    ) -> Union[dict, str, None]:
-        res = self.request(method, f"playbooks/{obj_id}", params=params)
+    def playbook(self, method: str, obj_id: str, **kwargs) -> Union[dict, str, None]:
+        res = self.request(method, f"playbooks/{obj_id}", **kwargs)
         if obj_id != "":
             return res.text
         if method != "DELETE":

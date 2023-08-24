@@ -111,7 +111,7 @@ def main():
     run_cmd.add_argument("-f", "--files", action="store_true")
     run_cmd.add_argument("-d", "--data", default="", help="Secrets")
 
-    # playbook {id} <delete>
+    # playbook {id} <delete|public>
     playbook_cmd = subparsers.add_parser("playbook", parents=[baseparser])
     playbook_cmd.add_argument(
         "-n", "--page", dest="page", type=int, default=1, help="Playbooks page number"
@@ -141,7 +141,7 @@ def main():
     repo_cmd.add_argument("--playbook", help="Playbook")
     add_satori_arguments(repo_cmd)
 
-    # report {id} <output|stop|delete>
+    # report {id} <output|stop|delete|public>
     report_cmd = subparsers.add_parser("report", parents=[baseparser])
     report_cmd.add_argument(
         "-n", "--page", type=int, default=1, help="Commit page number"

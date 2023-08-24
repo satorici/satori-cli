@@ -485,6 +485,9 @@ class Satori:
         elif args.action == "delete":
             self.api.report_delete(params)
             print("Report deleted")
+        elif args.action == "public":
+            res = self.api.reports("PATCH", args.id, "", json={"public": "invert"})
+            autoformat(res)
         else:
             print("Unknown subcommand")
             sys.exit(1)
@@ -611,13 +614,15 @@ class Satori:
             if args.id == "":
                 # Default: get list of user playbooks
                 params = filter_params(args, ("limit", "page"))
-                data = self.api.playbook("GET", "", params)
+                data = self.api.playbook("GET", "", params=params)
             else:
                 data = self.api.playbook("GET", args.id)
         elif args.action == "delete":
             data = self.api.playbook("DELETE", args.id)
             print("Playbook Deleted")
             sys.exit(0)
+        elif args.action == "public":
+            data = self.api.playbook("PATCH", args.id, json={"public": "invert"})
         else:
             print("Unknown subcommand")
             sys.exit(1)
