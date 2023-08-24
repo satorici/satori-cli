@@ -113,39 +113,39 @@ positive:
 
     # list the commits and the reports associated to a repository
     single:
-    - [ satori-cli repo satorici/hello_world ]
+    - [ satori-cli repo satoridev01/hello_world ]
 
     # simulate a push from the latest version to run the .satori.yml playbook from the repo
     run:
-    - [ satori-cli repo satorici/hello_world run ]
+    - [ satori-cli repo satoridev01/hello_world run ]
 
     # get the commits of a certain repo (required for scans)
     check_commits: 
-    - [ satori-cli repo satorici/hello_world check-commits ]
+    - [ satori-cli repo satoridev01/hello_world check-commits ]
 
     # list the commits of a certain repo
     commits:
-    - [ satori-cli repo satorici/hello_world commits ]
+    - [ satori-cli repo satoridev01/hello_world commits ]
 
     # get the forks of a certain repo (required for fork-scan)
     check_forks:
-    - [ satori-cli repo satorici/hello_world check-forks ]
+    - [ satori-cli repo satoridev01/hello_world check-forks ]
 
     # run the .satori.yml playbook with a certain coverage on the repo
     scan:
-    - [ satori-cli repo satorici/hello_world scan -c 50 ]
+    - [ satori-cli repo satoridev01/hello_world scan -c 50 ]
 
     # stop the scan execution
     scan_stop:
-    - [ satori-cli repo satorici/hello_world scan-stop ]
+    - [ satori-cli repo satoridev01/hello_world scan-stop ]
 
     # delete the reports associated to a repo
     clean: # needs sync mode
-    - [ satori-cli repo satorici/hello_world clean ]
+    - [ satori-cli repo satoridev01/hello_world clean ]
 
     # delete the information related to the commits of a repo
     delete_commits: # needs sync mode
-    - [ satori-cli repo satorici/hello_world clean --delete-commits ]
+    - [ satori-cli repo satoridev01/hello_world clean --delete-commits ]
 
   # currently not being tested:
   # 134     repo_cmd.add_argument("--skip-check", default=False, action="store_true")
@@ -219,13 +219,13 @@ positive:
     team_without_repos:
     - [ satori-cli team test_team repos ]
     
-    # add the repo 'satorici/hello_world' to the team 'test_team'
+    # add the repo 'satoridev01/hello_world' to the team 'test_team'
     add_repo:
-    - [ satori-cli team test_team add_repo --repo='satorici/hello_world' ]
+    - [ satori-cli team test_team add_repo --repo='satoridev01/hello_world' ]
     
-    # TBD: delete the repo 'satorici/hello_world' from the team 'test_team'
+    # TBD: delete the repo 'satoridev01/hello_world' from the team 'test_team'
     #del_repo:
-    #- [ satori-cli team test_team add_repo --repo='satorici/hello_world' ]
+    #- [ satori-cli team test_team add_repo --repo='satoridev01/hello_world' ]
     
     # list the repos associated to the 'test_team'
     team_with_repos:
