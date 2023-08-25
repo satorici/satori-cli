@@ -91,18 +91,23 @@ positive:
 
   playbook:
     list:
-    - [ satori-cli playbook ]
+      private:
+      - [ satori-cli playbook ]
 
-    list_public:
-    - [ satori-cli playbook --public ]
+      public:
+      - [ satori-cli playbook --public ]
 
-    echo:
-    - [ "export ID=$(cat report_id2.txt); echo $ID" ]
+    #echo:
+    #- [ "export ID=$(cat report_id2.txt); echo $ID" ]
 
-    single:
-    - [ "export ID=$(cat report_id2.txt); satori-cli playbook $ID" ]
+    read:
+      private:
+      - [ "export ID=$(cat report_id2.txt); satori-cli playbook $ID" ]
 
-    delete:
+      public:
+      - [ satori-cli playbook satori://code/detect-secrets.yml ]
+    
+    delete_private:
     - [ "export ID=$(cat report_id2.txt); satori-cli playbook $ID delete --debug" ]
 
   repo:
