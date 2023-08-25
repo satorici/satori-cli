@@ -1,18 +1,18 @@
-from base64 import b64decode
-from typing import Union, Optional
 import json
-import yaml
-import re
-from typing import Any
-from rich.logging import RichHandler
 import logging
+import random
+import re
+from base64 import b64decode
+from typing import Any, Optional, Union
+
+import yaml
 from rich import print_json
 from rich.console import Console
+from rich.highlighter import RegexHighlighter
+from rich.logging import RichHandler
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.theme import Theme
-from rich.highlighter import RegexHighlighter
-import random
 
 from .models import BootstrapTable
 
@@ -30,6 +30,7 @@ FAIL_REGEX = re.compile(r"(fail(\(\d+\))?|(?<!\w)error(?!\w)|^no$)", re.IGNORECA
 UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
 SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
 KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)")  # ex: "key: "
+
 
 # Set rich theme and console
 # https://rich.readthedocs.io/en/latest/appendix/colors.html#appendix-colors
@@ -81,6 +82,9 @@ satori_theme = Theme(
     }
 )
 console = Console(highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False)
+error_console = Console(
+    highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False, stderr=True
+)
 
 logging.basicConfig(
     level="CRITICAL",

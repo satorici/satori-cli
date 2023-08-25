@@ -1,3 +1,3 @@
-from .cli.parser import main
+from . import main
 
 main()

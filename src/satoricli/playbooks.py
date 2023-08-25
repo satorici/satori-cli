@@ -9,8 +9,8 @@ except ImportError:
     git = None
 import yaml
 
+from .cli.utils import autosyntax, autotable, console
 from .validations import get_parameters
-from .utils import console, autosyntax, autotable
 
 
 def clone(directoryName):
