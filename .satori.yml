@@ -17,7 +17,7 @@ positive:
     - [ pip install . ]
     
   # the -P or --profile parameters allows you to use different Satori CI API Tokens
-  token_saved:
+  config:
     assertStdoutContains: "Token saved"
     create_profile:
     - [ satori-cli config token "not_a_token" --profile test_user ]
@@ -85,7 +85,7 @@ positive:
 
     # stop a running report
     stop: # wait until start
-    - [ "sleep 10; export ID=$(cat report_id2.txt); satori-cli report $ID stop --debug" ]
+    - [ "sleep 2; export ID=$(cat report_id2.txt); satori-cli report $ID stop --debug" ]
 
   playbook:
     list:
@@ -95,8 +95,8 @@ positive:
       public:
       - [ satori-cli playbook --public ]
 
-    echo:
-    - [ "export ID=$(cat report_id2.txt); echo $ID" ]
+    #echo:
+    #- [ "export ID=$(cat report_id2.txt); echo $ID" ]
 
     read:
       playbook_by_report_id:
@@ -168,7 +168,7 @@ positive:
 
     # list the monitors
     list:
-    - [ "sleep 5; satori-cli monitor" ]
+    - [ "sleep 2; satori-cli monitor" ]
 
     # list the reports associated to a monitor
     single: # wait until start
