@@ -131,6 +131,10 @@ positive:
     check_commits: 
     - [ satori-cli repo satoridev01/hello_world check-commits ]
 
+    # what's the status of the current scanning
+    scan_status:
+    - [ satori-cli repo satoridev01/hello_world scan-status ]
+    
     # list the commits of a certain repo
     commits:
     - [ satori-cli repo satoridev01/hello_world commits ]
