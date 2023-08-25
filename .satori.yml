@@ -16,16 +16,14 @@ positive:
     satori-cli:
     - [ pip install . ]
     
-  # TBU: the -P or --profile parameters allows you to use different Satori CI API Tokens
-  create_profile:
+  # the -P or --profile parameters allows you to use different Satori CI API Tokens
+  token_saved:
     assertStdoutContains: "Token saved"
-    test:
-    - [ satori-cli config token "not_a_token" -p test_user ]
-    
-  # define the default token for the configuration
-  set_token:
-    assertStdoutContains: "Token saved"
-    test:
+    create_profile:
+    - [ satori-cli config token "not_a_token" --profile test_user ]
+  
+    # define the default token for the configuration
+    set_token:
     - [ satori-cli config token "$(TOKEN)" ]
   
   # TBU: show the user's dashboard (what about teams?)
