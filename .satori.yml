@@ -52,6 +52,10 @@ positive:
     new_sync:
     - [ "satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt" ]
     
+    # run asynchronously a local playbook
+    new_async: # new report for stop is needed because the first one is already stopped
+    - [ "satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt" ]
+    
     #echo_ID:
     #- [ "export ID=$(cat report_id.txt); echo $ID" ]
 
@@ -79,13 +83,9 @@ positive:
     delete:
     - [ "export ID=$(cat report_id.txt); satori-cli report $ID delete" ]
 
-    # run asynchronously a local playbook
-    new_async: # new report for stop is needed because the first one is already stopped
-    - [ "satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt" ]
-
     # stop a running report
     stop: # wait until start
-    - [ "sleep 2; export ID=$(cat report_id2.txt); satori-cli report $ID stop --debug" ]
+    - [ "export ID=$(cat report_id2.txt); satori-cli report $ID stop --debug" ]
 
   playbook:
     list:
@@ -165,24 +165,24 @@ positive:
 
     #echo:
     #- [ "export ID=$(cat monitor_id.txt); echo $ID" ]
-
-    # list the monitors
-    list:
-    - [ "sleep 2; satori-cli monitor" ]
-
-    # list the reports associated to a monitor
-    single: # wait until start
-    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID --debug" ]
-
+    
     # make a monitor's reports public
     public: # 
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID public" ]
 
-    # stop a monitor
+    # list the reports associated to a monitor
+    single: # wait until start
+    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID --debug" ]
+  
+    # list the monitors
+    list:
+    - [ "satori-cli monitor" ]
+
+    # start a monitor
     start:
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID start" ]
 
-    # start a monitor
+    # stop a monitor
     stop:
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID stop" ]
 
