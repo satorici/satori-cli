@@ -97,21 +97,24 @@ positive:
       public:
       - [ satori-cli playbook --public ]
 
-    #echo:
-    #- [ "export ID=$(cat report_id2.txt); echo $ID" ]
+    echo:
+    - [ "export ID=$(cat report_id2.txt); echo $ID" ]
 
     read:
-      private:
+      playbook_by_report_id:
       - [ "export ID=$(cat report_id2.txt); satori-cli playbook $ID" ]
 
+      playbook_id:
+      - [ "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID" ]
+      
       public:
       - [ satori-cli playbook satori://code/detect-secrets.yml ]
 
     public:
-    - [ "export ID=$(cat report_id2.txt); satori-cli playbook $ID public" ]
-    
+    - [ "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID public" ]
+
     delete_private:
-    - [ "export ID=$(cat report_id2.txt); satori-cli playbook $ID delete --debug" ]
+      - [ "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID delete" ]
 
   repo:
     # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
