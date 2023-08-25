@@ -32,7 +32,6 @@ positive:
   dashboard:
   - [ satori-cli ]
 
-  
   run:
     # execute a Satori CI playbook and show the report once its done
     pass_report:
@@ -147,9 +146,9 @@ positive:
     delete_commits: # needs sync mode
     - [ satori-cli repo satoridev01/hello_world clean --delete-commits ]
 
-  # currently not being tested:
-  # 134     repo_cmd.add_argument("--skip-check", default=False, action="store_true")
-  
+    # not being tested: 
+    # --skip-check
+
   monitor:
     # run a new monitor
     new:
