@@ -503,6 +503,8 @@ class Satori:
         elif args.action == "":
             params = filter_params(args, ("id", "deleted"))
             info = self.api.monitors("GET", args.id, "", params=params)
+        elif args.action == "public":
+            info = self.api.monitors("PATCH", args.id, "", json={"public": "invert"})
         elif args.action in ("start", "stop"):
             info = self.api.monitors("PATCH", args.id, args.action)
         else:

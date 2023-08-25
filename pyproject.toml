@@ -1,6 +1,6 @@
 [project]
 name = "satori-ci"
-version = "1.4.5"
+version = "1.4.6"
 description = "Satori CI - Automated Software Testing Platform"
 authors = [
     {name = "Satori CI CLI", email = "info@satori-ci.com"},
