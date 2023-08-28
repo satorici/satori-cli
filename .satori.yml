@@ -202,6 +202,40 @@ positive:
     delete:
     - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete" ]
 
+
+#  scan:
+#    # get the commits of a certain repo (required for scans)
+#    check_commits: 
+#    - [ satori-cli scan satoridev01/hello_world check-commits ]
+#
+#    # what's the status of the current scanning
+#    status:
+#    - [ satori-cli scan satoridev01/hello_world status ]
+#
+#    # get the forks of a certain repo (required for fork-scan)
+#    check_forks:
+#    - [ satori-cli scan satoridev01/hello_world check-forks ]
+#
+#    # run the .satori.yml playbook with a certain coverage on the repo
+#    run:
+#    - [ satori-cli scan satoridev01/hello_world scan -c 50 --skip-check ]
+#
+#    # stop the scan execution
+#    stop:
+#    - [ satori-cli scan satoridev01/hello_world stop ]
+#
+#    # [re]start a scan execution
+#    start:
+#    - [ satori-cli scan satoridev01/hello_world start ]
+#
+#    # delete the information related to the commits of a repo
+#    delete_commits: # needs sync mode
+#    - [ satori-cli scan satoridev01/hello_world clean --delete-commits ]
+#
+#    # delete the scan
+#    delete:
+#    - [ satori-cli scan satoridev01/hello_world delete ]
+    
   teams:
     # list teams and repos without teams
     list:
