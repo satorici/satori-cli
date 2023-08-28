@@ -131,11 +131,11 @@ positive:
     run:
     - [ satori-cli repo satoridev01/hello_world run ]
 
-    # get the commits of a certain repo (required for scans)
+    # TBD: get the commits of a certain repo (required for scans)
     check_commits: 
     - [ satori-cli repo satoridev01/hello_world check-commits ]
 
-    # what's the status of the current scanning
+    # TBD: what's the status of the current scanning
     scan_status:
     - [ satori-cli repo satoridev01/hello_world scan-status ]
     
@@ -143,15 +143,15 @@ positive:
     commits:
     - [ satori-cli repo satoridev01/hello_world commits ]
 
-    # get the forks of a certain repo (required for fork-scan)
+    # TBD: get the forks of a certain repo (required for fork-scan)
     check_forks:
     - [ satori-cli repo satoridev01/hello_world check-forks ]
 
-    # run the .satori.yml playbook with a certain coverage on the repo
+    # TBD: run the .satori.yml playbook with a certain coverage on the repo
     scan:
     - [ satori-cli repo satoridev01/hello_world scan -c 50 ]
 
-    # stop the scan execution
+    # TBD: stop the scan execution
     scan_stop:
     - [ satori-cli repo satoridev01/hello_world scan-stop ]
 
@@ -159,11 +159,11 @@ positive:
     clean: # needs sync mode
     - [ satori-cli repo satoridev01/hello_world clean ]
 
-    # delete the information related to the commits of a repo
+    # TBD: delete the information related to the commits of a repo
     delete_commits: # needs sync mode
     - [ satori-cli repo satoridev01/hello_world clean --delete-commits ]
 
-    # not being tested: 
+    # TBD: not being tested: 
     # --skip-check
 
   monitor:
