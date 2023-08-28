@@ -9,8 +9,8 @@ positive:
   assertReturnCode: 0
   assertStderrNotContains: Traceback
   install:
-    update:
-    - [ apt update ] 
+    #update:
+    #- [ apt update ] 
     git:
     - [ apt install -y git ]
     satori-cli:
@@ -62,6 +62,10 @@ positive:
     # show a report
     single:
     - [ "export ID=$(cat report_id.txt); satori-cli report $ID --debug" ]
+
+    # show a json report
+    json:
+    - [ "export ID=$(cat report_id.txt); satori-cli report $ID --json" ]
 
     # make a report public
     public:
