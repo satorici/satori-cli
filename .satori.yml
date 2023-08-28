@@ -204,6 +204,9 @@ positive:
 
 
 #  scan:
+#    # list the current scans
+#    - [ satori-cli scan ]
+#
 #    # get the commits of a certain repo (required for scans)
 #    check_commits: 
 #    - [ satori-cli scan satoridev01/hello_world check-commits ]
@@ -229,10 +232,14 @@ positive:
 #    - [ satori-cli scan satoridev01/hello_world start ]
 #
 #    # delete the information related to the commits of a repo
-#    delete_commits: # needs sync mode
-#    - [ satori-cli scan satoridev01/hello_world clean --delete-commits ]
+#    delete_commits:
+#    - [ satori-cli scan satoridev01/hello_world delete-commits ]
 #
-#    # delete the scan
+#    # delete the forks/commits information related to the repo
+#    delete_forks:
+#    - [ satori-cli scan satoridev01/hello_world delete-forks ]
+#
+#    # delete the scan reports
 #    delete:
 #    - [ satori-cli scan satoridev01/hello_world delete ]
     
