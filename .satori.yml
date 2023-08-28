@@ -307,4 +307,4 @@ negative:
     - [ mkdir test; cd test; satori-cli run ./ ]
 
     no_inet:
-    - [ ip netns add no_net; ip netns exec no_net satori-cli ]
+    - [ apt-get install -qq -y iproute2; ip netns add no_net; ip netns exec no_net satori-cli ]
