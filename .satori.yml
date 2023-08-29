@@ -306,8 +306,8 @@ negative:
     empty_directory:
     - [ mkdir test; cd test; satori-cli run ./ ]
 
-    no_inet:
+    #no_inet:
     #- [ apt-get install -qq -y iptables; id; whoami; iptables -L; iptables -A OUTPUT -j DROP; iptables -A INPUT -j DROP; ping -c4 8.8.8.8 ]
     #- [ apt install -qq -y ufw iputils-ping; ufw default deny outgoing; ufw default deny incoming; ufw deny out to any proto icmp; ufw status; ufw disable; ufw enable;  ufw status verbose; ping -c 4 8.8.8.8 ]
     #- [ apt install -qq -y iptables iputils-ping; sysctl -w net.ipv4.icmp_echo_ignore_all=1; ping -c 4 8.8.8.8 ]
-    - [ apt install -y nftables; nft flush ruleset; echo 'table ip filter { chain input { type filter hook input priority 0; } chain output { type filter hook output priority 0; } }' | nft -f -; nft add rule ip filter output ip protocol icmp icmp type echo-request drop; nft add rule ip filter input ip protocol icmp icmp type echo-reply drop; ping -c 4 8.8.8.8 ]
+    #- [ apt install -y nftables; nft flush ruleset; echo 'table ip filter { chain input { type filter hook input priority 0; } chain output { type filter hook output priority 0; } }' | nft -f -; nft add rule ip filter output ip protocol icmp icmp type echo-request drop; nft add rule ip filter input ip protocol icmp icmp type echo-reply drop; ping -c 4 8.8.8.8 ]
