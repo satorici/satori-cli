@@ -306,5 +306,8 @@ negative:
     empty_directory:
     - [ mkdir test; cd test; satori-cli run ./ ]
 
+    install_iproute2:
+    - [ apt-get install -qq -y iproute2 ]
+    
     no_inet:
-    - [ apt-get install -qq -y iproute2; sudo ip netns add no_net; sudo ip netns exec no_net satori-cli ]
+    - [ ip netns add no_net; ip netns exec no_net satori-cli ]
