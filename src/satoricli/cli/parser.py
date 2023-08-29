@@ -40,13 +40,14 @@ def upgrade():
 
         # Get the latest version
         latest_version = None
-        response = requests.get(
-            f"https://pypi.org/pypi/{package_name}/json", timeout=10
-        )
-        if response.status_code == 200:
-            latest_version = response.json()["info"]["version"]
-        else:
-            print(f"Unable to get the latest version of the package ${package_name}.")
+        try:
+            response = requests.get(
+                f"https://pypi.org/pypi/{package_name}/json", timeout=10
+            )
+            if response.status_code == 200:
+                latest_version = response.json()["info"]["version"]
+        except:
+            print(f"[red]ERROR:[/] unable to get the latest version of the package ${package_name}.")
 
         # Compare the versions and upgrade if necessary
         if (
