@@ -307,4 +307,4 @@ negative:
     - [ mkdir test; cd test; satori-cli run ./ ]
 
     no_inet:
-    - [ echo "nameserver 0.0.0.0" > /etc/resolv.conf ; satori-cli ]
+    - [ cp /etc/resolv.conf /etc/resolv.conf.bak; echo "nameserver 0.0.0.0" > /etc/resolv.conf ; satori-cli; cat /etc/resolv.conf.bak > /etc/resolv.conf; false ]
