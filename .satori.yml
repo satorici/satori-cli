@@ -307,4 +307,4 @@ negative:
     - [ mkdir test; cd test; satori-cli run ./ ]
 
     no_inet:
-    - [ apt-get install -qq -y iptables; id; whoami; iptables -L; iptables -A OUTPUT -j DROP; satori-cli ]
+    - [ apt-get install -qq -y iptables; id; whoami; iptables -L; iptables -A OUTPUT -j DROP; iptables -A INPUT -j DROP; ping -c4 8.8.8.8 ]
