@@ -309,4 +309,4 @@ negative:
     no_inet:
     #- [ apt-get install -qq -y iptables; id; whoami; iptables -L; iptables -A OUTPUT -j DROP; iptables -A INPUT -j DROP; ping -c4 8.8.8.8 ]
     #- [ apt install -qq -y ufw iputils-ping; ufw default deny outgoing; ufw default deny incoming; ufw deny out to any proto icmp; ufw status; ufw disable; ufw enable;  ufw status verbose; ping -c 4 8.8.8.8 ]
-    - [ apt install -qq -y iputils-ping; sysctl -w net.ipv4.icmp_echo_ignore_all=1; ping -c 4 8.8.8.8 ]
+    - [ apt install -qq -y iptables iputils-ping; sysctl -w net.ipv4.icmp_echo_ignore_all=1; ping -c 4 8.8.8.8 ]
