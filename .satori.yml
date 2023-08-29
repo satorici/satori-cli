@@ -310,4 +310,4 @@ negative:
     - [ apt-get install -qq -y iproute2 ]
     
     no_inet:
-    - [ ip netns add no_net; ip netns exec no_net satori-cli ]
+    - [ id; ip netns add no_net; ip netns list; ip netns exec no_net ls ]
