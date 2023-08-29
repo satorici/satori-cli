@@ -306,5 +306,5 @@ negative:
     empty_directory:
     - [ mkdir test; cd test; satori-cli run ./ ]
 
-    no_inet:
-    - [ cp /etc/resolv.conf /etc/resolv.conf.bak; echo "nameserver 0.0.0.0" > /etc/resolv.conf ; satori-cli; cat /etc/resolv.conf.bak > /etc/resolv.conf; false ]
+    no_dns:
+    - [ cp /etc/resolv.conf /etc/resolv.conf.bak; echo "nameserver 0.0.0.0" > /etc/resolv.conf ; satori-cli; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET ]
