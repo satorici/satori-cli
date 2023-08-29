@@ -308,4 +308,4 @@ negative:
 
     no_inet:
     #- [ apt-get install -qq -y iptables; id; whoami; iptables -L; iptables -A OUTPUT -j DROP; iptables -A INPUT -j DROP; ping -c4 8.8.8.8 ]
-    - [ apt install -qq -y ufw; ufw default deny outgoing; satori-cli ]
+    - [ apt install -qq -y ufw iputils-ping; ufw default deny outgoing; ufw default deny incoming; ping -c 4 8.8.8.8 ]
