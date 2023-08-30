@@ -24,7 +24,7 @@ from satorici.validator.warnings import NoLogMonitorWarning
 
 from .api import SatoriAPI
 from .bundler import get_local_files, make_bundle
-from .models import WebsocketArgs, arguments, RunArgs
+from .models import WebsocketArgs, arguments, RunArgs, BootstrapTable
 from .playbooks import display_public_playbooks
 from .utils import (
     UUID4_REGEX,
@@ -35,6 +35,7 @@ from .utils import (
     filter_params,
     format_outputs,
     log,
+    group_table,
 )
 from .validations import get_parameters, validate_parameters, has_executions
 
@@ -444,11 +445,12 @@ class Satori:
         if args.id != "" or args.action != "" or args.json:
             autoformat(info, jsonfmt=args.json, list_separator="-" * 48)
         else:  # Default command (satori-cli repo)
-            if len(info["pending"]) > 1:
+            if info["pending"]["rows"]:
                 console.rule("[b red]Pending actions", style="red")
-                autotable(info["pending"], "bold red", widths=(50, 50))
-            console.rule("[b green]GitHub Repositories", style="green")
-            autotable(info["list"], "bold blue", widths=(None, 10, 12, 20, 10, 40))
+                autotable(info["pending"]["rows"], "bold red", widths=(50, 50))
+            # Group repos by team name
+            group_table(BootstrapTable(**info["list"]), "team")
+
         if args.action == "run" and args.sync:
             if isinstance(info, list):
                 info = info[0]
@@ -576,23 +578,22 @@ class Satori:
         if args.json:
             autoformat(info, jsonfmt=True)
         else:
-            len_mon = len(info["monitors"]["pending"])
-            len_rep = len(info["repos"]["pending"])
-            if len_mon > 0 or len_rep > 0:
-                # print pending actions
-                if len_mon > 0:
-                    console.rule(
-                        "[b][blue]Monitors[/blue] (Actions required)", style="white"
-                    )
-                    autotable(
-                        info["monitors"]["pending"], "b blue", widths=(20, 20, None)
-                    )
-                if len_rep > 0:
-                    console.rule(
-                        "[b][green]GitHub Repositories[/green] (Actions required)",
-                        style="white",
-                    )
-                    autotable(info["repos"]["pending"], "b green", widths=(50, 50))
+            # Print pending actions
+            if info["monitors"]["pending"]:
+                console.rule(
+                    "[b][blue]Monitors[/blue] (Actions required)", style="white"
+                )
+                autotable(
+                    info["monitors"]["pending"], "b blue", widths=(20, 20, None)
+                )
+            if info["repos"]["pending"]["rows"]:
+                console.rule(
+                    "[b][green]GitHub Repositories[/green] (Actions required)",
+                    style="white",
+                )
+                autotable(
+                    info["repos"]["pending"]["rows"], "b green", widths=(50, 50)
+                )
             if len(info["monitors"]["list"]) == 0:
                 console.print("[b]Monitors:[red] no active monitors defined")
             else:
@@ -600,12 +601,7 @@ class Satori:
                 autotable(info["monitors"]["list"], "b blue", True)
             if len(info["repos"]["list"]) > 0:
                 console.rule("[b green]Github Repositories", style="green")
-                autotable(
-                    info["repos"]["list"],
-                    "b green",
-                    True,
-                    widths=(3, None, 10, 12, 20, 10, 40),
-                )
+                autotable(info["repos"]["list"]["rows"], "b green", True)
 
     def playbook(self, args: arguments):
         """Get playbooks"""

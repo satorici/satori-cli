@@ -14,6 +14,8 @@ from rich.theme import Theme
 from rich.highlighter import RegexHighlighter
 import random
 
+from .models import BootstrapTable
+
 __decorations = "▢•○░"
 __random_colors = ["green", "blue", "red"]
 # IDs
@@ -429,3 +431,29 @@ def format_outputs(outputs):
             console.out(
                 b64decode(output["output"]["stderr"]).decode(errors="ignore").strip()
             )
+
+
+def group_table(table: BootstrapTable, key: str):
+    """Generate multiple tables grouped by a key
+
+    Parameters
+    ----------
+    table : BootstrapTable
+        The original table
+    key : str
+        The key name that is used to separate the tables
+    """
+    groups = {}
+    for row in table.rows:
+        key_value: str = row[key]
+        row.pop(key, None)  # dont print the key again
+        if key_value not in groups:
+            # Create a new group if doesnt exist
+            groups[key_value] = []
+        # Add the item to the group
+        groups[key_value].append(row)
+
+    # Print the tables
+    for group in groups.keys():
+        console.rule(f"[b]{group}", style="cyan")
+        autotable(groups[group], "bold blue")
