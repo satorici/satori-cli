@@ -48,4 +48,13 @@ class RunArgs(BaseArgs):
     url: Optional[str] = None
 
 
+@dataclass
+class BootstrapTable:
+    """Based on https://bootstrap-table.com/docs/api/table-options/#url"""
+
+    total: int
+    totalNotFiltered: int
+    rows: list[dict]
+
+
 arguments = Union[Namespace, Args]
