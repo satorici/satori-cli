@@ -433,7 +433,7 @@ def format_outputs(outputs):
             )
 
 
-def group_table(table: BootstrapTable, key: str):
+def group_table(table: BootstrapTable, key: str, default_group: str):
     """Generate multiple tables grouped by a key
 
     Parameters
@@ -442,10 +442,15 @@ def group_table(table: BootstrapTable, key: str):
         The original table
     key : str
         The key name that is used to separate the tables
+    default_group: str
+        The group name by default if is empty
     """
     groups = {}
     for row in table.rows:
         key_value: str = row[key]
+        if not key_value:
+            # If is empty add to default group
+            key_value = default_group
         row.pop(key, None)  # dont print the key again
         if key_value not in groups:
             # Create a new group if doesnt exist

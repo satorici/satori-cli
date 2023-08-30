@@ -449,7 +449,7 @@ class Satori:
                 console.rule("[b red]Pending actions", style="red")
                 autotable(info["pending"]["rows"], "bold red", widths=(50, 50))
             # Group repos by team name
-            group_table(BootstrapTable(**info["list"]), "team")
+            group_table(BootstrapTable(**info["list"]), "team", "Private")
 
         if args.action == "run" and args.sync:
             if isinstance(info, list):
