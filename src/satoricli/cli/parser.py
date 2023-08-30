@@ -47,7 +47,7 @@ def upgrade():
             if response.status_code == 200:
                 latest_version = response.json()["info"]["version"]
         except:
-            print(f"[red]ERROR:[/] unable to get the latest version of the package {package_name}.")
+            print(f"[error]ERROR:[/] unable to get the latest version of the package {package_name}.")
 
         # Compare the versions and upgrade if necessary
         if (
