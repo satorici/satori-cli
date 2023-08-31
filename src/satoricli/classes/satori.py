@@ -505,6 +505,10 @@ class Satori:
         elif args.action == "":
             params = filter_params(args, ("id", "deleted"))
             info = self.api.monitors("GET", args.id, "", params=params)
+        elif args.action == "clean":
+            self.api.request("DELETE", f"monitors/{args.id}/reports")
+            print("Monitor reports cleaned")
+            sys.exit(0)
         elif args.action == "public":
             info = self.api.monitors("PATCH", args.id, "", json={"public": "invert"})
         elif args.action in ("start", "stop"):
