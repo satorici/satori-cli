@@ -316,7 +316,7 @@ negative:
     - [ "dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori-cli run random_file.yml --output" ]
 
     malformed:
-    - [ satori-cli run .satori/empty.yml --data={'A':'B'} ]
+    - [ "satori-cli run .satori/empty.yml --data={'A':'B'}" ]
 
     invalid:
-    - [ satori-cli run .satori/empty.yml --data={'A':'B','C':'D'} ]
+    - [ "satori-cli run .satori/empty.yml --data={'A':'B','C':'D'}" ]
