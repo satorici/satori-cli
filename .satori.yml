@@ -294,7 +294,10 @@ positive:
 
 negative:
   assertReturnCode: 1
-  assertStderrNotContains: Traceback
+  assertStderrNotContains:
+  - Traceback
+  - malformed node
+  - invalid syntax
 
   run:
     fail:
