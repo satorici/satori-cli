@@ -280,10 +280,6 @@ positive:
     add_repo:
     - [ satori-cli team test_team add_repo --repo='satoridev01/hello_world' ]
     
-    # TBD: delete the repo 'satoridev01/hello_world' from the team 'test_team'
-    #del_repo:
-    #- [ satori-cli team test_team add_repo --repo='satoridev01/hello_world' ]
-    
     # list the repos associated to the 'test_team'
     team_with_repos:
     - [ satori-cli team test_team repos ]
