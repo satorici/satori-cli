@@ -100,7 +100,7 @@ class RepoCommand(BaseCommand):
                 params={
                     "url": repository,
                     "data": data,
-                    "playbook": playbook.read_text(),
+                    "playbook": playbook and playbook.read_text(),
                     "coverage": coverage,
                     "from": from_date,
                     "to": to_date,
@@ -130,7 +130,7 @@ class RepoCommand(BaseCommand):
                 params={
                     "url": repository,
                     "data": data,
-                    "playbook": playbook.read_text(),
+                    "playbook": playbook and playbook.read_text(),
                 },
             ).json()
             if sync:
