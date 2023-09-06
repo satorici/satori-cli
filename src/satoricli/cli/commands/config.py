@@ -38,5 +38,5 @@ class ConfigCommand(BaseCommand):
             console.print(config[kwargs["profile"]][key])
             return
 
-        config[kwargs["profile"]][key] = value
+        config.setdefault(kwargs["profile"], {})[key] = value
         save_config(config)
