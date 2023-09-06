@@ -55,12 +55,6 @@ class RunCommand(BaseCommand):
         config = load_config()[kwargs["profile"]]
         configure_client(config["token"])
 
-        if path.startswith("satori://"):
-            exec_data = self.run_url(path, data)
-
-            if (sync or output or report or files) and exec_data:
-                return self.run_sync(exec_data, output, report, files, **kwargs)
-
         target = Path(path)
         params = set()
 
@@ -68,9 +62,14 @@ class RunCommand(BaseCommand):
             if not validate_parameters(data):
                 raise ValueError("Malformed parameters")
 
+            params.update(data.keys())
             data = str(data)  # TODO: Modify API to receive JSON
 
-            params.update(data.keys())
+        if path.startswith("satori://"):
+            exec_data = self.run_url(path, data, **kwargs)
+
+            if (sync or output or report or files) and exec_data:
+                return self.run_sync(exec_data, output, report, files, **kwargs)
 
         if target.is_dir() and (target / ".satori.yml").is_file():
             playbook = target / ".satori.yml"
@@ -182,7 +181,8 @@ class RunCommand(BaseCommand):
             return 1
 
         res = client.post(
-            f"{HOST}/runs/archive", json={"secrets": data, "is_monitor": is_monitor}
+            f"{HOST}/runs/archive",
+            json={"secrets": data or "", "is_monitor": is_monitor},
         ).json()
         arc = res["archive"]
         bun = res["bundle"]
