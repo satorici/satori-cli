@@ -10,307 +10,328 @@ positive:
   assertStderrNotContains: Traceback
   install:
     #update:
-    #- [ apt update ] 
+    #- [ apt update ]
     git:
-    - [ apt install -y git ]
+      - [apt install -y git]
     satori-cli:
-    - [ pip install . ]
-    
+      - [pip install .]
+
   # the -P or --profile parameters allows you to use different Satori CI API Tokens
   token_saved:
     assertStdoutContains: "Token saved"
     create_profile:
-    - [ satori-cli config token "not_a_token" --profile test_user ]
-  
+      - [satori-cli config token "not_a_token" --profile test_user]
+
     # define the default token for the configuration
     set_token:
-    - [ satori-cli config token "$(TOKEN)" ]
-  
+      - [satori-cli config token "$(TOKEN)"]
+
   # TBU: show the user's dashboard (what about teams?)
   dashboard:
-  - [ satori-cli ]
+    - [satori-cli]
 
   run:
     # execute a Satori CI playbook and show the report once its done
     pass_report:
-    - [ satori-cli run .satori/import/pass.yml --report ]
+      - [satori-cli run .satori/import/pass.yml --report]
 
     # upload a directory with a .satori.yml playbook
     import_sync:
-    - [ satori-cli run .satori/import --sync ]
+      - [satori-cli run .satori/import --sync]
 
     # run a public Satori CI playbook and pass parameters
     url_output:
-    - [ "satori-cli run satori://web/testssl.yml --data=\"{'URL':'https://www.satori-ci.com'}\" --output" ]
+      - [
+          'satori-cli run satori://web/testssl.yml --data=''{"URL":"https://www.satori-ci.com"}'' --output',
+        ]
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
-    - [ satori-cli run .satori/input.yml --sync ]
+      - [satori-cli run .satori/input.yml --sync]
 
   report:
     # run synchronously a local playbook
     new_sync:
-    - [ "satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt" ]
-    
+      - [
+          "satori-cli run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt",
+        ]
+
     #echo_ID:
     #- [ "export ID=$(cat report_id.txt); echo $ID" ]
 
     # list the reports generated
     list:
-    - [ satori-cli report ]
+      - [satori-cli report]
 
     # show a report
     single:
-    - [ "export ID=$(cat report_id.txt); satori-cli report $ID --debug" ]
+      - ["export ID=$(cat report_id.txt); satori-cli report $ID --debug"]
 
     # show a json report
     json:
-    - [ "export ID=$(cat report_id.txt); satori-cli report $ID --json" ]
+      - ["export ID=$(cat report_id.txt); satori-cli report $ID --json"]
 
     # make a report public
     public:
-    - [ "export ID=$(cat report_id.txt); satori-cli report $ID public" ]
+      - ["export ID=$(cat report_id.txt); satori-cli report $ID public"]
 
     # show the output associated to a report
     output:
-    - [ "export ID=$(cat report_id.txt); satori-cli report $ID output" ]
+      - ["export ID=$(cat report_id.txt); satori-cli report $ID output"]
 
     # download the files associated to a report
     files:
-    - [ "export ID=$(cat report_id.txt); satori-cli report $ID files" ]
-    
+      - ["export ID=$(cat report_id.txt); satori-cli report $ID files"]
+
     # delete the files, the output and the report
     delete:
-    - [ "export ID=$(cat report_id.txt); satori-cli report $ID delete" ]
+      - ["export ID=$(cat report_id.txt); satori-cli report $ID delete"]
 
     # run asynchronously a local playbook
     new_async: # new report for stop is needed because the first one is already stopped
-    - [ "satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt" ]
+      - [
+          "satori-cli run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt",
+        ]
 
     # stop a running report
     stop: # wait until start
-    - [ "sleep 10; export ID=$(cat report_id2.txt); satori-cli report $ID stop --debug" ]
+      - [
+          "sleep 10; export ID=$(cat report_id2.txt); satori-cli report $ID stop --debug",
+        ]
 
   playbook:
     list:
       private:
-      - [ satori-cli playbook ]
+        - [satori-cli playbook]
 
       public:
-      - [ satori-cli playbook --public ]
+        - [satori-cli playbook --public]
 
     echo:
-    - [ "export ID=$(cat report_id2.txt); echo $ID" ]
+      - ["export ID=$(cat report_id2.txt); echo $ID"]
 
     read:
       playbook_by_report_id:
-      - [ "export ID=$(cat report_id2.txt); satori-cli playbook $ID" ]
+        - ["export ID=$(cat report_id2.txt); satori-cli playbook $ID"]
 
       playbook_id:
-      - [ "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID" ]
-      
+        - [
+            "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID",
+          ]
+
       public:
-      - [ satori-cli playbook satori://code/detect-secrets.yml ]
+        - [satori-cli playbook satori://code/detect-secrets.yml]
 
     public:
-    - [ "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID public" ]
+      - [
+          "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID public",
+        ]
 
     delete_private:
-      - [ "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID delete" ]
+      - [
+          "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID delete",
+        ]
 
   repo:
     # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
     list:
-    - [ satori-cli repo ]
+      - [satori-cli repo]
 
     # list the commits and the reports associated to a repository
     single:
-    - [ satori-cli repo satoridev01/hello_world ]
+      - [satori-cli repo satoridev01/hello_world]
 
     # simulate a push from the latest version to run the .satori.yml playbook from the repo
     run:
-    - [ satori-cli repo satoridev01/hello_world run ]
+      - [satori-cli repo satoridev01/hello_world run]
 
     # TBD: get the commits of a certain repo (required for scans)
-    check_commits: 
-    - [ satori-cli repo satoridev01/hello_world check-commits ]
+    check_commits:
+      - [satori-cli repo satoridev01/hello_world check-commits]
 
     # TBD: what's the status of the current scanning
     scan_status:
-    - [ satori-cli repo satoridev01/hello_world scan-status ]
-    
+      - [satori-cli repo satoridev01/hello_world scan-status]
+
     # list the commits of a certain repo
     commits:
-    - [ satori-cli repo satoridev01/hello_world commits ]
+      - [satori-cli repo satoridev01/hello_world commits]
 
     # TBD: get the forks of a certain repo (required for fork-scan)
     check_forks:
-    - [ satori-cli repo satoridev01/hello_world check-forks ]
+      - [satori-cli repo satoridev01/hello_world check-forks]
 
     # TBD: run the .satori.yml playbook with a certain coverage on the repo
     scan:
-    - [ satori-cli repo satoridev01/hello_world scan -c 50 ]
+      - [satori-cli repo satoridev01/hello_world scan -c 50]
 
     # TBD: stop the scan execution
     scan_stop:
-    - [ satori-cli repo satoridev01/hello_world scan-stop ]
+      - [satori-cli repo satoridev01/hello_world scan-stop]
 
     # delete the reports associated to a repo
     clean: # needs sync mode
-    - [ satori-cli repo satoridev01/hello_world clean ]
+      - [satori-cli repo satoridev01/hello_world clean]
 
     # TBD: delete the information related to the commits of a repo
     delete_commits: # needs sync mode
-    - [ satori-cli repo satoridev01/hello_world clean --delete-commits ]
+      - [satori-cli repo satoridev01/hello_world clean --delete-commits]
 
-    # TBD: not being tested: 
+    # TBD: not being tested:
     # --skip-check
 
   monitor:
     # run a new monitor
     new:
-    - [ "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt" ]
+      - [
+          "satori-cli run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt",
+        ]
 
     #echo:
     #- [ "export ID=$(cat monitor_id.txt); echo $ID" ]
 
     # list the monitors
     list:
-    - [ "sleep 5; satori-cli monitor" ]
+      - ["sleep 5; satori-cli monitor"]
 
     # list the reports associated to a monitor
     single: # wait until start
-    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID --debug" ]
+      - ["export ID=$(cat monitor_id.txt); satori-cli monitor $ID --debug"]
 
     # make a monitor's reports public
-    public: # 
-    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID public" ]
+    public: #
+      - ["export ID=$(cat monitor_id.txt); satori-cli monitor $ID public"]
 
     # stop a monitor
     start:
-    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID start" ]
+      - ["export ID=$(cat monitor_id.txt); satori-cli monitor $ID start"]
 
     # start a monitor
     stop:
-    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID stop" ]
+      - ["export ID=$(cat monitor_id.txt); satori-cli monitor $ID stop"]
 
     # delete the reports associated to a monitor
     clean:
-    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID clean" ]
+      - ["export ID=$(cat monitor_id.txt); satori-cli monitor $ID clean"]
 
     # delete the monitor
     delete:
-    - [ "export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete" ]
+      - ["export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete"]
 
+  #  scan:
+  #    # list the current scans
+  #    - [ satori-cli scan ]
+  #
+  #    # get the commits of a certain repo (required for scans)
+  #    check_commits:
+  #    - [ satori-cli scan satoridev01/hello_world check-commits ]
+  #
+  #    # what's the status of the current scanning
+  #    status:
+  #    - [ satori-cli scan satoridev01/hello_world status ]
+  #
+  #    # get the forks of a certain repo (required for fork-scan)
+  #    check_forks:
+  #    - [ satori-cli scan satoridev01/hello_world check-forks ]
+  #
+  #    # run the .satori.yml playbook with a certain coverage on the repo
+  #    run:
+  #    - [ satori-cli scan satoridev01/hello_world scan -c 50 --skip-check ]
+  #
+  #    # stop the scan execution
+  #    stop:
+  #    - [ satori-cli scan satoridev01/hello_world stop ]
+  #
+  #    # [re]start a scan execution
+  #    start:
+  #    - [ satori-cli scan satoridev01/hello_world start ]
+  #
+  #    # delete the information related to the commits of a repo
+  #    delete_commits:
+  #    - [ satori-cli scan satoridev01/hello_world delete-commits ]
+  #
+  #    # delete the forks/commits information related to the repo
+  #    delete_forks:
+  #    - [ satori-cli scan satoridev01/hello_world delete-forks ]
+  #
+  #    # delete the scan reports
+  #    delete:
+  #    - [ satori-cli scan satoridev01/hello_world delete ]
 
-#  scan:
-#    # list the current scans
-#    - [ satori-cli scan ]
-#
-#    # get the commits of a certain repo (required for scans)
-#    check_commits: 
-#    - [ satori-cli scan satoridev01/hello_world check-commits ]
-#
-#    # what's the status of the current scanning
-#    status:
-#    - [ satori-cli scan satoridev01/hello_world status ]
-#
-#    # get the forks of a certain repo (required for fork-scan)
-#    check_forks:
-#    - [ satori-cli scan satoridev01/hello_world check-forks ]
-#
-#    # run the .satori.yml playbook with a certain coverage on the repo
-#    run:
-#    - [ satori-cli scan satoridev01/hello_world scan -c 50 --skip-check ]
-#
-#    # stop the scan execution
-#    stop:
-#    - [ satori-cli scan satoridev01/hello_world stop ]
-#
-#    # [re]start a scan execution
-#    start:
-#    - [ satori-cli scan satoridev01/hello_world start ]
-#
-#    # delete the information related to the commits of a repo
-#    delete_commits:
-#    - [ satori-cli scan satoridev01/hello_world delete-commits ]
-#
-#    # delete the forks/commits information related to the repo
-#    delete_forks:
-#    - [ satori-cli scan satoridev01/hello_world delete-forks ]
-#
-#    # delete the scan reports
-#    delete:
-#    - [ satori-cli scan satoridev01/hello_world delete ]
-    
   teams:
     # list teams and repos without teams
     list:
-    - [ satori-cli team ]
-    
+      - [satori-cli team]
+
     # delete team 'test_team'
     clean:
-    - [ satori-cli team test_team delete || true ]
-    
+      - [satori-cli team test_team delete || true]
+
     # create team 'test_team'
     create:
-    - [ satori-cli team test_team create ]
-    
+      - [satori-cli team test_team create]
+
     # list the repos associated to the 'test_team' and their team members
     single:
-    - [ satori-cli team test_team ]
-    
+      - [satori-cli team test_team]
+
     # list the members of the 'test_team'
     members:
-    - [ satori-cli team test_team members ]
-    
+      - [satori-cli team test_team members]
+
     # add the email 'test@satori-ci.com' as a member of the team 'test_team'
     add_member:
-    - [ satori-cli team test_team add_member --email='test@satori-ci.com' ]
-    
+      - [satori-cli team test_team add_member --email='test@satori-ci.com']
+
     # delete the email 'test@satori-ci.com' as a member of the team 'test_team'
     del_member:
-    - [ satori-cli team test_team del_member --email='test@satori-ci.com' ]
-    
+      - [satori-cli team test_team del_member --email='test@satori-ci.com']
+
     # list the repos associated to the 'test_team'
     team_without_repos:
-    - [ satori-cli team test_team repos ]
-    
+      - [satori-cli team test_team repos]
+
     # add the repo 'satoridev01/hello_world' to the team 'test_team'
     add_repo:
-    - [ satori-cli team test_team add_repo --repo='satoridev01/hello_world' ]
-    
+      - [satori-cli team test_team add_repo --repo='satoridev01/hello_world']
+
     # list the repos associated to the 'test_team'
     team_with_repos:
-    - [ satori-cli team test_team repos ]
+      - [satori-cli team test_team repos]
 
     # delete the 'test_team'
     delete:
-    - [ satori-cli team test_team delete ]
+      - [satori-cli team test_team delete]
 
 negative:
   assertReturnCode: 1
   assertStderrNotContains:
-  - Traceback
+    - Traceback
   assertStdoutNotContains:
-  - malformed node
-  - invalid syntax
+    - malformed node
+    - invalid syntax
 
   run:
     fail:
-    - [ satori-cli run .satori/fail.yml --report ]
+      - [satori-cli run .satori/fail.yml --report]
 
     empty_playbook:
-    - [ satori-cli run .satori/empty.yml --report ]
+      - [satori-cli run .satori/empty.yml --report]
 
     empty_directory:
-    - [ mkdir test; cd test; satori-cli run ./ ]
+      - [mkdir test; cd test; satori-cli run ./]
 
     no_dns:
-    - [ "cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori-cli; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET" ]
+      - [
+          "cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori-cli; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET",
+        ]
 
     random:
-    - [ "dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori-cli run random_file.yml --output" ]
+      - [
+          "dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori-cli run random_file.yml --output",
+        ]
 
     malformed_or_invalid_json_data:
-    - [ "satori-cli run .satori/empty.yml --data={'A':'B'}; satori-cli run .satori/empty.yml --data={'A':'B','C':'D'}" ]
+      - [
+          "satori-cli run .satori/empty.yml --data={'A':'B'}; satori-cli run .satori/empty.yml --data={'A':'B','C':'D'}",
+        ]
