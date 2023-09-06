@@ -161,7 +161,7 @@ class RepoCommand(BaseCommand):
         elif action == "show":
             info = client.get(f"{HOST}/repos/{repository or ''}").json()
 
-        if not repository and action != "show" or kwargs["json"]:
+        if not repository or action != "show" or kwargs["json"]:
             autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
         else:  # Default command (satori-cli repo)
             if info["pending"]["rows"]:

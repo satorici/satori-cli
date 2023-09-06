@@ -58,7 +58,7 @@ class MonitorCommand(BaseCommand):
             print("Monitor reports cleaned")
             return
 
-        if not id or action == "show" or kwargs["json"]:
+        if not id or action != "show" or kwargs["json"]:
             autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48)
         else:  # Default command (satori-cli monitor)
             if len(info["pending"]) > 1:
