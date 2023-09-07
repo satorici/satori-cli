@@ -304,8 +304,8 @@ positive:
 
 negative:
   assertReturnCode:
-  - 1
-  - 2
+    - 1
+    - 2
   assertStderrNotContains:
     - Traceback
   assertStdoutNotContains:
