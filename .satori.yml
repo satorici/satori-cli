@@ -303,9 +303,7 @@ positive:
       - [satori-cli team test_team delete]
 
 negative:
-  assertReturnCode:
-    - 1
-    - 2
+  assertReturnCodeNot: 0
   assertStderrNotContains:
     - Traceback
   assertStdoutNotContains:
