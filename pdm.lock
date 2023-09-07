@@ -282,7 +282,7 @@ files = [
 
 [[package]]
 name = "satori-playbook-validator"
-version = "3.3.0"
+version = "3.3.1"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
@@ -290,8 +290,8 @@ dependencies = [
     "fastjsonschema>=2.17.1",
 ]
 files = [
-    {file = "satori_playbook_validator-3.3.0-py3-none-any.whl", hash = "sha256:63184444f4a65cc4375337b23893b976f0b09601a039f4bcd9dbe118fe4b24a7"},
-    {file = "satori_playbook_validator-3.3.0.tar.gz", hash = "sha256:15fac0114994e40c751a878ccc7548932bd36fdbd7a85452ed1054f9c6e5ce51"},
+    {file = "satori_playbook_validator-3.3.1-py3-none-any.whl", hash = "sha256:c2ece64efd705fd8da96e5f14d52858390451dfe2b459eb1cc669b013fd751e7"},
+    {file = "satori_playbook_validator-3.3.1.tar.gz", hash = "sha256:6ae3ed363382a5a6d62fcd074ebed6d0226684ebaeed88e99a202f47b79afacc"},
 ]
 
 [[package]]
