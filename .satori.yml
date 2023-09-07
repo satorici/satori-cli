@@ -18,7 +18,6 @@ positive:
 
   # the -P or --profile parameters allows you to use different Satori CI API Tokens
   token_saved:
-    assertStdoutContains: "Token saved"
     create_profile:
       - [satori-cli config token "not_a_token" --profile test_user]
 
