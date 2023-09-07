@@ -9,7 +9,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Optional
 
-import requests
+import httpx
 import yaml
 from rich.progress import Progress
 from rich.progress import open as progress_open
@@ -21,7 +21,7 @@ from satorici.validator.exceptions import (
 )
 from satorici.validator.warnings import NoLogMonitorWarning
 
-from satoricli.api import HOST, client, configure_client
+from satoricli.api import client, configure_client
 from satoricli.bundler import get_local_files, make_bundle
 from satoricli.cli.utils import autoformat, check_monitor, console, format_outputs
 from satoricli.utils import load_config
@@ -128,14 +128,13 @@ class RunCommand(BaseCommand):
         bundle = make_bundle(path)
         is_monitor = check_monitor(path)
         url = client.post(
-            f"{HOST}/runs/bundle",
-            json={"secrets": data or "", "is_monitor": is_monitor},
+            "/runs/bundle", json={"secrets": data or "", "is_monitor": is_monitor}
         ).json()
-        res = requests.post(  # nosec
-            url["url"], url["fields"], files={"file": bundle}, timeout=None
+        res = httpx.post(  # nosec
+            url["url"], data=url["fields"], files={"file": bundle}, timeout=None
         )
 
-        if not res.ok:
+        if not res.is_success:
             console.print("[error]File upload failed")
             return 1
 
@@ -181,8 +180,7 @@ class RunCommand(BaseCommand):
             return 1
 
         res = client.post(
-            f"{HOST}/runs/archive",
-            json={"secrets": data or "", "is_monitor": is_monitor},
+            "/runs/archive", json={"secrets": data or "", "is_monitor": is_monitor}
         ).json()
         arc = res["archive"]
         bun = res["bundle"]
@@ -191,20 +189,20 @@ class RunCommand(BaseCommand):
 
         try:
             with progress_open(full_path, "rb", description="Uploading...") as f:
-                res = requests.post(  # nosec
-                    arc["url"], arc["fields"], files={"file": f}, timeout=None
+                res = httpx.post(  # nosec
+                    arc["url"], data=arc["fields"], files={"file": f}, timeout=None
                 )
         finally:
             os.remove(full_path)
 
-        if not res.ok:
+        if not res.is_success:
             print("Archive upload failed")
             return 1
 
-        res = requests.post(  # nosec
-            bun["url"], bun["fields"], files={"file": bundle}, timeout=None
+        res = httpx.post(  # nosec
+            bun["url"], data=bun["fields"], files={"file": bundle}, timeout=None
         )
-        if not res.ok:
+        if not res.is_success:
             print("Bundle upload failed")
             return 1
 
@@ -224,7 +222,7 @@ class RunCommand(BaseCommand):
 
     def run_url(self, path: str, data: dict, **kwargs):
         info = client.post(
-            f"{HOST}/runs/url", json={"secrets": data, "is_monitor": False, "url": path}
+            "/runs/url", json={"secrets": data, "is_monitor": False, "url": path}
         ).json()
         autoformat(
             {"Running with the ID": info.get("report_id")}, jsonfmt=kwargs["json"]
@@ -253,8 +251,8 @@ class RunCommand(BaseCommand):
             elapsed = time.time() - start_time
             elapsed_text = f"Elapsed time: {elapsed:.1f}s"
             try:
-                report_data = client.get(f"{HOST}/reports/{exec_data['id']}").json()
-            except requests.HTTPError as e:
+                report_data = client.get(f"/reports/{exec_data['id']}").json()
+            except httpx.HTTPStatusError as e:
                 code = e.response.status_code
                 if code in (404, 403):
                     console.print(
@@ -297,21 +295,21 @@ class RunCommand(BaseCommand):
                         id=exec_data["id"], action="output", json=kwargs["json"]
                     )
 
-                    r = client.get(f"{HOST}/outputs/{out_args.id}")
-                    content = requests.get(r.json()["url"], stream=True, timeout=300)
-                    format_outputs(content.iter_lines())
+                    r = client.get(f"/outputs/{out_args.id}")
+                    with httpx.stream("GET", r.json()["url"], timeout=300) as s:
+                        format_outputs(s.iter_lines())
                 elif files:
                     report_id = exec_data["id"]
-                    r = client.get(f"{HOST}/reports/{report_id}/files", stream=True)
-                    total = int(r.headers["Content-Length"])
+                    with client.stream("GET", f"/reports/{report_id}/files") as s:
+                        total = int(s.headers["Content-Length"])
 
-                    with Progress() as progress:
-                        task = progress.add_task("Downloading...", total=total)
+                        with Progress() as progress:
+                            task = progress.add_task("Downloading...", total=total)
 
-                        with open(f"satorici-files-{report_id}.tar.gz", "wb") as f:
-                            for chunk in r.iter_content():
-                                progress.update(task, advance=len(chunk))
-                                f.write(chunk)
+                            with open(f"satorici-files-{report_id}.tar.gz", "wb") as f:
+                                for chunk in s.iter_raw():
+                                    progress.update(task, advance=len(chunk))
+                                    f.write(chunk)
                 else:  # --sync or -s
                     # TODO: print something else?
                     pass  # already printed

@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Literal, Optional
 
-from satoricli.api import HOST, client, configure_client
+from satoricli.api import client, configure_client
 from satoricli.cli.utils import autoformat, autotable, console
 from satoricli.utils import load_config
 
@@ -40,21 +40,19 @@ class MonitorCommand(BaseCommand):
         configure_client(config["token"])
 
         if action == "delete":
-            client.delete(f"{HOST}/monitors/{id}", params={"clean": clean})
+            client.delete(f"/monitors/{id}", params={"clean": clean})
             print("Monitor deleted")
             return
         elif action == "show":
             info = client.get(
-                f"{HOST}/monitors/{id or ''}", params={"deleted": deleted}
+                f"/monitors/{id or ''}", params={"deleted": deleted}
             ).json()
         elif action == "public":
-            info = client.patch(
-                f"{HOST}/monitors/{id}", json={"public": "invert"}
-            ).json()
+            info = client.patch(f"/monitors/{id}", json={"public": "invert"}).json()
         elif action in ("start", "stop"):
-            info = client.patch(f"{HOST}/monitors/{id}/{action}").json()
+            info = client.patch(f"/monitors/{id}/{action}").json()
         elif action == "clean":
-            client.delete(f"{HOST}/monitors/{id}/reports")
+            client.delete(f"/monitors/{id}/reports")
             print("Monitor reports cleaned")
             return
 

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from satoricli.api import HOST, client, configure_client
+from satoricli.api import client, configure_client
 from satoricli.cli.utils import autotable, console
 from satoricli.utils import load_config
 
@@ -17,7 +17,7 @@ class DashboardCommand(BaseCommand):
         config = load_config()[kwargs["profile"]]
         configure_client(config["token"])
 
-        data = client.get(f"{HOST}/dashboard")
+        data = client.get("/dashboard")
 
         if kwargs["json"]:
             console.print_json(data.text)

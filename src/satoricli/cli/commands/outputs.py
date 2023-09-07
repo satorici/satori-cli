@@ -2,9 +2,9 @@ from argparse import ArgumentParser
 from datetime import date
 from typing import Optional
 
-import requests
+import httpx
 
-from satoricli.api import HOST, client, configure_client
+from satoricli.api import client, configure_client
 from satoricli.cli.utils import console, format_outputs
 from satoricli.utils import load_config
 
@@ -42,7 +42,7 @@ class OutputsCommand(BaseCommand):
         configure_client(config["token"])
 
         res = client.get(
-            f"{HOST}/outputs",
+            "/outputs",
             params={
                 "from_date": from_date,
                 "to_date": to_date,
@@ -51,17 +51,16 @@ class OutputsCommand(BaseCommand):
             },
         )
 
-        with requests.Session() as s:
+        with httpx.Client() as c:
             for item in res.json():
-                output = s.get(item["url"], stream=True)
+                with c.stream("GET", item["url"]) as stream:
+                    if not stream.is_success:
+                        continue
 
-                if not output.ok:
-                    continue
-
-                if raw:
-                    console.rule()
-                    console.print(output.text)
-                else:
-                    console.print(f"Report: {item['report_id']}")
-                    format_outputs(output.iter_lines())
-                    console.print()
+                    if raw:
+                        console.rule()
+                        console.print(stream.text)
+                    else:
+                        console.print(f"Report: {item['report_id']}")
+                        format_outputs(stream.iter_lines())
+                        console.print()

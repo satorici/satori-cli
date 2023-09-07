@@ -6,7 +6,6 @@ authors = [
     {name = "Satori CI CLI", email = "info@satori-ci.com"},
 ]
 dependencies = [
-    "requests>=2.27.1",
     "pyyaml>=6.0",
     "flatdict>=4.0.1",
     "rich>=13.0",
@@ -16,6 +15,7 @@ dependencies = [
     "satori-docs",
     "websocket-client>=1.6.1",
     "setuptools>=68.1.2",
+    "httpx>=0.24.1",
 ]
 requires-python = ">=3.9"
 readme = "README.md"

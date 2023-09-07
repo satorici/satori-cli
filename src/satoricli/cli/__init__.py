@@ -2,7 +2,7 @@ import sys
 from datetime import datetime
 from importlib import metadata
 
-import requests
+import httpx
 from packaging import version
 from pkg_resources import DistributionNotFound, get_distribution
 
@@ -30,7 +30,7 @@ def upgrade():
         # Get the latest version
         latest_version = None
         try:
-            response = requests.get(
+            response = httpx.get(
                 f"https://pypi.org/pypi/{package_name}/json", timeout=10
             )
             if response.status_code == 200:

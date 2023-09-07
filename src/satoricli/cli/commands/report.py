@@ -1,10 +1,10 @@
 from argparse import ArgumentParser
 from typing import Literal, Optional
 
-import requests
+import httpx
 from rich.progress import Progress
 
-from satoricli.api import HOST, client, configure_client
+from satoricli.api import client, configure_client
 from satoricli.cli.utils import autoformat, console, format_outputs
 from satoricli.utils import load_config
 
@@ -42,7 +42,7 @@ class ReportCommand(BaseCommand):
 
         if action == "show":
             res = client.get(
-                f"{HOST}/reports/{id or ''}",
+                f"/reports/{id or ''}",
                 params={"page": page, "limit": limit, "filter": filter},
             ).json()
 
@@ -54,26 +54,26 @@ class ReportCommand(BaseCommand):
             else:
                 autoformat(res, jsonfmt=kwargs["json"])
         elif action == "output":
-            r = client.get(f"{HOST}/outputs/{id}")
-            content = requests.get(r.json()["url"], stream=True, timeout=300)
-            format_outputs(content.iter_lines())
+            r = client.get(f"/outputs/{id}")
+            with httpx.stream("GET", r.json()["url"], timeout=300) as s:
+                format_outputs(s.iter_lines())
         elif action == "files":
-            r = client.get(f"{HOST}/reports/{id}/files", stream=True)
-            total = int(r.headers["Content-Length"])
+            with client.stream("GET", f"/reports/{id}/files") as s:
+                total = int(s.headers["Content-Length"])
 
-            with Progress() as progress:
-                task = progress.add_task("Downloading...", total=total)
+                with Progress() as progress:
+                    task = progress.add_task("Downloading...", total=total)
 
-                with open(f"satorici-files-{id}.tar.gz", "wb") as f:
-                    for chunk in r.iter_content():
-                        progress.update(task, advance=len(chunk))
-                        f.write(chunk)
+                    with open(f"satorici-files-{id}.tar.gz", "wb") as f:
+                        for chunk in s.iter_raw():
+                            progress.update(task, advance=len(chunk))
+                            f.write(chunk)
         elif action == "stop":
-            res = client.get(f"{HOST}/reports/{id}/stop").json()
+            res = client.get(f"/reports/{id}/stop").json()
             autoformat(res, jsonfmt=kwargs["json"])
         elif action == "delete":
-            client.delete(f"{HOST}/reports/{id}")
+            client.delete(f"/reports/{id}")
             print("Report deleted")
         elif action == "public":
-            res = client.patch(f"{HOST}/reports/{id}", json={"public": "invert"}).json()
+            res = client.patch(f"/reports/{id}", json={"public": "invert"}).json()
             autoformat(res)

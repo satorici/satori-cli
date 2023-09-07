@@ -5,11 +5,11 @@ from datetime import date
 from pathlib import Path
 from typing import Literal, Optional
 
-import requests
+import httpx
 from rich.live import Live
 from websocket import WebSocketApp
 
-from satoricli.api import HOST, WS_HOST, client, configure_client
+from satoricli.api import WS_HOST, client, configure_client
 from satoricli.cli.models import BootstrapTable
 from satoricli.cli.utils import autoformat, autotable, console, group_table
 from satoricli.utils import load_config
@@ -98,7 +98,7 @@ class RepoCommand(BaseCommand):
 
         if action == "scan":
             info = client.get(
-                f"{HOST}/repos/scan",
+                "/repos/scan",
                 params={
                     "url": repository,
                     "data": data,
@@ -113,12 +113,11 @@ class RepoCommand(BaseCommand):
                 return self.scan_sync(repository)
         elif action == "clean":
             info = client.get(
-                f"{HOST}/repos/{repository}/clean",
-                params={"delete_commits": delete_commits},
+                f"/repos/{repository}/clean", params={"delete_commits": delete_commits}
             ).json()
         elif action == "tests":
             info = client.get(
-                f"{HOST}/repos/{repository}/tests",
+                f"/repos/{repository}/tests",
                 params={
                     "filter": filter,
                     "all": all,
@@ -128,7 +127,7 @@ class RepoCommand(BaseCommand):
             ).json()
         elif action == "run":
             info = client.get(
-                f"{HOST}/repos/scan/last",
+                "/repos/scan/last",
                 params={
                     "url": repository,
                     "data": data,
@@ -143,25 +142,24 @@ class RepoCommand(BaseCommand):
                     )
                 self.sync_reports_list(info)
         elif action == "scan-stop":
-            info = client.get(f"{HOST}/repos/scan/{repository}/stop").json()
+            info = client.get(f"/repos/scan/{repository}/stop").json()
         elif action == "scan-status":
             if sync:
                 return self.scan_sync(repository)
             else:
-                info = client.get(f"{HOST}/repos/scan/{repository}/status").json()
+                info = client.get(f"/repos/scan/{repository}/status").json()
         elif action == "check-forks":
-            info = client.get(f"{HOST}/repos/scan/{repository}/check-forks").json()
+            info = client.get(f"/repos/scan/{repository}/check-forks").json()
         elif action == "check-commits":
             info = client.get(
-                f"{HOST}/repos/scan/{repository}/check-commits",
-                params={"branch": branch},
+                f"/repos/scan/{repository}/check-commits", params={"branch": branch}
             ).json()
             if sync:
                 return self.scan_sync(repository)
         elif action in ("commits", "download", "pending"):
-            info = client.get(f"{HOST}/repos/{repository}/{action}").json()
+            info = client.get(f"/repos/{repository}/{action}").json()
         elif action == "show":
-            info = client.get(f"{HOST}/repos/{repository or ''}").json()
+            info = client.get(f"/repos/{repository or ''}").json()
 
         if not repository or action != "show" or kwargs["json"]:
             autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
@@ -228,8 +226,8 @@ class RepoCommand(BaseCommand):
                         completed.append(repo)
 
                     try:
-                        report_data = client.get(f"{HOST}/reports/{report}").json()
-                    except requests.HTTPError as e:
+                        report_data = client.get(f"/reports/{report}").json()
+                    except httpx.HTTPStatusError as e:
                         code = e.response.status_code
                         if code not in (404, 403):
                             console.print(

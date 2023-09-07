@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Literal, Optional
 
-from satoricli.api import HOST, client, configure_client
+from satoricli.api import client, configure_client
 from satoricli.cli.utils import autoformat, console
 from satoricli.utils import load_config
 
@@ -66,36 +66,36 @@ class TeamCommand(BaseCommand):
         configure_client(config["token"])
 
         if action == "show":
-            info = client.get(f"{HOST}/teams").json()
+            info = client.get("/teams").json()
         elif action == "create":
-            info = client.post(f"{HOST}/teams/{id}").json()
+            info = client.post(f"/teams/{id}").json()
         elif action == "members":
-            info = client.get(f"{HOST}/teams/{id}/members").json()
+            info = client.get(f"/teams/{id}/members").json()
         elif action == "add_member":
             info = client.post(
-                f"{HOST}/teams/{id}/members", json={"email": email, "role": role}
+                f"/teams/{id}/members", json={"email": email, "role": role}
             ).json()
         elif action == "repos":
-            info = client.get(f"{HOST}/teams/{id}/repos").json()
+            info = client.get(f"/teams/{id}/repos").json()
         elif action == "add_repo":
-            info = client.post(f"{HOST}/teams/{id}/repos", json={"repo": repo}).json()
+            info = client.post(f"/teams/{id}/repos", json={"repo": repo}).json()
         elif action == "get_config":
-            info = client.get(f"{HOST}/teams/{id}/config/{config_name}").json()
+            info = client.get(f"/teams/{id}/config/{config_name}").json()
         elif action == "set_config":
             info = client.put(
-                f"{HOST}/teams/{id}/config",
+                f"/teams/{id}/config",
                 json={"name": config_name, "value": config_value},
             ).json()
         elif action == "get_token":
-            info = client.get(f"{HOST}/teams/{id}/token").json()
+            info = client.get(f"/teams/{id}/token").json()
         elif action == "refresh_token":
-            info = client.put(f"{HOST}/teams/{id}/token").json()
+            info = client.put(f"/teams/{id}/token").json()
         elif action == "delete":
-            client.delete(f"{HOST}/teams/{id}")
+            client.delete(f"/teams/{id}")
             console.print("Team deleted")
             return
         elif action == "del_member":
-            client.delete(f"{HOST}/teams/{id}/members", json={"email": email})
+            client.delete(f"/teams/{id}/members", json={"email": email})
             console.print("Team member deleted")
             return
 

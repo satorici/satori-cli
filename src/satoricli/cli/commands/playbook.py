@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Literal, Optional
 
-from satoricli.api import HOST, client, configure_client
+from satoricli.api import client, configure_client
 from satoricli.cli.utils import autoformat
 from satoricli.playbooks import display_public_playbooks
 from satoricli.utils import load_config
@@ -56,15 +56,15 @@ class PlaybookCommand(BaseCommand):
         if action == "show":
             if not id:
                 data = client.get(
-                    f"{HOST}/playbooks", params={"limit": limit, "page": page}
+                    "/playbooks", params={"limit": limit, "page": page}
                 ).json()
             else:
-                data = client.get(f"{HOST}/playbooks/{id}").text
+                data = client.get(f"/playbooks/{id}").text
         elif action == "delete":
-            data = client.delete(f"{HOST}/playbooks/{id}").json()
+            data = client.delete(f"/playbooks/{id}").json()
             print("Playbook Deleted")
             return
         elif action == "public":
-            data = client.patch(f"{HOST}/playbooks/{id}", json={"public": "invert"})
+            data = client.patch(f"/playbooks/{id}", json={"public": "invert"})
 
         autoformat(data, jsonfmt=kwargs["json"], list_separator="-" * 48)

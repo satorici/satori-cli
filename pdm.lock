@@ -6,7 +6,22 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:6999ac26d57fecc87248e4b08b24f54fbebafebb33d69db6421ed9c83fddd0f8"
+content_hash = "sha256:ed11434fed5b163f74c0893f94df1cca2875de74c573ecfa7e2d3fe65aea16c0"
+
+[[package]]
+name = "anyio"
+version = "4.0.0"
+requires_python = ">=3.8"
+summary = "High level compatibility layer for multiple asynchronous event loop implementations"
+dependencies = [
+    "exceptiongroup>=1.0.2; python_version < \"3.11\"",
+    "idna>=2.8",
+    "sniffio>=1.1",
+]
+files = [
+    {file = "anyio-4.0.0-py3-none-any.whl", hash = "sha256:cfdb2b588b9fc25ede96d8db56ed50848b0b649dca3dd1df0b11f683bb9e0b5f"},
+    {file = "anyio-4.0.0.tar.gz", hash = "sha256:f7ed51751b2c2add651e5747c891b47e26d2a21be5d32d9311dfe9692f3e5d7a"},
+]
 
 [[package]]
 name = "aws-cron-expression-validator"
@@ -29,13 +44,13 @@ files = [
 ]
 
 [[package]]
-name = "charset-normalizer"
-version = "2.1.0"
-requires_python = ">=3.6.0"
-summary = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
+name = "exceptiongroup"
+version = "1.1.3"
+requires_python = ">=3.7"
+summary = "Backport of PEP 654 (exception groups)"
 files = [
-    {file = "charset-normalizer-2.1.0.tar.gz", hash = "sha256:575e708016ff3a5e3681541cb9d79312c416835686d054a23accb873b254f413"},
-    {file = "charset_normalizer-2.1.0-py3-none-any.whl", hash = "sha256:5189b6f22b01957427f35b6a08d9a0bc45b46d3788ef5a92e978433c7a35f8a5"},
+    {file = "exceptiongroup-1.1.3-py3-none-any.whl", hash = "sha256:343280667a4585d195ca1cf9cef84a4e178c4b6cf2274caef9859782b567d5e3"},
+    {file = "exceptiongroup-1.1.3.tar.gz", hash = "sha256:097acd85d473d75af5bb98e41b61ff7fe35efe6675e4f9370ec6ec5126d160e9"},
 ]
 
 [[package]]
@@ -79,6 +94,48 @@ dependencies = [
 files = [
     {file = "GitPython-3.1.32-py3-none-any.whl", hash = "sha256:e3d59b1c2c6ebb9dfa7a184daf3b6dd4914237e7488a1730a6d8f6f5d0b4187f"},
     {file = "GitPython-3.1.32.tar.gz", hash = "sha256:8d9b8cb1e80b9735e8717c9362079d3ce4c6e5ddeebedd0361b228c3a67a62f6"},
+]
+
+[[package]]
+name = "h11"
+version = "0.14.0"
+requires_python = ">=3.7"
+summary = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
+files = [
+    {file = "h11-0.14.0-py3-none-any.whl", hash = "sha256:e3fe4ac4b851c468cc8363d500db52c2ead036020723024a109d37346efaa761"},
+    {file = "h11-0.14.0.tar.gz", hash = "sha256:8f19fbbe99e72420ff35c00b27a34cb9937e902a8b810e2c88300c6f0a3b699d"},
+]
+
+[[package]]
+name = "httpcore"
+version = "0.17.3"
+requires_python = ">=3.7"
+summary = "A minimal low-level HTTP client."
+dependencies = [
+    "anyio<5.0,>=3.0",
+    "certifi",
+    "h11<0.15,>=0.13",
+    "sniffio==1.*",
+]
+files = [
+    {file = "httpcore-0.17.3-py3-none-any.whl", hash = "sha256:c2789b767ddddfa2a5782e3199b2b7f6894540b17b16ec26b2c4d8e103510b87"},
+    {file = "httpcore-0.17.3.tar.gz", hash = "sha256:a6f30213335e34c1ade7be6ec7c47f19f50c56db36abef1a9dfa3815b1cb3888"},
+]
+
+[[package]]
+name = "httpx"
+version = "0.24.1"
+requires_python = ">=3.7"
+summary = "The next generation HTTP client."
+dependencies = [
+    "certifi",
+    "httpcore<0.18.0,>=0.15.0",
+    "idna",
+    "sniffio",
+]
+files = [
+    {file = "httpx-0.24.1-py3-none-any.whl", hash = "sha256:06781eb9ac53cde990577af654bd990a4949de37a28bdb4a230d434f3a30b9bd"},
+    {file = "httpx-0.24.1.tar.gz", hash = "sha256:5853a43053df830c20f8110c5e69fe44d035d850b2dfe795e196f00fdb774bdd"},
 ]
 
 [[package]]
@@ -238,22 +295,6 @@ files = [
 ]
 
 [[package]]
-name = "requests"
-version = "2.31.0"
-requires_python = ">=3.7"
-summary = "Python HTTP for Humans."
-dependencies = [
-    "certifi>=2017.4.17",
-    "charset-normalizer<4,>=2",
-    "idna<4,>=2.5",
-    "urllib3<3,>=1.21.1",
-]
-files = [
-    {file = "requests-2.31.0-py3-none-any.whl", hash = "sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f"},
-    {file = "requests-2.31.0.tar.gz", hash = "sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1"},
-]
-
-[[package]]
 name = "rich"
 version = "13.4.2"
 requires_python = ">=3.7.0"
@@ -315,6 +356,16 @@ files = [
 ]
 
 [[package]]
+name = "sniffio"
+version = "1.3.0"
+requires_python = ">=3.7"
+summary = "Sniff out which async library your code is running under"
+files = [
+    {file = "sniffio-1.3.0-py3-none-any.whl", hash = "sha256:eecefdce1e5bbfb7ad2eeaabf7c1eeb404d7757c379bd1f7e5cce9d8bf425384"},
+    {file = "sniffio-1.3.0.tar.gz", hash = "sha256:e60305c5e5d314f5389259b7f22aaa33d8f7dee49763119234af3755c55b9101"},
+]
+
+[[package]]
 name = "textual"
 version = "0.30.0"
 requires_python = ">=3.7,<4.0"
@@ -348,16 +399,6 @@ summary = "Micro subset of unicode data files for linkify-it-py projects."
 files = [
     {file = "uc-micro-py-1.0.2.tar.gz", hash = "sha256:30ae2ac9c49f39ac6dce743bd187fcd2b574b16ca095fa74cd9396795c954c54"},
     {file = "uc_micro_py-1.0.2-py3-none-any.whl", hash = "sha256:8c9110c309db9d9e87302e2f4ad2c3152770930d88ab385cd544e7a7e75f3de0"},
-]
-
-[[package]]
-name = "urllib3"
-version = "1.26.10"
-requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4"
-summary = "HTTP library with thread-safe connection pooling, file post, and more."
-files = [
-    {file = "urllib3-1.26.10-py2.py3-none-any.whl", hash = "sha256:8298d6d56d39be0e3bc13c1c97d133f9b45d797169a0e11cdd0e0489d786f7ec"},
-    {file = "urllib3-1.26.10.tar.gz", hash = "sha256:879ba4d1e89654d9769ce13121e0f94310ea32e8d2f8cf587b77c08bbcdb30d6"},
 ]
 
 [[package]]
