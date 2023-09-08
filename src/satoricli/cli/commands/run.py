@@ -240,7 +240,7 @@ class RunCommand(BaseCommand):
 
         with Progress(
             SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
+            TextColumn("[progress.description]Status: {task.description}"),
             TimeElapsedColumn(),
         ) as progress:
             task = progress.add_task("Fetching data")
@@ -256,7 +256,7 @@ class RunCommand(BaseCommand):
                     else:
                         return 1
 
-                progress.update(task, description=f"Status: {status}")
+                progress.update(task, description=status)
                 time.sleep(1)
 
         if status == "Undefined":
