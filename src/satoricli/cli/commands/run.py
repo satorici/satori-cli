@@ -5,13 +5,13 @@ import tempfile
 import time
 import uuid
 import warnings
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 from pathlib import Path
 from typing import Optional
 
 import httpx
 import yaml
-from rich.progress import Progress
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.progress import open as progress_open
 from satorici.validator import validate_playbook
 from satorici.validator.exceptions import (
@@ -238,91 +238,67 @@ class RunCommand(BaseCommand):
             )
             return
 
-        console.print("[key]Fetching data...", end="\r")
-        start_time = time.time()
-        spin = "-\\|/"
-        pos = 0
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            task = progress.add_task("Fetching data")
+            status = "Unknown"
 
-        while True:
-            pos += 1
-            if pos >= len(spin):
-                pos = 0
-            time.sleep(1)
-            elapsed = time.time() - start_time
-            elapsed_text = f"Elapsed time: {elapsed:.1f}s"
-            try:
-                report_data = client.get(f"/reports/{exec_data['id']}").json()
-            except httpx.HTTPStatusError as e:
-                code = e.response.status_code
-                if code in (404, 403):
-                    console.print(
-                        f"{spin[pos]} Report status: Unknown | {elapsed_text}",
-                        end="\r",
-                    )
-                    continue
-                else:
-                    console.print(f"[error]Failed to get data\n[/]Status code: {code}")
-                    return 1
+            while status not in ("Completed", "Undefined"):
+                try:
+                    report_data = client.get(f"/reports/{exec_data['id']}").json()
+                    status = report_data.get("status", "Unknown")
+                except httpx.HTTPStatusError as e:
+                    if 400 <= e.response.status_code < 500:
+                        status = "Unknown"
+                    else:
+                        return 1
 
-            status = report_data.get("status", "Unknown")
-            if status in ("Completed", "Undefined"):
-                fails = report_data["fails"]
-                if isinstance(fails, int):
-                    result = "Pass" if fails == 0 else f"Fail({fails})"
-                else:
-                    result = "Unknown"
-                console.print(
-                    f"- Report status: {status} | Result: {result} | {elapsed_text}",
-                    end="\r\n",
-                )
-                if report:  # --report or -r
-                    report_out = []
-                    # Remove keys
-                    json_data = report_data.get("json") or []
-                    for report in json_data:
-                        report.pop("gfx", None)
-                        report_out.append(report)
-                        asserts = []
-                        for asrt in report["asserts"]:
-                            asrt.pop("count", None)
-                            asrt.pop("description", None)
-                            if len(asrt.get("data", [])) == 0:
-                                asrt.pop("data", None)
-                            asserts.append(asrt)
-                    autoformat(report_out, list_separator="- " * 20)
-                elif output:
-                    out_args = Namespace(
-                        id=exec_data["id"], action="output", json=kwargs["json"]
-                    )
+                progress.update(task, description=f"Status: {status}")
+                time.sleep(1)
 
-                    r = client.get(f"/outputs/{out_args.id}")
-                    with httpx.stream("GET", r.json()["url"], timeout=300) as s:
-                        format_outputs(s.iter_lines())
-                elif files:
-                    report_id = exec_data["id"]
-                    with client.stream("GET", f"/reports/{report_id}/files") as s:
-                        total = int(s.headers["Content-Length"])
+        if status == "Undefined":
+            if comments := report_data.get("comments"):
+                console.print(f"[error]Error: {comments}")
+            return 1
 
-                        with Progress() as progress:
-                            task = progress.add_task("Downloading...", total=total)
+        if not all((report, output, files)) and status == "Completed":
+            fails = report_data["fails"]
 
-                            with open(f"satorici-files-{report_id}.tar.gz", "wb") as f:
-                                for chunk in s.iter_raw():
-                                    progress.update(task, advance=len(chunk))
-                                    f.write(chunk)
-                else:  # --sync or -s
-                    # TODO: print something else?
-                    pass  # already printed
-                if status == "Undefined":
-                    comments = report_data.get("comments")
-                    if comments:
-                        console.print(f"[error]Error: {comments}")
-                    return 1
-                else:  # Completed
-                    # Return code 0 if report status==pass else 1
-                    return 0 if report_data["fails"] == 0 else 1
-            else:
-                console.print(
-                    f"{spin[pos]} Report status: {status} | {elapsed_text}",
-                    end="\r",
-                )
+            if isinstance(fails, int):
+                console.print("Result:", "Pass" if not fails else f"Fail({fails})")
+
+            return 0 if fails == 0 else 1
+
+        if report:
+            report_out = []
+            # Remove keys
+            json_data = report_data.get("json") or []
+            for report in json_data:
+                report.pop("gfx", None)
+                report_out.append(report)
+                asserts = []
+                for asrt in report["asserts"]:
+                    asrt.pop("count", None)
+                    asrt.pop("description", None)
+                    if len(asrt.get("data", [])) == 0:
+                        asrt.pop("data", None)
+                    asserts.append(asrt)
+            autoformat(report_out, list_separator="- " * 20)
+        elif output:
+            r = client.get(f"/outputs/{exec_data['id']}")
+            with httpx.stream("GET", r.json()["url"], timeout=300) as s:
+                format_outputs(s.iter_lines())
+        elif files:
+            with client.stream("GET", f"/reports/{exec_data['id']}/files") as s:
+                total = int(s.headers["Content-Length"])
+
+                with Progress() as progress:
+                    task = progress.add_task("Downloading...", total=total)
+
+                    with open(f"satorici-files-{exec_data['id']}.tar.gz", "wb") as f:
+                        for chunk in s.iter_raw():
+                            progress.update(task, advance=len(chunk))
+                            f.write(chunk)
