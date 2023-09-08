@@ -133,10 +133,7 @@ class RunCommand(BaseCommand):
         res = httpx.post(  # nosec
             url["url"], data=url["fields"], files={"file": bundle}, timeout=None
         )
-
-        if not res.is_success:
-            console.print("[error]File upload failed")
-            return 1
+        res.raise_for_status()
 
         if is_monitor:
             exec_type = "monitor"
@@ -173,11 +170,7 @@ class RunCommand(BaseCommand):
                 "folder that have not been imported."
             )
 
-        try:
-            shutil.make_archive(str(temp_file), "gztar", path)
-        except Exception as e:
-            console.print(f"[error]Could not compress directory: {e}")
-            return 1
+        shutil.make_archive(str(temp_file), "gztar", path)
 
         res = client.post(
             "/runs/archive", json={"secrets": data or "", "is_monitor": is_monitor}
@@ -189,22 +182,14 @@ class RunCommand(BaseCommand):
 
         try:
             with progress_open(full_path, "rb", description="Uploading...") as f:
-                res = httpx.post(  # nosec
-                    arc["url"], data=arc["fields"], files={"file": f}, timeout=None
-                )
+                res = httpx.post(arc["url"], data=arc["fields"], files={"file": f})
         finally:
             os.remove(full_path)
 
-        if not res.is_success:
-            print("Archive upload failed")
-            return 1
+        res.raise_for_status()
 
-        res = httpx.post(  # nosec
-            bun["url"], data=bun["fields"], files={"file": bundle}, timeout=None
-        )
-        if not res.is_success:
-            print("Bundle upload failed")
-            return 1
+        res = httpx.post(bun["url"], data=bun["fields"], files={"file": bundle})
+        res.raise_for_status()
 
         if is_monitor:
             exec_type = "monitor"
