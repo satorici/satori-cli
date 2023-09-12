@@ -67,4 +67,4 @@ class PlaybookCommand(BaseCommand):
         elif action == "public":
             data = client.patch(f"/playbooks/{id}", json={"public": "invert"})
 
-        autoformat(data, jsonfmt=kwargs["json"], list_separator="-" * 48)
+        autoformat(data, jsonfmt=kwargs["json"], list_separator="-" * 48, table=True)
