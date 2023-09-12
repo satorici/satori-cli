@@ -215,7 +215,7 @@ positive:
       - ["export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete"]
 
   #  scan:
-  #    # TBD: list the current scans
+  #    # To be developed: list the current scans
   #    - [ satori-cli scan ]
   #
   #    # OK: what's the status of the current scanning
