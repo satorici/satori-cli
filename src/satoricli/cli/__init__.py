@@ -4,7 +4,6 @@ from importlib import metadata
 
 import httpx
 from packaging import version
-from pkg_resources import DistributionNotFound, get_distribution
 
 from .commands.root import RootCommand
 from .utils import error_console
@@ -12,47 +11,20 @@ from .utils import error_console
 VERSION = metadata.version("satori-ci")
 
 
-def upgrade():
+def check_for_update():
     """Verify the current version and the latest version"""
-    upgrade_required = ""
 
-    # Name of your package
-    package_names = ["satori-ci", "satori-playbook-validator", "satori-docs"]
+    try:
+        response = httpx.get("https://pypi.org/pypi/satori-ci/json")
+        response.raise_for_status()
+    except Exception:
+        error_console.print("[yellow]WARNING:[/] Unable to get latest version.")
+        return
 
-    for package_name in package_names:
-        # Get the current version
-        try:
-            current_version = get_distribution(package_name).version
-        except DistributionNotFound:
-            error_console.print(f"{package_name} is not installed.")
-            current_version = None
+    latest = response.json()["info"]["version"]
 
-        # Get the latest version
-        latest_version = None
-        try:
-            response = httpx.get(
-                f"https://pypi.org/pypi/{package_name}/json", timeout=10
-            )
-            if response.status_code == 200:
-                latest_version = response.json()["info"]["version"]
-        except Exception:
-            error_console.print(
-                "[error]ERROR:[/] unable to get the latest "
-                f"version of the package {package_name}."
-            )
-
-        # Compare the versions and upgrade if necessary
-        if (
-            current_version
-            and latest_version
-            and version.parse(current_version) < version.parse(latest_version)
-        ):
-            upgrade_required += package_name + " "
-    if upgrade_required:
-        error_console.print(
-            "[yellow]WARNING:[/] Newer version found, upgrade with: "
-            f"[b]pip3 install -U {upgrade_required}"
-        )
+    if version.parse(latest) > version.parse(VERSION):
+        error_console.print(f"[yellow]WARNING:[/] Newer version available: {latest}.")
 
 
 def main():
@@ -62,7 +34,7 @@ def main():
         f"Started on {timestamp}"
     )
 
-    upgrade()
+    check_for_update()
 
     root = RootCommand()
     args = root.parse_args()

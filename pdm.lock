@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:ed11434fed5b163f74c0893f94df1cca2875de74c573ecfa7e2d3fe65aea16c0"
+content_hash = "sha256:fb9d002021ae45370d94ba96016bd73e698cce3c64d5527dd684515c76f48c8a"
 
 [[package]]
 name = "anyio"
@@ -333,16 +333,6 @@ dependencies = [
 files = [
     {file = "satori_playbook_validator-3.3.1-py3-none-any.whl", hash = "sha256:c2ece64efd705fd8da96e5f14d52858390451dfe2b459eb1cc669b013fd751e7"},
     {file = "satori_playbook_validator-3.3.1.tar.gz", hash = "sha256:6ae3ed363382a5a6d62fcd074ebed6d0226684ebaeed88e99a202f47b79afacc"},
-]
-
-[[package]]
-name = "setuptools"
-version = "68.1.2"
-requires_python = ">=3.8"
-summary = "Easily download, build, install, upgrade, and uninstall Python packages"
-files = [
-    {file = "setuptools-68.1.2-py3-none-any.whl", hash = "sha256:3d8083eed2d13afc9426f227b24fd1659489ec107c0e86cec2ffdde5c92e790b"},
-    {file = "setuptools-68.1.2.tar.gz", hash = "sha256:3d4dfa6d95f1b101d695a6160a7626e15583af71a5f52176efa5d39a054d475d"},
 ]
 
 [[package]]
