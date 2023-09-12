@@ -176,9 +176,6 @@ positive:
     delete_commits: # needs sync mode
       - [satori-cli repo satoridev01/hello_world clean --delete-commits]
 
-    # TBD: not being tested:
-    # --skip-check
-
   monitor:
     # run a new monitor
     new:
@@ -218,44 +215,28 @@ positive:
       - ["export ID=$(cat monitor_id.txt); satori-cli monitor $ID delete"]
 
   #  scan:
-  #    # list the current scans
+  #    # TBD: list the current scans
   #    - [ satori-cli scan ]
   #
-  #    # get the commits of a certain repo (required for scans)
-  #    check_commits:
-  #    - [ satori-cli scan satoridev01/hello_world check-commits ]
-  #
-  #    # what's the status of the current scanning
+  #    # OK: what's the status of the current scanning
   #    status:
   #    - [ satori-cli scan satoridev01/hello_world status ]
   #
-  #    # get the forks of a certain repo (required for fork-scan)
-  #    check_forks:
-  #    - [ satori-cli scan satoridev01/hello_world check-forks ]
-  #
-  #    # run the .satori.yml playbook with a certain coverage on the repo
+  #    # OK: run the .satori.yml playbook with a certain coverage on the repo
   #    run:
-  #    - [ satori-cli scan satoridev01/hello_world scan -c 50 --skip-check ]
+  #    - [ satori-cli scan satoridev01/hello_world scan -c 50 ]
   #
-  #    # stop the scan execution
+  #    # OK: stop the scan execution
   #    stop:
   #    - [ satori-cli scan satoridev01/hello_world stop ]
   #
-  #    # [re]start a scan execution
+  #    # OK: [re]start a scan execution
   #    start:
   #    - [ satori-cli scan satoridev01/hello_world start ]
   #
-  #    # delete the information related to the commits of a repo
-  #    delete_commits:
-  #    - [ satori-cli scan satoridev01/hello_world delete-commits ]
-  #
-  #    # delete the forks/commits information related to the repo
-  #    delete_forks:
-  #    - [ satori-cli scan satoridev01/hello_world delete-forks ]
-  #
-  #    # delete the scan reports
-  #    delete:
-  #    - [ satori-cli scan satoridev01/hello_world delete ]
+  #    # OK: delete the scan reports
+  #    clean:
+  #    - [ satori-cli scan satoridev01/hello_world clean ]
 
   teams:
     # list teams and repos without teams
