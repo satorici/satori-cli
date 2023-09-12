@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:fb9d002021ae45370d94ba96016bd73e698cce3c64d5527dd684515c76f48c8a"
+content_hash = "sha256:cedcf5070b8dd0e663d257e7bf180e06066ac506685f411116c4b6a74be72ef9"
 
 [[package]]
 name = "anyio"
@@ -310,15 +310,15 @@ files = [
 
 [[package]]
 name = "satori-docs"
-version = "1.0"
+version = "1.3.1"
 requires_python = ">=3.9"
 summary = "Satori CI - Automated Software Testing Platform Documents"
 dependencies = [
     "textual>=0.27.0",
 ]
 files = [
-    {file = "satori_docs-1.0-py3-none-any.whl", hash = "sha256:a300e0ae6b873ff73a6ac97637492d5df539cdbd9fbbf389761c18423b128f9c"},
-    {file = "satori_docs-1.0.tar.gz", hash = "sha256:0114bdb66fc4d50f9a10a470f51a3f4d4432e80bfb07260d6f1eaa0f70d9e1ae"},
+    {file = "satori_docs-1.3.1-py3-none-any.whl", hash = "sha256:5ae0333a6288b19828a4fda6c31055f7eabf21d6396f902590a6e8baeb856621"},
+    {file = "satori_docs-1.3.1.tar.gz", hash = "sha256:2c1c43d7e33f2e7034bbac9b3d57df94dc676ab0af6e536aa0adc0c1112e07bf"},
 ]
 
 [[package]]
