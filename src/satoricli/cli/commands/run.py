@@ -183,10 +183,9 @@ class RunCommand(BaseCommand):
         try:
             with progress_open(full_path, "rb", description="Uploading...") as f:
                 res = httpx.post(arc["url"], data=arc["fields"], files={"file": f})
+            res.raise_for_status()
         finally:
             os.remove(full_path)
-
-        res.raise_for_status()
 
         res = httpx.post(bun["url"], data=bun["fields"], files={"file": bundle})
         res.raise_for_status()
