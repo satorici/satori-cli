@@ -249,7 +249,7 @@ class RunCommand(BaseCommand):
                 console.print(f"[error]Error: {comments}")
             return 1
 
-        if not all((report, output, files)) and status == "Completed":
+        if not any((report, output, files)) and status == "Completed":
             fails = report_data["fails"]
 
             if isinstance(fails, int):
