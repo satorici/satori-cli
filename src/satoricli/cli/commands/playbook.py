@@ -32,7 +32,12 @@ class PlaybookCommand(BaseCommand):
             help="Playbooks page number",
         )
         parser.add_argument(
-            "-l", "--limit", dest="limit", type=int, default=5, help="Page limit number"
+            "-l",
+            "--limit",
+            dest="limit",
+            type=int,
+            default=20,
+            help="Page limit number",
         )
         parser.add_argument(
             "--public", action="store_true", help="Fetch public satori playbooks"
