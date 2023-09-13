@@ -54,6 +54,7 @@ class PlaybookCommand(BaseCommand):
     ):
         config = load_config()[kwargs["profile"]]
         configure_client(config["token"])
+        list_separator = "-" * 48
 
         if public or id and id.startswith("satori://"):
             display_public_playbooks(id)
@@ -64,7 +65,8 @@ class PlaybookCommand(BaseCommand):
                     "/playbooks", params={"limit": limit, "page": page}
                 ).json()
             else:
-                data = client.get(f"/playbooks/{id}").text
+                data = client.get(f"/playbooks/{id}").json()
+                list_separator = None
         elif action == "delete":
             data = client.delete(f"/playbooks/{id}").json()
             print("Playbook Deleted")
@@ -72,4 +74,6 @@ class PlaybookCommand(BaseCommand):
         elif action == "public":
             data = client.patch(f"/playbooks/{id}", json={"public": "invert"})
 
-        autoformat(data, jsonfmt=kwargs["json"], list_separator="-" * 48, table=True)
+        autoformat(
+            data, jsonfmt=kwargs["json"], list_separator=list_separator, table=True
+        )
