@@ -24,7 +24,10 @@ def check_for_update():
     latest = response.json()["info"]["version"]
 
     if version.parse(latest) > version.parse(VERSION):
-        error_console.print(f"[yellow]WARNING:[/] Newer version available: {latest}.")
+        error_console.print(
+            f"[yellow]WARNING:[/] Newer version available v{latest}, update with:",
+            "satori-cli update",
+        )
 
 
 def main():

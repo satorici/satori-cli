@@ -13,6 +13,7 @@ from .repo import RepoCommand
 from .report import ReportCommand
 from .run import RunCommand
 from .team import TeamCommand
+from .update import UpdateCommand
 
 VERSION = metadata.version("satori-ci")
 
@@ -29,6 +30,7 @@ class RootCommand(BaseCommand):
         DashboardCommand,
         TeamCommand,
         HelpCommand,
+        UpdateCommand,
     )
     name = "satori-cli"
     global_options = (profile_arg, json_arg)
