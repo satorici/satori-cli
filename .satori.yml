@@ -146,10 +146,6 @@ positive:
     check_commits:
       - [satori repo satoridev01/hello_world check-commits]
 
-    # TBD: what's the status of the current scanning
-    scan_status:
-      - [satori repo satoridev01/hello_world scan-status]
-
     # list the commits of a certain repo
     commits:
       - [satori repo satoridev01/hello_world commits]
@@ -157,18 +153,6 @@ positive:
     # TBD: get the forks of a certain repo (required for fork-scan)
     check_forks:
       - [satori repo satoridev01/hello_world check-forks]
-
-    # TBD: run the .satori.yml playbook with a certain coverage on the repo
-    scan:
-      - [satori repo satoridev01/hello_world scan -c 50]
-
-    # TBD: stop the scan execution
-    scan_stop:
-      - [satori repo satoridev01/hello_world scan-stop]
-
-    # delete the reports associated to a repo
-    clean: # needs sync mode
-      - [satori repo satoridev01/hello_world clean]
 
   monitor:
     # run a new monitor
@@ -208,29 +192,30 @@ positive:
     delete:
       - ["export ID=$(cat monitor_id.txt); satori monitor $ID delete"]
 
-  #  scan:
-  #    # To be developed: list the current scans
-  #    - [ satori scan ]
-  #
-  #    # OK: what's the status of the current scanning
-  #    status:
-  #    - [ satori scan satoridev01/hello_world status ]
-  #
-  #    # OK: run the .satori.yml playbook with a certain coverage on the repo
-  #    run:
-  #    - [ satori scan satoridev01/hello_world scan -c 50 ]
-  #
-  #    # OK: stop the scan execution
-  #    stop:
-  #    - [ satori scan satoridev01/hello_world stop ]
-  #
-  #    # OK: [re]start a scan execution
-  #    start:
-  #    - [ satori scan satoridev01/hello_world start ]
-  #
-  #    # OK: delete the scan reports
-  #    clean:
-  #    - [ satori scan satoridev01/hello_world clean ]
+  scan:
+    # # To be developed: list the current scans
+    # list:
+    #   - [satori scan]
+
+    # OK: run the .satori.yml playbook with a certain coverage on the repo
+    run:
+      - [satori scan satoridev01/hello_world -c 50]
+
+    # OK: what's the status of the current scanning
+    status:
+      - [satori scan satoridev01/hello_world status]
+
+    # OK: stop the scan execution
+    stop:
+      - [satori scan satoridev01/hello_world stop]
+
+    # # OK: [re]start a scan execution
+    # start:
+    #   - [satori scan satoridev01/hello_world start]
+
+    # OK: delete the scan reports
+    clean:
+      - [satori scan satoridev01/hello_world clean]
 
   teams:
     # list teams and repos without teams
@@ -284,7 +269,7 @@ negative:
   run:
     fail:
       - [satori run .satori/fail.yml --sync]
-      
+
     empty_playbook:
       - [satori run .satori/empty.yml --report]
 

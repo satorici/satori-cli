@@ -3,6 +3,7 @@ import logging
 import random
 import re
 from base64 import b64decode
+from dataclasses import dataclass
 from itertools import zip_longest
 from typing import Any, Optional, Union
 
@@ -14,8 +15,6 @@ from rich.logging import RichHandler
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.theme import Theme
-
-from .models import BootstrapTable
 
 __decorations = "▢•○░"
 __random_colors = ["green", "blue", "red"]
@@ -408,6 +407,15 @@ def format_outputs(outputs):
             console.out(
                 b64decode(output["output"]["stderr"]).decode(errors="ignore").strip()
             )
+
+
+@dataclass
+class BootstrapTable:
+    """Based on https://bootstrap-table.com/docs/api/table-options/#url"""
+
+    total: int
+    totalNotFiltered: int
+    rows: list[dict]
 
 
 def group_table(table: BootstrapTable, key: str, default_group: str):
