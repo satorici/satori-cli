@@ -110,26 +110,20 @@ positive:
     #  - ["export ID=$(cat report_id2.txt); echo $ID"]
 
     read:
-      playbook_by_report_id:
+      private_playbook_by_report_id:
         - ["export ID=$(cat report_id2.txt); satori-cli playbook $ID"]
 
-      playbook_id:
-        - [
-            "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID",
-          ]
+      private_playbook_by_id:
+        - [ "export ID=$(satori-cli playbook --json|jq -r '.[0].id'); satori-cli playbook $ID"]
 
-      public:
+      public_playbook:
         - [satori-cli playbook satori://code/detect-secrets.yml]
 
-    public:
-      - [
-          "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID public",
-        ]
+    public_flag:
+      - [ "export ID=$(satori-cli playbook --json|jq -r '.[0].id'); satori-cli playbook $ID public" ]
 
     delete_private:
-      - [
-          "export ID=$(satori-cli playbook 2>>/dev/null | grep -m 1 'id:' | awk '{print $NF}'); satori-cli playbook $ID delete",
-        ]
+      - [ "export ID=$(satori-cli playbook --json|jq -r '.[0].id'); satori-cli playbook $ID delete" ]
 
   repo:
     # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
@@ -171,10 +165,6 @@ positive:
     # delete the reports associated to a repo
     clean: # needs sync mode
       - [satori-cli repo satoridev01/hello_world clean]
-
-    # TBD: delete the information related to the commits of a repo
-    delete_commits: # needs sync mode
-      - [satori-cli repo satoridev01/hello_world clean --delete-commits]
 
   monitor:
     # run a new monitor
@@ -245,7 +235,7 @@ positive:
 
     # delete team 'test_team'
     clean:
-      - [satori-cli team test_team delete || true]
+      - [satori-cli team test_team delete ]
 
     # create team 'test_team'
     create:
