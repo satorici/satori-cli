@@ -233,10 +233,6 @@ positive:
     list:
       - [satori-cli team]
 
-    # delete team 'test_team'
-    clean:
-      - [satori-cli team test_team delete ]
-
     # create team 'test_team'
     create:
       - [satori-cli team test_team create]
