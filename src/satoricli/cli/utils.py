@@ -229,27 +229,6 @@ def flatten_list(items: list) -> list:
     return out
 
 
-def filter_params(params: Any, filter_keys: Union[tuple, list]) -> dict:
-    """Filter elements of a dict/namespace according to a list of keys
-
-    Parameters
-    ----------
-    params : Any
-        dict or namespace to filter
-    filter_keys : Union[tuple, list]
-        List of keys to return from dict or namespace
-
-    Returns
-    -------
-    dict
-        Filtered dict
-    """
-    if not isinstance(params, dict):  # is a namespace?
-        params = vars(params)
-    filtered = filter(lambda i: i[0] in filter_keys, params.items())
-    return dict(filtered)
-
-
 def check_monitor(playbook):
     with open(playbook) as stream:
         config = yaml.safe_load(stream)
