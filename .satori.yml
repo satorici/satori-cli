@@ -106,8 +106,8 @@ positive:
       public:
         - [satori-cli playbook --public]
 
-    echo:
-      - ["export ID=$(cat report_id2.txt); echo $ID"]
+    #echo:
+    #  - ["export ID=$(cat report_id2.txt); echo $ID"]
 
     read:
       playbook_by_report_id:
