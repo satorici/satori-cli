@@ -86,10 +86,10 @@ def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
         playbooks = file_finder(directoryName)
         playbooks.sort(key=lambda x: x["filename"])
 
-        if not playbook_id:  # satori-cli playbook --public
+        if not playbook_id:  # satori playbook --public
             # Print table with playbooks data by default
             autotable(playbooks)
-        else:  # satori-cli playbook satori://x
+        else:  # satori playbook satori://x
             # print the content of a playbook
             playbook_path = None
             for playbook in playbooks:

@@ -32,7 +32,7 @@ class RootCommand(BaseCommand):
         HelpCommand,
         UpdateCommand,
     )
-    name = "satori-cli"
+    name = "satori"
     global_options = (profile_arg, json_arg)
     default_subcommand = DashboardCommand
 

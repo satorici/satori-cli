@@ -26,7 +26,7 @@ def check_for_update():
     if version.parse(latest) > version.parse(VERSION):
         error_console.print(
             f"[yellow]WARNING:[/] Newer version available v{latest}, update with:",
-            "satori-cli update",
+            "satori update",
         )
 
 
