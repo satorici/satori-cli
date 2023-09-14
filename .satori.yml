@@ -12,7 +12,7 @@ positive:
     #update:
     #- [ apt update ]
     git:
-      - [apt install -y git]
+      - [apt install -y git jq]
     satori-cli:
       - [pip install .]
 
