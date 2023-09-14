@@ -69,11 +69,11 @@ class PlaybookCommand(BaseCommand):
                 data = client.get(f"/playbooks/{id}").json()
                 list_separator = None
         elif action == "delete":
-            data = client.delete(f"/playbooks/{id}").json()
+            data = client.delete(f"/playbooks/{id}")
             print("Playbook Deleted")
             return
         elif action == "public":
-            data = client.patch(f"/playbooks/{id}", json={"public": "invert"})
+            data = client.patch(f"/playbooks/{id}", json={"public": "invert"}).json()
 
         autoformat(
             data, jsonfmt=kwargs["json"], list_separator=list_separator, table=True
