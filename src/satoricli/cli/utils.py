@@ -317,7 +317,10 @@ def table_generator(
     for item in items:
         cells = []
         for raw_i in item:
-            i = str(raw_i)
+            if raw_i is None:
+                i = "-"
+            else:
+                i = str(raw_i)
             if PASS_REGEX.search(i):
                 styled = "[green]" + i
             elif FAIL_REGEX.search(i):
