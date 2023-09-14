@@ -56,7 +56,7 @@ class PlaybookCommand(BaseCommand):
         configure_client(config["token"])
         list_separator = "-" * 48
 
-        if public:
+        if public or (id and id.startswith("satori://")):
             display_public_playbooks(id)
             return
 
