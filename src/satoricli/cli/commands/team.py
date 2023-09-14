@@ -95,7 +95,8 @@ class TeamCommand(BaseCommand):
             console.print("Team deleted")
             return
         elif action == "del_member":
-            client.delete(f"/teams/{id}/members", json={"email": email})
+            # TODO: Update API to take params
+            client.request("DELETE", f"/teams/{id}/members", json={"email": email})
             console.print("Team member deleted")
             return
 

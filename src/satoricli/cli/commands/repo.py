@@ -163,14 +163,15 @@ class RepoCommand(BaseCommand):
         elif action == "show":
             info = client.get(f"/repos/{repository or ''}").json()
 
-        if not repository or action != "show" or kwargs["json"]:
-            autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
-        else:  # Default command (satori-cli repo)
+        if not repository and action == "show" and not kwargs["json"]:
             if info["pending"]["rows"]:
                 console.rule("[b red]Pending actions", style="red")
                 autotable(info["pending"]["rows"], "bold red", widths=(50, 50))
             # Group repos by team name
             group_table(BootstrapTable(**info["list"]), "team", "Private")
+            return
+
+        autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 
     def scan_sync(self, id):
         live = Live("Loading data...", console=console, auto_refresh=False)

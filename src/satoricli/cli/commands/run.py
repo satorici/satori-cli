@@ -259,7 +259,7 @@ class RunCommand(BaseCommand):
         if report:
             report_out = []
             # Remove keys
-            json_data = report_data.get("json") or []
+            json_data = report_data.get("report") or []
             for report in json_data:
                 report.pop("gfx", None)
                 report_out.append(report)
@@ -276,7 +276,9 @@ class RunCommand(BaseCommand):
             with httpx.stream("GET", r.json()["url"], timeout=300) as s:
                 format_outputs(s.iter_lines())
         elif files:
-            with client.stream("GET", f"/reports/{exec_data['id']}/files") as s:
+            with client.stream(
+                "GET", f"/reports/{exec_data['id']}/files", follow_redirects=True
+            ) as s:
                 total = int(s.headers["Content-Length"])
 
                 with Progress() as progress:

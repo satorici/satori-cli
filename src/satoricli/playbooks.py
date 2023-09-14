@@ -1,7 +1,7 @@
 import os
-import sys
 from pathlib import Path
 from tempfile import gettempdir
+from typing import Optional
 
 try:
     import git
@@ -17,7 +17,8 @@ def clone(directoryName):
     """Clone or pull the playbooks repo"""
     if git is None:
         print(
-            "The git package could not be imported. Please make sure that git is installed in your system."
+            "The git package could not be imported.",
+            "Please make sure that git is installed in your system.",
         )
         return 1
     if os.path.exists(directoryName):
@@ -78,14 +79,14 @@ def get_playbook_name(filename):
             return "None"
 
 
-def display_public_playbooks(playbook_id: str = "") -> None:
+def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
     directoryName = Path(gettempdir(), "satori-public-playbooks")
 
     if clone(directoryName) == 0:
         playbooks = file_finder(directoryName)
         playbooks.sort(key=lambda x: x["filename"])
 
-        if playbook_id == "":  # satori-cli playbook --public
+        if not playbook_id:  # satori-cli playbook --public
             # Print table with playbooks data by default
             autotable(playbooks)
         else:  # satori-cli playbook satori://x
@@ -101,4 +102,3 @@ def display_public_playbooks(playbook_id: str = "") -> None:
                     break
             if playbook_path is None:
                 console.print("[red]Playbook not found")
-    sys.exit(0)

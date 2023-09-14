@@ -13,7 +13,7 @@ class UpdateCommand(BaseCommand):
     def register_args(self, parser: ArgumentParser):
         pass
 
-    def __call__(self, confirmed: bool, **kwargs):
+    def __call__(self, **kwargs):
         console.print(f"Going to run: {sys.executable} -m pip install -U satori-ci")
 
         proc = subprocess.run(
