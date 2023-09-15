@@ -58,9 +58,8 @@ class ReportCommand(BaseCommand):
             with httpx.stream("GET", r.json()["url"], timeout=300) as s:
                 format_outputs(s.iter_lines())
         elif action == "files":
-            with client.stream(
-                "GET", f"/reports/{id}/files", follow_redirects=True
-            ) as s:
+            r = client.get(f"/outputs/{id}/files")
+            with httpx.stream("GET", r.json()["url"], timeout=300) as s:
                 total = int(s.headers["Content-Length"])
 
                 with Progress() as progress:
