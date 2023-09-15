@@ -282,6 +282,9 @@ negative:
     - invalid syntax
 
   run:
+    fail:
+      - [satori-cli run .satori/fail.yml --sync]
+      
     empty_playbook:
       - [satori run .satori/empty.yml --report]
 
