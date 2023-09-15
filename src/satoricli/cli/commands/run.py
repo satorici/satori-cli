@@ -243,8 +243,8 @@ class RunCommand(BaseCommand):
                 progress.update(task, description=status)
                 time.sleep(1)
 
-        if status == "Undefined":
-            if comments := report_data.get("comments"):
+        if report_data.get("result") == "Unknown":
+            if comments := report_data.get("user_warnings"):
                 console.print(f"[error]Error: {comments}")
             return 1
 
@@ -261,7 +261,6 @@ class RunCommand(BaseCommand):
             # Remove keys
             json_data = report_data.get("report") or []
             for report in json_data:
-                report.pop("gfx", None)
                 report_out.append(report)
                 asserts = []
                 for asrt in report["asserts"]:
