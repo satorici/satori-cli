@@ -71,6 +71,8 @@ class RunCommand(BaseCommand):
             if (sync or output or report or files) and exec_data:
                 return self.run_sync(exec_data, output, report, files, **kwargs)
 
+            return
+
         if target.is_dir() and (target / ".satori.yml").is_file():
             playbook = target / ".satori.yml"
         elif target.is_file():
