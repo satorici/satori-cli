@@ -3,6 +3,7 @@ import logging
 import random
 import re
 from base64 import b64decode
+from itertools import zip_longest
 from typing import Any, Optional, Union
 
 import yaml
@@ -284,15 +285,14 @@ def table_generator(
     header_style : str, optional
         Rich Table header style, by default None
     """
-    widths_iter = iter_loop(widths)
     table = Table(
         show_header=True,
         header_style=header_style,
         row_styles=["on #222222", "on black"],
         expand=True,
     )
-    for header in headers:
-        table.add_column(header, width=next(widths_iter))
+    for header, width in zip_longest(headers, widths):
+        table.add_column(header, width=width)
     for item in items:
         cells = []
         for raw_i in item:
@@ -371,15 +371,6 @@ def get_rows(items: list[dict], headers: list[str]) -> list[list]:
 def capitalize_list(items: list[str]) -> list[str]:
     new_list = map(lambda x: x.capitalize() if len(x) > 2 else x.upper(), items)
     return list(new_list)
-
-
-def iter_loop(data: Union[tuple[Any], list[Any]]):
-    i = 0
-    while True:
-        yield data[i]
-        i += 1
-        if i >= len(data):
-            i = 0
 
 
 def format_outputs(outputs):
