@@ -275,9 +275,8 @@ class RunCommand(BaseCommand):
             with httpx.stream("GET", r.json()["url"], timeout=300) as s:
                 format_outputs(s.iter_lines())
         elif files:
-            with client.stream(
-                "GET", f"/reports/{exec_data['id']}/files", follow_redirects=True
-            ) as s:
+            r = client.get(f"/outputs/{exec_data['id']}/files")
+            with httpx.stream("GET", r.json()["url"]) as s:
                 total = int(s.headers["Content-Length"])
 
                 with Progress() as progress:
