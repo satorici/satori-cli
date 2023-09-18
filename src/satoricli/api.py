@@ -9,7 +9,7 @@ client = httpx.Client(
     base_url=HOST,
     follow_redirects=True,
     event_hooks={"response": [lambda r: r.raise_for_status()]},
-    timeout=5,
+    timeout=60,
 )
 
 
