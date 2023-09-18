@@ -243,16 +243,16 @@ class RunCommand(BaseCommand):
                 progress.update(task, description=status)
                 time.sleep(1)
 
-        if report_data.get("result") == "Unknown":
+        if not any((report, output, files)):
             if comments := report_data.get("user_warnings"):
-                console.print(f"[error]Error: {comments}")
-            return 1
+                console.print(f"[warning]WARNING:[/] {comments}")
 
-        if not any((report, output, files)) and status == "Completed":
+            if report_data.get("result", "Unknown") == "Unknown":
+                console.print("Result: Unknown")
+                return 1
+
             fails = report_data["fails"]
-
-            if isinstance(fails, int):
-                console.print("Result:", "Pass" if not fails else f"Fail({fails})")
+            console.print("Result:", "Pass" if not fails else f"Fail({fails})")
 
             return 0 if fails == 0 else 1
 
