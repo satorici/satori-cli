@@ -245,11 +245,12 @@ class RunCommand(BaseCommand):
                 progress.update(task, description=status)
                 time.sleep(1)
 
-        if not any((report, output, files)):
+        result = report_data.get("result", "Unknown")
+        if not any((report, output, files)) or result == "Unknown":
             if comments := report_data.get("user_warnings"):
                 console.print(f"[warning]WARNING:[/] {comments}")
 
-            if report_data.get("result", "Unknown") == "Unknown":
+            if result == "Unknown":
                 console.print("Result: Unknown")
                 return 1
 
