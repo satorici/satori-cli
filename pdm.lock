@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:cedcf5070b8dd0e663d257e7bf180e06066ac506685f411116c4b6a74be72ef9"
+content_hash = "sha256:52e8426f886e125a8c68b6c0a85d41121bef5bb1e282ffdb4f59c196278a73b1"
 
 [[package]]
 name = "anyio"
@@ -323,7 +323,7 @@ files = [
 
 [[package]]
 name = "satori-playbook-validator"
-version = "3.3.1"
+version = "3.3.2"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
@@ -331,8 +331,8 @@ dependencies = [
     "fastjsonschema>=2.17.1",
 ]
 files = [
-    {file = "satori_playbook_validator-3.3.1-py3-none-any.whl", hash = "sha256:c2ece64efd705fd8da96e5f14d52858390451dfe2b459eb1cc669b013fd751e7"},
-    {file = "satori_playbook_validator-3.3.1.tar.gz", hash = "sha256:6ae3ed363382a5a6d62fcd074ebed6d0226684ebaeed88e99a202f47b79afacc"},
+    {file = "satori_playbook_validator-3.3.2-py3-none-any.whl", hash = "sha256:ee5f6bb02fd389b83eae9b439dccc92b6cd8c0e3b48f70d736dff4a6d7df7d61"},
+    {file = "satori_playbook_validator-3.3.2.tar.gz", hash = "sha256:bc5ce456d884cdf139ff003192b10f115325f2f3771adf0217c5544ec4a8b959"},
 ]
 
 [[package]]
