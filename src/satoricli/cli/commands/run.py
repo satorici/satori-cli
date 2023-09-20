@@ -30,6 +30,101 @@ from satoricli.validations import get_parameters, has_executions, validate_param
 from .base import BaseCommand
 
 
+def validate_config(playbook: Path, params: set):
+    try:
+        config = yaml.safe_load(playbook.read_text())
+    except yaml.YAMLError as e:
+        console.print(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
+        return False
+
+    try:
+        with warnings.catch_warnings(record=True) as w:
+            validate_playbook(config)
+
+        for warning in w:
+            if warning.category == NoLogMonitorWarning:
+                console.print(
+                    "[warning]WARNING:[/] No notifications (log, onLogFail or "
+                    "onLogPass) were defined for the Monitor"
+                )
+    except TypeError:
+        console.print("Error: playbook must be a mapping type")
+        return False
+    except (PlaybookVariableError, NoExecutionsError):
+        pass
+    except PlaybookValidationError as e:
+        console.print(f"Validation error on playbook [bold]{playbook.name}[/]:\n", e)
+        return False
+
+    if not has_executions(config, playbook.parent):
+        console.print("[error]No executions found")
+        return False
+
+    variables = get_parameters(config)
+
+    if variables - params:
+        console.print(f"[error]Required parameters: {variables - params}")
+        return False
+
+    return True
+
+
+def missing_ymls(root: str):
+    satori_yml = Path(root, ".satori.yml")
+    local_ymls = list(filter(lambda p: p.is_file(), Path(root).rglob(".satori.yml")))
+    imported = get_local_files(yaml.safe_load(satori_yml.read_text()))["imports"]
+
+    if len(local_ymls) > 1 and len(local_ymls) - 1 > len(imported):
+        return True
+
+    return False
+
+
+def make_packet(path: str):
+    temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
+    shutil.make_archive(str(temp_file), "gztar", path)
+    return f"{temp_file}.tar.gz"
+
+
+def run_folder(bundle, packet: str, secrets: Optional[str], is_monitor: bool) -> str:
+    run_info = client.post(
+        "/runs/archive", json={"secrets": secrets or "", "is_monitor": is_monitor}
+    ).json()
+    arc = run_info["archive"]
+    bun = run_info["bundle"]
+
+    try:
+        with progress_open(packet, "rb", description="Uploading...") as f:
+            res = httpx.post(arc["url"], data=arc["fields"], files={"file": f})
+        res.raise_for_status()
+    finally:
+        os.remove(packet)
+
+    res = httpx.post(bun["url"], data=bun["fields"], files={"file": bundle})
+    res.raise_for_status()
+
+    return run_info["monitor"] if is_monitor else run_info["report_id"]
+
+
+def run_file(bundle, secrets: Optional[str], is_monitor: bool) -> str:
+    run_info = client.post(
+        "/runs/bundle", json={"secrets": secrets or "", "is_monitor": is_monitor}
+    ).json()
+    res = httpx.post(
+        run_info["url"], data=run_info["fields"], files={"file": bundle}, timeout=None
+    )
+    res.raise_for_status()
+
+    return run_info["monitor"] if is_monitor else run_info["report_id"]
+
+
+def run_url(url: str, secrets: Optional[str]) -> str:
+    info = client.post(
+        "/runs/url", json={"secrets": secrets or "", "is_monitor": False, "url": url}
+    ).json()
+    return info["report_id"]
+
+
 class RunCommand(BaseCommand):
     name = "run"
 
@@ -56,22 +151,15 @@ class RunCommand(BaseCommand):
         configure_client(config["token"])
 
         target = Path(path)
-        params = set()
 
         if data:
             if not validate_parameters(data):
                 raise ValueError("Malformed parameters")
 
-            params.update(data.keys())
+            params = set(data.keys())
             data = str(data)  # TODO: Modify API to receive JSON
-
-        if path.startswith("satori://"):
-            exec_data = self.run_url(path, data, **kwargs)
-
-            if (sync or output or report or files) and exec_data:
-                return self.run_sync(exec_data, output, report, files, **kwargs)
-
-            return
+        else:
+            params = set()
 
         if target.is_dir() and (target / ".satori.yml").is_file():
             playbook = target / ".satori.yml"
@@ -81,211 +169,107 @@ class RunCommand(BaseCommand):
             console.print("[error]Playbook file or folder not found")
             return 1
 
-        try:
-            config = yaml.safe_load(playbook.read_text())
-        except yaml.YAMLError as e:
-            console.print(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
-            return 1
-
-        try:
-            with warnings.catch_warnings(record=True) as w:
-                validate_playbook(config)
-
-            for warning in w:
-                if warning.category == NoLogMonitorWarning:
-                    console.print(
-                        "[warning]WARNING:[/] No notifications (log, onLogFail or "
-                        "onLogPass) were defined for the Monitor"
-                    )
-        except TypeError:
-            console.print("Error: playbook must be a mapping type")
-            return 1
-        except (PlaybookVariableError, NoExecutionsError):
-            pass
-        except PlaybookValidationError as e:
-            console.print(
-                f"Validation error on playbook [bold]{playbook.name}[/]:\n", e
-            )
-            return 1
-
-        if not has_executions(config, playbook.parent):
-            console.print("[error]No executions found")
-            return 1
-
-        variables = get_parameters(config)
-
-        if variables - params:
-            console.print(f"[error]Required parameters: {variables - params}")
+        if not validate_config(playbook, params):
             return 1
 
         if target.is_dir():
-            exec_data = self.run_folder(path, data)
-        else:  # is file
-            exec_data = self.run_file(path, data)
+            bundle = make_bundle(playbook, from_dir=True)
+            packet = make_packet(path)
+            is_monitor: bool = check_monitor(path)
 
-        if (sync or output or report or files) and exec_data:
-            return self.run_sync(exec_data, output, report, files, **kwargs)
+            if missing_ymls(path):
+                console.print(
+                    "[warning]WARNING:[/] There are some .satori.yml outside the root "
+                    "folder that have not been imported."
+                )
 
-    def run_file(self, path: str, data: Optional[dict]):
-        bundle = make_bundle(path)
-        is_monitor = check_monitor(path)
-        url = client.post(
-            "/runs/bundle", json={"secrets": data or "", "is_monitor": is_monitor}
-        ).json()
-        res = httpx.post(  # nosec
-            url["url"], data=url["fields"], files={"file": bundle}, timeout=None
-        )
-        res.raise_for_status()
+            run_id = run_folder(bundle, packet, data, is_monitor)
+        elif target.is_file():
+            bundle = make_bundle(playbook)
+            is_monitor: bool = check_monitor(path)
+            run_id = run_file(bundle, data, is_monitor)
+        elif path.startswith("satori://"):
+            is_monitor = False
+            run_id = run_url(path, data)
+        else:
+            return 1
+
+        console.print("Monitor" if is_monitor else "Report", "ID:", run_id)
 
         if is_monitor:
-            exec_type = "monitor"
-            exec_id = url["monitor"]
-            console.print(f"Monitor ID: {exec_id}")
-            console.print(f"Status: https://www.satori-ci.com/status?id={exec_id}")
+            console.print(f"Status: https://www.satori-ci.com/status?id={run_id}")
         else:
-            exec_type = "report"
-            exec_id = url["report_id"]
-            console.print(f"Report ID: {exec_id}")
             console.print(
-                f"Report: https://www.satori-ci.com/report_details/?n={exec_id}"
+                f"Report: https://www.satori-ci.com/report_details/?n={run_id}"
             )
 
-        return {"type": exec_type, "id": exec_id}
+        if (sync or output or report or files) and not is_monitor:
+            return run_sync(run_id, output, report, files)
 
-    def run_folder(self, path: str, data: dict):
-        """Upload directory and run"""
-        satori_yml = Path(path, ".satori.yml")
-        bundle = make_bundle(str(satori_yml), from_dir=True)
-        is_monitor = check_monitor(satori_yml)
-        temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
-        full_path = f"{temp_file}.tar.gz"
 
-        local_ymls = list(
-            filter(lambda p: p.is_file(), Path(path).rglob(".satori.yml"))
-        )
+def run_sync(report_id: str, output: bool, report: bool, files: bool):
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]Status: {task.description}"),
+        TimeElapsedColumn(),
+    ) as progress:
+        task = progress.add_task("Fetching data")
+        status = "Unknown"
 
-        imported = get_local_files(yaml.safe_load(satori_yml.read_text()))["imports"]
+        while status not in ("Completed", "Undefined"):
+            try:
+                report_data = client.get(f"/reports/{report_id}").json()
+                status = report_data.get("status", "Unknown")
+            except httpx.HTTPStatusError as e:
+                if 400 <= e.response.status_code < 500:
+                    status = "Unknown"
+                else:
+                    return 1
 
-        if len(local_ymls) > 1 and len(local_ymls) - 1 > len(imported):
-            console.print(
-                "[warning]WARNING:[/] There are some .satori.yml outside the root "
-                "folder that have not been imported."
-            )
+            progress.update(task, description=status)
+            time.sleep(1)
 
-        shutil.make_archive(str(temp_file), "gztar", path)
+    result = report_data.get("result", "Unknown")
+    if not any((report, output, files)) or result == "Unknown":
+        if comments := report_data.get("user_warnings"):
+            console.print(f"[warning]WARNING:[/] {comments}")
 
-        res = client.post(
-            "/runs/archive", json={"secrets": data or "", "is_monitor": is_monitor}
-        ).json()
-        arc = res["archive"]
-        bun = res["bundle"]
-        mon = res["monitor"]
-        report_id = res["report_id"]
+        if result == "Unknown":
+            console.print("Result: Unknown")
+            return 1
 
-        try:
-            with progress_open(full_path, "rb", description="Uploading...") as f:
-                res = httpx.post(arc["url"], data=arc["fields"], files={"file": f})
-            res.raise_for_status()
-        finally:
-            os.remove(full_path)
+        fails = report_data["fails"]
+        console.print("Result:", "Pass" if not fails else f"Fail({fails})")
 
-        res = httpx.post(bun["url"], data=bun["fields"], files={"file": bundle})
-        res.raise_for_status()
+        return 0 if fails == 0 else 1
 
-        if is_monitor:
-            exec_type = "monitor"
-            exec_id = mon
-            console.print(f"Monitor ID: {mon}")
-            console.print(f"Status: https://www.satori-ci.com/status?id={mon}")
-        else:
-            exec_type = "report"
-            exec_id = report_id
-            console.print(f"Report ID: {exec_id}")
-            console.print(
-                f"Report: https://www.satori-ci.com/report_details/?n={exec_id}"
-            )
-        return {"type": exec_type, "id": exec_id}
+    if report:
+        report_out = []
+        # Remove keys
+        json_data = report_data.get("report") or []
+        for report in json_data:
+            report_out.append(report)
+            asserts = []
+            for asrt in report["asserts"]:
+                asrt.pop("count", None)
+                asrt.pop("description", None)
+                if len(asrt.get("data", [])) == 0:
+                    asrt.pop("data", None)
+                asserts.append(asrt)
+        autoformat(report_out, list_separator="- " * 20)
+    elif output:
+        r = client.get(f"/outputs/{report_id}")
+        with httpx.stream("GET", r.json()["url"], timeout=300) as s:
+            format_outputs(s.iter_lines())
+    elif files:
+        r = client.get(f"/outputs/{report_id}/files")
+        with httpx.stream("GET", r.json()["url"]) as s:
+            total = int(s.headers["Content-Length"])
 
-    def run_url(self, path: str, data: dict, **kwargs):
-        info = client.post(
-            "/runs/url", json={"secrets": data, "is_monitor": False, "url": path}
-        ).json()
-        autoformat(
-            {"Running with the ID": info.get("report_id")}, jsonfmt=kwargs["json"]
-        )
-        return {"type": "report", "id": info["report_id"]}
+            with Progress() as progress:
+                task = progress.add_task("Downloading...", total=total)
 
-    def run_sync(
-        self, exec_data: dict, output: bool, report: bool, files: bool, **kwargs
-    ):
-        if exec_data["type"] == "monitor":
-            console.print(
-                "[warning]WARNING:[/] Sync mode is not supported for monitors"
-            )
-            return
-
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]Status: {task.description}"),
-            TimeElapsedColumn(),
-        ) as progress:
-            task = progress.add_task("Fetching data")
-            status = "Unknown"
-
-            while status not in ("Completed", "Undefined"):
-                try:
-                    report_data = client.get(f"/reports/{exec_data['id']}").json()
-                    status = report_data.get("status", "Unknown")
-                except httpx.HTTPStatusError as e:
-                    if 400 <= e.response.status_code < 500:
-                        status = "Unknown"
-                    else:
-                        return 1
-
-                progress.update(task, description=status)
-                time.sleep(1)
-
-        result = report_data.get("result", "Unknown")
-        if not any((report, output, files)) or result == "Unknown":
-            if comments := report_data.get("user_warnings"):
-                console.print(f"[warning]WARNING:[/] {comments}")
-
-            if result == "Unknown":
-                console.print("Result: Unknown")
-                return 1
-
-            fails = report_data["fails"]
-            console.print("Result:", "Pass" if not fails else f"Fail({fails})")
-
-            return 0 if fails == 0 else 1
-
-        if report:
-            report_out = []
-            # Remove keys
-            json_data = report_data.get("report") or []
-            for report in json_data:
-                report_out.append(report)
-                asserts = []
-                for asrt in report["asserts"]:
-                    asrt.pop("count", None)
-                    asrt.pop("description", None)
-                    if len(asrt.get("data", [])) == 0:
-                        asrt.pop("data", None)
-                    asserts.append(asrt)
-            autoformat(report_out, list_separator="- " * 20)
-        elif output:
-            r = client.get(f"/outputs/{exec_data['id']}")
-            with httpx.stream("GET", r.json()["url"], timeout=300) as s:
-                format_outputs(s.iter_lines())
-        elif files:
-            r = client.get(f"/outputs/{exec_data['id']}/files")
-            with httpx.stream("GET", r.json()["url"]) as s:
-                total = int(s.headers["Content-Length"])
-
-                with Progress() as progress:
-                    task = progress.add_task("Downloading...", total=total)
-
-                    with open(f"satorici-files-{exec_data['id']}.tar.gz", "wb") as f:
-                        for chunk in s.iter_raw():
-                            progress.update(task, advance=len(chunk))
-                            f.write(chunk)
+                with open(f"satorici-files-{report_id}.tar.gz", "wb") as f:
+                    for chunk in s.iter_raw():
+                        progress.update(task, advance=len(chunk))
+                        f.write(chunk)
