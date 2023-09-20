@@ -23,10 +23,10 @@ from satorici.validator.warnings import NoLogMonitorWarning
 
 from satoricli.api import client, configure_client
 from satoricli.bundler import get_local_files, make_bundle
-from satoricli.cli.utils import autoformat, check_monitor, console, format_outputs
 from satoricli.utils import load_config
 from satoricli.validations import get_parameters, has_executions, validate_parameters
 
+from ..utils import autoformat, check_monitor, console, error_console, format_outputs
 from .base import BaseCommand
 
 
@@ -34,7 +34,9 @@ def validate_config(playbook: Path, params: set):
     try:
         config = yaml.safe_load(playbook.read_text())
     except yaml.YAMLError as e:
-        console.print(f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e)
+        error_console.print(
+            f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e
+        )
         return False
 
     try:
@@ -43,27 +45,29 @@ def validate_config(playbook: Path, params: set):
 
         for warning in w:
             if warning.category == NoLogMonitorWarning:
-                console.print(
+                error_console.print(
                     "[warning]WARNING:[/] No notifications (log, onLogFail or "
                     "onLogPass) were defined for the Monitor"
                 )
     except TypeError:
-        console.print("Error: playbook must be a mapping type")
+        error_console.print("Error: playbook must be a mapping type")
         return False
     except (PlaybookVariableError, NoExecutionsError):
         pass
     except PlaybookValidationError as e:
-        console.print(f"Validation error on playbook [bold]{playbook.name}[/]:\n", e)
+        error_console.print(
+            f"Validation error on playbook [bold]{playbook.name}[/]:\n", e
+        )
         return False
 
     if not has_executions(config, playbook.parent):
-        console.print("[error]No executions found")
+        error_console.print("[error]No executions found")
         return False
 
     variables = get_parameters(config)
 
     if variables - params:
-        console.print(f"[error]Required parameters: {variables - params}")
+        error_console.print(f"[error]Required parameters: {variables - params}")
         return False
 
     return True
@@ -94,7 +98,9 @@ def run_folder(bundle, packet: str, secrets: Optional[str], is_monitor: bool) ->
     bun = run_info["bundle"]
 
     try:
-        with progress_open(packet, "rb", description="Uploading...") as f:
+        with progress_open(
+            packet, "rb", description="Uploading...", console=error_console
+        ) as f:
             res = httpx.post(arc["url"], data=arc["fields"], files={"file": f})
         res.raise_for_status()
     finally:
@@ -150,6 +156,7 @@ class RunCommand(BaseCommand):
         config = load_config()[kwargs["profile"]]
         configure_client(config["token"])
 
+        is_sync = sync or output or report or files
         target = Path(path)
 
         if data:
@@ -168,7 +175,7 @@ class RunCommand(BaseCommand):
         elif path.startswith("satori://"):
             playbook = None
         else:
-            console.print("[error]Playbook file or folder not found")
+            error_console.print("[error]Playbook file or folder not found")
             return 1
 
         if playbook and not validate_config(playbook, params):
@@ -180,7 +187,7 @@ class RunCommand(BaseCommand):
             is_monitor: bool = check_monitor(playbook)
 
             if missing_ymls(path):
-                console.print(
+                error_console.print(
                     "[warning]WARNING:[/] There are some .satori.yml outside the root "
                     "folder that have not been imported."
                 )
@@ -196,24 +203,28 @@ class RunCommand(BaseCommand):
         else:
             return 1
 
-        console.print("Monitor" if is_monitor else "Report", "ID:", run_id)
+        if is_sync and not is_monitor:
+            return run_sync(run_id, output, report, files, kwargs["json"])
 
-        if is_monitor:
-            console.print(f"Status: https://www.satori-ci.com/status?id={run_id}")
+        if kwargs["json"]:
+            console.print_json(data={"id": run_id, "monitor": is_monitor})
         else:
-            console.print(
-                f"Report: https://www.satori-ci.com/report_details/?n={run_id}"
-            )
+            console.print("Monitor" if is_monitor else "Report", "ID:", run_id)
 
-        if (sync or output or report or files) and not is_monitor:
-            return run_sync(run_id, output, report, files)
+            if is_monitor:
+                console.print(f"Status: https://www.satori-ci.com/status?id={run_id}")
+            else:
+                console.print(
+                    f"Report: https://www.satori-ci.com/report_details/?n={run_id}"
+                )
 
 
-def run_sync(report_id: str, output: bool, report: bool, files: bool):
+def run_sync(report_id: str, output: bool, report: bool, files: bool, print_json: bool):
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]Status: {task.description}"),
         TimeElapsedColumn(),
+        console=error_console,
     ) as progress:
         task = progress.add_task("Fetching data")
         status = "Unknown"
@@ -234,14 +245,23 @@ def run_sync(report_id: str, output: bool, report: bool, files: bool):
     result = report_data.get("result", "Unknown")
     if not any((report, output, files)) or result == "Unknown":
         if comments := report_data.get("user_warnings"):
-            console.print(f"[warning]WARNING:[/] {comments}")
+            error_console.print(f"[warning]WARNING:[/] {comments}")
 
         if result == "Unknown":
-            console.print("Result: Unknown")
+            error_console.print("Result: Unknown")
             return 1
 
         fails = report_data["fails"]
-        console.print("Result:", "Pass" if not fails else f"Fail({fails})")
+
+        if print_json:
+            console.print_json(
+                data={
+                    "report_id": report_id,
+                    "result": "Pass" if not fails else f"Fail({fails})",
+                }
+            )
+        else:
+            console.print("Result:", "Pass" if not fails else f"Fail({fails})")
 
         return 0 if fails == 0 else 1
 
@@ -258,17 +278,24 @@ def run_sync(report_id: str, output: bool, report: bool, files: bool):
                 if len(asrt.get("data", [])) == 0:
                     asrt.pop("data", None)
                 asserts.append(asrt)
-        autoformat(report_out, list_separator="- " * 20)
+        if print_json:
+            console.print_json(data=report_out)
+        else:
+            autoformat(report_out, list_separator="- " * 20)
     elif output:
         r = client.get(f"/outputs/{report_id}")
         with httpx.stream("GET", r.json()["url"], timeout=300) as s:
-            format_outputs(s.iter_lines())
+            if print_json:
+                for line in s.iter_lines():
+                    console.print(line)
+            else:
+                format_outputs(s.iter_lines())
     elif files:
         r = client.get(f"/outputs/{report_id}/files")
         with httpx.stream("GET", r.json()["url"]) as s:
             total = int(s.headers["Content-Length"])
 
-            with Progress() as progress:
+            with Progress(console=error_console) as progress:
                 task = progress.add_task("Downloading...", total=total)
 
                 with open(f"satorici-files-{report_id}.tar.gz", "wb") as f:
