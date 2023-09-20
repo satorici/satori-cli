@@ -220,8 +220,9 @@ class RunCommand(BaseCommand):
 
 
 def run_sync(report_id: str, output: bool, report: bool, files: bool, print_json: bool):
-    error_console.print("Report ID:", report_id)
-    error_console.print(
+    info_console = error_console if print_json else console
+    info_console.print("Report ID:", report_id)
+    info_console.print(
         f"Report: https://www.satori-ci.com/report_details/?n={report_id}"
     )
 
@@ -253,7 +254,7 @@ def run_sync(report_id: str, output: bool, report: bool, files: bool, print_json
             error_console.print(f"[warning]WARNING:[/] {comments}")
 
         if result == "Unknown":
-            error_console.print("Result: Unknown")
+            console.print("Result: Unknown")
             return 1
 
         fails = report_data["fails"]
