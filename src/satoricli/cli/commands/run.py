@@ -165,17 +165,19 @@ class RunCommand(BaseCommand):
             playbook = target / ".satori.yml"
         elif target.is_file():
             playbook = target
+        elif path.startswith("satori://"):
+            playbook = None
         else:
             console.print("[error]Playbook file or folder not found")
             return 1
 
-        if not validate_config(playbook, params):
+        if playbook and not validate_config(playbook, params):
             return 1
 
         if target.is_dir():
             bundle = make_bundle(playbook, from_dir=True)
             packet = make_packet(path)
-            is_monitor: bool = check_monitor(path)
+            is_monitor: bool = check_monitor(playbook)
 
             if missing_ymls(path):
                 console.print(
@@ -186,7 +188,7 @@ class RunCommand(BaseCommand):
             run_id = run_folder(bundle, packet, data, is_monitor)
         elif target.is_file():
             bundle = make_bundle(playbook)
-            is_monitor: bool = check_monitor(path)
+            is_monitor: bool = check_monitor(playbook)
             run_id = run_file(bundle, data, is_monitor)
         elif path.startswith("satori://"):
             is_monitor = False
