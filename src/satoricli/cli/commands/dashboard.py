@@ -27,18 +27,18 @@ class DashboardCommand(BaseCommand):
 
         if info["monitors"]["pending"]:
             console.rule("[b][blue]Monitors[/blue] (Actions required)", style="white")
-            autotable(info["monitors"]["pending"], "b blue", widths=(20, 20, None))
+            autotable(info["monitors"]["pending"]["rows"], "b blue", widths=(20, 20, None))
         if info["repos"]["pending"]["rows"]:
             console.rule(
                 "[b][green]GitHub Repositories[/green] (Actions required)",
                 style="white",
             )
             autotable(info["repos"]["pending"]["rows"], "b green", widths=(50, 50))
-        if len(info["monitors"]["list"]) == 0:
+        if len(info["monitors"]["list"]["rows"]) == 0:
             console.print("[b]Monitors:[red] no active monitors defined")
         else:
             console.rule("[b blue]Monitors", style="blue")
-            autotable(info["monitors"]["list"], "b blue", True)
-        if len(info["repos"]["list"]) > 0:
+            autotable(info["monitors"]["list"]["rows"], "b blue", True)
+        if len(info["repos"]["list"]["rows"]) > 0:
             console.rule("[b green]Github Repositories", style="green")
             autotable(info["repos"]["list"]["rows"], "b green", True)
