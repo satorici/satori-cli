@@ -220,6 +220,11 @@ class RunCommand(BaseCommand):
 
 
 def run_sync(report_id: str, output: bool, report: bool, files: bool, print_json: bool):
+    error_console.print("Report ID:", report_id)
+    error_console.print(
+        f"Report: https://www.satori-ci.com/report_details/?n={report_id}"
+    )
+
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]Status: {task.description}"),
