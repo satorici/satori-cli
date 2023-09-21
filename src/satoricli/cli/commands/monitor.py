@@ -53,6 +53,11 @@ class MonitorCommand(BaseCommand):
             info = client.get(
                 f"/monitors/{id or ''}", params={"deleted": deleted}
             ).json()
+            if id and not kwargs["json"]:
+                reports = info.pop("reports")
+                autoformat(info)
+                autotable(reports)
+                return
         elif action == "public":
             info = client.patch(f"/monitors/{id}", json={"public": "invert"}).json()
         elif action in ("start", "stop"):
