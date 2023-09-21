@@ -236,7 +236,7 @@ positive:
 
     # add the email 'test@satori-ci.com' as a member of the team 'test_team'
     add_member:
-      - [satori team test_team add_member --email='test@satori-ci.com']
+      - [satori team test_team add --member='test@satori-ci.com']
 
     # delete the email 'test@satori-ci.com' as a member of the team 'test_team'
     del_member:
@@ -248,7 +248,7 @@ positive:
 
     # add the repo 'satoridev01/hello_world' to the team 'test_team'
     add_repo:
-      - [satori team test_team add_repo --repo='satoridev01/hello_world']
+      - [satori team test_team add --repo='satoridev01/hello_world']
 
     # list the repos associated to the 'test_team'
     team_with_repos:
