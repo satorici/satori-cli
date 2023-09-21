@@ -84,6 +84,7 @@ class RepoCommand(BaseCommand):
             info = client.get(
                 "/repos/scan/last",
                 params={"url": repository, "data": data or "", "playbook": playbook},
+                timeout=300
             ).json()
             if sync:
                 if len(info) == 1:
