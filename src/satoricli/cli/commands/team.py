@@ -12,9 +12,14 @@ class TeamCommand(BaseCommand):
     name = "team"
 
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("--email", help="User email")
+
         parser.add_argument("--role", default="READ", help="User role")
+
+        # Use with the add command
         parser.add_argument("--repo", help="Repo name")
+        parser.add_argument("--member", help="User email")
+        parser.add_argument("--monitor", help="Monitor id")
+
         parser.add_argument("id", nargs="?")
         parser.add_argument(
             "action",
@@ -23,15 +28,14 @@ class TeamCommand(BaseCommand):
                 "show",
                 "create",
                 "members",
-                "add_member",
                 "repos",
-                "add_repo",
                 "get_config",
                 "set_config",
                 "get_token",
                 "refresh_token",
                 "delete",
                 "del_member",
+                "add",
             ),
             default="show",
         )
@@ -45,19 +49,19 @@ class TeamCommand(BaseCommand):
             "show",
             "create",
             "members",
-            "add_member",
             "repos",
-            "add_repo",
             "get_config",
             "set_config",
             "get_token",
             "refresh_token",
             "delete",
             "del_member",
+            "add",
         ],
-        email: Optional[str],
         role: Optional[str],
         repo: Optional[str],
+        member: Optional[str],
+        monitor: Optional[str],
         config_name: Optional[str],
         config_value: Optional[str],
         **kwargs,
@@ -71,14 +75,21 @@ class TeamCommand(BaseCommand):
             info = client.post(f"/teams/{id}").json()
         elif action == "members":
             info = client.get(f"/teams/{id}/members").json()
-        elif action == "add_member":
-            info = client.post(
-                f"/teams/{id}/members", json={"email": email, "role": role}
-            ).json()
+        elif action == "add":
+            if member:
+                info = client.post(
+                    f"/teams/{id}/members", json={"email": member, "role": role}
+                ).json()
+            elif repo:
+                info = client.post(f"/teams/{id}/repos", json={"repo": repo}).json()
+            elif monitor:
+                info = client.post(
+                    f"/teams/{id}/monitors", json={"monitor": monitor}
+                ).json()
+            else:
+                raise Exception("Use --repo, --member or --monitor")
         elif action == "repos":
             info = client.get(f"/teams/{id}/repos").json()
-        elif action == "add_repo":
-            info = client.post(f"/teams/{id}/repos", json={"repo": repo}).json()
         elif action == "get_config":
             info = client.get(f"/teams/{id}/config/{config_name}").json()
         elif action == "set_config":
