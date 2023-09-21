@@ -84,7 +84,7 @@ class RepoCommand(BaseCommand):
             info = client.get(
                 "/repos/scan/last",
                 params={"url": repository, "data": data or "", "playbook": playbook},
-                timeout=300
+                timeout=300,
             ).json()
             if sync:
                 if len(info) == 1:
@@ -96,6 +96,7 @@ class RepoCommand(BaseCommand):
         elif action == "check-forks":
             info = client.get(f"/repos/scan/{repository}/check-forks").json()
         elif action == "check-commits":
+            console.print(f"Checking the list of commits of the repo {repository}")
             info = client.get(
                 f"/repos/scan/{repository}/check-commits", params={"branch": branch}
             ).json()
