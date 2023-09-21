@@ -102,10 +102,19 @@ class RepoCommand(BaseCommand):
             ).json()
             if sync:
                 return ScanCommand.scan_sync(repository)
-        elif action in ("commits", "download", "pending"):
+        elif action in ("download", "pending"):
             info = client.get(f"/repos/{repository}/{action}").json()
         elif action == "show":
             info = client.get(f"/repos/{repository or ''}").json()
+        elif action == "commits":
+            info = client.get(f"/repos/{repository}/commits").json()
+            for row in info:
+                row.pop("Parent")
+            if kwargs["json"]:
+                console.print_json(data=info)
+            else:
+                autotable(info)
+            return
 
         if not repository and action == "show" and not kwargs["json"]:
             if info["pending"]["rows"]:
