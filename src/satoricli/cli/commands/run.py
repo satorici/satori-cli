@@ -212,7 +212,7 @@ class RunCommand(BaseCommand):
             console.print("Monitor" if is_monitor else "Report", "ID:", run_id)
 
             if is_monitor:
-                console.print(f"Status: https://www.satori-ci.com/status?id={run_id}")
+                console.print(f"Monitor: https://www.satori-ci.com/monitor?id={run_id}")
             else:
                 console.print(
                     f"Report: https://www.satori-ci.com/report_details/?n={run_id}"
