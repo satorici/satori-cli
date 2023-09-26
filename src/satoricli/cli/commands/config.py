@@ -11,7 +11,12 @@ class ConfigCommand(BaseCommand):
     name = "config"
 
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("key", metavar="KEY", nargs="?")
+        parser.add_argument(
+            "key",
+            metavar="KEY",
+            choices=("token", "host", "timeout"),
+            nargs="?",
+        )
         parser.add_argument("value", metavar="VALUE", nargs="?")
         parser.add_argument(
             "-d", "--delete", action="store_true", help="delete config key"
