@@ -110,7 +110,6 @@ class RepoCommand(BaseCommand):
             info = client.get(f"/repos/{repository}/commits").json()
             for row in info:
                 row.pop("Parent")
-                row.pop("Errors")
             if kwargs["json"]:
                 console.print_json(data=info)
             else:
