@@ -43,6 +43,9 @@ class RepoCommand(BaseCommand):
         parser.add_argument("-l", "--limit", type=int, default=100, help="Limit number")
         parser.add_argument("--fail", action="store_true")
         parser.add_argument("--playbook", help="Satori playbook")
+        parser.add_argument(
+            "--pending", action="store_true", help="Show pending actions"
+        )
 
     def __call__(
         self,
@@ -65,6 +68,7 @@ class RepoCommand(BaseCommand):
         limit: int,
         fail: bool,
         playbook: Optional[str],
+        pending: bool,
         **kwargs,
     ):
         config = load_config()[kwargs["profile"]]
@@ -105,7 +109,9 @@ class RepoCommand(BaseCommand):
         elif action in ("download", "pending"):
             info = client.get(f"/repos/{repository}/{action}").json()
         elif action == "show":
-            info = client.get(f"/repos/{repository or ''}").json()
+            info = client.get(
+                f"/repos/{repository or ''}", params={"pending": pending}
+            ).json()
         elif action == "commits":
             info = client.get(f"/repos/{repository}/commits").json()
             for row in info:

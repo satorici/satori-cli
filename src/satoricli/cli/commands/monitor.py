@@ -33,6 +33,9 @@ class MonitorCommand(BaseCommand):
         parser.add_argument(
             "--deleted", action="store_true", help="show deleted monitors"
         )
+        parser.add_argument(
+            "--pending", action="store_true", help="Show pending actions"
+        )
 
     def __call__(
         self,
@@ -40,6 +43,7 @@ class MonitorCommand(BaseCommand):
         action: Literal["show", "start", "stop", "delete", "public", "clean"],
         clean: bool,
         deleted: bool,
+        pending: bool,
         **kwargs,
     ):
         config = load_config()[kwargs["profile"]]
@@ -51,7 +55,7 @@ class MonitorCommand(BaseCommand):
             return
         elif action == "show":
             info = client.get(
-                f"/monitors/{id or ''}", params={"deleted": deleted}
+                f"/monitors/{id or ''}", params={"deleted": deleted, "pending": pending}
             ).json()
             if id and not kwargs["json"]:
                 reports = info.pop("reports")
