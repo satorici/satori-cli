@@ -39,7 +39,7 @@ class OutputsCommand(BaseCommand):
         **kwargs,
     ):
         config = load_config()[kwargs["profile"]]
-        configure_client(config["token"])
+        configure_client(**config)
 
         res = client.get(
             "/outputs",

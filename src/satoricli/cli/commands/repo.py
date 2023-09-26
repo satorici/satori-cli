@@ -68,7 +68,7 @@ class RepoCommand(BaseCommand):
         **kwargs,
     ):
         config = load_config()[kwargs["profile"]]
-        configure_client(config["token"])
+        configure_client(**config)
 
         if action == "tests":
             info = client.get(

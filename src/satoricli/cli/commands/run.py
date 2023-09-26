@@ -154,7 +154,7 @@ class RunCommand(BaseCommand):
         **kwargs,
     ):
         config = load_config()[kwargs["profile"]]
-        configure_client(config["token"])
+        configure_client(**config)
 
         is_sync = sync or output or report or files
         target = Path(path)

@@ -65,7 +65,7 @@ class ScanCommand(BaseCommand):
         **kwargs,
     ):
         config = load_config()[kwargs["profile"]]
-        configure_client(config["token"])
+        configure_client(**config)
 
         if playbook and not playbook.is_file():
             console.print("Invalid playbook")

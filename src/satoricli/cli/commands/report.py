@@ -38,7 +38,7 @@ class ReportCommand(BaseCommand):
         **kwargs,
     ):
         config = load_config()[kwargs["profile"]]
-        configure_client(config["token"])
+        configure_client(**config)
 
         if action == "show":
             res = client.get(

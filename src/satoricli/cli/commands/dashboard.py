@@ -15,7 +15,7 @@ class DashboardCommand(BaseCommand):
 
     def __call__(self, **kwargs):
         config = load_config()[kwargs["profile"]]
-        configure_client(config["token"])
+        configure_client(**config)
 
         data = client.get("/dashboard")
 

@@ -43,7 +43,7 @@ class MonitorCommand(BaseCommand):
         **kwargs,
     ):
         config = load_config()[kwargs["profile"]]
-        configure_client(config["token"])
+        configure_client(**config)
 
         if action == "delete":
             client.delete(f"/monitors/{id}", params={"clean": clean})

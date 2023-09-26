@@ -53,7 +53,7 @@ class PlaybookCommand(BaseCommand):
         **kwargs,
     ):
         config = load_config()[kwargs["profile"]]
-        configure_client(config["token"])
+        configure_client(**config)
         list_separator = "-" * 48
 
         if public or (id and id.startswith("satori://")):

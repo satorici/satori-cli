@@ -67,7 +67,7 @@ class TeamCommand(BaseCommand):
         **kwargs,
     ):
         config = load_config()[kwargs["profile"]]
-        configure_client(config["token"])
+        configure_client(**config)
 
         if action == "show":
             info = client.get("/teams").json()
