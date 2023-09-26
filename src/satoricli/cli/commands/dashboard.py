@@ -25,7 +25,7 @@ class DashboardCommand(BaseCommand):
 
         info = data.json()
 
-        if info["monitors"]["pending"]:
+        if info["monitors"]["pending"]["rows"]:
             console.rule("[b][blue]Monitors[/blue] (Actions required)", style="white")
             autotable(info["monitors"]["pending"]["rows"], "b blue", widths=(20, 20, None))
         if info["repos"]["pending"]["rows"]:
