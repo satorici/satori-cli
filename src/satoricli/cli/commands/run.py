@@ -251,7 +251,7 @@ def run_sync(report_id: str, output: bool, report: bool, files: bool, print_json
     result = report_data.get("result", "Unknown")
     if not any((report, output, files)) or result == "Unknown":
         if comments := report_data.get("user_warnings"):
-            error_console.print(f"[warning]WARNING:[/] {comments}")
+            error_console.print(f"[error]Error:[/] {comments}")
 
         if result == "Unknown":
             console.print("Result: Unknown")
