@@ -89,7 +89,7 @@ class TeamCommand(BaseCommand):
             else:
                 raise Exception("Use --repo, --member or --monitor")
         elif action == "repos":
-            info = client.get(f"/teams/{id}/repos").json()
+            info = client.get(f"/teams/{id}/repos").json()["rows"]
         elif action == "get_config":
             info = client.get(f"/teams/{id}/config/{config_name}").json()
         elif action == "set_config":
