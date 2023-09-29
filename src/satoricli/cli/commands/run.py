@@ -249,27 +249,31 @@ def run_sync(report_id: str, output: bool, report: bool, files: bool, print_json
             time.sleep(1)
 
     result = report_data.get("result", "Unknown")
-    if not any((report, output, files)) or result == "Unknown":
+    sync_only = not any((report, output, files))  # running with --sync
+    if sync_only or result == "Unknown":
         if comments := report_data.get("user_warnings"):
             error_console.print(f"[error]Error:[/] {comments}")
 
+        # User is expecting a file or output, dont finish the execution
+        report_only = not any((output, files))
+
         if result == "Unknown":
             console.print("Result: Unknown")
-            return 1
+            if report_only:
+                return 1
 
-        fails = report_data["fails"]
-
-        if print_json:
-            console.print_json(
-                data={
-                    "report_id": report_id,
-                    "result": "Pass" if not fails else f"Fail({fails})",
-                }
-            )
-        else:
-            console.print("Result:", "Pass" if not fails else f"Fail({fails})")
-
-        return 0 if fails == 0 else 1
+        if report_only:
+            fails = report_data["fails"]
+            if print_json:
+                console.print_json(
+                    data={
+                        "report_id": report_id,
+                        "result": "Pass" if not fails else f"Fail({fails})",
+                    }
+                )
+            else:
+                console.print("Result:", "Pass" if not fails else f"Fail({fails})")
+            return 0 if fails == 0 else 1
 
     if report:
         report_out = []
