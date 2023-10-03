@@ -9,6 +9,7 @@ from satoricli.utils import load_config
 
 from ..utils import BootstrapTable, autoformat, autotable, console, group_table
 from .base import BaseCommand
+from .run import run_sync
 from .scan import ScanCommand
 
 
@@ -35,7 +36,6 @@ class RepoCommand(BaseCommand):
             help="action to perform",
         )
         parser.add_argument("--delete-commits", action="store_true")
-        parser.add_argument("-s", "--sync", action="store_true")
         parser.add_argument("-d", "--data", help="Secrets")
         parser.add_argument("-b", "--branch", default="main", help="Repo branch")
         parser.add_argument("--filter", help="Filter names")
@@ -46,6 +46,10 @@ class RepoCommand(BaseCommand):
         parser.add_argument(
             "--pending", action="store_true", help="Show pending actions"
         )
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument("-s", "--sync", action="store_true")
+        group.add_argument("-o", "--output", action="store_true")
+        group.add_argument("-r", "--report", action="store_true")
 
     def __call__(
         self,
@@ -61,6 +65,8 @@ class RepoCommand(BaseCommand):
             "tests",
         ],
         sync: bool,
+        output: bool,
+        report: bool,
         data: Optional[str],
         branch: str,
         filter: Optional[str],
@@ -90,13 +96,11 @@ class RepoCommand(BaseCommand):
                 params={"url": repository, "data": data or "", "playbook": playbook},
                 timeout=300,
             ).json()
-            if sync:
-                if len(info) == 1:
-                    console.print(
-                        "Report: [link]https://www.satori-ci.com/report_details/?n="
-                        + info[0]["status"].replace("Report running ", "")
-                    )
-                return self.sync_reports_list(info)
+
+            report_id = info[0]["status"].split()[-1]  # TODO: A saner model
+
+            if sync or output or report:
+                return run_sync(report_id, output, report, False, kwargs["json"])
         elif action == "check-forks":
             info = client.get(f"/repos/scan/{repository}/check-forks").json()
         elif action == "check-commits":
