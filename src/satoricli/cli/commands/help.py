@@ -1,6 +1,8 @@
-import subprocess
 from argparse import ArgumentParser
 
+from satori_help import HelpApp, start_docs_server
+
+from ..utils import console
 from .base import BaseCommand
 
 
@@ -12,6 +14,10 @@ class HelpCommand(BaseCommand):
 
     def __call__(self, web: bool, **kwargs):
         if web:
-            subprocess.run(["satori-docs", "--web"])
+            console.print("Docs server running on http://localhost:9090")
+            try:
+                start_docs_server()
+            except KeyboardInterrupt:
+                pass
         else:
-            subprocess.run(["satori-docs"])
+            HelpApp().run()
