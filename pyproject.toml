@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "satori-playbook-validator==3.3.2",
-    "satori-docs==1.3.1",
+    "satori-docs==1.3.5",
     "pyyaml>=6.0",
     "flatdict>=4.0.1",
     "rich>=13.0",
