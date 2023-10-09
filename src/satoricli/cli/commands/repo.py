@@ -1,5 +1,6 @@
 import time
 from argparse import ArgumentParser
+from pathlib import Path
 from typing import Literal, Optional
 
 import httpx
@@ -7,7 +8,14 @@ import httpx
 from satoricli.api import client, configure_client
 from satoricli.utils import load_config
 
-from ..utils import BootstrapTable, autoformat, autotable, console, group_table
+from ..utils import (
+    BootstrapTable,
+    autoformat,
+    autotable,
+    console,
+    error_console,
+    group_table,
+)
 from .base import BaseCommand
 from .run import run_sync
 from .scan import ScanCommand
@@ -91,15 +99,29 @@ class RepoCommand(BaseCommand):
                 },
             ).json()
         elif action == "run":
+            if playbook and not playbook.startswith("satori://"):
+                path = Path(playbook)
+
+                if not path.is_file():
+                    error_console.print(f"[error]Playbook {playbook} not found")
+                    return 1
+
+                playbook = path.read_text()
+
             info = client.get(
                 "/repos/scan/last",
                 params={"url": repository, "data": data or "", "playbook": playbook},
                 timeout=300,
             ).json()
 
-            report_id = info[0]["status"].split()[-1]  # TODO: A saner model
+            status = info[0]["status"]  # TODO: A saner model
+
+            if "Failed" in status:
+                error_console.print(f"[error]{status}")
+                return 1
 
             if sync or output or report:
+                report_id = status.split()[-1]
                 return run_sync(report_id, output, report, False, kwargs["json"])
         elif action == "check-forks":
             info = client.get(f"/repos/scan/{repository}/check-forks").json()
