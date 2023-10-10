@@ -34,7 +34,6 @@ class TeamCommand(BaseCommand):
                 "get_token",
                 "refresh_token",
                 "delete",
-                "del",
                 "add",
             ),
             default="show",
@@ -55,7 +54,6 @@ class TeamCommand(BaseCommand):
             "get_token",
             "refresh_token",
             "delete",
-            "del",
             "add",
         ],
         role: Optional[str],
@@ -102,12 +100,12 @@ class TeamCommand(BaseCommand):
         elif action == "refresh_token":
             info = client.put(f"/teams/{id}/token").json()
         elif action == "delete":
-            client.delete(f"/teams/{id}")
-            console.print("Team deleted")
-            return
-        elif action == "del":
-            client.request("DELETE", f"/teams/{id}/members", json={"email": member})
-            console.print("Team member deleted")
+            if member:
+                client.request("DELETE", f"/teams/{id}/members", json={"email": member})
+                console.print("Team member deleted")
+            else:
+                client.delete(f"/teams/{id}")
+                console.print("Team deleted")
             return
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48, table=True)
