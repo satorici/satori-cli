@@ -239,8 +239,8 @@ positive:
       - [satori team test_team add --member='test@satori-ci.com']
 
     # delete the email 'test@satori-ci.com' as a member of the team 'test_team'
-    del_member:
-      - [satori team test_team del --member='test@satori-ci.com']
+    delete_member:
+      - [satori team test_team delete --member='test@satori-ci.com']
 
     # list the repos associated to the 'test_team'
     team_without_repos:
