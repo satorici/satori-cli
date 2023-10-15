@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:8410b62722b4079a7ef86c22ab81d89b46a0868c051583a7ec4687bbd95ae8ef"
+content_hash = "sha256:05719c45fef64fe601d834f017a3a83c5b95ce582101c6f4cb9e8e413d6c7cd7"
 
 [[package]]
 name = "anyio"
@@ -55,11 +55,11 @@ files = [
 
 [[package]]
 name = "fastjsonschema"
-version = "2.17.1"
+version = "2.18.1"
 summary = "Fastest Python implementation of JSON schema"
 files = [
-    {file = "fastjsonschema-2.17.1-py3-none-any.whl", hash = "sha256:4b90b252628ca695280924d863fe37234eebadc29c5360d322571233dc9746e0"},
-    {file = "fastjsonschema-2.17.1.tar.gz", hash = "sha256:f4eeb8a77cef54861dbf7424ac8ce71306f12cbb086c45131bcba2c6a4f726e3"},
+    {file = "fastjsonschema-2.18.1-py3-none-any.whl", hash = "sha256:aec6a19e9f66e9810ab371cc913ad5f4e9e479b63a7072a2cd060a9369e329a8"},
+    {file = "fastjsonschema-2.18.1.tar.gz", hash = "sha256:06dc8680d937628e993fa0cd278f196d20449a1adc087640710846b324d422ea"},
 ]
 
 [[package]]
@@ -323,16 +323,16 @@ files = [
 
 [[package]]
 name = "satori-playbook-validator"
-version = "3.3.2"
+version = "3.4.1"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
     "aws-cron-expression-validator>=1.1.6",
-    "fastjsonschema>=2.17.1",
+    "fastjsonschema>=2.18.1",
 ]
 files = [
-    {file = "satori_playbook_validator-3.3.2-py3-none-any.whl", hash = "sha256:ee5f6bb02fd389b83eae9b439dccc92b6cd8c0e3b48f70d736dff4a6d7df7d61"},
-    {file = "satori_playbook_validator-3.3.2.tar.gz", hash = "sha256:bc5ce456d884cdf139ff003192b10f115325f2f3771adf0217c5544ec4a8b959"},
+    {file = "satori_playbook_validator-3.4.1-py3-none-any.whl", hash = "sha256:b6f65588a7f7aeedceb9b67e5e88516144a22113aa861a65e3eb4a11847c1b40"},
+    {file = "satori_playbook_validator-3.4.1.tar.gz", hash = "sha256:a6d9bcba76a7d919da97d157a88d85035be34a5c10d6a6cea1b499e6a01b5f53"},
 ]
 
 [[package]]
