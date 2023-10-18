@@ -114,14 +114,14 @@ class RepoCommand(BaseCommand):
                 timeout=300,
             ).json()
 
-            status = info[0]["status"]  # TODO: A saner model
+            scan_data = info[0]  # TODO: A saner model
 
-            if "Failed" in status:
-                error_console.print(f"[error]{status}")
+            if "error" in scan_data:
+                error_console.print(f"[error]{scan_data['error']}")
                 return 1
 
             if sync or output or report:
-                report_id = status.split()[-1]
+                report_id = scan_data["status"].split()[-1]
                 return run_sync(report_id, output, report, False, kwargs["json"])
         elif action == "check-forks":
             info = client.get(f"/repos/scan/{repository}/check-forks").json()
