@@ -56,7 +56,11 @@ def has_executions(config: dict, base_dir: Path):
 
     for value in flat_config.values():
         if is_import_group(value):
-            imports.update([i for i in value if i.startswith("file")])
+            for i in value:
+                if i.startswith("satori"):
+                    return True
+
+                imports.add(i)
         elif is_command_group(value):
             return True
 
