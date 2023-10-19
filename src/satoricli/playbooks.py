@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from tempfile import gettempdir
 from typing import Optional
 
 try:
@@ -80,7 +79,7 @@ def get_playbook_name(filename):
 
 
 def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
-    directoryName = Path(gettempdir(), "satori-public-playbooks")
+    directoryName = Path.home() / ".satori/playbooks"
 
     if clone(directoryName) == 0:
         playbooks = file_finder(directoryName)
