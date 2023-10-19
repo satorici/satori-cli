@@ -19,7 +19,7 @@ from satorici.validator.exceptions import (
     PlaybookValidationError,
     PlaybookVariableError,
 )
-from satorici.validator.warnings import NoLogMonitorWarning
+from satorici.validator.warnings import MissingAssertionsWarning, NoLogMonitorWarning
 
 from satoricli.api import client, configure_client
 from satoricli.bundler import get_local_files, make_bundle
@@ -49,6 +49,8 @@ def validate_config(playbook: Path, params: set):
                     "[warning]WARNING:[/] No notifications (log, onLogFail or "
                     "onLogPass) were defined for the Monitor"
                 )
+            elif warning.category == MissingAssertionsWarning:
+                error_console.print("[warning]WARNING:[/] No asserts were defined")
     except TypeError:
         error_console.print("Error: playbook must be a mapping type")
         return False
