@@ -2,10 +2,6 @@ import os
 from pathlib import Path
 from typing import Optional
 
-try:
-    import git
-except ImportError:
-    git = None
 import yaml
 
 from .cli.utils import autosyntax, autotable, console
@@ -14,12 +10,16 @@ from .validations import get_parameters
 
 def clone(directoryName):
     """Clone or pull the playbooks repo"""
-    if git is None:
+
+    try:
+        import git
+    except ImportError:
         print(
             "The git package could not be imported.",
             "Please make sure that git is installed in your system.",
         )
         return 1
+
     if os.path.exists(directoryName):
         repo = git.Repo(directoryName)
         repo.remotes.origin.pull()
