@@ -4,9 +4,8 @@ from typing import Literal, Optional
 import httpx
 from rich.progress import Progress
 
-from satoricli.api import client, configure_client
+from satoricli.api import client
 from satoricli.cli.utils import autoformat, console, format_outputs
-from satoricli.utils import load_config
 
 from .base import BaseCommand
 
@@ -37,9 +36,6 @@ class ReportCommand(BaseCommand):
         filter: Optional[str],
         **kwargs,
     ):
-        config = load_config()[kwargs["profile"]]
-        configure_client(**config)
-
         if action == "show":
             res = client.get(
                 f"/reports/{id or ''}",

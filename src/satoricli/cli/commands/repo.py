@@ -5,8 +5,7 @@ from typing import Literal, Optional
 
 import httpx
 
-from satoricli.api import client, configure_client
-from satoricli.utils import load_config
+from satoricli.api import client
 
 from ..utils import (
     BootstrapTable,
@@ -85,9 +84,6 @@ class RepoCommand(BaseCommand):
         pending: bool,
         **kwargs,
     ):
-        config = load_config()[kwargs["profile"]]
-        configure_client(**config)
-
         if action == "tests":
             info = client.get(
                 f"/repos/{repository}/tests",

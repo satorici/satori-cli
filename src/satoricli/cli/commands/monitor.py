@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Literal, Optional
 
-from satoricli.api import client, configure_client
+from satoricli.api import client
 from satoricli.cli.utils import (
     autoformat,
     autotable,
@@ -9,7 +9,6 @@ from satoricli.cli.utils import (
     BootstrapTable,
     group_table,
 )
-from satoricli.utils import load_config
 
 from .base import BaseCommand
 
@@ -46,9 +45,6 @@ class MonitorCommand(BaseCommand):
         pending: bool,
         **kwargs,
     ):
-        config = load_config()[kwargs["profile"]]
-        configure_client(**config)
-
         if action == "delete":
             client.delete(f"/monitors/{id}", params={"clean": clean})
             print("Monitor deleted")

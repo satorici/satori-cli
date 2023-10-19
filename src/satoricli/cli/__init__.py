@@ -5,6 +5,8 @@ from importlib import metadata
 import httpx
 from packaging import version
 
+from ..api import configure_client
+from ..utils import load_config
 from .commands.root import RootCommand
 from .utils import error_console
 
@@ -41,6 +43,9 @@ def main():
 
     root = RootCommand()
     args = root.parse_args()
+
+    config = load_config()[args["profile"]]
+    configure_client(**config)
 
     try:
         sys.exit(root.run(args))

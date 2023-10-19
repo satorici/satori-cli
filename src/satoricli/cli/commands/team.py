@@ -1,9 +1,8 @@
 from argparse import ArgumentParser
 from typing import Literal, Optional
 
-from satoricli.api import client, configure_client
+from satoricli.api import client
 from satoricli.cli.utils import autoformat, console
-from satoricli.utils import load_config
 
 from .base import BaseCommand
 
@@ -12,7 +11,6 @@ class TeamCommand(BaseCommand):
     name = "team"
 
     def register_args(self, parser: ArgumentParser):
-
         parser.add_argument("--role", default="READ", help="User role")
 
         # Use with the add command
@@ -64,9 +62,6 @@ class TeamCommand(BaseCommand):
         config_value: Optional[str],
         **kwargs,
     ):
-        config = load_config()[kwargs["profile"]]
-        configure_client(**config)
-
         if action == "show":
             info = client.get("/teams").json()
         elif action == "create":

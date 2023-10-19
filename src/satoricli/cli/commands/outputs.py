@@ -4,9 +4,8 @@ from typing import Optional
 
 import httpx
 
-from satoricli.api import client, configure_client
+from satoricli.api import client
 from satoricli.cli.utils import console, format_outputs
-from satoricli.utils import load_config
 
 from ..arguments import date_args
 from .base import BaseCommand
@@ -38,9 +37,6 @@ class OutputsCommand(BaseCommand):
         from_date: Optional[date] = None,
         **kwargs,
     ):
-        config = load_config()[kwargs["profile"]]
-        configure_client(**config)
-
         res = client.get(
             "/outputs",
             params={

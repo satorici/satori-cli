@@ -1,8 +1,7 @@
 from argparse import ArgumentParser
 
-from satoricli.api import client, configure_client
+from satoricli.api import client
 from satoricli.cli.utils import autotable, console
-from satoricli.utils import load_config
 
 from .base import BaseCommand
 
@@ -14,9 +13,6 @@ class DashboardCommand(BaseCommand):
         pass
 
     def __call__(self, **kwargs):
-        config = load_config()[kwargs["profile"]]
-        configure_client(**config)
-
         data = client.get("/dashboard")
 
         if kwargs["json"]:

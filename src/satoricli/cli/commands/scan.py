@@ -7,9 +7,8 @@ from typing import Literal, Optional
 from rich.live import Live
 from websocket import WebSocketApp
 
-from satoricli.api import WS_HOST, client, configure_client
+from satoricli.api import WS_HOST, client
 from satoricli.cli.utils import autoformat, console
-from satoricli.utils import load_config
 
 from ..arguments import date_args
 from .base import BaseCommand
@@ -64,9 +63,6 @@ class ScanCommand(BaseCommand):
         playbook: Optional[Path],
         **kwargs,
     ):
-        config = load_config()[kwargs["profile"]]
-        configure_client(**config)
-
         if playbook and not playbook.is_file():
             console.print("Invalid playbook")
             return 1

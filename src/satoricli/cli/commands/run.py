@@ -21,9 +21,8 @@ from satorici.validator.exceptions import (
 )
 from satorici.validator.warnings import MissingAssertionsWarning, NoLogMonitorWarning
 
-from satoricli.api import client, configure_client
+from satoricli.api import client
 from satoricli.bundler import get_local_files, make_bundle
-from satoricli.utils import load_config
 from satoricli.validations import get_parameters, has_executions, validate_parameters
 
 from ..utils import autoformat, check_monitor, console, error_console, format_outputs
@@ -155,9 +154,6 @@ class RunCommand(BaseCommand):
         files: bool,
         **kwargs,
     ):
-        config = load_config()[kwargs["profile"]]
-        configure_client(**config)
-
         is_sync = sync or output or report or files
         target = Path(path)
 

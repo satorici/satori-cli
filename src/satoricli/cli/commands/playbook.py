@@ -1,10 +1,9 @@
 from argparse import ArgumentParser
 from typing import Literal, Optional
 
-from satoricli.api import client, configure_client
+from satoricli.api import client
 from satoricli.cli.utils import autoformat
 from satoricli.playbooks import display_public_playbooks
-from satoricli.utils import load_config
 
 from .base import BaseCommand
 
@@ -52,8 +51,6 @@ class PlaybookCommand(BaseCommand):
         public: bool,
         **kwargs,
     ):
-        config = load_config()[kwargs["profile"]]
-        configure_client(**config)
         list_separator = "-" * 48
 
         if public or (id and id.startswith("satori://")):
