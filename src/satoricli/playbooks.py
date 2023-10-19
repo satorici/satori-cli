@@ -8,7 +8,7 @@ from .cli.utils import autosyntax, autotable, console
 from .validations import get_parameters
 
 
-def clone(directoryName):
+def clone(directoryName: Path):
     """Clone or pull the playbooks repo"""
 
     try:
@@ -20,9 +20,10 @@ def clone(directoryName):
         )
         return 1
 
-    if os.path.exists(directoryName):
+    if directoryName.is_dir():
         repo = git.Repo(directoryName)
-        repo.remotes.origin.pull()
+        repo.branches["main"].checkout(force=True)
+        repo.remote().pull()
         print("Satori Playbooks repo updated to latest vesrsion")
     else:
         git.Repo.clone_from("https://github.com/satorici/playbooks.git", directoryName)
