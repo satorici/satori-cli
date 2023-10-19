@@ -44,8 +44,11 @@ def main():
     root = RootCommand()
     args = root.parse_args()
 
-    config = load_config()[args["profile"]]
-    configure_client(**config)
+    if config := load_config().get(args["profile"]):
+        configure_client(**config)
+    else:
+        error_console.print(f"[error]ERROR:[/] Profile {args['profile']} not found")
+        sys.exit(1)
 
     try:
         sys.exit(root.run(args))
