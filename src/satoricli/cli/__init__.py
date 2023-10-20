@@ -9,6 +9,7 @@ from ..api import configure_client
 from ..utils import load_config
 from .commands.root import RootCommand
 from .utils import error_console
+from .commands.config import ConfigCommand
 
 VERSION = metadata.version("satori-ci")
 
@@ -46,7 +47,8 @@ def main():
 
     if config := load_config().get(args["profile"]):
         configure_client(**config)
-    else:
+    elif not isinstance(args["func"], ConfigCommand): 
+        # Allow config cmd only if profile not found
         error_console.print(f"[error]ERROR:[/] Profile {args['profile']} not found")
         sys.exit(1)
 
