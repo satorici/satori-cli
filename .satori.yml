@@ -243,7 +243,10 @@ positive:
 
     # delete the email 'test@satori-ci.com' as a member of the team 'test_team'
     delete_member:
-      - [satori team test_team delete --member='test@satori-ci.com']
+      - [satori team test_team delete --email='test@satori-ci.com']
+
+    delete_github_member:
+      - [satori team test_team delete --github='satoridev02']
 
     # list the repos associated to the 'test_team'
     team_without_repos:
