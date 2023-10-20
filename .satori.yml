@@ -236,7 +236,10 @@ positive:
 
     # add the email 'test@satori-ci.com' as a member of the team 'test_team'
     add_member:
-      - [satori team test_team add --member='test@satori-ci.com']
+      - [satori team test_team add --email='test@satori-ci.com']
+
+    add_github_member:
+      - [satori team test_team add --github='satoridev02']
 
     # delete the email 'test@satori-ci.com' as a member of the team 'test_team'
     delete_member:
