@@ -43,6 +43,10 @@ class ReportCommand(BaseCommand):
             ).json()
 
             if not id and not kwargs["json"]:
+                if res["count"] == 0:
+                    console.print("No reports found")
+                    return
+
                 autoformat(res["list"], list_separator="-" * 48)
                 console.print(
                     f"[b]Page:[/] {res['current_page']} of {res['total_pages']}"
