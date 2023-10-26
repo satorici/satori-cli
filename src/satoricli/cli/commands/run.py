@@ -226,7 +226,7 @@ class RunCommand(BaseCommand):
                     f"Report: https://www.satori-ci.com/report_details/?n={run_id}"
                 )
 
-        if is_monitor or (files and not has_files(playbook)):
+        if is_monitor or (files and playbook and not has_files(playbook)):
             return
 
         if sync or report or output or files:
@@ -241,5 +241,5 @@ class RunCommand(BaseCommand):
         if output:
             print_output(run_id, kwargs["json"])
 
-        if files and playbook and has_files(playbook):
+        if files:
             download_files(run_id)
