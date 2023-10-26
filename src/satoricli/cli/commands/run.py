@@ -2,7 +2,6 @@ import json
 import os
 import shutil
 import tempfile
-import time
 import uuid
 import warnings
 from argparse import ArgumentParser
@@ -11,7 +10,6 @@ from typing import Optional
 
 import httpx
 import yaml
-from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.progress import open as progress_open
 from satorici.validator import validate_playbook
 from satorici.validator.exceptions import (
@@ -25,7 +23,16 @@ from satoricli.api import client
 from satoricli.bundler import get_local_files, make_bundle
 from satoricli.validations import get_parameters, has_executions, validate_parameters
 
-from ..utils import autoformat, check_monitor, console, error_console, format_outputs
+from ..utils import (
+    check_monitor,
+    console,
+    download_files,
+    error_console,
+    print_output,
+    print_report,
+    print_summary,
+    wait,
+)
 from .base import BaseCommand
 
 
@@ -132,14 +139,21 @@ def run_url(url: str, secrets: Optional[str]) -> str:
     return info["report_id"]
 
 
+def has_files(playbook_path: Path):
+    try:
+        return yaml.safe_load(playbook_path.read_text())["settings"]["files"]
+    except Exception:
+        return False
+
+
 class RunCommand(BaseCommand):
     name = "run"
 
     def register_args(self, parser: ArgumentParser):
         parser.add_argument("path", metavar="PATH")
-        parser.add_argument("-s", "--sync", action="store_true")
         parser.add_argument("-d", "--data", type=json.loads)
         group = parser.add_mutually_exclusive_group()
+        group.add_argument("-s", "--sync", action="store_true")
         group.add_argument("-o", "--output", action="store_true")
         group.add_argument("-r", "--report", action="store_true")
         group.add_argument("-f", "--files", action="store_true")
@@ -154,7 +168,6 @@ class RunCommand(BaseCommand):
         files: bool,
         **kwargs,
     ):
-        is_sync = sync or output or report or files
         target = Path(path)
 
         if data:
@@ -201,9 +214,6 @@ class RunCommand(BaseCommand):
         else:
             return 1
 
-        if is_sync and not is_monitor:
-            return run_sync(run_id, output, report, files, kwargs["json"])
-
         if kwargs["json"]:
             console.print_json(data={"id": run_id, "monitor": is_monitor})
         else:
@@ -216,97 +226,20 @@ class RunCommand(BaseCommand):
                     f"Report: https://www.satori-ci.com/report_details/?n={run_id}"
                 )
 
+        if is_monitor or (files and not has_files(playbook)):
+            return
 
-def run_sync(report_id: str, output: bool, report: bool, files: bool, print_json: bool):
-    info_console = error_console if print_json else console
-    info_console.print("Report ID:", report_id)
-    info_console.print(
-        f"Report: https://www.satori-ci.com/report_details/?n={report_id}"
-    )
+        if sync or report or output or files:
+            wait(run_id)
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]Status: {task.description}"),
-        TimeElapsedColumn(),
-        console=error_console,
-    ) as progress:
-        task = progress.add_task("Fetching data")
-        status = "Unknown"
+        if sync:
+            print_summary(run_id, kwargs["json"])
 
-        while status not in ("Completed", "Undefined"):
-            try:
-                report_data = client.get(f"/reports/{report_id}").json()
-                status = report_data.get("status", "Unknown")
-            except httpx.HTTPStatusError as e:
-                if 400 <= e.response.status_code < 500:
-                    status = "Unknown"
-                else:
-                    return 1
+        if report:
+            print_report(run_id, kwargs["json"])
 
-            progress.update(task, description=status)
-            time.sleep(1)
+        if output:
+            print_output(run_id, kwargs["json"])
 
-    result = report_data.get("result", "Unknown")
-    sync_only = not any((report, output, files))  # running with --sync
-    if sync_only or result == "Unknown":
-        if comments := report_data.get("user_warnings"):
-            error_console.print(f"[error]Error:[/] {comments}")
-
-        # User is expecting a file or output, dont finish the execution
-        report_only = not any((output, files))
-
-        if result == "Unknown":
-            console.print("Result: Unknown")
-            if report_only:
-                return 1
-
-        if report_only:
-            fails = report_data["fails"]
-            if print_json:
-                console.print_json(
-                    data={
-                        "report_id": report_id,
-                        "result": "Pass" if not fails else f"Fail({fails})",
-                    }
-                )
-            else:
-                console.print("Result:", "Pass" if not fails else f"Fail({fails})")
-            return 0 if fails == 0 else 1
-
-    if report:
-        report_out = []
-        # Remove keys
-        json_data = report_data.get("report") or []
-        for report in json_data:
-            report_out.append(report)
-            asserts = []
-            for asrt in report["asserts"]:
-                asrt.pop("count", None)
-                asrt.pop("description", None)
-                if len(asrt.get("data", [])) == 0:
-                    asrt.pop("data", None)
-                asserts.append(asrt)
-        if print_json:
-            console.print_json(data=report_out)
-        else:
-            autoformat(report_out, list_separator="- " * 20)
-    elif output:
-        r = client.get(f"/outputs/{report_id}")
-        with httpx.stream("GET", r.json()["url"], timeout=300) as s:
-            if print_json:
-                for line in s.iter_lines():
-                    console.print(line)
-            else:
-                format_outputs(s.iter_lines())
-    elif files:
-        r = client.get(f"/outputs/{report_id}/files")
-        with httpx.stream("GET", r.json()["url"]) as s:
-            total = int(s.headers["Content-Length"])
-
-            with Progress(console=error_console) as progress:
-                task = progress.add_task("Downloading...", total=total)
-
-                with open(f"satorici-files-{report_id}.tar.gz", "wb") as f:
-                    for chunk in s.iter_raw():
-                        progress.update(task, advance=len(chunk))
-                        f.write(chunk)
+        if files and playbook and has_files(playbook):
+            download_files(run_id)

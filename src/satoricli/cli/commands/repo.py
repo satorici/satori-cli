@@ -14,9 +14,12 @@ from ..utils import (
     console,
     error_console,
     group_table,
+    print_output,
+    print_report,
+    print_summary,
+    wait,
 )
 from .base import BaseCommand
-from .run import run_sync
 from .scan import ScanCommand
 
 
@@ -118,7 +121,14 @@ class RepoCommand(BaseCommand):
 
             if sync or output or report:
                 report_id = scan_data["status"].split()[-1]
-                return run_sync(report_id, output, report, False, kwargs["json"])
+                wait(report_id)
+
+                if sync:
+                    print_summary(report_id, kwargs["json"])
+                if output:
+                    print_output(report_id, kwargs["json"])
+                if report:
+                    print_report(report_id, kwargs["json"])
         elif action == "check-forks":
             info = client.get(f"/repos/scan/{repository}/check-forks").json()
         elif action == "check-commits":

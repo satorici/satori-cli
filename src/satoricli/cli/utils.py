@@ -2,19 +2,24 @@ import json
 import logging
 import random
 import re
+import time
 from base64 import b64decode
 from dataclasses import dataclass
 from itertools import zip_longest
 from typing import Any, Optional, Union
 
+import httpx
 import yaml
 from rich import print_json
 from rich.console import Console
 from rich.highlighter import RegexHighlighter
 from rich.logging import RichHandler
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.theme import Theme
+
+from satoricli.api import client
 
 __decorations = "▢•○░"
 __random_colors = ["green", "blue", "red"]
@@ -447,3 +452,95 @@ def group_table(table: BootstrapTable, key: str, default_group: str):
     for group in groups.keys():
         console.rule(f"[b]{group}", style="cyan")
         autotable(groups[group], "bold blue")
+
+
+def wait(report_id: str):
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]Status: {task.description}"),
+        TimeElapsedColumn(),
+        console=error_console,
+    ) as progress:
+        task = progress.add_task("Fetching data")
+        status = "Unknown"
+
+        while status not in ("Completed", "Undefined"):
+            try:
+                report_data = client.get(f"/reports/{report_id}").json()
+                status = report_data.get("status", "Unknown")
+            except httpx.HTTPStatusError as e:
+                if 400 <= e.response.status_code < 500:
+                    status = "Unknown"
+                else:
+                    return
+
+            progress.update(task, description=status)
+            time.sleep(1)
+
+
+def download_files(report_id: str):
+    r = client.get(f"/outputs/{report_id}/files")
+    with httpx.stream("GET", r.json()["url"]) as s:
+        total = int(s.headers["Content-Length"])
+
+        with Progress(console=error_console) as progress:
+            task = progress.add_task("Downloading...", total=total)
+
+            with open(f"satorici-files-{report_id}.tar.gz", "wb") as f:
+                for chunk in s.iter_raw():
+                    progress.update(task, advance=len(chunk))
+                    f.write(chunk)
+
+
+def print_output(report_id: str, print_json: bool = False):
+    r = client.get(f"/outputs/{report_id}")
+    with httpx.stream("GET", r.json()["url"], timeout=300) as s:
+        if print_json:
+            for line in s.iter_lines():
+                console.print(line)
+        else:
+            format_outputs(s.iter_lines())
+
+
+def print_report(report_id: str, print_json: bool = False):
+    report_data = client.get(f"/reports/{report_id}").json()
+
+    report_out = []
+    # Remove keys
+    json_data = report_data.get("report") or []
+    for report in json_data:
+        report_out.append(report)
+        asserts = []
+        for asrt in report["asserts"]:
+            asrt.pop("count", None)
+            asrt.pop("description", None)
+            if len(asrt.get("data", [])) == 0:
+                asrt.pop("data", None)
+            asserts.append(asrt)
+
+    if print_json:
+        console.print_json(data=report_out)
+    else:
+        autoformat(report_out, list_separator="- " * 20)
+
+
+def print_summary(report_id: str, print_json: bool = False):
+    report_data = client.get(f"/reports/{report_id}").json()
+
+    if comments := report_data.get("user_warnings"):
+        error_console.print(f"[error]Error:[/] {comments}")
+
+    result = report_data.get("result", "Unknown")
+
+    if "fails" in report_data:
+        fails = report_data["fails"]
+        result = "Pass" if not fails else f"Fail({fails})"
+    else:
+        fails = 1
+
+    if print_json:
+        console.print_json(data={"report_id": report_id, "result": result})
+    else:
+        console.print("Result:", result)
+
+    return 0 if fails == 0 else 1
