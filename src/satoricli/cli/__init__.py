@@ -47,9 +47,14 @@ def main():
 
     if config := load_config().get(args["profile"]):
         configure_client(**config)
-    elif not isinstance(args["func"], ConfigCommand): 
+    elif not isinstance(args["func"], ConfigCommand):
         # Allow config cmd only if profile not found
-        error_console.print(f"[error]ERROR:[/] Profile {args['profile']} not found")
+        error_console.print(
+            f"[error]ERROR:[/] Profile {args['profile']} not found.",
+            "These are the profiles available:",
+        )
+        for key in load_config():
+            error_console.print(key)
         sys.exit(1)
 
     try:
