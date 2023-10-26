@@ -21,14 +21,26 @@ class ConfigCommand(BaseCommand):
         parser.add_argument(
             "-d", "--delete", action="store_true", help="delete config key"
         )
+        parser.add_argument("--profiles", action="store_true")
 
     def __call__(
-        self, key: Optional[str], value: Optional[str], delete: bool, **kwargs
+        self,
+        key: Optional[str],
+        value: Optional[str],
+        delete: bool,
+        profiles: bool,
+        **kwargs,
     ):
         config = load_config()
+        profile = kwargs["profile"]
+
+        if profiles:
+            for key in config:
+                console.print(key)
+            return
 
         if delete and key:
-            del config[kwargs["profile"]][key]
+            del config[profile][key]
             save_config(config)
             return
         elif delete and not key:
@@ -36,13 +48,13 @@ class ConfigCommand(BaseCommand):
             return 1
 
         if not key:
-            console.print(config[kwargs["profile"]])
+            console.print(config[profile])
             return
 
         if not value:
-            console.print(config[kwargs["profile"]][key])
+            console.print(config[profile][key])
             return
 
-        config.setdefault(kwargs["profile"], {})[key] = value
-        console.print(f"{key} updated for profile {kwargs['profile']}")
+        config.setdefault(profile, {})[key] = value
+        console.print(f"{key} updated for profile {profile}")
         save_config(config)
