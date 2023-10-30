@@ -196,6 +196,7 @@ class RunCommand(BaseCommand):
             error_console.print(
                 "[error]ERROR:[/] Can't use --files without files setting in playbook"
             )
+            return 1
 
         if target.is_dir():
             bundle = make_bundle(playbook, from_dir=True)
