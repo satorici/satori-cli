@@ -192,6 +192,11 @@ class RunCommand(BaseCommand):
         if playbook and not validate_config(playbook, params):
             return 1
 
+        if files and playbook and not has_files(playbook):
+            error_console.print(
+                "[error]ERROR:[/] Can't use --files without files setting in playbook"
+            )
+
         if target.is_dir():
             bundle = make_bundle(playbook, from_dir=True)
             packet = make_packet(path)
