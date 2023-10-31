@@ -7,6 +7,7 @@ import httpx
 from packaging import version
 
 from ..api import configure_client
+from ..exceptions import SatoriRequestError
 from ..utils import load_config
 from .commands.root import RootCommand
 from .utils import error_console
@@ -61,6 +62,10 @@ def main():
 
     try:
         sys.exit(root.run(args))
+    except SatoriRequestError as e:
+        error_console.print(f"ERROR: {e}")
+        error_console.print(f"Status code: {e.status_code}")
+        sys.exit(1)
     except Exception as e:
         error_console.print(e)
         sys.exit(1)
