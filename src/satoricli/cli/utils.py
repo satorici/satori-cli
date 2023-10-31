@@ -469,7 +469,7 @@ def wait(report_id: str):
                 report_data = client.get(f"/reports/{report_id}").json()
                 status = report_data.get("status", "Unknown")
             except httpx.HTTPStatusError as e:
-                if 400 <= e.response.status_code < 500:
+                if e.response.is_client_error:
                     status = "Unknown"
                 else:
                     return
