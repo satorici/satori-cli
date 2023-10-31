@@ -19,7 +19,7 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.theme import Theme
 
-from satoricli.api import client
+from satoricli.api import client, disable_error_raise
 
 __decorations = "▢•○░"
 __random_colors = ["green", "blue", "red"]
@@ -465,14 +465,15 @@ def wait(report_id: str):
         status = "Unknown"
 
         while status not in ("Completed", "Undefined"):
-            try:
-                report_data = client.get(f"/reports/{report_id}").json()
-                status = report_data.get("status", "Unknown")
-            except httpx.HTTPStatusError as e:
-                if e.response.is_client_error:
-                    status = "Unknown"
-                else:
-                    return
+            with disable_error_raise() as c:
+                res = c.get(f"/reports/{report_id}")
+
+            if res.is_success:
+                status = res.json().get("status", "Unknown")
+            elif res.is_client_error:
+                status = "Unknown"
+            else:
+                return
 
             progress.update(task, description=status)
             time.sleep(1)
