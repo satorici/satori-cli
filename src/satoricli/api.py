@@ -11,10 +11,13 @@ WS_HOST = "wss://api.satori-ci.com"
 
 def raise_on_error(res: Response):
     if not res.is_success:
-        res.read()
-        raise SatoriRequestError(
-            res.json().get("detail", "Unknown error"), status_code=res.status_code
-        )
+        try:
+            res.read()
+            message = res.json().get("detail", "Unknown error")
+        except Exception:
+            message = "Unknown error"
+
+        raise SatoriRequestError(message, status_code=res.status_code)
 
 
 client = Client(
