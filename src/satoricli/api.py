@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import Optional
 
 from httpx import Client, Response
@@ -34,3 +35,12 @@ def configure_client(
 
     if timeout:
         client.timeout = timeout
+
+
+@contextmanager
+def disable_error_raise():
+    try:
+        client.event_hooks["response"].remove(raise_on_error)
+        yield client
+    finally:
+        client.event_hooks["response"].append(raise_on_error)
