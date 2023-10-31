@@ -1,6 +1,7 @@
 import sys
 from datetime import datetime
 from importlib import metadata
+from os import environ
 
 import httpx
 from packaging import version
@@ -40,7 +41,8 @@ def main():
         f"Started on {timestamp}"
     )
 
-    check_for_update()
+    if environ.get("SATORI_CLI_NO_UPDATE_CHECK") != "1":
+        check_for_update()
 
     root = RootCommand()
     args = root.parse_args()
