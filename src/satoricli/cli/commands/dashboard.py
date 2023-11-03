@@ -20,10 +20,15 @@ class DashboardCommand(BaseCommand):
             return
 
         info = data.json()
+        self.generate_dashboard(info)
 
+    @staticmethod
+    def generate_dashboard(info):
         if info["monitors"]["pending"]["rows"]:
             console.rule("[b][blue]Monitors[/blue] (Actions required)", style="white")
-            autotable(info["monitors"]["pending"]["rows"], "b blue", widths=(20, 20, None))
+            autotable(
+                info["monitors"]["pending"]["rows"], "b blue", widths=(20, 20, None)
+            )
         if info["repos"]["pending"]["rows"]:
             console.rule(
                 "[b][green]GitHub Repositories[/green] (Actions required)",
