@@ -502,6 +502,9 @@ def print_output(report_id: str, print_json: bool = False):
 def print_report(report_id: str, print_json: bool = False):
     report_data = client.get(f"/reports/{report_id}").json()
 
+    if user_warnings := report_data["user_warnings"]:
+        error_console.print(f"WARNING: {user_warnings}")
+
     report_out = []
     # Remove keys
     json_data = report_data.get("report") or []
