@@ -2,10 +2,14 @@ from argparse import ArgumentParser
 from typing import Literal, Optional
 
 import httpx
-from rich.progress import Progress
-
 from satoricli.api import client
-from satoricli.cli.utils import autoformat, console, format_outputs
+from satoricli.cli.utils import (
+    autoformat,
+    console,
+    download_files,
+    format_outputs,
+    print_output,
+)
 
 from .base import BaseCommand
 
@@ -54,21 +58,9 @@ class ReportCommand(BaseCommand):
             else:
                 autoformat(res, jsonfmt=kwargs["json"])
         elif action == "output":
-            r = client.get(f"/outputs/{id}")
-            with httpx.stream("GET", r.json()["url"], timeout=300) as s:
-                format_outputs(s.iter_lines())
+            print_output(id)
         elif action == "files":
-            r = client.get(f"/outputs/{id}/files")
-            with httpx.stream("GET", r.json()["url"], timeout=300) as s:
-                total = int(s.headers["Content-Length"])
-
-                with Progress() as progress:
-                    task = progress.add_task("Downloading...", total=total)
-
-                    with open(f"satorici-files-{id}.tar.gz", "wb") as f:
-                        for chunk in s.iter_raw():
-                            progress.update(task, advance=len(chunk))
-                            f.write(chunk)
+            download_files(id)
         elif action == "stop":
             res = client.get(f"/reports/{id}/stop").json()
             autoformat(res, jsonfmt=kwargs["json"])
