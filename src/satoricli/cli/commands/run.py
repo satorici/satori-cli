@@ -247,5 +247,5 @@ class RunCommand(BaseCommand):
         if output:
             print_output(run_id, kwargs["json"])
 
-        if files and playbook and not has_files(playbook):
+        if files and playbook and has_files(playbook):
             download_files(run_id)
