@@ -5,7 +5,7 @@ from satoricli.api import client
 from satoricli.cli.utils import autoformat, console
 
 from .base import BaseCommand
-
+from .dashboard import DashboardCommand
 
 class TeamCommand(BaseCommand):
     name = "team"
@@ -28,12 +28,15 @@ class TeamCommand(BaseCommand):
                 "create",
                 "members",
                 "repos",
+                "monitors",
+                "reports",
                 "get_config",
                 "set_config",
                 "get_token",
                 "refresh_token",
                 "delete",
                 "add",
+                "settings",
             ),
             default="show",
         )
@@ -48,12 +51,15 @@ class TeamCommand(BaseCommand):
             "create",
             "members",
             "repos",
+            "monitors",
+            "reports",
             "get_config",
             "set_config",
             "get_token",
             "refresh_token",
             "delete",
             "add",
+            "settings",
         ],
         role: Optional[str],
         repo: Optional[str],
@@ -64,7 +70,10 @@ class TeamCommand(BaseCommand):
         config_value: Optional[str],
         **kwargs,
     ):
-        if action == "show":
+        if id and action == "show":
+            info = client.get(f"/teams/{id}").json()
+            return DashboardCommand.generate_dashboard(info)
+        elif action == "show":
             info = client.get("/teams").json()
         elif action == "create":
             info = client.post(f"/teams/{id}").json()
@@ -113,5 +122,11 @@ class TeamCommand(BaseCommand):
                 client.delete(f"/teams/{id}")
                 console.print("Team deleted")
             return
+        elif action == "monitors":
+            info = client.get(f"/teams/{id}/monitors").json()
+        elif action == "reports":
+            info = client.get(f"/teams/{id}/reports").json()
+        elif action == "settings":
+            info = client.get(f"/teams/{id}/config").json()
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48, table=True)
