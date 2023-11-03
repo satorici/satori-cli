@@ -1,15 +1,8 @@
 from argparse import ArgumentParser
 from typing import Literal, Optional
 
-import httpx
 from satoricli.api import client
-from satoricli.cli.utils import (
-    autoformat,
-    console,
-    download_files,
-    format_outputs,
-    print_output,
-)
+from satoricli.cli.utils import autoformat, console, download_files, print_output
 
 from .base import BaseCommand
 
