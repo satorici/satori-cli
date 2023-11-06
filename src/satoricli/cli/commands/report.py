@@ -51,7 +51,7 @@ class ReportCommand(BaseCommand):
             else:
                 autoformat(res, jsonfmt=kwargs["json"])
         elif action == "output":
-            print_output(id)
+            print_output(id, print_json=kwargs["json"])
         elif action == "files":
             download_files(id)
         elif action == "stop":
