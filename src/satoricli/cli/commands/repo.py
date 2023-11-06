@@ -129,6 +129,8 @@ class RepoCommand(BaseCommand):
                     print_output(report_id, kwargs["json"])
                 if report:
                     print_report(report_id, kwargs["json"])
+
+            return
         elif action == "check-forks":
             info = client.get(f"/repos/scan/{repository}/check-forks").json()
         elif action == "check-commits":
