@@ -25,7 +25,10 @@ def sync():
         repo = git.Repo(PLAYBOOKS_DIR)
         repo.branches["main"].checkout(force=True)
         repo.remote().pull()
-        print("Satori playbooks' repo https://github.com/satorici/playbooks updated to latest version")
+        print(
+            "Satori playbooks' repo https://github.com/satorici/playbooks",
+            "updated to latest version",
+        )
     else:
         git.Repo.clone_from("https://github.com/satorici/playbooks.git", PLAYBOOKS_DIR)
         print("Satori Playbooks repo clone started")
@@ -46,7 +49,7 @@ def file_finder() -> list[dict]:
 
         playbooks.append(
             {
-                "filename": str(playbook).replace(str(PLAYBOOKS_DIR), "satori:/"),
+                "uri": "satori://" + playbook.relative_to(PLAYBOOKS_DIR).as_posix(),
                 "name": get_playbook_name(playbook),
                 "parameters": ", ".join(parameters),
             }
@@ -69,7 +72,7 @@ def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
 
     if not playbook_id:  # satori playbook --public
         playbooks = file_finder()
-        playbooks.sort(key=lambda x: x["filename"])
+        playbooks.sort(key=lambda x: x["uri"])
         autotable(playbooks)
     else:  # satori playbook satori://x
         path = PLAYBOOKS_DIR / playbook_id.removeprefix("satori://")
