@@ -7,13 +7,16 @@ from .config import ConfigCommand
 from .dashboard import DashboardCommand
 from .help import HelpCommand
 from .monitor import MonitorCommand
+from .monitors import MonitorsCommand
 from .outputs import OutputsCommand
 from .playbook import PlaybookCommand
 from .repo import RepoCommand
 from .report import ReportCommand
+from .reports import ReportsCommand
 from .run import RunCommand
 from .scan import ScanCommand
 from .team import TeamCommand
+from .teams import TeamsCommand
 from .update import UpdateCommand
 
 VERSION = metadata.version("satori-ci")
@@ -24,13 +27,16 @@ class RootCommand(BaseCommand):
         ConfigCommand,
         RunCommand,
         ReportCommand,
+        ReportsCommand,
         MonitorCommand,
+        MonitorsCommand,
         OutputsCommand,
         RepoCommand,
         ScanCommand,
         PlaybookCommand,
         DashboardCommand,
         TeamCommand,
+        TeamsCommand,
         HelpCommand,
         UpdateCommand,
     )

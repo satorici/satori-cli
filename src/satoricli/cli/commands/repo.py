@@ -4,16 +4,13 @@ from pathlib import Path
 from typing import Literal, Optional
 
 import httpx
-
 from satoricli.api import client
 
 from ..utils import (
-    BootstrapTable,
     autoformat,
     autotable,
     console,
     error_console,
-    group_table,
     print_output,
     print_report,
     print_summary,
@@ -27,7 +24,7 @@ class RepoCommand(BaseCommand):
     name = "repo"
 
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("repository", metavar="REPOSITORY", nargs="?")
+        parser.add_argument("repository", metavar="REPOSITORY")
         parser.add_argument(
             "action",
             metavar="ACTION",
@@ -63,7 +60,7 @@ class RepoCommand(BaseCommand):
 
     def __call__(
         self,
-        repository: Optional[str],
+        repository: str,
         action: Literal[
             "show",
             "commits",
@@ -144,7 +141,7 @@ class RepoCommand(BaseCommand):
             info = client.get(f"/repos/{repository}/{action}").json()
         elif action == "show":
             info = client.get(
-                f"/repos/{repository or ''}", params={"pending": pending}
+                f"/repos/{repository}", params={"pending": pending}
             ).json()
         elif action == "commits":
             info = client.get(f"/repos/{repository}/commits").json()
@@ -154,14 +151,6 @@ class RepoCommand(BaseCommand):
                 console.print_json(data=info)
             else:
                 autotable(info)
-            return
-
-        if not repository and action == "show" and not kwargs["json"]:
-            if info["pending"]["rows"]:
-                console.rule("[b red]Pending actions", style="red")
-                autotable(info["pending"]["rows"], "bold red", widths=(50, 50))
-            # Group repos by team name
-            group_table(BootstrapTable(**info["list"]), "team", "Private")
             return
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)

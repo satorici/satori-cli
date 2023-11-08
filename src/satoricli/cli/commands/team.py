@@ -7,6 +7,7 @@ from satoricli.cli.utils import autoformat, console
 from .base import BaseCommand
 from .dashboard import DashboardCommand
 
+
 class TeamCommand(BaseCommand):
     name = "team"
 
@@ -19,7 +20,7 @@ class TeamCommand(BaseCommand):
         parser.add_argument("--github", help="Github user name")
         parser.add_argument("--monitor", help="Monitor id")
 
-        parser.add_argument("id", nargs="?")
+        parser.add_argument("id")
         parser.add_argument(
             "action",
             nargs="?",
@@ -45,7 +46,7 @@ class TeamCommand(BaseCommand):
 
     def __call__(
         self,
-        id: Optional[str],
+        id: str,
         action: Literal[
             "show",
             "create",
@@ -70,11 +71,9 @@ class TeamCommand(BaseCommand):
         config_value: Optional[str],
         **kwargs,
     ):
-        if id and action == "show":
+        if action == "show":
             info = client.get(f"/teams/{id}").json()
             return DashboardCommand.generate_dashboard(info)
-        elif action == "show":
-            info = client.get("/teams").json()
         elif action == "create":
             info = client.post(f"/teams/{id}").json()
         elif action == "members":

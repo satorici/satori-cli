@@ -1,14 +1,8 @@
 from argparse import ArgumentParser
-from typing import Literal, Optional
+from typing import Literal
 
 from satoricli.api import client
-from satoricli.cli.utils import (
-    autoformat,
-    autotable,
-    console,
-    BootstrapTable,
-    group_table,
-)
+from satoricli.cli.utils import autoformat, autotable
 
 from .base import BaseCommand
 
@@ -17,7 +11,7 @@ class MonitorCommand(BaseCommand):
     name = "monitor"
 
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("id", metavar="ID", nargs="?")
+        parser.add_argument("id", metavar="ID")
         parser.add_argument(
             "action",
             metavar="ACTION",
@@ -29,20 +23,12 @@ class MonitorCommand(BaseCommand):
         parser.add_argument(
             "--clean", action="store_true", help="clean all report related"
         )
-        parser.add_argument(
-            "--deleted", action="store_true", help="show deleted monitors"
-        )
-        parser.add_argument(
-            "--pending", action="store_true", help="Show pending actions"
-        )
 
     def __call__(
         self,
-        id: Optional[str],
+        id: str,
         action: Literal["show", "start", "stop", "delete", "public", "clean"],
         clean: bool,
-        deleted: bool,
-        pending: bool,
         **kwargs,
     ):
         if action == "delete":
@@ -50,10 +36,8 @@ class MonitorCommand(BaseCommand):
             print("Monitor deleted")
             return
         elif action == "show":
-            info = client.get(
-                f"/monitors/{id or ''}", params={"deleted": deleted, "pending": pending}
-            ).json()
-            if id and not kwargs["json"]:
+            info = client.get(f"/monitors/{id}").json()
+            if not kwargs["json"]:
                 reports = info.pop("reports")
                 autoformat(info)
                 autotable(reports)
@@ -65,14 +49,6 @@ class MonitorCommand(BaseCommand):
         elif action == "clean":
             client.delete(f"/monitors/{id}/reports")
             print("Monitor reports cleaned")
-            return
-
-        if not id and action == "show" and not kwargs["json"]:
-            if len(info["pending"]["rows"]) > 1:
-                console.rule("[b red]Pending actions", style="red")
-                autotable(info["pending"]["rows"], "b red")
-            console.rule("[b blue]Monitors", style="blue")
-            group_table(BootstrapTable(**info["list"]), "team", "Private")
             return
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48)
