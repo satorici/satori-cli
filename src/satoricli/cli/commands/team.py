@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from typing import Literal, Optional
 
 from satoricli.api import client
-from satoricli.cli.utils import autoformat, console
+from satoricli.cli.utils import autoformat, autotable, console
 
 from .base import BaseCommand
 from .dashboard import DashboardCommand
@@ -123,6 +123,9 @@ class TeamCommand(BaseCommand):
             return
         elif action == "monitors":
             info = client.get(f"/teams/{id}/monitors").json()
+            if not kwargs["json"]:
+                autotable(info["rows"], "b blue", widths=(20, 20, None))
+                return
         elif action == "reports":
             info = client.get(f"/teams/{id}/reports").json()
         elif action == "settings":
