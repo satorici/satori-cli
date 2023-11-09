@@ -46,7 +46,6 @@ class ReportCommand(BaseCommand):
                     console.print("No reports found")
                     return
 
-                autoformat(res["list"], list_separator="-" * 48)
                 ReportCommand.gen_report_table(res["list"])
             else:
                 autoformat(res, jsonfmt=kwargs["json"])
@@ -74,13 +73,19 @@ class ReportCommand(BaseCommand):
             ReportCommand.add_row(
                 [
                     ["ID", report["id"]],
-                    ["Public", report["public"]],
-                    ["Execution type", report["execution"]],
-                    ["Time required", report["time required"]],
-                    ["Result", report["result"]],
-                    ["User", report["user"]],
-                    ["Status", report["status"]],
                     ["Team", report["team"]],
+                    ["Playbook name", report["playbook_name"]],
+                ],
+                table,
+            )
+            ReportCommand.add_row(
+                [
+                    ["Execution type", report["execution"]],
+                    ["Public", report["public"]],
+                    ["Time required", report["time required"]],
+                    ["User", report["user"]],
+                    ["Date", report["date"].replace("T"," ")],
+                    ["Status", report["status"]],
                     ["Result", report["result"]],
                 ],
                 table,
@@ -99,7 +104,6 @@ class ReportCommand(BaseCommand):
             ReportCommand.add_row(
                 [
                     ["Playbook", report["playbook_id"]],
-                    ["Name", report["playbook_name"]],
                     ["Url", report["playbook_url"]],
                 ],
                 table,
