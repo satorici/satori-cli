@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+import re
 from typing import Literal, Optional
 from rich.table import Table
 
@@ -46,10 +47,7 @@ class ReportCommand(BaseCommand):
                     return
 
                 autoformat(res["list"], list_separator="-" * 48)
-                self.gen_report_table(res["list"])
-                # console.print(
-                #     f"[b]Page:[/] {res['current_page']} of {res['total_pages']}"
-                # )
+                ReportCommand.gen_report_table(res["list"])
             else:
                 autoformat(res, jsonfmt=kwargs["json"])
         elif action == "output":
@@ -66,29 +64,67 @@ class ReportCommand(BaseCommand):
             res = client.patch(f"/reports/{id}", json={"public": "invert"}).json()
             autoformat(res)
 
-    def gen_report_table(self, list):
+    @staticmethod
+    def gen_report_table(list):
+        print("Available size:", console.size.width - 4)
         for report in list:
-            table = Table(show_header=False, show_lines=True, highlight=True)
-            table.add_row(
-                f"[b]ID:[/] {report['id']} | [b]Public:[/] {report['public']}"
-                + f" | [b]Execution type:[/] {report['execution']}"
-                + f" | [b]Time required:[/] {report['time required']}"
-                + f" | [b]Result:[/] {report['result']} | [b]User:[/] {report['user']}"
-                + f" | [b]Status:[/] {report['status']} | [b]Team:[/] {report['team']}"
-                + f" | [b]Date:[/] {report['result']}"
+            table = Table(
+                show_header=False, show_lines=True, highlight=True, expand=True
             )
+            ReportCommand.add_row(
+                [
+                    ["ID", report["id"]],
+                    ["Public", report["public"]],
+                    ["Execution type", report["execution"]],
+                    ["Time required", report["time required"]],
+                    ["Result", report["result"]],
+                    ["User", report["user"]],
+                    ["Status", report["status"]],
+                    ["Team", report["team"]],
+                    ["Result", report["result"]],
+                ],
+                table,
+            )
+
             if report.get("repo"):
-                table.add_row(
-                    f"[b]Repo:[/] {report['repo']} | [b]Branch:[/] {report['branches']}"
-                    + f" | [b]Hash:[/] {report['hash']}"
-                    + f" | [b]Commit author:[/] {report['commit_author']}"
+                ReportCommand.add_row(
+                    [
+                        ["Repo", report["repo"]],
+                        ["Branch", report["branches"]],
+                        ["Hash", report["hash"]],
+                        ["Commit author", report["commit_author"]],
+                    ],
+                    table,
                 )
-            table.add_row(
-                f"[b]Playbook:[/] {report['playbook_id']}"
-                + f" | [b]Name:[/] {report['playbook_name']}"
-                + f" | [b]Url:[/] {report['playbook_url']}"
+            ReportCommand.add_row(
+                [
+                    ["Playbook", report["playbook_id"]],
+                    ["Name", report["playbook_name"]],
+                    ["Url", report["playbook_url"]],
+                ],
+                table,
             )
-            if report['testcases']:
-                testcases = '\n  ○ '.join(report['testcases'])
-                table.add_row(f"[b]Testcases:[/]\n  ○ {testcases}")
+            if report["testcases"]:
+                tests = ""
+                for test in report["testcases"]:
+                    style = "[pass]" if re.search(r"pass$", test) else "[fail]"
+                    tests += f"\n  ○ {style}{test}"
+                table.add_row(f"[b]Testcases:[/]{tests}")
             console.print(table)
+
+    @staticmethod
+    def add_row(row_content: list, table: Table):
+        available_size = console.width - 4
+        row_text = ""
+        n = 0
+        for content in row_content:
+            n += 1
+            text = f"[b]{content[0]}:[/] {content[1]}"
+            if n < len(row_content):  # avoid to add separators to the last column
+                text += " | "
+            if len(text) - 6 > available_size:
+                text = "\n" + text
+                available_size = console.width - 4
+            available_size -= len(text) - 6  # 6: dont include non-visible chars [b][/]
+            row_text += text
+        table.add_row(row_text)
