@@ -55,7 +55,7 @@ class SatoriHighlighter(RegexHighlighter):
         r"(?P<uuid>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
         r"(?P<testcase_pass>\w+ > [^:]+: Pass$)",
         r"(?P<testcase_fail>\w+ > [^:]+: Fail$)",
-        r"(?P<db_date>\d{4}-\d?\d-\d?\d\w\d{2}:\d{2}:\d{2})",
+        r"(?P<db_date>\d{4}-\d?\d-\d?\d(\w|\s)\d{2}:\d{2}:\d{2})",
         r"(?P<id>(r|m|p)\w{15}$)",
     ]
 
