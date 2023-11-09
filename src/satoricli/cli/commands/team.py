@@ -6,6 +6,8 @@ from satoricli.cli.utils import autoformat, console
 
 from .base import BaseCommand
 from .dashboard import DashboardCommand
+from .report import ReportCommand
+
 
 class TeamCommand(BaseCommand):
     name = "team"
@@ -126,6 +128,7 @@ class TeamCommand(BaseCommand):
             info = client.get(f"/teams/{id}/monitors").json()
         elif action == "reports":
             info = client.get(f"/teams/{id}/reports").json()
+            return ReportCommand.gen_list_table(info["list"])
         elif action == "settings":
             info = client.get(f"/teams/{id}/config").json()
 

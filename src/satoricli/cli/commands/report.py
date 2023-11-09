@@ -2,9 +2,16 @@ from argparse import ArgumentParser
 import re
 from typing import Literal, Optional
 from rich.table import Table
+from rich.syntax import Syntax
 
 from satoricli.api import client
-from satoricli.cli.utils import autoformat, console, download_files, print_output
+from satoricli.cli.utils import (
+    autoformat,
+    console,
+    download_files,
+    print_output,
+    autosyntax,
+)
 
 from .base import BaseCommand
 
@@ -46,9 +53,11 @@ class ReportCommand(BaseCommand):
                     console.print("No reports found")
                     return
 
-                ReportCommand.gen_report_table(res["list"])
-            else:
+                ReportCommand.gen_list_table(res["list"])
+            elif kwargs["json"]:
                 autoformat(res, jsonfmt=kwargs["json"])
+            else:  # single report
+                ReportCommand.gen_single_table(res)
         elif action == "output":
             print_output(id, print_json=kwargs["json"])
         elif action == "files":
@@ -64,8 +73,7 @@ class ReportCommand(BaseCommand):
             autoformat(res)
 
     @staticmethod
-    def gen_report_table(list):
-        print("Available size:", console.size.width - 4)
+    def gen_list_table(list):
         for report in list:
             table = Table(
                 show_header=False, show_lines=True, highlight=True, expand=True
@@ -84,7 +92,7 @@ class ReportCommand(BaseCommand):
                     ["Public", report["public"]],
                     ["Time required", report["time required"]],
                     ["User", report["user"]],
-                    ["Date", report["date"].replace("T"," ")],
+                    ["Date", report["date"].replace("T", " ")],
                     ["Status", report["status"]],
                     ["Result", report["result"]],
                 ],
@@ -115,6 +123,66 @@ class ReportCommand(BaseCommand):
                     tests += f"\n  ○ {style}{test}"
                 table.add_row(f"[b]Testcases:[/]{tests}")
             console.print(table)
+
+    @staticmethod
+    def gen_single_table(report):
+        table = Table(show_header=False, show_lines=True, highlight=True, expand=True)
+        ReportCommand.add_row(
+            [
+                ["ID", report["id"]],
+                ["Team", report["team"]],
+                ["Playbook name", report["name"]],
+            ],
+            table,
+        )
+        ReportCommand.add_row(
+            [
+                ["Execution type", report["execution"]],
+                ["Public", report["public"]],
+                ["Source", report["source"]],
+                ["Time required", report["time_required"]],
+                ["Monitor", report["monitor_id"]],
+                ["Date", report["created"].replace("T", " ")],
+                ["Fails", report["fails"]],
+                ["Status", report["status"]],
+                ["Result", report["result"]],
+            ],
+            table,
+        )
+
+        if report.get("repo"):
+            ReportCommand.add_row(
+                [
+                    ["Repo", report["repo"]],
+                    ["Branch", report["branches"]],
+                    ["Hash", report["hash"]],
+                    ["Parent", report["parent_hash"]],
+                ],
+                table,
+            )
+        ReportCommand.add_row(
+            [
+                ["Playbook", report["playbook_id"]],
+                ["Description", report["description"]],
+                ["Mitigation", report["mitigation"]],
+                ["Url", report["playbook_url"]],
+            ],
+            table,
+        )
+        playbook_content = autosyntax(report["playbook"], echo=False)
+        if isinstance(playbook_content, Syntax):
+            table.add_row(playbook_content)
+        if report["testcases"]:
+            tests = ""
+            for test in report["testcases"]:
+                style = "[pass]" if re.search(r"pass$", test) else "[fail]"
+                tests += f"\n  ○ {style}{test}"
+            table.add_row(f"[b]Testcases:[/]{tests}")
+        if report["report"]:
+            table.add_row(f"[b]Report:[/]\n{autoformat(report['report'],echo=False)}")
+        if report["delta"]:
+            table.add_row(f"[b]Report:[/]\n{autoformat(report['delta'],echo=False)}")
+        console.print(table)
 
     @staticmethod
     def add_row(row_content: list, table: Table):
