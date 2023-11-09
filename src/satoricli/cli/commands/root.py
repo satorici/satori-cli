@@ -13,6 +13,7 @@ from .playbook import PlaybookCommand
 from .repo import RepoCommand
 from .report import ReportCommand
 from .reports import ReportsCommand
+from .repos import ReposCommand
 from .run import RunCommand
 from .scan import ScanCommand
 from .team import TeamCommand
@@ -32,6 +33,7 @@ class RootCommand(BaseCommand):
         MonitorsCommand,
         OutputsCommand,
         RepoCommand,
+        ReposCommand,
         ScanCommand,
         PlaybookCommand,
         DashboardCommand,
