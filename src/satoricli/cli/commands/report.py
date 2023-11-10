@@ -114,6 +114,8 @@ class ReportCommand(BaseCommand):
                     style = "[pass]" if re.search(r"pass$", test) else "[fail]"
                     tests += f"\n  ○ {style}{test}"
                 table.add_row(f"[b]Testcases:[/]{tests}")
+            if report["errors"]:
+                table.add_row(f"{report['errors']}")
             console.print(table)
 
     @staticmethod
@@ -184,6 +186,8 @@ class ReportCommand(BaseCommand):
             ReportCommand.print_report_summary(report["report"], table)
         if report["delta"]:
             table.add_row(f"[b]Report:[/]\n{autoformat(report['delta'],echo=False)}")
+        if report["user_warnings"]:
+            table.add_row(f"{report['user_warnings']}")
         console.print(table)  # Print the table content
 
     @staticmethod
