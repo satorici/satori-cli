@@ -163,8 +163,6 @@ class ReportCommand(BaseCommand):
         ReportCommand.add_row(
             [
                 ["Playbook", report["playbook_id"]],
-                ["Description", report["description"]],
-                ["Mitigation", report["mitigation"]],
                 ["Url", report["playbook_url"]],
             ],
             table,
@@ -179,13 +177,13 @@ class ReportCommand(BaseCommand):
                 tests += f"\n  ○ {style}{test}"
             table.add_row(f"[b]Testcases:[/]{tests}")
         if report["report"]:
-            table.add_row(f"[b]Report:[/]\n{autoformat(report['report'],echo=False)}")
+            ReportCommand.format_asserts_data(report["report"], table)
         if report["delta"]:
             table.add_row(f"[b]Report:[/]\n{autoformat(report['delta'],echo=False)}")
         console.print(table)
 
     @staticmethod
-    def add_row(row_content: list, table: Table):
+    def add_row(row_content: list, table: Table, echo: bool = True):
         available_size = console.width - 4
         row_text = ""
         n = 0
@@ -199,4 +197,39 @@ class ReportCommand(BaseCommand):
                 available_size = console.width - 4
             available_size -= len(text) - 6  # 6: dont include non-visible chars [b][/]
             row_text += text
-        table.add_row(row_text)
+        if echo:
+            table.add_row(row_text)
+        else:
+            return row_text
+
+    @staticmethod
+    def format_asserts_data(report_data, table: Table):
+        for report in report_data:
+            assert_props = [
+                ["Test", report["test"]],
+            ]
+            if report["severity"]:
+                assert_props.append(report["severity"])
+            assert_props.extend(
+                [
+                    ["Testcases", report["testcases"]],
+                    ["Test status", report["test_status"]],
+                    ["Total Fails", report["total_fails"]],
+                ]
+            )
+            row = ReportCommand.add_row(assert_props, table, echo=False) or ""
+            for ast in report["asserts"]:
+                row += "\n" + (
+                    ReportCommand.add_row(
+                        [
+                            ["Assert", ast["assert"]],
+                            ["Count", ast["count"]],
+                            ["Expected", ast["expected"]],
+                            ["Status", ast["status"]],
+                        ],
+                        table,
+                        echo=False,
+                    )
+                    or ""
+                )
+            table.add_row(row)

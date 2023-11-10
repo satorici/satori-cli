@@ -11,6 +11,7 @@ from typing import Optional
 import httpx
 import yaml
 from rich.progress import open as progress_open
+from rich.table import Table
 from satorici.validator import validate_playbook
 from satorici.validator.exceptions import (
     NoExecutionsError,
@@ -34,6 +35,7 @@ from ..utils import (
     wait,
 )
 from .base import BaseCommand
+from .report import ReportCommand
 
 
 def validate_config(playbook: Path, params: set):
@@ -242,7 +244,13 @@ class RunCommand(BaseCommand):
             print_summary(run_id, kwargs["json"])
 
         if report:
-            print_report(run_id, kwargs["json"])
+            if kwargs["json"]:
+                print_report(run_id, kwargs["json"])
+            else:
+                report_data = client.get(f"/reports/{run_id}").json()
+                table = Table(show_header=False, show_lines=True, highlight=True, expand=True)
+                ReportCommand.format_asserts_data(report_data["report"], table)
+                console.print(table)
 
         if output:
             print_output(run_id, kwargs["json"])
