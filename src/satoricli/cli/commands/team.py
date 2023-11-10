@@ -128,7 +128,7 @@ class TeamCommand(BaseCommand):
             info = client.get(f"/teams/{id}/monitors").json()
         elif action == "reports":
             info = client.get(f"/teams/{id}/reports").json()
-            return ReportCommand.gen_list_table(info["list"])
+            return ReportCommand.print_report_list(info["list"])
         elif action == "settings":
             info = client.get(f"/teams/{id}/config").json()
 

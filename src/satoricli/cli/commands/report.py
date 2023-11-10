@@ -11,6 +11,7 @@ from satoricli.cli.utils import (
     download_files,
     print_output,
     autosyntax,
+    add_table_row,
 )
 
 from .base import BaseCommand
@@ -53,11 +54,11 @@ class ReportCommand(BaseCommand):
                     console.print("No reports found")
                     return
 
-                ReportCommand.gen_list_table(res["list"])
+                ReportCommand.print_report_list(res["list"])
             elif kwargs["json"]:
                 autoformat(res, jsonfmt=kwargs["json"])
             else:  # single report
-                ReportCommand.gen_single_table(res)
+                ReportCommand.print_report_single(res)
         elif action == "output":
             print_output(id, print_json=kwargs["json"])
         elif action == "files":
@@ -73,12 +74,19 @@ class ReportCommand(BaseCommand):
             autoformat(res)
 
     @staticmethod
-    def gen_list_table(list):
-        for report in list:
+    def print_report_list(report_list: list):
+        """Print reports list as a table
+
+        Parameters
+        ----------
+        report_list : list
+            Reports list
+        """
+        for report in report_list:
             table = Table(
                 show_header=False, show_lines=True, highlight=True, expand=True
             )
-            ReportCommand.add_row(
+            add_table_row(
                 [
                     ["ID", report["id"]],
                     ["Team", report["team"]],
@@ -86,7 +94,7 @@ class ReportCommand(BaseCommand):
                 ],
                 table,
             )
-            ReportCommand.add_row(
+            add_table_row(
                 [
                     ["Execution type", report["execution"]],
                     ["Public", report["public"]],
@@ -100,7 +108,7 @@ class ReportCommand(BaseCommand):
             )
 
             if report.get("repo"):
-                ReportCommand.add_row(
+                add_table_row(
                     [
                         ["Repo", report["repo"]],
                         ["Branch", report["branches"]],
@@ -109,7 +117,7 @@ class ReportCommand(BaseCommand):
                     ],
                     table,
                 )
-            ReportCommand.add_row(
+            add_table_row(
                 [
                     ["Playbook", report["playbook_id"]],
                     ["Url", report["playbook_url"]],
@@ -125,9 +133,17 @@ class ReportCommand(BaseCommand):
             console.print(table)
 
     @staticmethod
-    def gen_single_table(report):
+    def print_report_single(report: dict):
+        """Print a single report as a table
+
+        Parameters
+        ----------
+        report : dict
+            Report data
+        """
         table = Table(show_header=False, show_lines=True, highlight=True, expand=True)
-        ReportCommand.add_row(
+        # Create a row with the basic info
+        add_table_row(
             [
                 ["ID", report["id"]],
                 ["Team", report["team"]],
@@ -135,7 +151,8 @@ class ReportCommand(BaseCommand):
             ],
             table,
         )
-        ReportCommand.add_row(
+        # Add another row with the report data
+        add_table_row(
             [
                 ["Execution type", report["execution"]],
                 ["Public", report["public"]],
@@ -151,7 +168,8 @@ class ReportCommand(BaseCommand):
         )
 
         if report.get("repo"):
-            ReportCommand.add_row(
+            # Add the repo data in another row if exist
+            add_table_row(
                 [
                     ["Repo", report["repo"]],
                     ["Branch", report["branches"]],
@@ -160,13 +178,15 @@ class ReportCommand(BaseCommand):
                 ],
                 table,
             )
-        ReportCommand.add_row(
+        # Add the playbook data in a new row
+        add_table_row(
             [
                 ["Playbook", report["playbook_id"]],
                 ["Url", report["playbook_url"]],
             ],
             table,
         )
+        # Highlight the playbook content
         playbook_content = autosyntax(report["playbook"], echo=False)
         if isinstance(playbook_content, Syntax):
             table.add_row(playbook_content)
@@ -177,33 +197,22 @@ class ReportCommand(BaseCommand):
                 tests += f"\n  ○ {style}{test}"
             table.add_row(f"[b]Testcases:[/]{tests}")
         if report["report"]:
-            ReportCommand.format_asserts_data(report["report"], table)
+            ReportCommand.print_report_summary(report["report"], table)
         if report["delta"]:
             table.add_row(f"[b]Report:[/]\n{autoformat(report['delta'],echo=False)}")
-        console.print(table)
+        console.print(table) # Print the table content
 
     @staticmethod
-    def add_row(row_content: list, table: Table, echo: bool = True):
-        available_size = console.width - 4
-        row_text = ""
-        n = 0
-        for content in row_content:
-            n += 1
-            text = f"[b]{content[0]}:[/] {content[1]}"
-            if n < len(row_content):  # avoid to add separators to the last column
-                text += " | "
-            if len(text) - 6 > available_size:
-                text = "\n" + text
-                available_size = console.width - 4
-            available_size -= len(text) - 6  # 6: dont include non-visible chars [b][/]
-            row_text += text
-        if echo:
-            table.add_row(row_text)
-        else:
-            return row_text
+    def print_report_summary(report_data: list, table: Table):
+        """Print the json content of a report
 
-    @staticmethod
-    def format_asserts_data(report_data, table: Table):
+        Parameters
+        ----------
+        report_data : list
+            Report json
+        table : Table
+            Table to add the content
+        """
         for report in report_data:
             assert_props = [
                 ["Test", report["test"]],
@@ -217,10 +226,10 @@ class ReportCommand(BaseCommand):
                     ["Total Fails", report["total_fails"]],
                 ]
             )
-            row = ReportCommand.add_row(assert_props, table, echo=False) or ""
+            row = add_table_row(assert_props, table, echo=False) or ""
             for ast in report["asserts"]:
                 row += "\n" + (
-                    ReportCommand.add_row(
+                    add_table_row(
                         [
                             ["Assert", ast["assert"]],
                             ["Count", ast["count"]],
@@ -235,21 +244,31 @@ class ReportCommand(BaseCommand):
             table.add_row(row)
 
     @staticmethod
-    def print_report_asrt(run_id: str, json_out: bool):
-        report_data = client.get(f"/reports/{run_id}").json()
+    def print_report_asrt(report_id: str, json_out: bool):
+        """Fetch the report and print the report summary
+
+        Parameters
+        ----------
+        report_id : str
+            ID of the report
+        json_out : bool
+            Print as json?
+        """
+        # Fetch the report data
+        report_data = client.get(f"/reports/{report_id}").json()
         json_data = report_data.get("report")
-        if json_out:
+        if json_out: # Print as json if --json is defined 
             console.print_json(data=json_data)
         else:
             table = Table(
                 show_header=False, show_lines=True, highlight=True, expand=True
             )
-            ReportCommand.add_row(
+            add_table_row(
                 [
                     ["Fails", report_data["fails"]],
                     ["Result", report_data["result"]],
                 ],
                 table,
             )
-            ReportCommand.format_asserts_data(report_data["report"], table)
+            ReportCommand.print_report_summary(report_data["report"], table)
             console.print(table)
