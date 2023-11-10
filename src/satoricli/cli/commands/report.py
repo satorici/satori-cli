@@ -233,3 +233,23 @@ class ReportCommand(BaseCommand):
                     or ""
                 )
             table.add_row(row)
+
+    @staticmethod
+    def print_report_asrt(run_id: str, json_out: bool):
+        report_data = client.get(f"/reports/{run_id}").json()
+        json_data = report_data.get("report")
+        if json_out:
+            console.print_json(data=json_data)
+        else:
+            table = Table(
+                show_header=False, show_lines=True, highlight=True, expand=True
+            )
+            ReportCommand.add_row(
+                [
+                    ["Fails", report_data["fails"]],
+                    ["Result", report_data["result"]],
+                ],
+                table,
+            )
+            ReportCommand.format_asserts_data(report_data["report"], table)
+            console.print(table)

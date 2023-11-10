@@ -499,31 +499,6 @@ def print_output(report_id: str, print_json: bool = False):
             format_outputs(s.iter_lines())
 
 
-def print_report(report_id: str, print_json: bool = False):
-    report_data = client.get(f"/reports/{report_id}").json()
-
-    if user_warnings := report_data["user_warnings"]:
-        error_console.print(f"WARNING: {user_warnings}")
-
-    report_out = []
-    # Remove keys
-    json_data = report_data.get("report") or []
-    for report in json_data:
-        report_out.append(report)
-        asserts = []
-        for asrt in report["asserts"]:
-            asrt.pop("count", None)
-            asrt.pop("description", None)
-            if len(asrt.get("data", [])) == 0:
-                asrt.pop("data", None)
-            asserts.append(asrt)
-
-    if print_json:
-        console.print_json(data=report_out)
-    else:
-        autoformat(report_out, list_separator="- " * 20)
-
-
 def print_summary(report_id: str, print_json: bool = False):
     report_data = client.get(f"/reports/{report_id}").json()
 
