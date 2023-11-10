@@ -55,7 +55,7 @@ class SatoriHighlighter(RegexHighlighter):
         r"(?P<uuid>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
         r"(?P<testcase_pass>\w+ > [^:]+: Pass$)",
         r"(?P<testcase_fail>\w+ > [^:]+: Fail$)",
-        r"(?P<db_date>\d{4}-\d?\d-\d?\d\w\d{2}:\d{2}:\d{2})",
+        r"(?P<db_date>\d{4}-\d?\d-\d?\d(\w|\s)\d{2}:\d{2}:\d{2})",
         r"(?P<id>(r|m|p)\w{15}$)",
     ]
 
@@ -499,31 +499,6 @@ def print_output(report_id: str, print_json: bool = False):
             format_outputs(s.iter_lines())
 
 
-def print_report(report_id: str, print_json: bool = False):
-    report_data = client.get(f"/reports/{report_id}").json()
-
-    if user_warnings := report_data["user_warnings"]:
-        error_console.print(f"WARNING: {user_warnings}")
-
-    report_out = []
-    # Remove keys
-    json_data = report_data.get("report") or []
-    for report in json_data:
-        report_out.append(report)
-        asserts = []
-        for asrt in report["asserts"]:
-            asrt.pop("count", None)
-            asrt.pop("description", None)
-            if len(asrt.get("data", [])) == 0:
-                asrt.pop("data", None)
-            asserts.append(asrt)
-
-    if print_json:
-        console.print_json(data=report_out)
-    else:
-        autoformat(report_out, list_separator="- " * 20)
-
-
 def print_summary(report_id: str, print_json: bool = False):
     report_data = client.get(f"/reports/{report_id}").json()
 
@@ -544,3 +519,23 @@ def print_summary(report_id: str, print_json: bool = False):
         console.print("Result:", result)
 
     return 0 if fails == 0 else 1
+
+
+def add_table_row(row_content: list, table: Table, echo: bool = True):
+    available_size = console.width - 4
+    row_text = ""
+    n = 0
+    for content in row_content:
+        n += 1
+        text = f"[b]{content[0]}:[/] {content[1]}"
+        if n < len(row_content):  # avoid to add separators to the last column
+            text += " | "
+        if len(text) - 6 > available_size:
+            text = "\n" + text
+            available_size = console.width - 4
+        available_size -= len(text) - 6  # 6: dont include non-visible chars [b][/]
+        row_text += text
+    if echo:
+        table.add_row(row_text)
+    else:
+        return row_text

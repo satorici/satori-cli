@@ -29,11 +29,11 @@ from ..utils import (
     download_files,
     error_console,
     print_output,
-    print_report,
     print_summary,
     wait,
 )
 from .base import BaseCommand
+from .report import ReportCommand
 
 
 def validate_config(playbook: Path, params: set):
@@ -242,7 +242,7 @@ class RunCommand(BaseCommand):
             print_summary(run_id, kwargs["json"])
 
         if report:
-            print_report(run_id, kwargs["json"])
+            ReportCommand.print_report_asrt(run_id, kwargs["json"])
 
         if output:
             print_output(run_id, kwargs["json"])

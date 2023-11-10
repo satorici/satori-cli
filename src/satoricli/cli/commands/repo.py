@@ -12,12 +12,12 @@ from ..utils import (
     console,
     error_console,
     print_output,
-    print_report,
     print_summary,
     wait,
 )
 from .base import BaseCommand
 from .scan import ScanCommand
+from .report import ReportCommand
 
 
 class RepoCommand(BaseCommand):
@@ -125,7 +125,7 @@ class RepoCommand(BaseCommand):
                 if output:
                     print_output(report_id, kwargs["json"])
                 if report:
-                    print_report(report_id, kwargs["json"])
+                    ReportCommand.print_report_asrt(report_id, kwargs["json"])
 
                 return
         elif action == "check-forks":
