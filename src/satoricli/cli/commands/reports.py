@@ -5,7 +5,7 @@ from satoricli.api import client
 from satoricli.cli.utils import autoformat, console
 
 from .base import BaseCommand
-
+from .report import ReportCommand
 
 class ReportsCommand(BaseCommand):
     name = "reports"
@@ -31,7 +31,8 @@ class ReportsCommand(BaseCommand):
                 console.print("No reports found")
                 return
 
-            autoformat(res["list"], list_separator="-" * 48)
-            console.print(f"[b]Page:[/] {res['current_page']} of {res['total_pages']}")
-        else:
+            ReportCommand.print_report_list(res["list"])
+        elif kwargs["json"]:
             autoformat(res, jsonfmt=kwargs["json"])
+        else:  # single report
+            ReportCommand.print_report_single(res)

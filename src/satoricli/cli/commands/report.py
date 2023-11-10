@@ -38,20 +38,10 @@ class ReportCommand(BaseCommand):
         **kwargs,
     ):
         if action == "show":
-            res = client.get(
-                f"/reports/{id or ''}",
-                params={"page": page, "limit": limit, "filter": filter},
-            ).json()
-
-            if not id and not kwargs["json"]:
-                if res["count"] == 0:
-                    console.print("No reports found")
-                    return
-
-                ReportCommand.print_report_list(res["list"])
-            elif kwargs["json"]:
+            res = client.get(f"/reports/{id}").json()
+            if kwargs["json"]:
                 autoformat(res, jsonfmt=kwargs["json"])
-            else:  # single report
+            else:
                 ReportCommand.print_report_single(res)
         elif action == "output":
             print_output(id, print_json=kwargs["json"])
@@ -194,7 +184,7 @@ class ReportCommand(BaseCommand):
             ReportCommand.print_report_summary(report["report"], table)
         if report["delta"]:
             table.add_row(f"[b]Report:[/]\n{autoformat(report['delta'],echo=False)}")
-        console.print(table) # Print the table content
+        console.print(table)  # Print the table content
 
     @staticmethod
     def print_report_summary(report_data: list, table: Table):
@@ -251,7 +241,7 @@ class ReportCommand(BaseCommand):
         # Fetch the report data
         report_data = client.get(f"/reports/{report_id}").json()
         json_data = report_data.get("report")
-        if json_out: # Print as json if --json is defined 
+        if json_out:  # Print as json if --json is defined
             console.print_json(data=json_data)
         else:
             table = Table(
