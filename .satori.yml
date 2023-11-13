@@ -60,7 +60,7 @@ positive:
 
     # list the reports generated
     list:
-      - [satori report]
+      - [satori reports]
 
     # show a report
     single:
@@ -99,10 +99,10 @@ positive:
   playbook:
     list:
       private:
-        - [satori playbook]
+        - [satori playbooks]
 
       public:
-        - [satori playbook --public]
+        - [satori playbooks --public]
 
     #echo:
     #  - ["export ID=$(cat report_id2.txt); echo $ID"]
@@ -132,7 +132,7 @@ positive:
   repo:
     # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
     list:
-      - [satori repo]
+      - [satori repos]
 
     # list the commits and the reports associated to a repository
     single:
@@ -166,7 +166,7 @@ positive:
 
     # list the monitors
     list:
-      - ["sleep 5; satori monitor"]
+      - ["sleep 5; satori monitors"]
 
     # list the reports associated to a monitor
     single: # wait until start
@@ -195,7 +195,7 @@ positive:
   scan:
     # # To be developed: list the current scans
     # list:
-    #   - [satori scan]
+    #   - [satori scans]
 
     # OK: run the .satori.yml playbook with a certain coverage on the repo
     run:
@@ -220,7 +220,7 @@ positive:
   teams:
     # list teams and repos without teams
     list:
-      - [satori team]
+      - [satori teams]
 
     # create team 'test_team'
     create:
