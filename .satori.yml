@@ -41,7 +41,7 @@ positive:
     # run a public Satori CI playbook and pass parameters
     url_output:
       - [
-          'satori run satori://web/testssl.yml --data=''{"URL":"https://www.satori-ci.com"}'' --output',
+          'satori run satori://web/testssl.yml --data=''{"URL":"https://satori.ci"}'' --output',
         ]
 
     # define inputs on your playbook and execute it with different combination of parameters
@@ -234,19 +234,19 @@ positive:
     members:
       - [satori team test_team members]
 
-    # add the email 'test@satori-ci.com' as a member of the team 'test_team'
+    # add the email 'test@satori.ci' as a member of the team 'test_team'
     add_member:
-      - [satori team test_team add --email='test@satori-ci.com']
+      - [satori team test_team add --email='test@satori.ci']
 
     add_github_member:
       - [satori team test_team add --github='satoridev02']
 
-    # delete the email 'test@satori-ci.com' as a member of the team 'test_team'
+    # delete the email 'test@satori.ci' as a member of the team 'test_team'
     delete_member:
-      - [satori team test_team delete --email='test@satori-ci.com']
+      - [satori team test_team del --email='test@satori.ci']
 
     delete_github_member:
-      - [satori team test_team delete --github='satoridev02']
+      - [satori team test_team del --github='satoridev02']
 
     # list the repos associated to the 'test_team'
     team_without_repos:
