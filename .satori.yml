@@ -237,24 +237,28 @@ positive:
     # add the email 'test@satori.ci' as a member of the team 'test_team'
     add_member:
       - [satori team test_team add --email='test@satori.ci']
-
-    add_github_member:
-      - [satori team test_team add --github='satoridev02']
-
+      
     # delete the email 'test@satori.ci' as a member of the team 'test_team'
     delete_member:
       - [satori team test_team del --email='test@satori.ci']
+      
+    add_github_member:
+      - [satori team test_team add --github='satoridev02']
 
     delete_github_member:
       - [satori team test_team del --github='satoridev02']
 
-    # list the repos associated to the 'test_team'
-    team_without_repos:
-      - [satori team test_team repos]
-
     # add the repo 'satoridev01/hello_world' to the team 'test_team'
     add_repo:
       - [satori team test_team add --repo='satoridev01/hello_world']
+
+    # list the repos associated to the 'test_team'
+    team_without_repos:
+      - [satori team test_team repos]
+      
+    # delete the repo 'satoridev01/hello_world' from the team 'test_team'
+    del_repo:
+      - [satori team test_team del --repo='satoridev01/hello_world']
 
     # list the repos associated to the 'test_team'
     team_with_repos:
