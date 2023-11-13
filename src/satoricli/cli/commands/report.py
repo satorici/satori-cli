@@ -73,14 +73,14 @@ class ReportCommand(BaseCommand):
             add_table_row(
                 [
                     ["ID", report["id"]],
-                    ["Team", report["team"]],
-                    ["Playbook name", report["playbook_name"]],
+                    ["Team", report["team"], "cyan1"],
+                    ["Playbook name", report["playbook_name"], "cyan1"],
                 ],
                 table,
             )
             add_table_row(
                 [
-                    ["Execution type", report["execution"]],
+                    ["Execution type", report["execution"], "bright_magenta"],
                     ["Public", report["public"]],
                     ["Time required", report["time required"]],
                     ["User", report["user"]],
@@ -115,8 +115,11 @@ class ReportCommand(BaseCommand):
                     tests += f"\n  ○ {style}{test}"
                 table.add_row(f"[b]Testcases:[/]{tests}")
             if report["errors"]:
-                table.add_row(f"{report['errors']}")
-            console.print(table)
+                table.add_row(
+                "[warning]Warnings and Errors:[/]\n ○ "
+                + str(report["errors"]).replace("\n", "\n ○ ")
+            )
+            console.print(table, "\n")
 
     @staticmethod
     def print_report_single(report: dict):
@@ -132,15 +135,15 @@ class ReportCommand(BaseCommand):
         add_table_row(
             [
                 ["ID", report["id"]],
-                ["Team", report["team"]],
-                ["Playbook name", report["name"]],
+                ["Team", report["team"], "cyan1"],
+                ["Playbook name", report["name"], "cyan1"],
             ],
             table,
         )
         # Add another row with the report data
         add_table_row(
             [
-                ["Execution type", report["execution"]],
+                ["Execution type", report["execution"], "bright_magenta"],
                 ["Public", report["public"]],
                 ["Source", report["source"]],
                 ["Time required", report["time_required"]],
@@ -187,7 +190,10 @@ class ReportCommand(BaseCommand):
         if report["delta"]:
             table.add_row(f"[b]Report:[/]\n{autoformat(report['delta'],echo=False)}")
         if report["user_warnings"]:
-            table.add_row(f"{report['user_warnings']}")
+            table.add_row(
+                "[warning]Warnings and Errors:[/]\n ○ "
+                + str(report["user_warnings"]).replace("\n", "\n ○ ")
+            )
         console.print(table)  # Print the table content
 
     @staticmethod

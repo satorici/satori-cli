@@ -527,13 +527,14 @@ def add_table_row(row_content: list, table: Table, echo: bool = True):
     n = 0
     for content in row_content:
         n += 1
-        text = f"[b]{content[0]}:[/] {content[1]}"
+        value = f"[{content[2]}]{content[1]}[/]" if len(content) == 3 else content[1]
+        text = f"[b]{content[0]}:[/] {value}"
         if n < len(row_content):  # avoid to add separators to the last column
             text += " | "
         if len(text) - 6 > available_size:
             text = "\n" + text
             available_size = console.width - 4
-        available_size -= len(text) - 6  # 6: dont include non-visible chars [b][/]
+        available_size -= len(content[0]) + len(str(content[1])) + 2  # 2: ": "
         row_text += text
     if echo:
         table.add_row(row_text)
