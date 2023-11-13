@@ -10,6 +10,7 @@ from .monitor import MonitorCommand
 from .monitors import MonitorsCommand
 from .outputs import OutputsCommand
 from .playbook import PlaybookCommand
+from .playbooks import PlaybooksCommand
 from .repo import RepoCommand
 from .report import ReportCommand
 from .reports import ReportsCommand
@@ -36,6 +37,7 @@ class RootCommand(BaseCommand):
         ReposCommand,
         ScanCommand,
         PlaybookCommand,
+        PlaybooksCommand,
         DashboardCommand,
         TeamCommand,
         TeamsCommand,
