@@ -3,7 +3,7 @@ settings:
   log: slack
 
 import:
-  - "satori://code/semgrep-secrets.yml"
+  - "satori://secrets/semgrep.yml"
 
 positive:
   assertReturnCode: 0
