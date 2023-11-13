@@ -3,4 +3,4 @@ settings:
 
 import:
   - "file://pass.yml"
-  - "satori://code/trufflehog.yml"
+  - "satori://secrets/trufflehog.yml"
