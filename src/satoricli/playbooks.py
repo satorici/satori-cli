@@ -25,13 +25,13 @@ def sync():
         repo = git.Repo(PLAYBOOKS_DIR)
         repo.branches["main"].checkout(force=True)
         repo.remote().pull()
-        print(
-            "Satori playbooks' repo https://github.com/satorici/playbooks",
-            "updated to latest version",
-        )
+        # print(
+        #    "Satori playbooks' repo https://github.com/satorici/playbooks",
+        #    "updated to latest version",
+        # )
     else:
         git.Repo.clone_from("https://github.com/satorici/playbooks.git", PLAYBOOKS_DIR)
-        print("Satori Playbooks repo clone started")
+        # print("Satori Playbooks repo clone started")
     return True
 
 
