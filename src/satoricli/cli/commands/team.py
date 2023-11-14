@@ -9,7 +9,6 @@ from .dashboard import DashboardCommand
 from .report import ReportCommand
 
 
-
 class TeamCommand(BaseCommand):
     name = "team"
 

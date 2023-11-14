@@ -1,17 +1,17 @@
-from argparse import ArgumentParser
 import re
-from typing import Literal, Optional
-from rich.table import Table
-from rich.syntax import Syntax
+from argparse import ArgumentParser
+from typing import Literal
 
+from rich.syntax import Syntax
+from rich.table import Table
 from satoricli.api import client
 from satoricli.cli.utils import (
+    add_table_row,
     autoformat,
+    autosyntax,
     console,
     download_files,
     print_output,
-    autosyntax,
-    add_table_row,
 )
 
 from .base import BaseCommand
@@ -116,9 +116,9 @@ class ReportCommand(BaseCommand):
                 table.add_row(f"[b]Testcases:[/]{tests}")
             if report["errors"]:
                 table.add_row(
-                "[warning]Warnings and Errors:[/]\n ○ "
-                + str(report["errors"]).replace("\n", "\n ○ ")
-            )
+                    "[warning]Warnings and Errors:[/]\n ○ "
+                    + str(report["errors"]).replace("\n", "\n ○ ")
+                )
             console.print(table, "\n")
 
     @staticmethod
