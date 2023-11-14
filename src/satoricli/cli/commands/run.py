@@ -152,7 +152,7 @@ class RunCommand(BaseCommand):
     def register_args(self, parser: ArgumentParser):
         parser.add_argument("path", metavar="PATH")
         parser.add_argument("-d", "--data", type=json.loads)
-        group = parser.add_mutually_exclusive_group()
+        group = parser.add_argument_group()
         group.add_argument("-s", "--sync", action="store_true")
         group.add_argument("-o", "--output", action="store_true")
         group.add_argument("-r", "--report", action="store_true")
