@@ -408,6 +408,8 @@ def format_outputs(outputs):
         console.print("[blue]Stderr:[/blue]")
         if output["output"]["stderr"]:
             console.out(b64decode(output["output"]["stderr"]).decode(errors="ignore"))
+        if output["output"]["os_error"]:
+            console.out(output["output"]["os_error"])
 
 
 @dataclass
