@@ -251,18 +251,21 @@ class ReportCommand(BaseCommand):
         # Fetch the report data
         report_data = client.get(f"/reports/{report_id}").json()
         json_data = report_data.get("report")
-        if json_out:  # Print as json if --json is defined
-            console.print_json(data=json_data)
+        if json_data:
+            if json_out:  # Print as json if --json is defined
+                console.print_json(data=json_data)
+            else:
+                table = Table(
+                    show_header=False, show_lines=True, highlight=True, expand=True
+                )
+                add_table_row(
+                    [
+                        ["Fails", report_data["fails"]],
+                        ["Result", report_data["result"]],
+                    ],
+                    table,
+                )
+                ReportCommand.print_report_summary(report_data["report"], table)
+                console.print(table)
         else:
-            table = Table(
-                show_header=False, show_lines=True, highlight=True, expand=True
-            )
-            add_table_row(
-                [
-                    ["Fails", report_data["fails"]],
-                    ["Result", report_data["result"]],
-                ],
-                table,
-            )
-            ReportCommand.print_report_summary(report_data["report"], table)
-            console.print(table)
+            console.print("[error]Report not found")
