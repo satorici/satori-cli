@@ -507,7 +507,7 @@ def print_summary(report_id: str, print_json: bool = False):
 
     result = report_data.get("result", "Unknown")
 
-    if "fails" in report_data:
+    if "fails" in report_data and result != "Unknown":
         fails = report_data["fails"]
         result = "Pass" if not fails else f"Fail({fails})"
     else:
