@@ -1,12 +1,15 @@
 # What is Satori CI?
 
 Satori allows you to assert how systems and software behave. Automatize software and system testing using three different approaches:
+
 - On demand: you need to execute the test one time (ie, Security Testing, Stress Testing, etc)
 - Scheduled: you need to know on a regular basis what is the status of something (ie, Monitoring live systems every five minutes, Auditing weekly/monthly/yearly systems, etc)
 - CI/CD: you need to execute it every time you are pushing new code (ie, Security Testing, System Testing, etc)
 
 ## Setup Satori CLI
+
 Three steps:
+
 1. Execute on your command line terminal:
 
 ```console
@@ -15,9 +18,9 @@ pip3 install satori-ci
 
 2. With Satori CLI installed, now we need to get a Satori Token to use it:
 
- * Log in the Satori website using Github credentials: https://www.satori-ci.com/login
- * On the Satori website go to User Settings
- * Copy your User API Token
+- Log in the Satori website using Github credentials: <https://satori.ci/login>
+- On the Satori website go to User Settings
+- Copy your User API Token
 
 3. Replace the string YOUR_TOKEN with your clipboard on the next command:
 
@@ -62,12 +65,13 @@ test:
 ```
 
 Lets test the code with the playbook
+
 ```console
 foo@bar:~$ satori run ./ --sync
 Satori CI 1.2.3 - Automated Software Testing Platform
 Uploading... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 331/331 bytes 0:00:00
 UUID: AOQxDWDkXpZp
-Report: https://www.satori-ci.com/report_details/?n=AOQxDWDkXpZp
+Report: https://satori.ci/report_details/?n=AOQxDWDkXpZp
 - Report status: Completed | Result: Pass | Elapsed time: 62.6s
   • test: test > python
   • asserts:
@@ -122,14 +126,13 @@ Please let us know if you need to assert something else that we is not covered b
 
 We tested on demand. Now let's do it as part of your regular Github CI process.
 
-1. Go to https://github.com/apps/satorici
+1. Go to <https://github.com/apps/satorici>
 
 2. Click on Install
 
 3. Select the repositories where you will be installing it or select all repositories
 
-By default you can get notifications via email and Github issues. If you want to get notified in slack, discord or telegram go to https://www.satori-ci.com/user-settings/ to define their details.
-
+By default you can get notifications via email and Github issues. If you want to get notified in slack, discord or telegram go to <https://satori.ci/user-settings/> to define their details.
 
 If you want to detail in your playbook to be notified when the scans are ready, add the following to them:
 
@@ -139,6 +142,7 @@ settings:
 ```
 
 For example:
+
 ```yml
 settings:
     logOnFail: slack
@@ -148,7 +152,6 @@ test:
     python:
     - [ python hello_world.py ]
 ```
-
 
 and put it on a file named .satori.yml inside your repository.
 
@@ -169,7 +172,6 @@ foo@bar:~$ satori repo githubusername/repository scan -c 100 --sync
 ## satori playbook
 
 Are used to assert software behaviors, wether they are source code files or live systems. You can see a list of public playbooks by running
-
 
 #### Public playbooks
 
@@ -214,8 +216,7 @@ Run     | github://satorici/playbooks/test/satori/monitorBlog.yml | Monitor Blog
 ...
 ```
 
-Is there a playbook that you would like us to add? Drop us a line at support@satori-ci.com
-
+Is there a playbook that you would like us to add? Drop us a line at <support@satori.ci>
 
 ## satori monitor
 
@@ -236,5 +237,5 @@ settings:
 test:
   assertStdout: "Hello World"
   blog:
-  - [ curl -s https://www.satori-ci.com/hello-world/ ]
+  - [ curl -s https://satori.ci/hello-world/ ]
 ```

@@ -5,8 +5,8 @@ from httpx import Client, Response
 
 from .exceptions import SatoriRequestError
 
-HOST = "https://api.satori-ci.com"
-WS_HOST = "wss://api.satori-ci.com"
+HOST = "https://api.satori.ci"
+WS_HOST = "wss://api.satori.ci"
 
 
 def raise_on_error(res: Response):

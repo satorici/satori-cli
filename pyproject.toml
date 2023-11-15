@@ -1,9 +1,9 @@
 [project]
 name = "satori-ci"
-version = "1.14.4"
+version = "1.14.5"
 description = "Satori CI - Automated Software Testing Platform"
 authors = [
-    {name = "Satori CI CLI", email = "info@satori-ci.com"},
+    {name = "Satori CI CLI", email = "info@satori.ci"},
 ]
 dependencies = [
     "satori-playbook-validator==3.5.0",
@@ -21,7 +21,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 
 [project.urls]
-Homepage = "https://www.satori-ci.com"
+Homepage = "https://satori.ci"
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
