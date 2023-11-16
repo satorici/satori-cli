@@ -75,7 +75,7 @@ class ReportCommand(BaseCommand):
                     ["ID", report["id"]],
                     ["Team", report["team"], "cyan1"],
                     ["Playbook name", report["playbook_name"], "cyan1"],
-                    ["Report url", report.get("report_url"), "blue"],
+                    ["Report URL", report.get("report_url"), "blue"],
                 ],
                 table,
             )
