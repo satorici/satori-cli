@@ -148,7 +148,7 @@ class ReportCommand(BaseCommand):
                 ["Execution type", report["execution"], "bright_magenta"],
                 ["Public", report["public"]],
                 ["Source", report["source"]],
-                ["Time required", report["time_required"]],
+                ["Time required", report.get("execution_time")],
                 ["Monitor", report["monitor_id"]],
                 ["Date", report["created"].replace("T", " ")],
                 ["Fails", report["fails"]],
