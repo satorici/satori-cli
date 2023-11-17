@@ -214,7 +214,7 @@ class ReportCommand(BaseCommand):
                 ["Test", report["test"]],
             ]
             if report.get("severity"):
-                assert_props.append(report["severity"])
+                assert_props.append(["Severity", report["severity"]])
             assert_props.extend(
                 [
                     ["Testcases", report["testcases"]],
