@@ -43,3 +43,21 @@ class DashboardCommand(BaseCommand):
         if len(info["repos"]["list"]["rows"]) > 0:
             console.rule("[b green]Github Repositories", style="green")
             autotable(info["repos"]["list"]["rows"], "b green", True)
+        if len(info["reports"]["list"]) > 0:
+            console.rule("[b red]Last 10 Reports", style="red")
+            reports = info["reports"]["list"]
+            # Remove unused columns
+            for report in reports:
+                report.pop("branches",None)
+                report.pop("hash",None)
+                report.pop("commit_date",None)
+                report.pop("commit_author",None)
+                report.pop("commit_email",None)
+                report.pop("playbook_id",None)
+                report.pop("playbook_name",None)
+                report.pop("playbook_url",None)
+                report.pop("user",None)
+                report.pop("testcases",None)
+                report.pop("errors",None)
+                report.pop("execution_time",None)
+            autotable(reports, "b green", True)
