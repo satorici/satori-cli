@@ -40,6 +40,7 @@ class TeamCommand(BaseCommand):
                 "delete",
                 "add",
                 "settings",
+                "playbooks",
             ),
             default="show",
         )
@@ -64,6 +65,7 @@ class TeamCommand(BaseCommand):
             "delete",
             "add",
             "settings",
+            "playbooks",
         ],
         role: Optional[str],
         repo: Optional[str],
@@ -137,5 +139,10 @@ class TeamCommand(BaseCommand):
             return ReportCommand.print_report_list(info["list"])
         elif action == "settings":
             info = client.get(f"/teams/{id}/config").json()
+        elif action == "playbooks":
+            info = client.get(f"/teams/{id}/playbooks").json()
+            if not kwargs["json"]:
+                autotable(info, "b blue")
+                return
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48, table=True)
