@@ -37,6 +37,7 @@ class TeamCommand(BaseCommand):
                 "get_token",
                 "refresh_token",
                 "del",
+                "delete",
                 "add",
                 "settings",
             ),
@@ -60,6 +61,7 @@ class TeamCommand(BaseCommand):
             "get_token",
             "refresh_token",
             "del",
+            "delete",
             "add",
             "settings",
         ],
@@ -119,8 +121,11 @@ class TeamCommand(BaseCommand):
                 )
                 console.print("Team member deleted")
             else:
-                client.delete(f"/teams/{id}")
-                console.print("Team deleted")
+                raise Exception("Use --github, --email")
+            return
+        elif action == "delete":
+            client.delete(f"/teams/{id}")
+            console.print("Team deleted")
             return
         elif action == "monitors":
             info = client.get(f"/teams/{id}/monitors").json()
