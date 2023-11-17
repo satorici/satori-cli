@@ -36,7 +36,7 @@ class TeamCommand(BaseCommand):
                 "set_config",
                 "get_token",
                 "refresh_token",
-                "delete",
+                "del",
                 "add",
                 "settings",
             ),
@@ -59,7 +59,7 @@ class TeamCommand(BaseCommand):
             "set_config",
             "get_token",
             "refresh_token",
-            "delete",
+            "del",
             "add",
             "settings",
         ],
@@ -109,7 +109,7 @@ class TeamCommand(BaseCommand):
             info = client.get(f"/teams/{id}/token").json()
         elif action == "refresh_token":
             info = client.put(f"/teams/{id}/token").json()
-        elif action == "delete":
+        elif action == "del":
             if email:
                 client.request("DELETE", f"/teams/{id}/members", json={"email": email})
                 console.print("Team member deleted")
