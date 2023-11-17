@@ -95,7 +95,7 @@ class TeamCommand(BaseCommand):
                     f"/teams/{id}/monitors", json={"monitor": monitor}
                 ).json()
             else:
-                raise Exception("Use --repo, --member or --monitor")
+                raise Exception("Use --github, --email, --repo or --monitor")
         elif action == "repos":
             info = client.get(f"/teams/{id}/repos").json()["rows"]
         elif action == "get_config":
