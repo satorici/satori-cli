@@ -102,13 +102,15 @@ class ReportCommand(BaseCommand):
                     ],
                     table,
                 )
-            add_table_row(
-                [
-                    ["Playbook", report["playbook_id"]],
-                    ["Url", report["playbook_url"]],
-                ],
-                table,
-            )
+
+            # Playbooks Line
+            playbook_line = [["Playbook", report["playbook_id"]]]
+            if report["playbook_url"]:
+                playbook_line.append(["Url", report["playbook_url"]])
+            if report["secrets_count"]:
+                playbook_line.append(["Parameters", report["secrets_count"]])
+            add_table_row(playbook_line, table)
+
             if report["testcases"]:
                 tests = ""
                 for test in report["testcases"]:
@@ -169,14 +171,15 @@ class ReportCommand(BaseCommand):
                 ],
                 table,
             )
+
         # Add the playbook data in a new row
-        add_table_row(
-            [
-                ["Playbook", report["playbook_id"]],
-                ["Url", report["playbook_url"]],
-            ],
-            table,
-        )
+        playbook_line = [["Playbook", report["playbook_id"]]]
+        if report["playbook_url"]:
+            playbook_line.append(["Url", report["playbook_url"]])
+        if report["secrets_count"]:
+            playbook_line.append(["Parameters", report["secrets_count"]])
+        add_table_row(playbook_line, table)
+
         # Highlight the playbook content
         playbook_content = autosyntax(report["playbook"], echo=False)
         if isinstance(playbook_content, Syntax):
