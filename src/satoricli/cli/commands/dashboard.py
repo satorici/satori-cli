@@ -45,19 +45,19 @@ class DashboardCommand(BaseCommand):
             autotable(info["repos"]["list"]["rows"], "b green", True)
         if len(info["reports"]["list"]) > 0:
             console.rule("[b red]Last 10 Reports", style="red")
-            reports = info["reports"]["list"]
+            reports = []
             # Remove unused columns
-            for report in reports:
-                report.pop("branches",None)
-                report.pop("hash",None)
-                report.pop("commit_date",None)
-                report.pop("commit_author",None)
-                report.pop("commit_email",None)
-                report.pop("playbook_id",None)
-                report.pop("playbook_name",None)
-                report.pop("playbook_url",None)
-                report.pop("user",None)
-                report.pop("testcases",None)
-                report.pop("errors",None)
-                report.pop("execution_time",None)
-            autotable(reports, "b green", True)
+            for report in info["reports"]["list"]:
+                reports.append(
+                    {
+                        "id": report["id"],
+                        "public": report["public"],
+                        "execution type": report["execution"],
+                        "name": report["playbook_name"],
+                        "status": report["status"],
+                        "result": report["result"],
+                        "date": report["date"].replace("T", " "),
+                        "team": report["team"],
+                    }
+                )
+            autotable(reports, "b green")
