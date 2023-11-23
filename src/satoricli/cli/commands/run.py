@@ -241,8 +241,7 @@ class RunCommand(BaseCommand):
         if sync or report or output or files:
             wait(run_id)
 
-        if sync:
-            print_summary(run_id, kwargs["json"])
+        ret = print_summary(run_id, kwargs["json"]) if sync else 0
 
         if report:
             ReportCommand.print_report_asrt(run_id, kwargs["json"])
@@ -252,3 +251,5 @@ class RunCommand(BaseCommand):
 
         if files and playbook and has_files(playbook):
             download_files(run_id)
+
+        return ret
