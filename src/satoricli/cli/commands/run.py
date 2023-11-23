@@ -17,8 +17,11 @@ from satorici.validator.exceptions import (
     PlaybookValidationError,
     PlaybookVariableError,
 )
-from satorici.validator.warnings import MissingAssertionsWarning, NoLogMonitorWarning
-
+from satorici.validator.warnings import (
+    MissingAssertionsWarning,
+    MissingNameWarning,
+    NoLogMonitorWarning,
+)
 from satoricli.api import client
 from satoricli.bundler import get_local_files, make_bundle
 from satoricli.validations import get_parameters, has_executions, validate_parameters
@@ -57,6 +60,8 @@ def validate_config(playbook: Path, params: set):
                 )
             elif warning.category == MissingAssertionsWarning:
                 error_console.print("[warning]WARNING:[/] No asserts were defined")
+            elif warning.category == MissingNameWarning:
+                error_console.print("[warning]WARNING:[/] No name was defined")
     except TypeError:
         error_console.print("Error: playbook must be a mapping type")
         return False
@@ -228,9 +233,7 @@ class RunCommand(BaseCommand):
             if is_monitor:
                 console.print(f"Monitor: https://satori.ci/monitor?id={run_id}")
             else:
-                console.print(
-                    f"Report: https://satori.ci/report_details/?n={run_id}"
-                )
+                console.print(f"Report: https://satori.ci/report_details/?n={run_id}")
 
         if is_monitor:
             return
