@@ -121,12 +121,12 @@ positive:
 
     public_flag:
       - [
-          "export ID=$(satori playbook --json|jq -r '.[0].id'); satori playbook $ID public",
+          "export ID=$(satori playbooks --json|jq -r '.[0].id'); satori playbook $ID public",
         ]
 
     delete_private:
       - [
-          "export ID=$(satori playbook --json|jq -r '.[0].id'); satori playbook $ID delete",
+          "export ID=$(satori playbooks --json|jq -r '.[0].id'); satori playbook $ID delete",
         ]
 
   repo:
