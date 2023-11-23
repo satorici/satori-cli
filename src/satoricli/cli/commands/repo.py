@@ -16,7 +16,6 @@ from ..utils import (
     wait,
 )
 from .base import BaseCommand
-from .scan import ScanCommand
 from .report import ReportCommand
 
 
@@ -31,9 +30,7 @@ class RepoCommand(BaseCommand):
             choices=(
                 "show",
                 "commits",
-                "check-commits",
                 "run",
-                "check-forks",
                 "pending",
                 "download",
                 "tests",
@@ -64,8 +61,6 @@ class RepoCommand(BaseCommand):
         action: Literal[
             "show",
             "commits",
-            "check-commits",
-            "check-forks",
             "run",
             "pending",
             "download",
@@ -75,7 +70,6 @@ class RepoCommand(BaseCommand):
         output: bool,
         report: bool,
         data: Optional[str],
-        branch: str,
         filter: Optional[str],
         all: bool,
         limit: int,
@@ -128,15 +122,6 @@ class RepoCommand(BaseCommand):
                     ReportCommand.print_report_asrt(report_id, kwargs["json"])
 
                 return
-        elif action == "check-forks":
-            info = client.get(f"/repos/scan/{repository}/check-forks").json()
-        elif action == "check-commits":
-            console.print(f"Checking the list of commits of the repo {repository}")
-            info = client.get(
-                f"/repos/scan/{repository}/check-commits", params={"branch": branch}
-            ).json()
-            if sync:
-                return ScanCommand.scan_sync(repository)
         elif action in ("download", "pending"):
             info = client.get(f"/repos/{repository}/{action}").json()
         elif action == "show":

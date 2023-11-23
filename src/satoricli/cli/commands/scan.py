@@ -28,6 +28,8 @@ class ScanCommand(BaseCommand):
                 "stop",
                 "status",
                 "clean",
+                "check-forks",
+                "check-commits",
             ),
             nargs="?",
             default="new",
@@ -52,6 +54,8 @@ class ScanCommand(BaseCommand):
             "stop",
             "status",
             "clean",
+            "check-forks",
+            "check-commits",
         ],
         coverage: float,
         sync: bool,
@@ -95,11 +99,16 @@ class ScanCommand(BaseCommand):
                 return self.scan_sync(repository)
             else:
                 info = client.get(f"/repos/scan/{repository}/status").json()
-
-        if kwargs["json"]:
-            console.print_json(data=info)
-        else:
-            autoformat(info)
+        elif action == "check-forks":
+            info = client.get(f"/repos/scan/{repository}/check-forks").json()
+        elif action == "check-commits":
+            console.print(f"Checking the list of commits of the repo {repository}")
+            info = client.get(
+                f"/repos/scan/{repository}/check-commits", params={"branch": branch}
+            ).json()
+            if sync:
+                return ScanCommand.scan_sync(repository)
+        autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 
     @staticmethod
     def scan_sync(id):
