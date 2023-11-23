@@ -113,11 +113,11 @@ positive:
 
       private_playbook_by_id:
         - [
-            "export ID=$(satori playbook --json|jq -r '.[0].id'); satori playbook $ID",
+            "export ID=$(satori playbooks --json|jq -r '.[0].id'); satori playbook $ID",
           ]
 
       public_playbook:
-        - [satori playbook satori://code/detect-secrets.yml]
+        - [satori playbook satori://secrets/detect-secrets.yml]
 
     public_flag:
       - [
