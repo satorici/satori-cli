@@ -9,8 +9,6 @@ positive:
   assertReturnCode: 0
   assertStderrNotContains: Traceback
   install:
-    #update:
-    #- [ apt update ]
     git:
       - [apt install -y git jq]
     satori:
@@ -25,7 +23,7 @@ positive:
     set_token:
       - [satori config token "$(TOKEN)"]
 
-  # TBU: show the user's dashboard (what about teams?)
+  # show the user's dashboard
   dashboard:
     - [satori]
 
@@ -142,17 +140,13 @@ positive:
     run:
       - [satori repo satoridev01/hello_world run]
 
-    # TBD: get the commits of a certain repo (required for scans)
-    check_commits:
-      - [satori repo satoridev01/hello_world check-commits]
-
     # list the commits of a certain repo
     commits:
       - [satori repo satoridev01/hello_world commits]
 
     # TBD: get the forks of a certain repo (required for fork-scan)
-    check_forks:
-      - [satori repo satoridev01/hello_world check-forks]
+    #check_forks:
+    #  - [satori repo satoridev01/hello_world check-forks]
 
   monitor:
     # run a new monitor
@@ -197,23 +191,27 @@ positive:
     # list:
     #   - [satori scans]
 
-    # OK: run the .satori.yml playbook with a certain coverage on the repo
+    # Get the commits of a certain repo (required for scans)
+    check_commits:
+      - [satori scan satoridev01/hello_world check-commits]
+      
+    # Run the .satori.yml playbook with a certain coverage on the repo
     run:
       - [satori scan satoridev01/hello_world -c 50]
 
-    # OK: what's the status of the current scanning
+    # What's the status of the current scanning
     status:
       - [satori scan satoridev01/hello_world status]
 
-    # OK: stop the scan execution
+    # Stop the scan execution
     stop:
       - [satori scan satoridev01/hello_world stop]
 
-    # # OK: [re]start a scan execution
+    # Restart a scan execution
     # start:
     #   - [satori scan satoridev01/hello_world start]
 
-    # OK: delete the scan reports
+    # Delete the scan reports
     clean:
       - [satori scan satoridev01/hello_world clean]
 
