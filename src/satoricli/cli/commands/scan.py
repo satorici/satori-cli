@@ -43,7 +43,7 @@ class ScanCommand(BaseCommand):
         parser.add_argument("-d", "--data", help="Secrets", default="")
         parser.add_argument("-b", "--branch", default="main", help="Repo branch")
         parser.add_argument("--filter", help="Filter names")
-        parser.add_argument("--playbook", help="Playbook", type=Path)
+        parser.add_argument("--playbook", help="Playbook url or file")
 
     def __call__(
         self,
@@ -63,20 +63,25 @@ class ScanCommand(BaseCommand):
         branch: str,
         from_date: Optional[date],
         to_date: Optional[date],
-        playbook: Optional[Path],
+        playbook: Optional[str],
         **kwargs,
     ):
-        if playbook and not playbook.is_file():
-            console.print("Invalid playbook")
-            return 1
-
         if action == "new":
+            config = None
+
+            if playbook:
+                if (path := Path(playbook)) and path.is_file():
+                    config = path.read_text()
+
+                if playbook.startswith("satori://"):
+                    config = playbook
+
             info = client.get(
                 "/repos/scan",
                 params={
                     "url": repository,
                     "data": data,
-                    "playbook": playbook and playbook.read_text(),
+                    "playbook": config,
                     "coverage": coverage,
                     "from": from_date,
                     "to": to_date,
