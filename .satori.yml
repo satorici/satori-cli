@@ -62,27 +62,27 @@ positive:
 
     # show a report
     single:
-      - ["export ID=$(cat report_id.txt); satori report $ID"]
+      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID"]
 
     # show a json report
     json:
-      - ["export ID=$(cat report_id.txt); satori report $ID --json"]
+      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID --json"]
 
     # make a report public
     public:
-      - ["export ID=$(cat report_id.txt); satori report $ID public"]
+      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID public"]
 
     # show the output associated to a report
     output:
-      - ["export ID=$(cat report_id.txt); satori report $ID output"]
+      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID output"]
 
     # download the files associated to a report
     files:
-      - ["export ID=$(cat report_id.txt); satori report $ID files"]
+      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID files"]
 
     # delete the files, the output and the report
     delete:
-      - ["export ID=$(cat report_id.txt); satori report $ID delete"]
+      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID delete"]
 
     # run asynchronously a local playbook
     new_async: # new report for stop is needed because the first one is already stopped
@@ -92,7 +92,7 @@ positive:
 
     # stop a running report
     stop: # wait until start
-      - ["sleep 10; export ID=$(cat report_id2.txt); satori report $ID stop"]
+      - ["sleep 10; export ID=$(cat report_id2.txt); echo $ID; satori report $ID stop"]
 
   playbook:
     list:
@@ -102,16 +102,13 @@ positive:
       public:
         - [satori playbooks --public]
 
-    #echo:
-    #  - ["export ID=$(cat report_id2.txt); echo $ID"]
-
     read:
       private_playbook_by_report_id:
-        - ["export ID=$(cat report_id2.txt); satori playbook $ID"]
+        - ["export ID=$(cat report_id2.txt); echo $ID; satori playbook $ID"]
 
       private_playbook_by_id:
         - [
-            "export ID=$(satori playbooks --json|jq -r '.[0].id'); satori playbook $ID",
+            "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID",
           ]
 
       public_playbook:
@@ -119,12 +116,12 @@ positive:
 
     public_flag:
       - [
-          "export ID=$(satori playbooks --json|jq -r '.[0].id'); satori playbook $ID public",
+          "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID public",
         ]
 
     delete_private:
       - [
-          "export ID=$(satori playbooks --json|jq -r '.[0].id'); satori playbook $ID delete",
+          "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID delete",
         ]
 
   repo:
@@ -155,36 +152,33 @@ positive:
           "satori run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt",
         ]
 
-    #echo:
-    #- [ "export ID=$(cat monitor_id.txt); echo $ID" ]
-
     # list the monitors
     list:
       - ["sleep 5; satori monitors"]
 
     # list the reports associated to a monitor
     single: # wait until start
-      - ["export ID=$(cat monitor_id.txt); satori monitor $ID"]
+      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID"]
 
     # make a monitor's reports public
     public: #
-      - ["export ID=$(cat monitor_id.txt); satori monitor $ID public"]
+      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID public"]
 
     # stop a monitor
     start:
-      - ["export ID=$(cat monitor_id.txt); satori monitor $ID start"]
+      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID start"]
 
     # start a monitor
     stop:
-      - ["export ID=$(cat monitor_id.txt); satori monitor $ID stop"]
+      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID stop"]
 
     # delete the reports associated to a monitor
     clean:
-      - ["export ID=$(cat monitor_id.txt); satori monitor $ID clean"]
+      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID clean"]
 
     # delete the monitor
     delete:
-      - ["export ID=$(cat monitor_id.txt); satori monitor $ID delete"]
+      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID delete"]
 
   scan:
     # # To be developed: list the current scans
