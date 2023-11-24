@@ -251,7 +251,7 @@ positive:
       - [satori team test_team add --repo='satoridev01/hello_world']
 
     # list the repos associated to the 'test_team'
-    team_without_repos:
+    team_with_repos:
       - [satori team test_team repos]
       
     # delete the repo 'satoridev01/hello_world' from the team 'test_team'
@@ -259,7 +259,7 @@ positive:
       - [satori team test_team del --repo='satoridev01/hello_world']
 
     # list the repos associated to the 'test_team'
-    team_with_repos:
+    team_without_repos:
       - [satori team test_team repos]
 
     # delete the 'test_team'
