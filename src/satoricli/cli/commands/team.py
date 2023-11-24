@@ -117,13 +117,16 @@ class TeamCommand(BaseCommand):
             if email:
                 client.request("DELETE", f"/teams/{id}/members", json={"email": email})
                 console.print("Team member deleted")
+            elif repo:
+                client.request("DELETE", f"/teams/{id}/repos", json={"repo": repo})
+                console.print("Team repo deleted")
             elif github:
                 client.request(
                     "DELETE", f"/teams/{id}/members", json={"github": github}
                 )
                 console.print("Team member deleted")
             else:
-                raise Exception("Use --github, --email")
+                raise Exception("Use --github, --email or --repo")
             return
         elif action == "delete":
             client.delete(f"/teams/{id}")
