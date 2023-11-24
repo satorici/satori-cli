@@ -5,10 +5,9 @@ from pathlib import Path
 from typing import Literal, Optional
 
 from rich.live import Live
-from websocket import WebSocketApp
-
 from satoricli.api import WS_HOST, client
 from satoricli.cli.utils import autoformat, console
+from websocket import WebSocketApp
 
 from ..arguments import date_args
 from .base import BaseCommand
@@ -19,7 +18,7 @@ class ScanCommand(BaseCommand):
     options = (date_args,)
 
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("repository", metavar="REPOSITORY", nargs="?")
+        parser.add_argument("repository", metavar="REPOSITORY")
         parser.add_argument(
             "action",
             metavar="ACTION",
@@ -48,7 +47,7 @@ class ScanCommand(BaseCommand):
 
     def __call__(
         self,
-        repository: Optional[str],
+        repository: str,
         action: Literal[
             "new",
             "stop",
@@ -71,7 +70,7 @@ class ScanCommand(BaseCommand):
             console.print("Invalid playbook")
             return 1
 
-        if action == "new" and repository:
+        if action == "new":
             info = client.get(
                 "/repos/scan",
                 params={
@@ -86,8 +85,6 @@ class ScanCommand(BaseCommand):
             ).json()
             if sync:
                 return self.scan_sync(repository)
-        elif action == "new" and not repository:
-            return
         elif action == "clean":
             info = client.get(
                 f"/repos/{repository}/clean", params={"delete_commits": delete_commits}
