@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from typing import Optional
 
+from rich import print
+
 
 class BaseCommand(ABC):
     subcommands: tuple[type["BaseCommand"]] = ()
@@ -19,6 +21,9 @@ class BaseCommand(ABC):
             parser = ArgumentParser(
                 self.name, parents=self.options + self.global_options
             )
+
+        if self.help():
+            parser.print_help = lambda: print(self.help())
 
         self._parser = parser
         self.parent = parent
@@ -39,6 +44,9 @@ class BaseCommand(ABC):
 
         self._parser.set_defaults(func=default_func or self)
         self.register_args(self._parser)
+
+    def help(self) -> str:
+        ...
 
     @abstractmethod
     def register_args(self, parser: ArgumentParser):
