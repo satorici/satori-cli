@@ -104,24 +104,16 @@ class RepoCommand(BaseCommand):
                 timeout=300,
             ).json()
 
-            scan_data = info[0]  # TODO: A saner model
-
-            if "error" in scan_data:
-                error_console.print(f"[error]{scan_data['error']}")
+            if isinstance(info, dict):  # single scan
+                self.repo_run(info, sync, output, report, kwargs)
+            elif isinstance(info, list):  # used a wildcard
+                for scan_data in info:
+                    self.repo_run(scan_data, sync, output, report, kwargs)
+            else:
+                error_console.print("Unknown response")
                 return 1
 
-            if sync or output or report:
-                report_id = scan_data["status"].split()[-1]
-                wait(report_id)
-
-                if sync:
-                    print_summary(report_id, kwargs["json"])
-                if output:
-                    print_output(report_id, kwargs["json"])
-                if report:
-                    ReportCommand.print_report_asrt(report_id, kwargs["json"])
-
-                return
+            return
         elif action in ("download", "pending"):
             info = client.get(f"/repos/{repository}/{action}").json()
         elif action == "show":
@@ -183,3 +175,22 @@ class RepoCommand(BaseCommand):
                 n += 1
                 if n >= len(report_list):
                     n = 0
+
+    def repo_run(self, scan_data: dict, sync: bool, output: bool, report: bool, kwargs):
+        if "error" in scan_data:
+            error_console.print(f"[error]{scan_data['error']}")
+            return 1
+
+        if "status" in scan_data:
+            console.print(scan_data["status"])
+
+        if sync or output or report:
+            report_id = scan_data["status"].split()[-1]
+            wait(report_id)
+
+            if sync:
+                print_summary(report_id, kwargs["json"])
+            if output:
+                print_output(report_id, kwargs["json"])
+            if report:
+                ReportCommand.print_report_asrt(report_id, kwargs["json"])
