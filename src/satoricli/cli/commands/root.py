@@ -3,7 +3,7 @@ from functools import partial
 from importlib import metadata
 
 from rich.console import Group
-from rich.table import Table
+from rich.table import Column, Table
 
 from ..arguments import json_arg, profile_arg
 from .base import BaseCommand
@@ -62,10 +62,15 @@ class RootCommand(BaseCommand):
             for row in rows:
                 table.add_row(*row)
 
+        def cols():
+            return Column(ratio=1), Column(ratio=1)
+
         HelpTable = partial(Table, expand=True, show_header=False)
         tables = []
 
-        tables.append(intro := HelpTable(title="Install, Update and Configure"))
+        tables.append(
+            intro := HelpTable(*cols(), title="Install, Update and Configure")
+        )
         rows = [
             ("pip3 install satori-ci", "Install the latest version"),
             ("satori update", "Update to the latest version"),
@@ -80,7 +85,7 @@ class RootCommand(BaseCommand):
         ]
         add_rows(intro, rows)
 
-        tables.append(run_async := HelpTable(title="Run asyncronously"))
+        tables.append(run_async := HelpTable(*cols(), title="Run asyncronously"))
         rows = [
             (
                 "satori run ./",
@@ -95,7 +100,9 @@ class RootCommand(BaseCommand):
         add_rows(run_async, rows)
 
         tables.append(
-            run_sync := HelpTable(title="Run syncronously using these parameters")
+            run_sync := HelpTable(
+                *cols(), title="Run syncronously using these parameters"
+            )
         )
         rows = [
             ("--sync", "Show the result"),
@@ -108,7 +115,9 @@ class RootCommand(BaseCommand):
         ]
         add_rows(run_sync, rows)
 
-        tables.append(params := HelpTable(title="Run playbooks with variables"))
+        tables.append(
+            params := HelpTable(*cols(), title="Run playbooks with variables")
+        )
         rows = [
             (
                 '--data=\'{"VAR":"This is the value of VAR"}\'',
@@ -117,7 +126,7 @@ class RootCommand(BaseCommand):
         ]
         add_rows(params, rows)
 
-        tables.append(playbooks := HelpTable(title="Playbooks"))
+        tables.append(playbooks := HelpTable(*cols(), title="Playbooks"))
         rows = [
             ("satori playbooks", "List your private playbooks"),
             ("satori playbooks --public", "List the public playbooks"),
@@ -127,14 +136,14 @@ class RootCommand(BaseCommand):
         ]
         add_rows(playbooks, rows)
 
-        tables.append(dashboards := HelpTable(title="Dashboards"))
+        tables.append(dashboards := HelpTable(*cols(), title="Dashboards"))
         rows = [
             ("satori", "Show your general dashboard"),
             ("satori team TEAM", "Show your TEAM dashboard"),
         ]
         add_rows(dashboards, rows)
 
-        tables.append(reports := HelpTable(title="Reports"))
+        tables.append(reports := HelpTable(*cols(), title="Reports"))
         rows = [
             ("satori reports", "List reports"),
             ("satori report ID", "Show the report ID"),
@@ -154,7 +163,7 @@ class RootCommand(BaseCommand):
         ]
         add_rows(reports, rows)
 
-        tables.append(repos := HelpTable(title="Repos"))
+        tables.append(repos := HelpTable(*cols(), title="Repos"))
         rows = [
             ("satori repos", ""),
             ("satori repo GithubUser/Repo", ""),
@@ -165,7 +174,7 @@ class RootCommand(BaseCommand):
         ]
         add_rows(repos, rows)
 
-        tables.append(monitors := HelpTable(title="Monitors"))
+        tables.append(monitors := HelpTable(*cols(), title="Monitors"))
         rows = [
             ("satori monitors", "List monitors"),
             ("satori monitor ID", "List the reports associated to a monitor ID"),
@@ -180,7 +189,7 @@ class RootCommand(BaseCommand):
         ]
         add_rows(monitors, rows)
 
-        tables.append(scans := HelpTable(title="Scans"))
+        tables.append(scans := HelpTable(*cols(), title="Scans"))
         rows = [
             ("satori scans", "List scans"),
             (
@@ -210,7 +219,7 @@ class RootCommand(BaseCommand):
         ]
         add_rows(scans, rows)
 
-        tables.append(teams := HelpTable(title="Teams"))
+        tables.append(teams := HelpTable(*cols(), title="Teams"))
         rows = [
             ("satori teams", "List your teams"),
             ("satori team TEAM", "Show the TEAM dashboard"),
