@@ -153,7 +153,6 @@ class ReportCommand(BaseCommand):
                 ["Execution time", report.get("execution_time")],
                 ["Monitor", report["monitor_id"]],
                 ["Date", report["created"].replace("T", " ")],
-                ["Fails", report["fails"]],
                 ["Status", report["status"]],
                 ["Result", report["result"]],
             ],
@@ -222,7 +221,7 @@ class ReportCommand(BaseCommand):
                 [
                     ["Testcases", report["testcases"]],
                     ["Test status", report["test_status"]],
-                    ["Total Fails", report["total_fails"]],
+                    ["Testcase’s Assertions Failed", report["total_fails"]],
                 ]
             )
             row = add_table_row(assert_props, table, echo=False) or ""
@@ -231,7 +230,7 @@ class ReportCommand(BaseCommand):
                     add_table_row(
                         [
                             ["Assert", ast["assert"]],
-                            ["Count", ast["count"]],
+                            ["Assertions Failed", ast["count"]],
                             ["Expected", ast["expected"]],
                             ["Status", ast["status"]],
                         ],
@@ -264,10 +263,7 @@ class ReportCommand(BaseCommand):
                     show_header=False, show_lines=True, highlight=True, expand=True
                 )
                 add_table_row(
-                    [
-                        ["Fails", report_data["fails"]],
-                        ["Result", report_data["result"]],
-                    ],
+                    [["Result", report_data["result"]]],
                     table,
                 )
                 ReportCommand.print_report_summary(report_data["report"], table)
