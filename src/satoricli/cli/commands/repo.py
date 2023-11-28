@@ -128,7 +128,22 @@ class RepoCommand(BaseCommand):
             else:
                 autoformat(info)
                 console.print("Reports:")
-                autotable(reports["list"])
+                reports_cols = [
+                    {
+                        "ID": report["id"],
+                        "Commit hash": report["hash"][:7]
+                        if report["hash"]
+                        else report["hash"],
+                        "Commit author": report["commit_author"],
+                        "Execution time": report["execution_time"],
+                        "Result": report["result"],
+                        "Status": report["status"],
+                        "User": report["user"],
+                        "Date": report["date"],
+                    }
+                    for report in reports["list"]
+                ]
+                autotable(reports_cols)
             return
         elif action == "commits":
             info = client.get(f"/repos/{repository}/commits").json()
