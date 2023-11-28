@@ -165,12 +165,10 @@ class RootCommand(BaseCommand):
 
         tables.append(repos := HelpTable(*cols(), title="Repos"))
         rows = [
-            ("satori repos", ""),
-            ("satori repo GithubUser/Repo", ""),
-            ("satori repo GithubUser/Repo run", ""),
-            ("satori repo GithubUser/Repo check-commits", ""),
-            ("satori repo GithubUser/Repo check-forks", ""),
-            ("satori repo GithubUser/Repo commits", ""),
+            ("satori repos", "List the repositories connected to CI or tested"),
+            ("satori repo GithubUser/Repo", "Shows the repository Visibility, CI, Playbook, Status, Result and its team."),
+            ("satori repo GithubUser/Repo run", "Run using the latest commit"),
+            ("satori repo GithubUser/Repo commits", "Show the list of commits and the reports associated"),
         ]
         add_rows(repos, rows)
 
@@ -195,6 +193,15 @@ class RootCommand(BaseCommand):
             (
                 "satori scan GithubUser/Repo -c N",
                 "Scan the Github repository with a coverage of 1 (default) to 100",
+            ),
+            
+            (
+                "satori scan GithubUser/Repo check-commits", 
+                "Get the repository commits before scanning"
+            ),
+            (
+                "satori scan GithubUser/Repo check-forks", 
+                "Get the repository forks before scanning"
             ),
             (
                 "satori scan GithubUser/Repo status",
