@@ -242,12 +242,12 @@ class RootCommand(BaseCommand):
                 'satori team TEAM add --github="GithubUser"',
                 "Owners and admins can add users via Github to the TEAM",
             ),
-            ('--role="USER"', "use the role READ (default) or ADMIN"),
+            ('--role="READ"', "use the role READ (default) or ADMIN"),
             (
                 'satori team TEAM add --email="usr@example.com"',
                 "Owners and admins can add users via Email to the TEAM",
             ),
-            ('--role="USER"', "use the role READ (default) or ADMIN"),
+            ('--role="READ"', "use the role READ (default) or ADMIN"),
             (
                 'satori team TEAM add --monitor="MONITORID"',
                 "Add the monitor ID to your TEAM",
