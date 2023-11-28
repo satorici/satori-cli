@@ -120,6 +120,18 @@ class RepoCommand(BaseCommand):
             info = client.get(
                 f"/repos/{repository}", params={"pending": pending}
             ).json()
+            reports = client.get(
+                "/reports", params={"filter": f"repo={repository}"}
+            ).json()
+
+            if kwargs["json"]:
+                info["reports"] = reports
+                console.print_json(data=info)
+            else:
+                autoformat(info)
+                console.print("Reports:")
+                autotable(reports["list"])
+            return
         elif action == "commits":
             info = client.get(f"/repos/{repository}/commits").json()
             for row in info:
