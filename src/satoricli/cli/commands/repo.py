@@ -32,7 +32,6 @@ class RepoCommand(BaseCommand):
                 "commits",
                 "run",
                 "pending",
-                "download",
                 "tests",
             ),
             nargs="?",
@@ -63,7 +62,6 @@ class RepoCommand(BaseCommand):
             "commits",
             "run",
             "pending",
-            "download",
             "tests",
         ],
         sync: bool,
@@ -114,8 +112,8 @@ class RepoCommand(BaseCommand):
                 return 1
 
             return
-        elif action in ("download", "pending"):
-            info = client.get(f"/repos/{repository}/{action}").json()
+        elif action == "pending":
+            info = client.get(f"/repos/{repository}/pending").json()
         elif action == "show":
             info = client.get(
                 f"/repos/{repository}", params={"pending": pending}
