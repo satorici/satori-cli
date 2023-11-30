@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
+from math import ceil
 
 from satoricli.api import client
-from satoricli.cli.utils import autoformat
+from satoricli.cli.utils import autoformat, console
 from satoricli.playbooks import display_public_playbooks
 
 from .base import BaseCommand
@@ -38,4 +39,7 @@ class PlaybooksCommand(BaseCommand):
 
         data = client.get("/playbooks", params={"limit": limit, "page": page}).json()
 
-        autoformat(data, jsonfmt=kwargs["json"], list_separator="-" * 48, table=True)
+        autoformat(
+            data["items"], jsonfmt=kwargs["json"], list_separator="-" * 48, table=True
+        )
+        console.print(f"Page {page} of {ceil(data['total'] / limit)}")
