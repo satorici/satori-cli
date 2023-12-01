@@ -496,7 +496,7 @@ def print_output(report_id: str, print_json: bool = False):
     with httpx.stream("GET", r.json()["url"], timeout=300) as s:
         if print_json:
             for line in s.iter_lines():
-                console.out(line)
+                console.out(line, highlight=False)
         else:
             format_outputs(s.iter_lines())
 
