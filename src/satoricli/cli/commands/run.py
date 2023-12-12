@@ -6,28 +6,23 @@ import uuid
 import warnings
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import httpx
 import yaml
 from rich.progress import open as progress_open
-from satorici.validator import validate_playbook
+from satorici.validator import validate_playbook, validate_settings
 from satorici.validator.exceptions import (
     NoExecutionsError,
     PlaybookValidationError,
     PlaybookVariableError,
 )
-from satorici.validator.warnings import (
-    MissingAssertionsWarning,
-    MissingNameWarning,
-    NoLogMonitorWarning,
-)
+from satorici.validator.warnings import MissingAssertionsWarning
 from satoricli.api import client
 from satoricli.bundler import get_local_files, make_bundle
 from satoricli.validations import get_parameters, has_executions, validate_parameters
 
 from ..utils import (
-    check_monitor,
     console,
     download_files,
     error_console,
@@ -53,15 +48,8 @@ def validate_config(playbook: Path, params: set):
             validate_playbook(config)
 
         for warning in w:
-            if warning.category == NoLogMonitorWarning:
-                error_console.print(
-                    "[warning]WARNING:[/] No notifications (log, onLogFail or "
-                    "onLogPass) were defined for the Monitor"
-                )
-            elif warning.category == MissingAssertionsWarning:
+            if warning.category == MissingAssertionsWarning:
                 error_console.print("[warning]WARNING:[/] No asserts were defined")
-            elif warning.category == MissingNameWarning:
-                error_console.print("[warning]WARNING:[/] No name was defined")
     except TypeError:
         error_console.print("Error: playbook must be a mapping type")
         return False
@@ -86,10 +74,9 @@ def validate_config(playbook: Path, params: set):
     return True
 
 
-def missing_ymls(root: str):
-    satori_yml = Path(root, ".satori.yml")
+def missing_ymls(playbook: dict, root: str):
     local_ymls = list(filter(lambda p: p.is_file(), Path(root).rglob(".satori.yml")))
-    imported = get_local_files(yaml.safe_load(satori_yml.read_text()))["imports"]
+    imported = get_local_files(playbook)["imports"]
 
     if len(local_ymls) > 1 and len(local_ymls) - 1 > len(imported):
         return True
@@ -103,45 +90,66 @@ def make_packet(path: str):
     return f"{temp_file}.tar.gz"
 
 
-def run_folder(bundle, packet: str, secrets: Optional[str], is_monitor: bool) -> str:
-    run_info = client.post(
-        "/runs/archive", json={"secrets": secrets or "", "is_monitor": is_monitor}
+def new_run(
+    *,
+    bundle: Optional[Any] = None,
+    url: Optional[str] = None,
+    packet: Optional[Path] = None,
+    secrets: Optional[dict] = None,
+    settings: Optional[dict] = None,
+) -> list[str]:
+    data = client.post(
+        "/runs",
+        data={
+            "url": url,
+            "secrets": json.dumps(secrets) if secrets else None,
+            "settings": json.dumps(settings) if settings else None,
+            "with_files": bool(packet),
+        },
+        files={"bundle": bundle} if bundle else {"": ""},
     ).json()
-    arc = run_info["archive"]
-    bun = run_info["bundle"]
 
-    try:
-        with progress_open(
-            packet, "rb", description="Uploading...", console=error_console
-        ) as f:
-            res = httpx.post(arc["url"], data=arc["fields"], files={"file": f})
-        res.raise_for_status()
-    finally:
-        os.remove(packet)
+    if arc := data["upload_data"]:
+        try:
+            with progress_open(
+                packet, "rb", description="Uploading...", console=error_console
+            ) as f:
+                res = httpx.post(arc["url"], data=arc["fields"], files={"file": f})
+            res.raise_for_status()
+        finally:
+            os.remove(packet)
 
-    res = httpx.post(bun["url"], data=bun["fields"], files={"file": bundle})
-    res.raise_for_status()
-
-    return run_info["monitor"] if is_monitor else run_info["report_id"]
+    return data["report_ids"]
 
 
-def run_file(bundle, secrets: Optional[str], is_monitor: bool) -> str:
-    run_info = client.post(
-        "/runs/bundle", json={"secrets": secrets or "", "is_monitor": is_monitor}
+def new_monitor(
+    bundle,
+    settings: dict,
+    *,
+    packet: Optional[Path] = None,
+    secrets: Optional[dict] = None,
+) -> str:
+    data = client.post(
+        "/monitors",
+        data={
+            "secrets": json.dumps(secrets) if secrets else None,
+            "settings": json.dumps(settings),
+            "with_files": bool(packet),
+        },
+        files={"bundle": bundle} if bundle else {"": ""},
     ).json()
-    res = httpx.post(
-        run_info["url"], data=run_info["fields"], files={"file": bundle}, timeout=None
-    )
-    res.raise_for_status()
 
-    return run_info["monitor"] if is_monitor else run_info["report_id"]
+    if arc := data["upload_data"]:
+        try:
+            with progress_open(
+                packet, "rb", description="Uploading...", console=error_console
+            ) as f:
+                res = httpx.post(arc["url"], data=arc["fields"], files={"file": f})
+            res.raise_for_status()
+        finally:
+            os.remove(packet)
 
-
-def run_url(url: str, secrets: Optional[str]) -> str:
-    info = client.post(
-        "/runs/url", json={"secrets": secrets or "", "is_monitor": False, "url": url}
-    ).json()
-    return info["report_id"]
+    return data["monitor_id"]
 
 
 def has_files(playbook_path: Path):
@@ -151,105 +159,147 @@ def has_files(playbook_path: Path):
         return False
 
 
+def get_cli_settings(args: dict):
+    keys = ("cpu", "memory", "cron", "rate", "count", "name")
+
+    return {key: value for key, value in args.items() if key in keys and value}
+
+
+def warn_settings(settings: dict):
+    with warnings.catch_warnings(record=True) as ws:
+        validate_settings(settings)
+
+        for w in ws:
+            error_console.print("WARNING:", w.message)
+
+
 class RunCommand(BaseCommand):
     name = "run"
 
     def register_args(self, parser: ArgumentParser):
         parser.add_argument("path", metavar="PATH")
         parser.add_argument("-d", "--data", type=json.loads)
-        group = parser.add_argument_group()
-        group.add_argument("-s", "--sync", action="store_true")
-        group.add_argument("-o", "--output", action="store_true")
-        group.add_argument("-r", "--report", action="store_true")
-        group.add_argument("-f", "--files", action="store_true")
+        parser.add_argument(
+            "-p",
+            "--playbook",
+            type=Path,
+            help="if PATH is a directory this playbook will be used",
+        )
+
+        settings = parser.add_argument_group("run settings")
+        monitor = settings.add_mutually_exclusive_group()
+        monitor.add_argument("--rate")
+        monitor.add_argument("--cron")
+        settings.add_argument("--name")
+        settings.add_argument("--count", type=int)
+        settings.add_argument("--cpu", type=int)
+        settings.add_argument("--memory", type=int)
+
+        sync = parser.add_argument_group("sync run")
+        sync.add_argument("-s", "--sync", action="store_true")
+        sync.add_argument("-o", "--output", action="store_true")
+        sync.add_argument("-r", "--report", action="store_true")
+        sync.add_argument("-f", "--files", action="store_true")
 
     def __call__(
         self,
         path: str,
         sync: bool,
         data: Optional[dict],
+        playbook: Optional[Path],
         output: bool,
         report: bool,
         files: bool,
         **kwargs,
     ):
-        target = Path(path)
+        if data and not validate_parameters(data):
+            raise ValueError("Malformed parameters")
 
-        if data:
-            if not validate_parameters(data):
-                raise ValueError("Malformed parameters")
+        cli_settings = get_cli_settings(kwargs)
+        is_monitor = bool(cli_settings.get("rate") or cli_settings.get("cron"))
 
-            params = set(data.keys())
-            data = str(data)  # TODO: Modify API to receive JSON
-        else:
-            params = set()
+        if path.startswith("satori://"):
+            warn_settings(cli_settings)
+            ids = new_run(url=path, secrets=data, settings=cli_settings)
+            is_monitor = False
+            monitor_id = None
+        elif (playbook_path := Path(path)).is_file():
+            if not validate_config(playbook_path, str(data.keys()) if data else set()):
+                return 1
 
-        if target.is_dir() and (target / ".satori.yml").is_file():
-            playbook = target / ".satori.yml"
-        elif target.is_file():
-            playbook = target
-        elif path.startswith("satori://"):
-            playbook = None
-        else:
-            error_console.print("[error]Playbook file or folder not found")
-            return 1
+            bundle = make_bundle(playbook_path, playbook_path.parent)
+            config = yaml.safe_load(playbook_path.read_bytes())
 
-        if playbook and not validate_config(playbook, params):
-            return 1
+            settings: dict = config.get("settings", {})
+            is_monitor = is_monitor or settings.get("cron") or settings.get("rate")
+            settings.update(cli_settings)
 
-        if files and playbook and not has_files(playbook):
-            error_console.print(
-                "[error]ERROR:[/] Can't use --files without files setting in playbook"
-            )
-            return 1
+            warn_settings(settings)
 
-        if target.is_dir():
-            bundle = make_bundle(playbook, from_dir=True)
-            packet = make_packet(path)
-            is_monitor: bool = check_monitor(playbook)
+            if is_monitor:
+                monitor_id = new_monitor(bundle, settings, secrets=data)
+            else:
+                ids = new_run(bundle=bundle, secrets=data, settings=settings)
+        elif (base := Path(path)).is_dir():
+            playbook_path = playbook or base / ".satori.yml"
+            config = yaml.safe_load(playbook_path.read_bytes())
 
-            if missing_ymls(path):
+            settings: dict = config.get("settings", {})
+            is_monitor = is_monitor or settings.get("cron") or settings.get("rate")
+            settings.update(cli_settings)
+
+            warn_settings(settings)
+
+            if not validate_config(playbook_path, str(data.keys()) if data else set()):
+                return 1
+
+            bundle = make_bundle(playbook_path, playbook_path.parent)
+            packet = make_packet(base)
+
+            if missing_ymls(config, path):
                 error_console.print(
                     "[warning]WARNING:[/] There are some .satori.yml outside the root "
                     "folder that have not been imported."
                 )
 
-            run_id = run_folder(bundle, packet, data, is_monitor)
-        elif target.is_file():
-            bundle = make_bundle(playbook)
-            is_monitor: bool = check_monitor(playbook)
-            run_id = run_file(bundle, data, is_monitor)
-        elif path.startswith("satori://"):
-            is_monitor = False
-            run_id = run_url(path, data)
+            if is_monitor:
+                monitor_id = new_monitor(bundle, settings, packet=packet, secrets=data)
+            else:
+                ids = new_run(
+                    bundle=bundle, secrets=data, packet=packet, settings=settings
+                )
         else:
+            error_console.print("ERROR: Invalid PATH")
             return 1
 
-        if kwargs["json"]:
-            console.print_json(data={"id": run_id, "monitor": is_monitor})
-        else:
-            console.print("Monitor" if is_monitor else "Report", "ID:", run_id)
-
-            if is_monitor:
-                console.print(f"Monitor: https://satori.ci/monitor?id={run_id}")
-            else:
-                console.print(f"Report: https://satori.ci/report_details/?n={run_id}")
-
-        if is_monitor:
+        if not is_monitor and not kwargs["json"]:
+            for report_id in ids:
+                console.print("Report ID:", report_id)
+                console.print(
+                    f"Report: https://satori.ci/report_details/?n={report_id}"
+                )
+        elif not is_monitor and kwargs["json"]:
+            console.print_json(data={"ids": ids})
+        elif is_monitor and not kwargs["json"]:
+            console.print("Monitor ID:", monitor_id)
+            console.print(f"Monitor: https://satori.ci/monitor?id={monitor_id}")
+            return
+        elif is_monitor and kwargs["json"]:
+            console.print_json(data={"monitor_id": monitor_id})
             return
 
         if sync or report or output or files:
-            wait(run_id)
+            wait(ids[0])
 
-        ret = print_summary(run_id, kwargs["json"]) if sync else 0
+        ret = print_summary(ids[0], kwargs["json"]) if sync else 0
 
         if report:
-            ReportCommand.print_report_asrt(run_id, kwargs["json"])
+            ReportCommand.print_report_asrt(ids[0], kwargs["json"])
 
         if output:
-            print_output(run_id, kwargs["json"])
+            print_output(ids[0], kwargs["json"])
 
-        if files and playbook and has_files(playbook):
-            download_files(run_id)
+        if files and config and has_files(config):
+            download_files(ids[0])
 
         return ret
