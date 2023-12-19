@@ -292,3 +292,6 @@ negative:
       - [
           "satori run .satori/empty.yml --data={'A':'B'}; satori run .satori/empty.yml --data={'A':'B','C':'D'}",
         ]
+        
+    malformed_credentials:
+      - [ cp random_file.yml ~/.satori_credentials.yml; satori ]
