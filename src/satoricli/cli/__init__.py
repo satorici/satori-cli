@@ -48,8 +48,22 @@ def main():
     root = RootCommand()
     args = root.parse_args()
 
-    if config := load_config().get(args["profile"]):
-        configure_client(**config)
+    try:
+        config = load_config().get(args["profile"])
+    except Exception as e:
+        error_console.print(
+            f"[error]ERROR:[/] Your .satori_credentials.yml file in your home is corrupted."
+        )
+        sys.exit(1)
+
+    if config:
+        try:
+            configure_client(**config)
+        except Exception as e:
+            error_console.print(
+                f"[error]ERROR:[/] Cannot find your profile in your .satori_credentials.yml file. Is it corrupted?"
+            )
+            sys.exit(1)
     elif not isinstance(args["func"], ConfigCommand):
         # Allow config cmd only if profile not found
         error_console.print(
