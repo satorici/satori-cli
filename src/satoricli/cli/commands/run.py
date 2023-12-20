@@ -225,7 +225,7 @@ class RunCommand(BaseCommand):
             is_monitor = False
             monitor_id = None
         elif (playbook_path := Path(path)).is_file():
-            if not validate_config(playbook_path, str(data.keys()) if data else set()):
+            if not validate_config(playbook_path, set(data.keys()) if data else set()):
                 return 1
 
             bundle = make_bundle(playbook_path, playbook_path.parent)
@@ -251,7 +251,7 @@ class RunCommand(BaseCommand):
 
             warn_settings(settings)
 
-            if not validate_config(playbook_path, str(data.keys()) if data else set()):
+            if not validate_config(playbook_path, set(data.keys()) if data else set()):
                 return 1
 
             bundle = make_bundle(playbook_path, playbook_path.parent)
