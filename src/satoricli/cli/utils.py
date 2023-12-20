@@ -3,9 +3,11 @@ import logging
 import random
 import re
 import time
+import warnings
 from base64 import b64decode
 from dataclasses import dataclass
 from itertools import zip_longest
+from pathlib import Path
 from typing import Any, Optional, Union
 
 import httpx
@@ -18,8 +20,17 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.theme import Theme
+from satorici.validator import validate_playbook
+from satorici.validator.exceptions import (
+    NoExecutionsError,
+    PlaybookValidationError,
+    PlaybookVariableError,
+)
+from satorici.validator.warnings import MissingAssertionsWarning
 
 from satoricli.api import client, disable_error_raise
+from satoricli.bundler import get_local_files
+from satoricli.validations import get_parameters, has_executions
 
 __decorations = "▢•○░"
 __random_colors = ["green", "blue", "red"]
@@ -542,3 +553,53 @@ def add_table_row(row_content: list, table: Table, echo: bool = True):
         table.add_row(row_text)
     else:
         return row_text
+
+
+def validate_config(playbook: Path, params: set):
+    try:
+        config = yaml.safe_load(playbook.read_text())
+    except yaml.YAMLError as e:
+        error_console.print(
+            f"Error parsing the playbook [bold]{playbook.name}[/]:\n", e
+        )
+        return False
+
+    try:
+        with warnings.catch_warnings(record=True) as w:
+            validate_playbook(config)
+
+        for warning in w:
+            if warning.category == MissingAssertionsWarning:
+                error_console.print("[warning]WARNING:[/] No asserts were defined")
+    except TypeError:
+        error_console.print("Error: playbook must be a mapping type")
+        return False
+    except (PlaybookVariableError, NoExecutionsError):
+        pass
+    except PlaybookValidationError as e:
+        error_console.print(
+            f"Validation error on playbook [bold]{playbook.name}[/]:\n", e
+        )
+        return False
+
+    if not has_executions(config, playbook.parent):
+        error_console.print("[error]No executions found")
+        return False
+
+    variables = get_parameters(config)
+
+    if variables - params:
+        error_console.print(f"[error]Required parameters: {variables - params}")
+        return False
+
+    return True
+
+
+def missing_ymls(playbook: dict, root: str):
+    local_ymls = list(filter(lambda p: p.is_file(), Path(root).rglob(".satori.yml")))
+    imported = get_local_files(playbook)["imports"]
+
+    if len(local_ymls) > 1 and len(local_ymls) - 1 > len(imported):
+        return True
+
+    return False
