@@ -1,5 +1,6 @@
 import json
 import logging
+from math import ceil
 import random
 import re
 import time
@@ -46,6 +47,15 @@ FAIL_REGEX = re.compile(r"(fail(\(\d+\))?|(?<!\w)error(?!\w)|^no$)", re.IGNORECA
 UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
 SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
 KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)")  # ex: "key: "
+
+
+@dataclass
+class BootstrapTable:
+    """Based on https://bootstrap-table.com/docs/api/table-options/#url"""
+
+    total: int
+    totalNotFiltered: int
+    rows: list[dict]
 
 
 # Set rich theme and console
@@ -331,10 +341,12 @@ def table_generator(
 
 
 def autotable(
-    items: list[dict],
+    items: Union[list[dict], BootstrapTable],
     header_style: Optional[str] = None,
     numerate: Optional[bool] = False,
     widths: Union[tuple, list] = [None],
+    page: Optional[int] = None,
+    limit: Optional[int] = None,
 ) -> None:
     """Print a list of dictionaries like a table
 
@@ -347,13 +359,18 @@ def autotable(
     numerate : bool, optional
         Add numeration, by default False
     """
-    if len(items) == 0:
+    is_bootstrap = isinstance(items, BootstrapTable)
+    rows = items.rows if is_bootstrap else items
+    if len(rows) == 0:
         console.print("No items found")
         return
-    h = get_headers(items)
+    h = get_headers(rows)
     headers = ["N°", *h] if numerate else h
-    rows = get_rows(items, headers)
+    rows = get_rows(rows, headers)
     table_generator(capitalize_list(headers), rows, header_style, widths)
+
+    if is_bootstrap and page and limit:
+        console.print(f"Page {page} of {ceil(items.total / limit)}")
 
 
 def get_headers(items: list[dict]) -> list[str]:
@@ -423,16 +440,9 @@ def format_outputs(outputs):
             console.out(output["output"]["os_error"])
 
 
-@dataclass
-class BootstrapTable:
-    """Based on https://bootstrap-table.com/docs/api/table-options/#url"""
-
-    total: int
-    totalNotFiltered: int
-    rows: list[dict]
-
-
-def group_table(table: BootstrapTable, key: str, default_group: str):
+def group_table(
+    table: BootstrapTable, key: str, default_group: str, page: int, limit: int
+):
     """Generate multiple tables grouped by a key
 
     Parameters
@@ -461,6 +471,8 @@ def group_table(table: BootstrapTable, key: str, default_group: str):
     for group in groups.keys():
         console.rule(f"[b]{group}", style="cyan")
         autotable(groups[group], "bold blue")
+
+    console.print(f"Page {page} of {ceil(table.total / limit)}")
 
 
 def wait(report_id: str):
@@ -603,3 +615,7 @@ def missing_ymls(playbook: dict, root: str):
         return True
 
     return False
+
+
+def get_offset(page, limit):
+    return (page - 1) * limit
