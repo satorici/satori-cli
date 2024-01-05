@@ -7,6 +7,7 @@ from satoricli.cli.utils import autoformat, autotable, console
 from .base import BaseCommand
 from .dashboard import DashboardCommand
 from .report import ReportCommand
+from ..utils import BootstrapTable, get_offset
 
 
 class TeamCommand(BaseCommand):
@@ -46,6 +47,8 @@ class TeamCommand(BaseCommand):
         )
         parser.add_argument("config_name", nargs="?")
         parser.add_argument("config_value", nargs="?")
+        parser.add_argument("-p", "--page", type=int, default=1)
+        parser.add_argument("-l", "--limit", type=int, default=20)
 
     def __call__(
         self,
@@ -74,6 +77,8 @@ class TeamCommand(BaseCommand):
         monitor: Optional[str],
         config_name: Optional[str],
         config_value: Optional[str],
+        page: int,
+        limit: int,
         **kwargs,
     ):
         if action == "show":
@@ -101,7 +106,14 @@ class TeamCommand(BaseCommand):
             else:
                 raise Exception("Use --github, --email, --repo or --monitor")
         elif action == "repos":
-            info = client.get(f"/teams/{id}/repos").json()["rows"]
+            offset = get_offset(page, limit)
+            info = client.get(
+                f"/teams/{id}/repos", params={"offset": offset, "limit": limit}
+            ).json()
+            autotable(
+                BootstrapTable(**info), "b blue", False, (20, 20, None), page, limit
+            )
+            return
         elif action == "get_config":
             info = client.get(f"/teams/{id}/config/{config_name}").json()
         elif action == "set_config":

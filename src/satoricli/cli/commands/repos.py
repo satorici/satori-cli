@@ -2,7 +2,14 @@ from argparse import ArgumentParser
 
 from satoricli.api import client
 
-from ..utils import BootstrapTable, autoformat, autotable, console, group_table
+from ..utils import (
+    BootstrapTable,
+    autoformat,
+    autotable,
+    console,
+    group_table,
+    get_offset,
+)
 from .base import BaseCommand
 
 
@@ -10,16 +17,21 @@ class ReposCommand(BaseCommand):
     name = "repos"
 
     def register_args(self, parser: ArgumentParser):
-        pass
+        parser.add_argument("-p", "--page", type=int, default=1)
+        parser.add_argument("-l", "--limit", type=int, default=20)
 
-    def __call__(self, **kwargs):
-        info = client.get("/repos").json()
+    def __call__(self, page: int, limit: int, **kwargs):
+        offset = get_offset(page, limit)
+        repos = client.get("/repos", params={"offset": offset, "limit": limit}).json()
 
         if not kwargs["json"]:
-            if info["pending"]["rows"]:
-                console.rule("[b red]Pending actions", style="red")
-                autotable(info["pending"]["rows"], "bold red", widths=(50, 50))
+            # Only get pending repos when is not a json output and on first page
+            if page == 1:
+                pending_repos = client.get("/repos/pending").json()
+                if pending_repos["rows"]:
+                    console.rule("[b red]Pending actions", style="red")
+                    autotable(pending_repos["rows"], "bold red", widths=(50, 50))
             # Group repos by team name
-            group_table(BootstrapTable(**info["list"]), "team", "Private")
+            group_table(BootstrapTable(**repos), "team", "Private", page, limit)
         else:
-            autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
+            autoformat(repos, jsonfmt=kwargs["json"], list_separator="-" * 48)

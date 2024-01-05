@@ -16,13 +16,7 @@ class ReportsCommand(BaseCommand):
         parser.add_argument("-l", "--limit", type=int, default=20)
         parser.add_argument("-f", "--filter")
 
-    def __call__(
-        self,
-        page: int,
-        limit: int,
-        filter: Optional[str],
-        **kwargs,
-    ):
+    def __call__(self, page: int, limit: int, filter: Optional[str], **kwargs):
         res = client.get(
             "/reports", params={"page": page, "limit": limit, "filter": filter}
         ).json()

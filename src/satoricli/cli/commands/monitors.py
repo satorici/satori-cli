@@ -10,6 +10,7 @@ from satoricli.cli.utils import (
 )
 
 from .base import BaseCommand
+from ..utils import get_offset
 
 
 class MonitorsCommand(BaseCommand):
@@ -22,17 +23,29 @@ class MonitorsCommand(BaseCommand):
         parser.add_argument(
             "--pending", action="store_true", help="show pending actions"
         )
+        parser.add_argument("-p", "--page", type=int, default=1)
+        parser.add_argument("-l", "--limit", type=int, default=20)
 
-    def __call__(self, deleted: bool, pending: bool, **kwargs):
-        info = client.get(
-            "/monitors", params={"deleted": deleted, "pending": pending}
+    def __call__(self, deleted: bool, pending: bool, page: int, limit: int, **kwargs):
+        offset = get_offset(page, limit)
+        monitors = client.get(
+            "/monitors",
+            params={
+                "deleted": deleted,
+                "pending": pending,
+                "limit": limit,
+                "offset": offset,
+            },
         ).json()
 
         if not kwargs["json"]:
-            if len(info["pending"]["rows"]) > 1:
-                console.rule("[b red]Pending actions", style="red")
-                autotable(info["pending"]["rows"], "b red")
+            # Only get pending monitors when is not a json output and on first page
+            if page == 1:
+                pending_monitors = client.get("/monitors/pending").json()
+                if pending_monitors["rows"]:
+                    console.rule("[b red]Pending actions", style="red")
+                    autotable(pending_monitors["rows"], "b red", widths=(50, 50))
             console.rule("[b blue]Monitors", style="blue")
-            group_table(BootstrapTable(**info["list"]), "team", "Private")
+            group_table(BootstrapTable(**monitors), "team", "Private", page, limit)
         else:
-            autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48)
+            autoformat(monitors, jsonfmt=kwargs["json"], list_separator="-" * 48)
