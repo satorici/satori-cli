@@ -1,11 +1,12 @@
 from argparse import ArgumentParser
-from math import ceil
 
 from satoricli.api import client
-from satoricli.cli.utils import autoformat, console
+from satoricli.cli.utils import autotable, BootstrapTable, autoformat
+
 from satoricli.playbooks import display_public_playbooks
 
 from .base import BaseCommand
+from ..utils import get_offset
 
 
 class PlaybooksCommand(BaseCommand):
@@ -36,10 +37,12 @@ class PlaybooksCommand(BaseCommand):
         if public:
             display_public_playbooks()
             return
+        offset = get_offset(page, limit)
+        data = client.get(
+            "/playbooks", params={"offset": offset, "limit": limit}
+        ).json()
 
-        data = client.get("/playbooks", params={"limit": limit, "page": page}).json()
-
-        autoformat(
-            data["items"], jsonfmt=kwargs["json"], list_separator="-" * 48, table=True
-        )
-        console.print(f"Page {page} of {ceil(data['total'] / limit)}")
+        if not kwargs["json"]:
+            autotable(BootstrapTable(**data), limit=limit, page=page)
+        else:
+            autoformat(data["rows"], jsonfmt=kwargs["json"], list_separator="-" * 48)
