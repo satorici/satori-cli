@@ -105,8 +105,8 @@ class ReportCommand(BaseCommand):
 
             # Playbooks Line
             playbook_line = [["Playbook", report["playbook_id"]]]
-            if report["playbook_url"]:
-                playbook_line.append(["Url", report["playbook_url"]])
+            if report["playbook_path"]:
+                playbook_line.append(["Url", report["playbook_path"]])
             if report["secrets_count"]:
                 playbook_line.append(["Parameters", report["secrets_count"]])
             add_table_row(playbook_line, table)
@@ -173,8 +173,8 @@ class ReportCommand(BaseCommand):
 
         # Add the playbook data in a new row
         playbook_line = [["Playbook", report["playbook_id"]]]
-        if report["playbook_url"]:
-            playbook_line.append(["Url", report["playbook_url"]])
+        if report["playbook_path"]:
+            playbook_line.append(["Path", report["playbook_path"]])
         if report["secrets_count"]:
             playbook_line.append(["Parameters", report["secrets_count"]])
         add_table_row(playbook_line, table)

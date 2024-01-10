@@ -38,8 +38,8 @@ def make_packet(path: str):
 
 def new_run(
     *,
+    path: str,
     bundle: Optional[Any] = None,
-    url: Optional[str] = None,
     packet: Optional[Path] = None,
     secrets: Optional[dict] = None,
     settings: Optional[dict] = None,
@@ -47,7 +47,7 @@ def new_run(
     data = client.post(
         "/runs",
         data={
-            "url": url,
+            "path": path,
             "secrets": json.dumps(secrets) if secrets else None,
             "settings": json.dumps(settings) if settings else None,
             "with_files": bool(packet),
@@ -167,7 +167,7 @@ class RunCommand(BaseCommand):
 
         if path.startswith("satori://"):
             warn_settings(cli_settings)
-            ids = new_run(url=path, secrets=data, settings=cli_settings)
+            ids = new_run(path=path, secrets=data, settings=cli_settings)
             is_monitor = False
             monitor_id = None
         elif (playbook_path := Path(path)).is_file():
@@ -186,7 +186,7 @@ class RunCommand(BaseCommand):
             if is_monitor:
                 monitor_id = new_monitor(bundle, settings, secrets=data)
             else:
-                ids = new_run(bundle=bundle, secrets=data, settings=settings)
+                ids = new_run(path=path, bundle=bundle, secrets=data, settings=settings)
         elif (base := Path(path)).is_dir():
             playbook_path = playbook or base / ".satori.yml"
             config = yaml.safe_load(playbook_path.read_bytes())
@@ -213,7 +213,11 @@ class RunCommand(BaseCommand):
                 monitor_id = new_monitor(bundle, settings, packet=packet, secrets=data)
             else:
                 ids = new_run(
-                    bundle=bundle, secrets=data, packet=packet, settings=settings
+                    path=path,
+                    bundle=bundle,
+                    secrets=data,
+                    packet=packet,
+                    settings=settings,
                 )
         else:
             error_console.print("ERROR: Invalid PATH")
