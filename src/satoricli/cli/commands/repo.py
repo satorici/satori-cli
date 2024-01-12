@@ -119,7 +119,7 @@ class RepoCommand(BaseCommand):
                 f"/repos/{repository}", params={"pending": pending}
             ).json()
             reports = client.get(
-                "/reports", params={"filter": f"repo={repository}"}
+                "/reports", params={"filters": f"repo={repository}"}
             ).json()
 
             if kwargs["json"]:
@@ -141,7 +141,7 @@ class RepoCommand(BaseCommand):
                         "User": report["user"],
                         "Date": report["date"],
                     }
-                    for report in reports["list"]
+                    for report in reports["rows"]
                 ]
                 autotable(reports_cols)
             return
