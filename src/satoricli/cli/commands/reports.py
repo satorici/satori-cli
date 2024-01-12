@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from math import ceil
 from typing import Optional
 
 from satoricli.api import client
@@ -18,16 +19,15 @@ class ReportsCommand(BaseCommand):
 
     def __call__(self, page: int, limit: int, filter: Optional[str], **kwargs):
         res = client.get(
-            "/reports", params={"page": page, "limit": limit, "filter": filter}
+            "/reports", params={"page": page, "limit": limit, "filters": filter}
         ).json()
 
         if not kwargs["json"]:
-            if res["count"] == 0:
+            if res["total"] == 0:
                 console.print("No reports found")
                 return
 
-            ReportCommand.print_report_list(res["list"])
-        elif kwargs["json"]:
-            autoformat(res, jsonfmt=kwargs["json"])
-        else:  # single report
-            ReportCommand.print_report_single(res)
+            ReportCommand.print_report_list(res["rows"])
+            console.print(f"Page {page} of {ceil(res['total'] / limit)}")
+        else:
+            autoformat(res["rows"], jsonfmt=kwargs["json"])
