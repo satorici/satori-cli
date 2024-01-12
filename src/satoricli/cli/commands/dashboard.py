@@ -35,19 +35,19 @@ class DashboardCommand(BaseCommand):
                 style="white",
             )
             autotable(info["repos"]["pending"]["rows"], "b green", widths=(50, 50))
-        if len(info["monitors"]["list"]["rows"]) == 0:
+        if not info["monitors"]["list"]["rows"]:
             console.print("[b]Monitors:[red] no active monitors defined")
         else:
             console.rule("[b blue]Monitors", style="blue")
             autotable(info["monitors"]["list"]["rows"], "b blue", True)
-        if len(info["repos"]["list"]["rows"]) > 0:
+        if info["repos"]["list"]["rows"]:
             console.rule("[b green]Github Repositories", style="green")
             autotable(info["repos"]["list"]["rows"], "b green", True)
-        if len(info["reports"]["list"]) > 0:
+        if info["reports"]["rows"]:
             console.rule("[b red]Last 10 Reports", style="red")
             reports = []
             # Remove unused columns
-            for report in info["reports"]["list"]:
+            for report in info["reports"]["rows"]:
                 reports.append(
                     {
                         "id": report["id"],
