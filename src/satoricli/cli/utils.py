@@ -485,12 +485,12 @@ def wait(report_id: str):
         task = progress.add_task("Fetching data")
         status = "Unknown"
 
-        while status not in ("Completed", "Undefined"):
+        while status not in ("Completed", "Stopped"):
             with disable_error_raise() as c:
-                res = c.get(f"/reports/{report_id}")
+                res = c.get(f"/reports/{report_id}/status")
 
             if res.is_success:
-                status = res.json().get("status", "Unknown")
+                status = res.text
             elif res.is_client_error:
                 status = "Unknown"
             else:
