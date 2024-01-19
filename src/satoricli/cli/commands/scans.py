@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 
 from satoricli.api import client
 
-from ..utils import BootstrapTable, autoformat, autotable, get_offset
+from ..utils import BootstrapTable, autoformat, autotable
 from .base import BaseCommand
 
 
@@ -14,8 +14,7 @@ class ScansCommand(BaseCommand):
         parser.add_argument("-l", "--limit", type=int, default=20)
 
     def __call__(self, page: int, limit: int, **kwargs):
-        offset = get_offset(page, limit)
-        repos = client.get("/scans", params={"offset": offset, "limit": limit}).json()
+        repos = client.get("/scan", params={"page": page, "limit": limit}).json()
 
         if not kwargs["json"]:
             # Group repos by team name
