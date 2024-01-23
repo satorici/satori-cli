@@ -32,14 +32,15 @@ class PlaybooksCommand(BaseCommand):
         parser.add_argument(
             "--public", action="store_true", help="Fetch public satori playbooks"
         )
+        parser.add_argument("--monitor", help="A bool value")
 
-    def __call__(self, page: int, limit: int, public: bool, **kwargs):
+    def __call__(self, page: int, limit: int, public: bool, monitor: str, **kwargs):
         if public:
             display_public_playbooks()
             return
         offset = get_offset(page, limit)
         data = client.get(
-            "/playbooks", params={"offset": offset, "limit": limit}
+            "/playbooks", params={"offset": offset, "limit": limit, "monitor": monitor}
         ).json()
 
         if not kwargs["json"]:
