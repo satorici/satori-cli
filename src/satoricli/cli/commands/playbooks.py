@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from typing import Optional
 
 from satoricli.api import client
 from satoricli.cli.utils import autotable, BootstrapTable, autoformat
@@ -34,14 +35,17 @@ class PlaybooksCommand(BaseCommand):
         )
         parser.add_argument("--monitor", help="A bool value")
 
-    def __call__(self, page: int, limit: int, public: bool, monitor: str, **kwargs):
+    def __call__(
+        self, page: int, limit: int, public: bool, monitor: Optional[str], **kwargs
+    ):
         if public:
             display_public_playbooks()
             return
         offset = get_offset(page, limit)
-        data = client.get(
-            "/playbooks", params={"offset": offset, "limit": limit, "monitor": monitor}
-        ).json()
+        params: dict = {"offset": offset, "limit": limit}
+        if monitor:
+            params["monitor"] = monitor
+        data = client.get("/playbooks", params=params).json()
 
         if not kwargs["json"]:
             autotable(BootstrapTable(**data), limit=limit, page=page)
