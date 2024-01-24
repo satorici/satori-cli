@@ -95,18 +95,18 @@ class ScanCommand(BaseCommand):
                 f"/{repository}/clean", params={"delete_commits": delete_commits}
             ).json()
         elif action == "stop":
-            info = client.get(f"/scan/{repository}/stop").json()
+            info = client.get(f"/scan/stop/{repository}").json()
         elif action == "status":
             if sync:
                 return self.scan_sync(repository)
             else:
-                info = client.get(f"/scan/{repository}/status").json()
+                info = client.get(f"/scan/status/{repository}").json()
         elif action == "check-forks":
             info = client.get(f"/scan/{repository}/check-forks").json()
         elif action == "check-commits":
             console.print(f"Checking the list of commits of the repo {repository}")
             info = client.get(
-                f"/scan/{repository}/check-commits", params={"branch": branch}
+                f"/scan/check-commits/{repository}", params={"branch": branch}
             ).json()
             if sync:
                 return ScanCommand.scan_sync(repository)
