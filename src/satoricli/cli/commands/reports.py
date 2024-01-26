@@ -6,7 +6,6 @@ from satoricli.api import client
 from satoricli.cli.utils import autoformat, console
 
 from .base import BaseCommand
-from .report import ReportCommand
 
 
 class ReportsCommand(BaseCommand):
