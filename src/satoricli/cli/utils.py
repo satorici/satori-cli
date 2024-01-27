@@ -477,7 +477,7 @@ def group_table(
 
 def wait(report_id: str):
     with Progress(
-        SpinnerColumn(),
+        SpinnerColumn("dots2"),
         TextColumn("[progress.description]Status: {task.description}"),
         TimeElapsedColumn(),
         console=error_console,
