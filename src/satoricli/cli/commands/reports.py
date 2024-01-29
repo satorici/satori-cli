@@ -3,7 +3,7 @@ from math import ceil
 from typing import Optional
 
 from satoricli.api import client
-from satoricli.cli.utils import autoformat, console
+from satoricli.cli.utils import autotable, console, autoformat
 
 from .base import BaseCommand
 
@@ -26,7 +26,7 @@ class ReportsCommand(BaseCommand):
                 console.print("No reports found")
                 return
 
-            autoformat(
+            autotable(
                 [
                     {
                         "id": report["id"],
@@ -55,7 +55,7 @@ class ReportsCommand(BaseCommand):
                     }
                     for report in res["rows"]
                 ],
-                table=True,
+                widths=(16,)
             )
             console.print(f"Page {page} of {ceil(res['total'] / limit)}")
         else:
