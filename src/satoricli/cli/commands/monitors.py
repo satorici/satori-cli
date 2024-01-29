@@ -46,6 +46,8 @@ class MonitorsCommand(BaseCommand):
                     console.rule("[b red]Pending actions", style="red")
                     autotable(pending_monitors["rows"], "b red", widths=(50, 50))
             console.rule("[b blue]Monitors", style="blue")
-            group_table(BootstrapTable(**monitors), "team", "Private", page, limit)
+            group_table(
+                BootstrapTable(**monitors), "team", "Private", page, limit, widths=(16,)
+            )
         else:
             autoformat(monitors, jsonfmt=kwargs["json"], list_separator="-" * 48)

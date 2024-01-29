@@ -18,6 +18,6 @@ class ScansCommand(BaseCommand):
 
         if not kwargs["json"]:
             # Group repos by team name
-            autotable(BootstrapTable(**repos), page=page, limit=limit)
+            autotable(BootstrapTable(**repos), page=page, limit=limit, widths=(16,))
         else:
             autoformat(repos, jsonfmt=kwargs["json"], list_separator="-" * 48)

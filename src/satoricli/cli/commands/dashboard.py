@@ -60,4 +60,4 @@ class DashboardCommand(BaseCommand):
                         "team": report["team"],
                     }
                 )
-            autotable(reports, "b green")
+            autotable(reports, "b green", widths=(16,))

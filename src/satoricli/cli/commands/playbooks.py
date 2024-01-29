@@ -48,6 +48,6 @@ class PlaybooksCommand(BaseCommand):
         data = client.get("/playbooks", params=params).json()
 
         if not kwargs["json"]:
-            autotable(BootstrapTable(**data), limit=limit, page=page)
+            autotable(BootstrapTable(**data), limit=limit, page=page, widths=(16,))
         else:
             autoformat(data["rows"], jsonfmt=kwargs["json"], list_separator="-" * 48)

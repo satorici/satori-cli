@@ -57,6 +57,6 @@ class ReportsCommand(BaseCommand):
                 ],
                 widths=(16,)
             )
-            console.print(f"Page {page} of {ceil(res['total'] / limit)}")
+            console.print(f"Page {page} of {ceil(res['total'] / limit)} | Total: {res['total']}")
         else:
             autoformat(res["rows"], jsonfmt=kwargs["json"])

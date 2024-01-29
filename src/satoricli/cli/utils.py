@@ -370,7 +370,9 @@ def autotable(
     table_generator(capitalize_list(headers), rows, header_style, widths)
 
     if is_bootstrap and page and limit:
-        console.print(f"Page {page} of {ceil(items.total / limit)}")
+        console.print(
+            f"Page {page} of {ceil(items.total / limit)} | Total: {items.total}"
+        )
 
 
 def get_headers(items: list[dict]) -> list[str]:
@@ -441,7 +443,12 @@ def format_outputs(outputs):
 
 
 def group_table(
-    table: BootstrapTable, key: str, default_group: str, page: int, limit: int
+    table: BootstrapTable,
+    key: str,
+    default_group: str,
+    page: int,
+    limit: int,
+    widths: Union[tuple, list] = [None],
 ):
     """Generate multiple tables grouped by a key
 
@@ -470,9 +477,9 @@ def group_table(
     # Print the tables
     for group in groups.keys():
         console.rule(f"[b]{group}", style="cyan")
-        autotable(groups[group], "bold blue")
+        autotable(groups[group], "bold blue", widths=widths)
 
-    console.print(f"Page {page} of {ceil(table.total / limit)}")
+    console.print(f"Page {page} of {ceil(table.total / limit)} | Total: {table.total }")
 
 
 def wait(report_id: str):
