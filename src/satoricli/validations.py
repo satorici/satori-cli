@@ -11,11 +11,11 @@ from satorici.validator import (
 from satorici.validator.exceptions import NoExecutionsError, PlaybookVariableError
 
 
-def get_unbound(commands: list[list[str]], key: str, flat_config: dict[str]):
+def get_unbound(commands: list[str], key: str, flat_config: dict[str]):
     variables = set()
 
     for command in commands:
-        variables.update(INPUT_REGEX.findall(command[0]))
+        variables.update(INPUT_REGEX.findall(command))
 
     keys: list[str] = flat_config.keys()
     previous_paths = keys[: keys.index(key)]
