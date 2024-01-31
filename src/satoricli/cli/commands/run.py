@@ -106,7 +106,7 @@ def has_files(playbook_path: Path):
 
 
 def get_cli_settings(args: dict):
-    keys = ("cpu", "memory", "cron", "rate", "count", "name", "timeout")
+    keys = ("cpu", "memory", "cron", "rate", "count", "name", "timeout", "os", "image")
 
     return {key: value for key, value in args.items() if key in keys and value}
 
@@ -141,6 +141,8 @@ class RunCommand(BaseCommand):
         settings.add_argument("--cpu", type=int)
         settings.add_argument("--memory", type=int)
         settings.add_argument("--timeout", type=int)
+        settings.add_argument("--os", choices=("windows", "linux"))
+        settings.add_argument("--image")
 
         sync = parser.add_argument_group("sync run")
         sync.add_argument("-s", "--sync", action="store_true")
