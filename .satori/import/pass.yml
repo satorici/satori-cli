@@ -2,9 +2,22 @@ settings:
   files: True
   name: Pass playbook
 
-test:
-  assertStdoutContains: "Hello World"
-  echo:
-  - [ echo Hello World ]
-touch:
-- [ touch HelloWorld ]
+mutation:
+- value: "Hello World"
+  mutate: radamsa
+  mutate_qty: 10
+- value: "Hello World"
+  mutate: zzuf
+  mutate_qty: 10
+
+tests:
+  assertReturnCode: 0
+  positive:
+    assertStdoutContains: "Hello World"
+    echo:
+    - echo Hello World
+  
+  negative:
+    assertStdoutNotContains: "Hello World"
+    echo:
+    - echo ${{mutation}}
