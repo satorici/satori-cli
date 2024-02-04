@@ -3,143 +3,155 @@ settings:
   log: slack
 
 import:
-  - "satori://secrets/semgrep.yml"
+  - satori://secrets/semgrep.yml
 
 positive:
   assertReturnCode: 0
   assertStderrNotContains: Traceback
   install:
     git:
-      - [apt install -y git jq]
+      - apt install -y git jq
     satori:
-      - [pip install .]
+      - pip install .
 
   # the -P or --profile parameters allows you to use different Satori CI API Tokens
   token_saved:
     create_profile:
-      - [satori config token "not_a_token" --profile test_user]
+      - satori config token "not_a_token" --profile test_user
 
     # define the default token for the configuration
     set_token:
-      - [satori config token "$(TOKEN)"]
+      - satori config token "${{TOKEN}}"
 
   # show the user's dashboard
   dashboard:
-    - [satori]
+    - satori
 
-  run:
-    # execute a Satori CI playbook and show the report once its done
+  local:
+    # execute a Satori CI playbook locally and show the report once its done
     pass_report:
-      - [satori run .satori/import/pass.yml --report]
+      - satori local .satori/import/pass.yml --report
 
-    # upload a directory with a .satori.yml playbook
+    # execute a Satori CI playbook locally on a directory with a .satori.yml playbook
     import_sync:
-      - [satori run .satori/import --sync]
+      - satori local .satori/import --sync
 
-    # run a public Satori CI playbook and pass parameters
+    # execute a public Satori CI playbook locally and pass parameters
     url_output:
-      - [
-          'satori run satori://web/testssl.yml --data=''{"URL":"https://satori.ci"}'' --output',
-        ]
+      - 'satori local satori://web/testssl.yml --data=''{"URL":"https://satori.ci"}'' --output'
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
-      - [satori run .satori/input.yml --sync]
+      - satori local .satori/input.yml --report --output
+      
+  run:
+    # execute a Satori CI playbook and show the report once its done with 4 CPUs
+    pass_report:
+      - satori run .satori/import/pass.yml --report --cpu 256 --memory 512
+
+    # execute a Satori CI playbook locally on a directory with a .satori.yml playbook
+    import_sync:
+      - satori run .satori/import --sync
+
+    # execute a public Satori CI playbook and pass parameters
+    url_output:
+      - 'satori run satori://web/testssl.yml --data=''{"URL":"https://satori.ci"}'' --output'
+
+    # define inputs on your playbook and execute it with different combination of parameters
+    input:
+      - satori run .satori/input.yml --report --output
 
   report:
     # run synchronously a local playbook
     new_sync:
-      - [
-          "satori run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt",
-        ]
+      - "satori run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt"
 
     #echo_ID:
     #- [ "export ID=$(cat report_id.txt); echo $ID" ]
 
     # list the reports generated
     list:
-      - [satori reports]
+      - satori reports
 
+    # list the pending reports
+    filter:
+      - satori reports --filter="status=Pending"
+      
     # show a report
     single:
-      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID"]
+      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID"
 
     # show a json report
     json:
-      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID --json"]
+      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID --json"
 
     # make a report public
     public:
-      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID public"]
+      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID public"
 
     # show the output associated to a report
     output:
-      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID output"]
+      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID output"
 
     # download the files associated to a report
     files:
-      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID files"]
+      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID files"
 
     # delete the files, the output and the report
     delete:
-      - ["export ID=$(cat report_id.txt); echo $ID; satori report $ID delete"]
+      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID delete"
 
     # run asynchronously a local playbook
     new_async: # new report for stop is needed because the first one is already stopped
-      - [
-          "satori run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt",
-        ]
+      - "satori run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt"
 
     # stop a running report
     stop: # wait until start
-      - ["sleep 10; export ID=$(cat report_id2.txt); echo $ID; satori report $ID stop"]
+      - "sleep 10; export ID=$(cat report_id2.txt); echo $ID; satori report $ID stop"
 
   playbook:
     list:
       private:
-        - [satori playbooks]
+        - satori playbooks
 
       public:
-        - [satori playbooks --public]
+        - satori playbooks --public
+        
+      monitors:
+        - satori playbooks --filter="monitor=True"
 
     read:
       private_playbook_by_report_id:
-        - ["export ID=$(cat report_id2.txt); echo $ID; satori playbook $ID"]
+        - "export ID=$(cat report_id2.txt); echo $ID; satori playbook $ID"
 
       private_playbook_by_id:
-        - [
-            "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID",
-          ]
+        - "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID"
 
       public_playbook:
-        - [satori playbook satori://secrets/detect-secrets.yml]
+        - satori playbook satori://secrets/detect-secrets.yml
 
     public_flag:
-      - [
-          "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID public",
-        ]
+      - "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID public"
 
     delete_private:
-      - [
-          "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID delete",
-        ]
+      - "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID delete"
 
   repo:
     # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
     list:
-      - [satori repos]
+      - satori repos
 
     # list the commits and the reports associated to a repository
     single:
-      - [satori repo satoridev01/hello_world]
+      - satori repo satoridev01/hello_world
 
     # simulate a push from the latest version to run the .satori.yml playbook from the repo
     run:
-      - [satori repo satoridev01/hello_world run]
+      - satori repo satoridev01/hello_world run
 
     # list the commits of a certain repo
     commits:
-      - [satori repo satoridev01/hello_world commits]
+      - satori repo satoridev01/hello_world commits
 
     # TBD: get the forks of a certain repo (required for fork-scan)
     #check_forks:
@@ -148,58 +160,56 @@ positive:
   monitor:
     # run a new monitor
     new:
-      - [
-          "satori run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt",
-        ]
+      - "satori run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt"
 
     # list the monitors
     list:
-      - ["sleep 5; satori monitors"]
+      - "sleep 5; satori monitors"
 
     # list the reports associated to a monitor
     single: # wait until start
-      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID"]
+      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID"
 
     # make a monitor's reports public
     public: #
-      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID public"]
+      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID public"
 
     # stop a monitor
     start:
-      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID start"]
+      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID start"
 
     # start a monitor
     stop:
-      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID stop"]
+      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID stop"
 
     # delete the reports associated to a monitor
     clean:
-      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID clean"]
+      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID clean"
 
     # delete the monitor
     delete:
-      - ["export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID delete"]
+      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID delete"
 
   scan:
     # # To be developed: list the current scans
-    # list:
-    #   - [satori scans]
+    list:
+      - satori scans
 
     # Get the commits of a certain repo (required for scans)
     check_commits:
-      - [satori scan satoridev01/hello_world check-commits]
+      - satori scan satoridev01/hello_world check-commits
       
     # Run the .satori.yml playbook with a certain coverage on the repo
     run:
-      - [satori scan satoridev01/hello_world -c 50]
+      - satori scan satoridev01/hello_world -c 50
 
     # What's the status of the current scanning
     status:
-      - [satori scan satoridev01/hello_world status]
+      - satori scan satoridev01/hello_world status
 
     # Stop the scan execution
     stop:
-      - [satori scan satoridev01/hello_world stop]
+      - satori scan satoridev01/hello_world stop
 
     # Restart a scan execution
     # start:
@@ -207,58 +217,58 @@ positive:
 
     # Delete the scan reports
     clean:
-      - [satori scan satoridev01/hello_world clean]
+      - satori scan satoridev01/hello_world clean
 
   teams:
     # list teams and repos without teams
     list:
-      - [satori teams]
+      - satori teams
 
     # create team 'test_team'
     create:
-      - [satori team test_team create]
+      - satori team test_team create
 
     # list the repos associated to the 'test_team' and their team members
     single:
-      - [satori team test_team]
+      - satori team test_team
 
     # list the members of the 'test_team'
     members:
-      - [satori team test_team members]
+      - satori team test_team members
 
     # add the email 'test@satori.ci' as a member of the team 'test_team'
     add_member:
-      - [satori team test_team add --email='test@satori.ci']
+      - satori team test_team add --email='test@satori.ci'
       
     # delete the email 'test@satori.ci' as a member of the team 'test_team'
     delete_member:
-      - [satori team test_team del --email='test@satori.ci']
+      - satori team test_team del --email='test@satori.ci'
       
     add_github_member:
-      - [satori team test_team add --github='satoridev02']
+      - satori team test_team add --github='satoridev02'
 
     delete_github_member:
-      - [satori team test_team del --github='satoridev02']
+      - satori team test_team del --github='satoridev02'
 
     # add the repo 'satoridev01/hello_world' to the team 'test_team'
     add_repo:
-      - [satori team test_team add --repo='satoridev01/hello_world']
+      - satori team test_team add --repo='satoridev01/hello_world'
 
     # list the repos associated to the 'test_team'
     team_with_repos:
-      - [satori team test_team repos]
+      - satori team test_team repos
       
     # delete the repo 'satoridev01/hello_world' from the team 'test_team'
     del_repo:
-      - [satori team test_team del --repo='satoridev01/hello_world']
+      - satori team test_team del --repo='satoridev01/hello_world'
 
     # list the repos associated to the 'test_team'
     team_without_repos:
-      - [satori team test_team repos]
+      - satori team test_team repos
 
     # delete the 'test_team'
     delete:
-      - [satori team test_team delete]
+      - satori team test_team delete
 
 negative:
   assertReturnCodeNot: 0
@@ -270,28 +280,22 @@ negative:
 
   run:
     fail:
-      - [satori run .satori/fail.yml --sync]
+      - satori run .satori/fail.yml --sync
 
     empty_playbook:
-      - [satori run .satori/empty.yml --report]
+      - satori run .satori/empty.yml --report
 
     empty_directory:
-      - [mkdir test; cd test; satori run ./]
+      - mkdir test; cd test; satori run ./
 
     no_dns:
-      - [
-          "cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET",
-        ]
+      - "cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET"
 
     random:
-      - [
-          "dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori run random_file.yml --output",
-        ]
+      - "dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori run random_file.yml --output"
 
     malformed_or_invalid_json_data:
-      - [
-          "satori run .satori/empty.yml --data={'A':'B'}; satori run .satori/empty.yml --data={'A':'B','C':'D'}",
-        ]
+      - "satori run .satori/empty.yml --data={'A':'B'}; satori run .satori/empty.yml --data={'A':'B','C':'D'}"
         
     malformed_credentials:
-      - [ cp random_file.yml ~/.satori_credentials.yml; satori ]
+      - cp random_file.yml ~/.satori_credentials.yml; satori
