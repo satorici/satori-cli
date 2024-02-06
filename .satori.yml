@@ -118,7 +118,7 @@ positive:
         - satori playbooks --public
         
       monitors:
-        - satori playbooks --filter="monitor=True"
+        - satori playbooks --monitor true
 
     read:
       private_playbook_by_report_id:
