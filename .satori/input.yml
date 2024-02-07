@@ -2,8 +2,9 @@ settings:
   name: Test input
 
 INPUT:
-- "World"
+- - "World"
+
 echo:
   assertStdoutContains: "HelloWorld"
   HelloWorld:
-  - [ echo Hello$(INPUT) ]
+  - echo Hello${{INPUT}}
