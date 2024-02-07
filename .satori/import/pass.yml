@@ -21,3 +21,6 @@ tests:
     assertStdoutNotContains: "Hello World"
     echo:
     - echo ${{mutation}}
+
+  touch:
+  - touch file
