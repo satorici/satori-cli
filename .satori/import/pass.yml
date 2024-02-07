@@ -6,7 +6,7 @@ mutation:
 - - value: "Hello World"
     mutate: radamsa
     mutate_qty: 10
-- - value: "Hello World"
+  - value: "Hello World"
     mutate: zzuf
     mutate_qty: 10
 
