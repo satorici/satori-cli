@@ -46,6 +46,7 @@ class MonitorCommand(BaseCommand):
             info = client.patch(f"/monitors/{id}", json={"public": "invert"}).json()
         elif action in ("start", "stop"):
             client.patch(f"/monitors/{id}/{action}")
+            print(f"Monitor {'stopped' if action == 'stop' else 'started'}")
             return
         elif action == "clean":
             client.delete(f"/monitors/{id}/reports")
