@@ -168,7 +168,8 @@ class RunCommand(BaseCommand):
         is_monitor = bool(cli_settings.get("rate") or cli_settings.get("cron"))
 
         if path.startswith("satori://"):
-            warn_settings(cli_settings)
+            with warnings.catch_warnings(record=True):
+                validate_settings(cli_settings)
             ids = new_run(path=path, secrets=data, settings=cli_settings)
             is_monitor = False
             monitor_id = None
