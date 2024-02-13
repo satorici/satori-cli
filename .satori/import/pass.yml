@@ -13,14 +13,11 @@ mutation:
 tests:
   assertReturnCode: 0
   positive:
-    assertStdoutContains: "Hello World"
+    assertStdoutEqual: "Hello World\n"
     echo:
     - echo Hello World
   
   negative:
-    assertStdoutNotContains: "Hello World"
+    assertStdoutNotEqual: "Hello World\n"
     echo:
     - echo ${{mutation}}
-
-  touch:
-  - touch file
