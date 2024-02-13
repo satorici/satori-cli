@@ -47,9 +47,15 @@ def file_finder() -> list[dict]:
         except Exception:
             parameters = ()
 
+        schema = (
+            yaml.safe_load(playbook.read_bytes())
+            .get("settings", {})
+            .get("schema", "satori")
+        )
+
         playbooks.append(
             {
-                "uri": "satori://" + playbook.relative_to(PLAYBOOKS_DIR).as_posix(),
+                "uri": f"{schema}://" + playbook.relative_to(PLAYBOOKS_DIR).as_posix(),
                 "name": get_playbook_name(playbook),
                 "parameters": ", ".join(parameters),
             }
