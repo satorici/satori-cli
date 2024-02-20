@@ -97,7 +97,7 @@ class RepoCommand(BaseCommand):
                 playbook = path.read_text()
 
             info = client.get(
-                "/repos/scan/last",
+                "/scan/last",
                 params={"url": repository, "data": data or "", "playbook": playbook},
                 timeout=300,
             ).json()
