@@ -2,15 +2,14 @@ settings:
   name: "Satori CLI Tests"
   log: slack
 
-import:
-  - satori://secrets/semgrep.yml
-
 positive:
   assertReturnCode: 0
   assertStderrNotContains: Traceback
   install:
+    updates:
+      - apt update
     git:
-      - apt install -y git jq
+      - apt install -y python3 python3-pip git jq
     satori:
       - pip install .
 
@@ -21,7 +20,7 @@ positive:
 
     # define the default token for the configuration
     set_token:
-      - satori config token "${{TOKEN}}"
+      - satori config token ${{TOKEN}}
 
   # show the user's dashboard
   dashboard:
@@ -277,6 +276,7 @@ negative:
   assertStdoutNotContains:
     - malformed node
     - invalid syntax
+    - object has no attribute
 
   run:
     fail:
@@ -284,6 +284,9 @@ negative:
 
     empty_playbook:
       - satori run .satori/empty.yml --report
+
+    empty_playbook_id:
+      - satori playbook
 
     empty_directory:
       - mkdir test; cd test; satori run ./
