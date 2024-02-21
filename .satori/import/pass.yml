@@ -13,11 +13,11 @@ mutation:
 tests:
   assertReturnCode: 0
   positive:
-    assertStdoutEqual: "Hello World\n"
+    assertStdoutEqual: "Hello World"
     echo:
-    - echo Hello World
+    - echo -n Hello World
   
   negative:
-    assertStdoutNotEqual: "Hello World\n"
+    assertStdoutNotEqual: "Hello World"
     echo:
-    - echo ${{mutation}}
+    - echo -n ${{mutation}}
