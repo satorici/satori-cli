@@ -11,8 +11,8 @@ mutation:
     mutate_qty: 10
 
 tests:
-  assertReturnCode: 0
   positive:
+    assertReturnCode: 0
     assertStdoutEqual: "Hello World"
     echo:
     - echo -n Hello World
