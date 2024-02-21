@@ -28,7 +28,7 @@ from .base import BaseCommand
 
 
 def new_local_run(
-    bundle=None, playbook_uri: str | None = None, secrets: Optional[dict] = None
+    bundle=None, playbook_uri: Optional[str] = None, secrets: Optional[dict] = None
 ) -> dict:
     return client.post(
         "/runs/local",
