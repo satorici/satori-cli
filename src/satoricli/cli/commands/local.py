@@ -27,11 +27,16 @@ from ..utils import (
 from .base import BaseCommand
 
 
-def new_local_run(bundle, secrets: Optional[dict] = None) -> dict:
+def new_local_run(
+    bundle=None, playbook_uri: str | None = None, secrets: Optional[dict] = None
+) -> dict:
     return client.post(
         "/runs/local",
-        data={"secrets": json.dumps(secrets)} if secrets else None,
-        files={"bundle": bundle},
+        data={
+            "secrets": json.dumps(secrets) if secrets else None,
+            "playbook_uri": playbook_uri,
+        },
+        files={"bundle": bundle} if bundle else {"": ""},
     ).json()
 
 
@@ -46,23 +51,24 @@ class LocalCommand(BaseCommand):
     name = "local"
 
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("path", metavar="PATH", type=Path)
-        parser.add_argument("-d", "--data", type=json.loads)
         parser.add_argument(
-            "-p",
-            "--playbook",
+            "-C",
+            "--workdir",
             type=Path,
-            help="if PATH is a directory this playbook will be used",
+            default=Path(),
+            help="defaults to current directory",
         )
+        parser.add_argument("-p", "--playbook", help="override .satori.yml in workdir")
+        parser.add_argument("-d", "--data", type=json.loads)
         parser.add_argument("--report", action="store_true")
         parser.add_argument("--output", action="store_true")
         parser.add_argument("--summary", action="store_true")
 
     def __call__(
         self,
-        path: Path,
+        workdir: Path,
         data: Optional[dict],
-        playbook: Optional[Path],
+        playbook: Optional[str],
         report: bool,
         output: bool,
         summary: bool,
@@ -71,14 +77,18 @@ class LocalCommand(BaseCommand):
         if data and not validate_parameters(data):
             raise ValueError("Malformed parameters")
 
-        if path.is_file():
+        if playbook and "://" in playbook:
+            local_run = new_local_run(playbook_uri=playbook, secrets=data)
+        elif playbook and os.path.isfile(playbook):
+            path = Path(playbook)
+
             if not validate_config(path, set(data.keys()) if data else set()):
                 return 1
 
             bundle = make_bundle(path, path.parent)
-            local_run = new_local_run(bundle, data)
-        elif path.is_dir():
-            playbook_path = playbook or path / ".satori.yml"
+            local_run = new_local_run(bundle, secrets=data)
+        elif not playbook:
+            playbook_path = workdir / ".satori.yml"
             config = yaml.safe_load(playbook_path.read_bytes())
 
             if not validate_config(playbook_path, set(data.keys()) if data else set()):
@@ -92,9 +102,9 @@ class LocalCommand(BaseCommand):
                     "folder that have not been imported."
                 )
 
-            local_run = new_local_run(bundle, data)
+            local_run = new_local_run(bundle, secrets=data)
         else:
-            error_console.print("ERROR: Invalid PATH")
+            error_console.print("ERROR: Invalid args")
             return 1
 
         report_id = local_run["report_id"]
@@ -109,8 +119,7 @@ class LocalCommand(BaseCommand):
             httpx.stream("GET", local_run["recipe"]) as s,
             SpooledTemporaryFile(4096) as results,
         ):
-            if path.is_dir():
-                os.chdir(path)
+            os.chdir(workdir)
 
             for line in s.iter_lines():
                 message: dict = json.loads(line)
