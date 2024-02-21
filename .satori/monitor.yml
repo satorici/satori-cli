@@ -5,4 +5,4 @@ settings:
 test:
   assertStdoutContains: "Hello World"
   echo:
-  - [ echo "Hello World" ]
+  - echo Hello World
