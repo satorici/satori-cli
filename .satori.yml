@@ -33,7 +33,7 @@ positive:
 
     # execute a Satori CI playbook locally on a directory with a .satori.yml playbook
     import_sync:
-      - satori local -p .satori/import --sync
+      - satori local -C .satori/import --sync
 
     # execute a public Satori CI playbook locally and pass parameters
     url_output:
