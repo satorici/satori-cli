@@ -29,19 +29,19 @@ positive:
   local:
     # execute a Satori CI playbook locally and show the report once its done
     pass_report:
-      - satori local .satori/import/pass.yml --report
+      - satori local -p .satori/import/pass.yml --report
 
     # execute a Satori CI playbook locally on a directory with a .satori.yml playbook
     import_sync:
-      - satori local .satori/import --sync
+      - satori local -p .satori/import --sync
 
     # execute a public Satori CI playbook locally and pass parameters
     url_output:
-      - 'satori local satori://web/testssl.yml --data=''{"URL":"https://satori.ci"}'' --output'
+      - satori local -p satori://web/testssl.yml --data='{"URL":"https://satori.ci"}' --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
-      - satori local .satori/input.yml --report --output
+      - satori local -p .satori/input.yml --report --output
       
   run:
     # execute a Satori CI playbook and show the report once its done with 4 CPUs
