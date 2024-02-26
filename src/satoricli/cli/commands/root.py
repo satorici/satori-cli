@@ -60,6 +60,9 @@ class RootCommand(BaseCommand):
         parser.add_argument(
             "-v", "--version", action="version", version=f"%(prog)s {VERSION}"
         )
+        parser.add_argument(
+            "--pending", action="store_true", help="Show pending actions"
+        )
 
     def help(self):
         def add_rows(table: Table, rows):

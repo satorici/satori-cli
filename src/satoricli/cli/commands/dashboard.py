@@ -10,9 +10,11 @@ class DashboardCommand(BaseCommand):
     name = "dashboard"
 
     def register_args(self, parser: ArgumentParser):
-        pass
+        parser.add_argument(
+            "--pending", action="store_true", help="Show pending actions"
+        )
 
-    def __call__(self, **kwargs):
+    def __call__(self, pending: bool, **kwargs):
         data = client.get("/dashboard")
 
         if kwargs["json"]:
@@ -20,16 +22,16 @@ class DashboardCommand(BaseCommand):
             return
 
         info = data.json()
-        self.generate_dashboard(info)
+        self.generate_dashboard(info, pending)
 
     @staticmethod
-    def generate_dashboard(info):
-        if info["monitors"]["pending"]["rows"]:
+    def generate_dashboard(info: dict, pending: bool = False):
+        if info["monitors"]["pending"]["rows"] and pending:
             console.rule("[b][blue]Monitors[/blue] (Actions required)", style="white")
             autotable(
                 info["monitors"]["pending"]["rows"], "b blue", widths=(20, 20, None)
             )
-        if info["repos"]["pending"]["rows"]:
+        if info["repos"]["pending"]["rows"] and pending:
             console.rule(
                 "[b][green]GitHub Repositories[/green] (Actions required)",
                 style="white",

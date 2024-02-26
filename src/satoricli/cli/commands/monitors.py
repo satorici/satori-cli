@@ -18,10 +18,10 @@ class MonitorsCommand(BaseCommand):
 
     def register_args(self, parser: ArgumentParser):
         parser.add_argument(
-            "--deleted", action="store_true", help="show deleted monitors"
+            "--deleted", action="store_true", help="Show deleted monitors"
         )
         parser.add_argument(
-            "--pending", action="store_true", help="show pending actions"
+            "--pending", action="store_true", help="Show pending actions"
         )
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
@@ -32,7 +32,6 @@ class MonitorsCommand(BaseCommand):
             "/monitors",
             params={
                 "deleted": deleted,
-                "pending": pending,
                 "limit": limit,
                 "offset": offset,
             },
@@ -40,7 +39,7 @@ class MonitorsCommand(BaseCommand):
 
         if not kwargs["json"]:
             # Only get pending monitors when is not a json output and on first page
-            if page == 1:
+            if page == 1 and pending:
                 pending_monitors = client.get("/monitors/pending").json()
                 if pending_monitors["rows"]:
                     console.rule("[b red]Pending actions", style="red")

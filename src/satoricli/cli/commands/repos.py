@@ -19,14 +19,17 @@ class ReposCommand(BaseCommand):
     def register_args(self, parser: ArgumentParser):
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
+        parser.add_argument(
+            "--pending", action="store_true", help="Show pending actions"
+        )
 
-    def __call__(self, page: int, limit: int, **kwargs):
+    def __call__(self, page: int, limit: int, pending:bool, **kwargs):
         offset = get_offset(page, limit)
         repos = client.get("/repos", params={"offset": offset, "limit": limit}).json()
 
         if not kwargs["json"]:
             # Only get pending repos when is not a json output and on first page
-            if page == 1:
+            if page == 1 and pending:
                 pending_repos = client.get("/repos/pending").json()
                 if pending_repos["rows"]:
                     console.rule("[b red]Pending actions", style="red")
