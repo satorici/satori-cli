@@ -33,7 +33,7 @@ positive:
 
     # execute a Satori CI playbook locally on a directory with a .satori.yml playbook
     import_sync:
-      - satori local -C .satori/import --sync
+      - satori local -C .satori/import --summary
 
     # execute a public Satori CI playbook locally and pass parameters
     url_output:
@@ -42,7 +42,7 @@ positive:
     # define inputs on your playbook and execute it with different combination of parameters
     input:
       - satori local -p .satori/input.yml --report --output
-      
+
   run:
     # execute a Satori CI playbook and show the report once its done with 4 CPUs
     pass_report:
@@ -75,7 +75,7 @@ positive:
     # list the pending reports
     filter:
       - satori reports --filter="status=Pending"
-      
+
     # show a report
     single:
       - "export ID=$(cat report_id.txt); echo $ID; satori report $ID"
@@ -115,7 +115,7 @@ positive:
 
       public:
         - satori playbooks --public
-        
+
       monitors:
         - satori playbooks --monitor true
 
@@ -197,7 +197,7 @@ positive:
     # Get the commits of a certain repo (required for scans)
     check_commits:
       - satori scan satoridev01/hello_world check-commits
-      
+
     # Run the .satori.yml playbook with a certain coverage on the repo
     run:
       - satori scan satoridev01/hello_world -c 50
@@ -238,11 +238,11 @@ positive:
     # add the email 'test@satori.ci' as a member of the team 'test_team'
     add_member:
       - satori team test_team add --email='test@satori.ci'
-      
+
     # delete the email 'test@satori.ci' as a member of the team 'test_team'
     delete_member:
       - satori team test_team del --email='test@satori.ci'
-      
+
     add_github_member:
       - satori team test_team add --github='satoridev02'
 
@@ -256,7 +256,7 @@ positive:
     # list the repos associated to the 'test_team'
     team_with_repos:
       - satori team test_team repos
-      
+
     # delete the repo 'satoridev01/hello_world' from the team 'test_team'
     del_repo:
       - satori team test_team del --repo='satoridev01/hello_world'
@@ -299,6 +299,6 @@ negative:
 
     malformed_or_invalid_json_data:
       - "satori run .satori/empty.yml --data={'A':'B'}; satori run .satori/empty.yml --data={'A':'B','C':'D'}"
-        
+
     malformed_credentials:
       - cp random_file.yml ~/.satori_credentials.yml; satori
