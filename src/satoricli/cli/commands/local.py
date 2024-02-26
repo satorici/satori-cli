@@ -96,7 +96,7 @@ class LocalCommand(BaseCommand):
 
             bundle = make_bundle(playbook_path, playbook_path.parent)
 
-            if missing_ymls(config, path):
+            if missing_ymls(config, workdir):
                 error_console.print(
                     "[warning]WARNING:[/] There are some .satori.yml outside the root "
                     "folder that have not been imported."
