@@ -13,7 +13,11 @@ def get_local_files(config: dict):
             paths["imports"].update([p[7:] for p in value if p.startswith("file")])
         elif is_input_group(value):
             paths["inputs"].update(
-                [p.get("file") for p in value if isinstance(p, dict) and p.get("file")]
+                [
+                    p.get("file")
+                    for p in value[0]
+                    if isinstance(p, dict) and p.get("file")
+                ]
             )
         elif is_test(value):
             subtest_files = get_local_files(value)
