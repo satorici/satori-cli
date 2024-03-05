@@ -2,6 +2,9 @@ settings:
   name: "Satori CLI Tests"
   log: slack
 
+import:
+- "satori://secrets/semgrep.yml"
+
 positive:
   assertReturnCode: 0
   assertStderrNotContains: Traceback
