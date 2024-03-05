@@ -131,9 +131,9 @@ class RepoCommand(BaseCommand):
                 reports_cols = [
                     {
                         "ID": report["id"],
-                        "Commit hash": report["hash"][:7]
-                        if report["hash"]
-                        else report["hash"],
+                        "Commit hash": (
+                            report["hash"][:7] if report["hash"] else report["hash"]
+                        ),
                         "Commit author": report["commit_author"],
                         "Execution time": report["execution_time"],
                         "Result": report["result"],
@@ -148,7 +148,7 @@ class RepoCommand(BaseCommand):
         elif action == "commits":
             info = client.get(f"/repos/{repository}/commits").json()
             for row in info:
-                row.pop("Parent")
+                row.pop("parent", None)
             if kwargs["json"]:
                 console.print_json(data=info)
             else:
