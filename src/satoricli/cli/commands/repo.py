@@ -207,7 +207,7 @@ class RepoCommand(BaseCommand):
             console.print("Report ID:", report_id)
             console.print(f"Report: https://satori.ci/report_details/?n={report_id}")
         else:
-            report_id = scan_data["status"].split()[-1]
+            console.print(f"Repo: {scan_data['repo']} | Status: {scan_data['status']}")
 
         if sync or output or report:
             wait(report_id)
@@ -217,5 +217,3 @@ class RepoCommand(BaseCommand):
                 print_output(report_id, kwargs["json"])
             if report:
                 ReportCommand.print_report_asrt(report_id, kwargs["json"])
-        elif "status" in scan_data:
-            console.print(f"Status: {scan_data['status']}")
