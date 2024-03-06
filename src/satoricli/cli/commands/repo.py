@@ -102,14 +102,8 @@ class RepoCommand(BaseCommand):
                 timeout=300,
             ).json()
 
-            if isinstance(info, dict):  # single scan
-                self.repo_run(info, sync, output, report, kwargs)
-            elif isinstance(info, list):  # used a wildcard
-                for scan_data in info:
-                    self.repo_run(scan_data, sync, output, report, kwargs)
-            else:
-                error_console.print("Unknown response")
-                return 1
+            for scan_data in info:
+                self.repo_run(scan_data, sync, output, report, kwargs)
 
             return
         elif action == "pending":
@@ -201,21 +195,27 @@ class RepoCommand(BaseCommand):
                 if n >= len(report_list):
                     n = 0
 
-    def repo_run(self, scan_data: dict, sync: bool, output: bool, report: bool, kwargs):
+    def repo_run(
+        self, scan_data: dict, sync: bool, output: bool, report: bool, kwargs: dict
+    ):
         if "error" in scan_data:
             error_console.print(f"[error]{scan_data['error']}")
             return 1
 
-        if "status" in scan_data:
-            console.print(scan_data["status"])
+        if scan_data["id"].startswith("r"):
+            report_id = scan_data["id"]
+            console.print("Report ID:", report_id)
+            console.print(f"Report: https://satori.ci/report_details/?n={report_id}")
+        else:
+            report_id = scan_data["status"].split()[-1]
 
         if sync or output or report:
-            report_id = scan_data["status"].split()[-1]
             wait(report_id)
-
             if sync:
                 print_summary(report_id, kwargs["json"])
             if output:
                 print_output(report_id, kwargs["json"])
             if report:
                 ReportCommand.print_report_asrt(report_id, kwargs["json"])
+        elif "status" in scan_data:
+            console.print(f"Status: {scan_data['status']}")
