@@ -1,4 +1,5 @@
 import json
+import re
 from argparse import ArgumentParser
 from datetime import date
 from pathlib import Path
@@ -95,8 +96,10 @@ class ScanCommand(BaseCommand):
                 f"/{repository}/clean", params={"delete_commits": delete_commits}
             ).json()
         elif action == "stop":
+            self.check_scan_id(repository)
             info = client.get(f"/scan/stop/{repository}").json()
         elif action == "status":
+            self.check_scan_id(repository)
             if sync:
                 return self.scan_sync(repository)
             else:
@@ -155,3 +158,7 @@ class ScanCommand(BaseCommand):
 
         if app.has_errored:
             return 1
+
+    def check_scan_id(self, scan_id: str) -> None:
+        if not re.match(r"s\w{15}", scan_id):
+            raise Exception("Please enter a scan ID")
