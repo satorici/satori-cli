@@ -203,15 +203,15 @@ positive:
 
     # Run the .satori.yml playbook with a certain coverage on the repo
     run:
-      - satori scan satoridev01/hello_world -c 50
+      - "satori scan satoridev01/hello_world -c 50 | grep 'id:' | sed 's/\\x1b\\[[0-9;]*m//g' | egrep 's[a-zA-Z0-9]{15}' -o >> scan_id.txt"
 
     # What's the status of the current scanning
     status:
-      - satori scan satoridev01/hello_world status
+      - "export ID=$(cat scan_id.txt); echo $ID; satori scan $ID status"
 
     # Stop the scan execution
     stop:
-      - satori scan satoridev01/hello_world stop
+      - "export ID=$(cat scan_id.txt); echo $ID; satori scan $ID stop"
 
     # Restart a scan execution
     # start:
