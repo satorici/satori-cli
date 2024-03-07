@@ -49,10 +49,9 @@ class RepoCommand(BaseCommand):
         parser.add_argument(
             "--pending", action="store_true", help="Show pending actions"
         )
-        group = parser.add_mutually_exclusive_group()
-        group.add_argument("-s", "--sync", action="store_true")
-        group.add_argument("-o", "--output", action="store_true")
-        group.add_argument("-r", "--report", action="store_true")
+        parser.add_argument("-s", "--sync", action="store_true")
+        parser.add_argument("-o", "--output", action="store_true")
+        parser.add_argument("-r", "--report", action="store_true")
 
     def __call__(
         self,
