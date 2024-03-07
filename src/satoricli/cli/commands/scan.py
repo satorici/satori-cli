@@ -93,7 +93,7 @@ class ScanCommand(BaseCommand):
                 return self.scan_sync(repository)
         elif action == "clean":
             info = client.get(
-                f"/{repository}/clean", params={"delete_commits": delete_commits}
+                f"repos/{repository}/clean", params={"delete_commits": delete_commits}
             ).json()
         elif action == "stop":
             self.check_scan_id(repository)
