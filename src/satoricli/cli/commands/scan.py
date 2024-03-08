@@ -7,7 +7,7 @@ from typing import Literal, Optional
 
 from rich.live import Live
 from satoricli.api import WS_HOST, client
-from satoricli.cli.utils import autoformat, console
+from satoricli.cli.utils import BootstrapTable, autoformat, autotable, console
 from websocket import WebSocketApp
 
 from ..arguments import date_args
@@ -27,6 +27,7 @@ class ScanCommand(BaseCommand):
                 "new",
                 "stop",
                 "status",
+                "reports",
                 "clean",
                 "check-forks",
                 "check-commits",
@@ -45,6 +46,8 @@ class ScanCommand(BaseCommand):
         parser.add_argument("-b", "--branch", default="main", help="Repo branch")
         parser.add_argument("--filter", help="Filter names")
         parser.add_argument("--playbook", help="Playbook url or file")
+        parser.add_argument("-p", "--page", type=int, default=1)
+        parser.add_argument("-l", "--limit", type=int, default=20)
 
     def __call__(
         self,
@@ -65,6 +68,8 @@ class ScanCommand(BaseCommand):
         from_date: Optional[date],
         to_date: Optional[date],
         playbook: Optional[str],
+        page: int,
+        limit: int,
         **kwargs,
     ):
         if action == "new":
@@ -104,6 +109,13 @@ class ScanCommand(BaseCommand):
                 return self.scan_sync(repository)
             else:
                 info = client.get(f"/scan/status/{repository}").json()
+        elif action == "reports":
+            self.check_scan_id(repository)
+            info = client.get(
+                f"/scan/reports/{repository}", params={"limit": limit, "page": page}
+            ).json()
+            autotable(BootstrapTable(**info), page=page, limit=limit)
+            return
         elif action == "check-forks":
             info = client.get(f"/scan/{repository}/check-forks").json()
         elif action == "check-commits":
