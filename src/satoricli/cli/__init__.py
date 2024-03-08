@@ -9,9 +9,9 @@ from packaging import version
 from ..api import configure_client
 from ..exceptions import SatoriRequestError
 from ..utils import load_config
+from .commands.config import ConfigCommand
 from .commands.root import RootCommand
 from .utils import error_console
-from .commands.config import ConfigCommand
 
 VERSION = metadata.version("satori-ci")
 
@@ -23,14 +23,14 @@ def check_for_update():
         response = httpx.get("https://pypi.org/pypi/satori-ci/json")
         response.raise_for_status()
     except Exception:
-        error_console.print("[yellow]WARNING:[/] Unable to get latest version.")
+        error_console.print("[warning]WARNING:[/] Unable to get latest version.")
         return
 
     latest = response.json()["info"]["version"]
 
     if version.parse(latest) > version.parse(VERSION):
         error_console.print(
-            f"[yellow]WARNING:[/] Newer version available v{latest}, update with:",
+            f"[warning]WARNING:[/] Newer version available v{latest}, update with:",
             "satori update",
         )
 

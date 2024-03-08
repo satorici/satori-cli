@@ -1,13 +1,12 @@
 import json
 import logging
-from math import ceil
 import random
-import re
 import time
 import warnings
 from base64 import b64decode
 from dataclasses import dataclass
 from itertools import zip_longest
+from math import ceil
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -35,18 +34,6 @@ from satoricli.validations import get_parameters, has_executions
 
 __decorations = "▢•○░"
 __random_colors = ["green", "blue", "red"]
-# IDs
-UUID4_REGEX = re.compile(
-    r"[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
-    re.I,
-)
-# Regex
-PASS_REGEX = re.compile(r"(pass|completed|^yes$)", re.IGNORECASE)
-RUNNING_REGEX = re.compile(r"(pending|running)", re.IGNORECASE)
-FAIL_REGEX = re.compile(r"(fail(\(\d+\))?|(?<!\w)error(?!\w)|^no$)", re.IGNORECASE)
-UNKNOWN_REGEX = re.compile(r"(unknown|undefined)", re.IGNORECASE)
-SATORIURL_REGEX = re.compile(r"(https?:\/\/(www\.)satori-ci\.com\S+)")
-KEYNAME_REGEX = re.compile(r"(([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)")  # ex: "key: "
 
 
 @dataclass
@@ -65,10 +52,10 @@ class SatoriHighlighter(RegexHighlighter):
     highlights = [
         r"(?P<value>(?<=:\s)\w+$)",
         r"(?P<email>[\w-]+@([\w-]+\.)+[\w-]+)",
-        r"(?P<pass>(?<!\w)((p|P)ass|(c|C)ompleted|(y|Y)es|(t|T)rue)(?!\w))",
-        r"(?P<pending>(?<!\w)((p|P)ending|(r|R)unning)(?!\w))",
-        r"(?P<fail>(?<!\w)((f|F)ail(\(\d+\))?|(e|E)rror|(n|N)o|(f|F)alse)(?!\w))",
-        r"(?P<unknown>(?<!\w)((u|U)nknown|undefined|null|None)(?!\w))",
+        r"(?P<pass>(^(p|P)ass|(c|C)ompleted|(y|Y)es|(t|T)rue)$)",
+        r"(?P<pending>(^(p|P)ending|(r|R)unning)$)",
+        r"(?P<fail>(^(f|F)ail(\(\d+\))?|(e|E)rror|(n|N)o|(f|F)alse)$)",
+        r"(?P<unknown>(^(u|U)nknown|undefined|null|None|(S|s)topped)$)",
         r"(?P<satori_com>https?:\/\/(www\.)satori-ci\.com\S+)",
         r"(?P<satori_uri>satori:\/\/\S+)",
         r"(?P<key>([^\w]|^)\w[\w\s]*:\s*)(?!\/\/)",
@@ -315,27 +302,15 @@ def table_generator(
         header_style=header_style,
         row_styles=["on #222222", "on black"],
         expand=True,
+        highlight=True,
     )
     for header, width in zip_longest(headers, widths):
         table.add_column(header, width=width)
     for item in items:
         cells = []
         for raw_i in item:
-            if raw_i is None:
-                i = "-"
-            else:
-                i = str(raw_i)
-            if PASS_REGEX.search(i):
-                styled = "[green]" + i
-            elif FAIL_REGEX.search(i):
-                styled = "[red]" + i
-            elif UNKNOWN_REGEX.search(i):
-                styled = "[yellow]" + i
-            elif RUNNING_REGEX.search(i):
-                styled = "[blue]" + i
-            else:
-                styled = i
-            cells.append(styled)
+            i = "-" if raw_i is None else str(raw_i)
+            cells.append(i)
         table.add_row(*cells)
     console.print(table)
 

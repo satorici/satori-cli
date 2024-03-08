@@ -116,7 +116,7 @@ def warn_settings(settings: dict):
         validate_settings(settings)
 
         for w in ws:
-            error_console.print("WARNING:", w.message)
+            error_console.print("[warning]WARNING:[/]", w.message)
 
 
 class RunCommand(BaseCommand):
