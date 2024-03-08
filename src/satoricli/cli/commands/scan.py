@@ -97,6 +97,7 @@ class ScanCommand(BaseCommand):
             if sync:
                 return self.scan_sync(repository)
         elif action == "clean":
+            self.check_repo_id(repository)
             info = client.get(
                 f"repos/{repository}/clean", params={"delete_commits": delete_commits}
             ).json()
@@ -174,3 +175,7 @@ class ScanCommand(BaseCommand):
     def check_scan_id(self, scan_id: str) -> None:
         if not re.match(r"s\w{15}", scan_id):
             raise Exception("Please enter a scan ID")
+        
+    def check_repo_id(self, repo_id: str) -> None:
+        if not re.match(r"[^/]+/[^/]+", repo_id):
+            raise Exception("Please enter a repo ID")
