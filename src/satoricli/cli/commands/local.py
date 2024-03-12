@@ -51,14 +51,12 @@ class LocalCommand(BaseCommand):
     name = "local"
 
     def register_args(self, parser: ArgumentParser):
+        parser.add_argument("target", metavar="TARGET")
         parser.add_argument(
-            "-C",
-            "--workdir",
-            type=Path,
-            default=Path(),
-            help="defaults to current directory",
+            "-p",
+            "--playbook",
+            help="if TARGET is a directory this playbook will be used",
         )
-        parser.add_argument("-p", "--playbook", help="override .satori.yml in workdir")
         parser.add_argument("-d", "--data", type=json.loads)
         parser.add_argument("--report", action="store_true")
         parser.add_argument("--output", action="store_true")
@@ -66,7 +64,7 @@ class LocalCommand(BaseCommand):
 
     def __call__(
         self,
-        workdir: Path,
+        target: str,
         data: Optional[dict],
         playbook: Optional[str],
         report: bool,
@@ -77,17 +75,19 @@ class LocalCommand(BaseCommand):
         if data and not validate_parameters(data):
             raise ValueError("Malformed parameters")
 
-        if playbook and "://" in playbook:
-            local_run = new_local_run(playbook_uri=playbook, secrets=data)
-        elif playbook and os.path.isfile(playbook):
-            path = Path(playbook)
+        workdir = Path(target) if os.path.isdir(target) else Path()
+
+        if (playbook and "://" in playbook) or "://" in target:
+            local_run = new_local_run(playbook_uri=playbook or target, secrets=data)
+        elif (playbook and os.path.isfile(playbook)) or os.path.isfile(target):
+            path = Path(playbook or target)
 
             if not validate_config(path, set(data.keys()) if data else set()):
                 return 1
 
             bundle = make_bundle(path, path.parent)
             local_run = new_local_run(bundle, secrets=data)
-        elif not playbook:
+        elif os.path.isdir(target):
             playbook_path = workdir / ".satori.yml"
             config = yaml.safe_load(playbook_path.read_bytes())
 
