@@ -192,12 +192,15 @@ class RunCommand(BaseCommand):
         elif (base := Path(path)).is_dir():
             settings = {}
             packet = make_packet(base)
+            bundle = None
 
-            if "://" in playbook:
+            if playbook and "://" in playbook:
                 playbook_path = playbook
             elif (base / ".satori.yml").is_file():
-                playbook_path = base / ".satori.yml"
-                config = yaml.safe_load(playbook_path.read_bytes())
+                dir_playbook = base / ".satori.yml"
+                playbook_path = str(dir_playbook)
+
+                config = yaml.safe_load(dir_playbook.read_bytes())
 
                 settings: dict = config.get("settings", {})
                 is_monitor = is_monitor or settings.get("cron") or settings.get("rate")
@@ -206,7 +209,7 @@ class RunCommand(BaseCommand):
                 warn_settings(settings)
 
                 if not validate_config(
-                    playbook_path, set(data.keys()) if data else set()
+                    dir_playbook, set(data.keys()) if data else set()
                 ):
                     return 1
 
@@ -216,14 +219,14 @@ class RunCommand(BaseCommand):
                         "folder that have not been imported."
                     )
 
-                bundle = make_bundle(playbook_path, playbook_path.parent)
+                bundle = make_bundle(dir_playbook, dir_playbook.parent)
 
             if is_monitor:
                 monitor_id = new_monitor(bundle, settings, packet=packet, secrets=data)
             else:
                 ids = new_run(
                     path=playbook_path,
-                    bundle=bundle if isinstance(playbook_path, Path) else None,
+                    bundle=bundle,
                     secrets=data,
                     packet=packet,
                     settings=settings,
