@@ -128,7 +128,6 @@ class RunCommand(BaseCommand):
         parser.add_argument(
             "-p",
             "--playbook",
-            type=Path,
             help="if PATH is a directory this playbook will be used",
         )
 
@@ -155,7 +154,7 @@ class RunCommand(BaseCommand):
         path: str,
         sync: bool,
         data: Optional[dict],
-        playbook: Optional[Path],
+        playbook: Optional[str],
         output: bool,
         report: bool,
         files: bool,
@@ -191,33 +190,40 @@ class RunCommand(BaseCommand):
             else:
                 ids = new_run(path=path, bundle=bundle, secrets=data, settings=settings)
         elif (base := Path(path)).is_dir():
-            playbook_path = playbook or base / ".satori.yml"
-            config = yaml.safe_load(playbook_path.read_bytes())
-
-            settings: dict = config.get("settings", {})
-            is_monitor = is_monitor or settings.get("cron") or settings.get("rate")
-            settings.update(cli_settings)
-
-            warn_settings(settings)
-
-            if not validate_config(playbook_path, set(data.keys()) if data else set()):
-                return 1
-
-            bundle = make_bundle(playbook_path, playbook_path.parent)
+            settings = {}
             packet = make_packet(base)
 
-            if missing_ymls(config, path):
-                error_console.print(
-                    "[warning]WARNING:[/] There are some .satori.yml outside the root "
-                    "folder that have not been imported."
-                )
+            if "://" in playbook:
+                playbook_path = playbook
+            elif (base / ".satori.yml").is_file():
+                playbook_path = base / ".satori.yml"
+                config = yaml.safe_load(playbook_path.read_bytes())
+
+                settings: dict = config.get("settings", {})
+                is_monitor = is_monitor or settings.get("cron") or settings.get("rate")
+                settings.update(cli_settings)
+
+                warn_settings(settings)
+
+                if not validate_config(
+                    playbook_path, set(data.keys()) if data else set()
+                ):
+                    return 1
+
+                if missing_ymls(config, path):
+                    error_console.print(
+                        "[warning]WARNING:[/] There are some .satori.yml outside the root "
+                        "folder that have not been imported."
+                    )
+
+                bundle = make_bundle(playbook_path, playbook_path.parent)
 
             if is_monitor:
                 monitor_id = new_monitor(bundle, settings, packet=packet, secrets=data)
             else:
                 ids = new_run(
-                    path=path,
-                    bundle=bundle,
+                    path=playbook_path,
+                    bundle=bundle if isinstance(playbook_path, Path) else None,
                     secrets=data,
                     packet=packet,
                     settings=settings,
