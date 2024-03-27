@@ -238,6 +238,18 @@ positive:
     members:
       - satori team test_team members
 
+    settings:
+      - satori team test_team settings
+
+    # list your TEAM settings
+    get_config:
+      - satori team test_team get_config notification_email
+
+    # show your TEAM's config setting for a specific value
+    set_config:
+      - satori team test_team set_config notification_email test@satori.ci
+    # set your TEAM CONFIG setting
+
     # add the email 'test@satori.ci' as a member of the team 'test_team'
     add_member:
       - satori team test_team add --email='test@satori.ci'
