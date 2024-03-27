@@ -237,7 +237,8 @@ positive:
     # list the members of the 'test_team'
     members:
       - satori team test_team members
-
+    
+    # list your TEAM members
     settings:
       - satori team test_team settings
 
