@@ -166,18 +166,23 @@ class RunCommand(BaseCommand):
         cli_settings = get_cli_settings(kwargs)
         is_monitor = bool(cli_settings.get("rate") or cli_settings.get("cron"))
 
+        if playbook and "://" not in playbook and not os.path.isfile(playbook):
+            error_console.print("ERROR: Invalid playbook arg.")
+            return 1
+
         if "://" in path:
             with warnings.catch_warnings(record=True):
                 validate_settings(cli_settings)
             ids = new_run(path=path, secrets=data, settings=cli_settings)
+
             is_monitor = False
             monitor_id = None
-        elif (playbook_path := Path(path)).is_file():
-            if not validate_config(playbook_path, set(data.keys()) if data else set()):
+        elif (file_path := Path(path)).is_file():
+            if not validate_config(file_path, set(data.keys()) if data else set()):
                 return 1
 
-            bundle = make_bundle(playbook_path, playbook_path.parent)
-            config = yaml.safe_load(playbook_path.read_bytes())
+            bundle = make_bundle(file_path, file_path.parent)
+            config = yaml.safe_load(file_path.read_bytes())
 
             settings: dict = config.get("settings", {})
             is_monitor = is_monitor or settings.get("cron") or settings.get("rate")
@@ -196,8 +201,15 @@ class RunCommand(BaseCommand):
 
             if playbook and "://" in playbook:
                 playbook_path = playbook
-            elif (base / ".satori.yml").is_file():
-                dir_playbook = base / ".satori.yml"
+            else:
+                if playbook and os.path.isfile(playbook):
+                    dir_playbook = Path(playbook)
+                elif (base / ".satori.yml").is_file():
+                    dir_playbook = base / ".satori.yml"
+                else:
+                    error_console.print("ERROR: No playbook found.")
+                    return 1
+
                 playbook_path = str(dir_playbook)
 
                 config = yaml.safe_load(dir_playbook.read_bytes())
