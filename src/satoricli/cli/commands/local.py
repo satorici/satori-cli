@@ -10,6 +10,7 @@ from typing import Optional
 
 import httpx
 import yaml
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from satori_runner import run
 from satoricli.api import client
 from satoricli.bundler import make_bundle
@@ -118,12 +119,20 @@ class LocalCommand(BaseCommand):
         with (
             httpx.stream("GET", local_run["recipe"]) as s,
             SpooledTemporaryFile(4096) as results,
+            Progress(
+                SpinnerColumn("dots2"),
+                TextColumn("[progress.description]Status: {task.description}"),
+                TimeElapsedColumn(),
+                console=error_console,
+            ) as progress,
         ):
             os.chdir(workdir)
+            task = progress.add_task("Starting execution")
 
             for line in s.iter_lines():
                 message: dict = json.loads(line)
                 command = message["command"]
+                progress.update(task, description="Running [b]" + message["path"])
 
                 windows_host = platform.system() == "Windows"
 
@@ -144,6 +153,7 @@ class LocalCommand(BaseCommand):
 
             results.seek(0)
             client.put(f"/runs/local/{report_id}", files={"results": results})
+            progress.update(task, description="Completed")
 
         if summary:
             print_summary(report_id, kwargs["json"])
