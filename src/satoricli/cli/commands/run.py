@@ -39,6 +39,7 @@ def make_packet(path: str):
 def new_run(
     *,
     path: str,
+    modes: dict,
     bundle: Optional[Any] = None,
     packet: Optional[Path] = None,
     secrets: Optional[dict] = None,
@@ -51,6 +52,7 @@ def new_run(
             "secrets": json.dumps(secrets) if secrets else None,
             "settings": json.dumps(settings) if settings else None,
             "with_files": bool(packet),
+            "modes": modes,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -160,6 +162,7 @@ class RunCommand(BaseCommand):
         files: bool,
         **kwargs,
     ):
+        modes = {"sync": sync, "output": output, "report": report}
         if data and not validate_parameters(data):
             raise ValueError("Malformed parameters")
 
@@ -173,7 +176,7 @@ class RunCommand(BaseCommand):
         if "://" in path:
             with warnings.catch_warnings(record=True):
                 validate_settings(cli_settings)
-            ids = new_run(path=path, secrets=data, settings=cli_settings)
+            ids = new_run(path=path, modes=modes, secrets=data, settings=cli_settings)
 
             is_monitor = False
             monitor_id = None
@@ -193,7 +196,13 @@ class RunCommand(BaseCommand):
             if is_monitor:
                 monitor_id = new_monitor(bundle, settings, secrets=data)
             else:
-                ids = new_run(path=path, bundle=bundle, secrets=data, settings=settings)
+                ids = new_run(
+                    path=path,
+                    modes=modes,
+                    bundle=bundle,
+                    secrets=data,
+                    settings=settings,
+                )
         elif (base := Path(path)).is_dir():
             settings = {}
             packet = make_packet(base)
@@ -238,6 +247,7 @@ class RunCommand(BaseCommand):
             else:
                 ids = new_run(
                     path=playbook_path,
+                    modes=modes,
                     bundle=bundle,
                     secrets=data,
                     packet=packet,
