@@ -39,7 +39,7 @@ def make_packet(path: str):
 def new_run(
     *,
     path: str,
-    modes: dict,
+    modes: Optional[dict] = None,
     bundle: Optional[Any] = None,
     packet: Optional[Path] = None,
     secrets: Optional[dict] = None,
@@ -52,7 +52,7 @@ def new_run(
             "secrets": json.dumps(secrets) if secrets else None,
             "settings": json.dumps(settings) if settings else None,
             "with_files": bool(packet),
-            "modes": modes,
+            "modes": json.dumps(modes) if modes else None,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
