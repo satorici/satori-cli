@@ -1,6 +1,7 @@
 settings:
   name: "Satori CLI Tests"
   log: slack
+  public: true
 
 import:
 - "satori://secrets/semgrep.yml"
