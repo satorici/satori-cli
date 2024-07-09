@@ -108,12 +108,19 @@ class RepoCommand(BaseCommand):
         elif action == "pending":
             info = client.get(f"/repos/{repository}/pending").json()
         elif action == "show":
-            info = client.get(
-                f"/repos/{repository}", params={"pending": pending}
-            ).json()
             reports = client.get(
-                "/reports", params={"filters": f"repo={repository}"}
+                "/reports",
+                params={"filters": f"repo={repository}"},
             ).json()
+            try:
+                info = client.get(
+                    f"/repos/{repository}", params={"pending": pending}
+                ).json()
+            except Exception:
+                if reports["rows"]:
+                    info = {}
+                else:
+                    raise
 
             if kwargs["json"]:
                 info["reports"] = reports
