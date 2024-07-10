@@ -1,6 +1,7 @@
 import json
 import os
 import platform
+import time
 from argparse import ArgumentParser
 from base64 import b64decode, b64encode
 from dataclasses import asdict
@@ -128,10 +129,11 @@ class LocalCommand(BaseCommand):
         ):
             os.chdir(workdir)
             task = progress.add_task("Starting execution")
+            start_time = time.monotonic()
 
             for line in s.iter_lines():
                 message: dict = json.loads(line)
-                command = message["command"]
+                command = message["value"]
                 progress.update(task, description="Running [b]" + message["path"])
 
                 windows_host = platform.system() == "Windows"
@@ -141,9 +143,7 @@ class LocalCommand(BaseCommand):
                     args = (dec.decode(errors="ignore")) if windows_host else dec
                 elif isinstance(command, list):
                     args = [
-                        b64decode(arg).decode(errors="ignore")
-                        if windows_host
-                        else b64decode(arg)
+                        arg.decode(errors="ignore") if windows_host else arg
                         for arg in command
                     ]
 
@@ -152,7 +152,11 @@ class LocalCommand(BaseCommand):
                 results.write(f"{json.dumps(message, cls=BytesEncoder)}\n".encode())
 
             results.seek(0)
-            client.put(f"/runs/local/{report_id}", files={"results": results})
+            client.put(
+                f"/runs/local/{report_id}",
+                files={"results": results},
+                params={"run_time": time.monotonic() - start_time},
+            )
             progress.update(task, description="Completed")
 
         if summary:
