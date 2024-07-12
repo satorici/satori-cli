@@ -2,11 +2,12 @@ settings:
   name: "Satori CLI Tests"
   log: slack
   public: true
+  image: public.ecr.aws/docker/library/python:slim
 
 import:
-- "satori://secrets/semgrep.yml"
+  - "satori://secrets/semgrep.yml"
 
-positive:
+test:
   assertReturnCode: 0
   assertStderrNotContains: Traceback
   install:
@@ -19,6 +20,7 @@ positive:
 
   # the -P or --profile parameters allows you to use different Satori CI API Tokens
   token_saved:
+    setParallel: true
     create_profile:
       - satori config token "not_a_token" --profile test_user
 
@@ -31,6 +33,7 @@ positive:
     - satori
 
   local:
+    setParallel: true
     # execute a Satori CI playbook locally and show the report once its done
     pass_report:
       - satori local ./ -p .satori/import/pass.yml --report
@@ -48,6 +51,7 @@ positive:
       - satori local .satori/input.yml --report --output
 
   run:
+    setParallel: true
     # execute a Satori CI playbook and show the report once its done with 4 CPUs
     pass_report:
       - satori run .satori/import/pass.yml --report --cpu 256 --memory 512
@@ -67,7 +71,7 @@ positive:
   report:
     # run synchronously a local playbook
     new_sync:
-      - "satori run .satori/import/pass.yml -s | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id.txt"
+      - "satori run .satori/import/pass.yml -s | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
 
     #echo_ID:
     #- [ "export ID=$(cat report_id.txt); echo $ID" ]
@@ -80,40 +84,43 @@ positive:
     filter:
       - satori reports --filter="status=Pending"
 
-    # show a report
-    single:
-      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID"
+    parallel:
+      setParallel: true
+      # show a report
+      single:
+        - "satori report ${{test.report.new_sync.stdout}}"
 
-    # show a json report
-    json:
-      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID --json"
+      # show a json report
+      json:
+        - "satori report ${{test.report.new_sync.stdout}} --json"
 
-    # make a report public
-    public:
-      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID public"
+      # make a report public
+      public:
+        - "satori report ${{test.report.new_sync.stdout}} public"
 
-    # show the output associated to a report
-    output:
-      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID output"
+      # show the output associated to a report
+      output:
+        - "satori report ${{test.report.new_sync.stdout}} output"
 
-    # download the files associated to a report
-    files:
-      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID files"
+      # download the files associated to a report
+      files:
+        - "satori report ${{test.report.new_sync.stdout}} files"
 
     # delete the files, the output and the report
     delete:
-      - "export ID=$(cat report_id.txt); echo $ID; satori report $ID delete"
+      - "satori report ${{test.report.new_sync.stdout}} delete"
 
     # run asynchronously a local playbook
     new_async: # new report for stop is needed because the first one is already stopped
-      - "satori run .satori/import/pass.yml | grep 'Report ID' | egrep 'r[a-zA-Z0-9]{15}' -o >> report_id2.txt"
+      - "satori run .satori/import/pass.yml | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
 
     # stop a running report
     stop: # wait until start
-      - "sleep 10; export ID=$(cat report_id2.txt); echo $ID; satori report $ID stop"
+      - "sleep 10; echo ${{test.report.new_async}}; satori report ${{test.report.new_async}} stop"
 
   playbook:
     list:
+      setParallel: true
       private:
         - satori playbooks
 
@@ -124,20 +131,21 @@ positive:
         - satori playbooks --monitor true
 
     read:
+      setParallel: true
       private_playbook_by_report_id:
-        - "export ID=$(cat report_id2.txt); echo $ID; satori playbook $ID"
+        - "echo ${{test.report.new_async}}; satori playbook ${{test.report.new_async.stdout}}"
 
       private_playbook_by_id:
-        - "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID"
+        - "satori playbooks --json|jq -r '.[0].id'"
 
       public_playbook:
         - satori playbook satori://secrets/detect-secrets.yml
 
     public_flag:
-      - "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID public"
+      - "satori playbook ${{test.playbooks.read.private_playbook_by_id.stdout}} public"
 
     delete_private:
-      - "export ID=$(satori playbooks --json|jq -r '.[0].id'); echo $ID; satori playbook $ID delete"
+      - "satori playbook ${{test.playbooks.read.private_playbook_by_id.stdout}} delete"
 
   repo:
     # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
@@ -156,14 +164,14 @@ positive:
     commits:
       - satori repo satoridev01/hello_world commits
 
-    # TBD: get the forks of a certain repo (required for fork-scan)
+    # TODO: get the forks of a certain repo (required for fork-scan)
     #check_forks:
     #  - [satori repo satoridev01/hello_world check-forks]
 
   monitor:
     # run a new monitor
     new:
-      - "satori run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | egrep 'm[a-zA-Z0-9]{15}' -o >> monitor_id.txt"
+      - "satori run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | grep -E 'm[a-zA-Z0-9]{15}' -o"
 
     # list the monitors
     list:
@@ -171,27 +179,27 @@ positive:
 
     # list the reports associated to a monitor
     single: # wait until start
-      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID"
+      - "satori monitor ${{test.monitor.new.stdout}}"
 
     # make a monitor's reports public
     public: #
-      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID public"
+      - "satori monitor ${{test.monitor.new.stdout}} public"
 
     # stop a monitor
     start:
-      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID start"
+      - "satori monitor ${{test.monitor.new.stdout}} start"
 
     # start a monitor
     stop:
-      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID stop"
+      - "satori monitor ${{test.monitor.new.stdout}} stop"
 
     # delete the reports associated to a monitor
     clean:
-      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID clean"
+      - "satori monitor ${{test.monitor.new.stdout}} clean"
 
     # delete the monitor
     delete:
-      - "export ID=$(cat monitor_id.txt); echo $ID; satori monitor $ID delete"
+      - "satori monitor ${{test.monitor.new.stdout}} delete"
 
   scan:
     # # To be developed: list the current scans
@@ -204,15 +212,15 @@ positive:
 
     # Run the .satori.yml playbook with a certain coverage on the repo
     run:
-      - "satori scan satoridev01/hello_world -c 50 | grep 'id:' | sed 's/\\x1b\\[[0-9;]*m//g' | egrep 's[a-zA-Z0-9]{15}' -o >> scan_id.txt"
+      - "satori scan satoridev01/hello_world -c 50 | grep 'id:' | sed 's/\\x1b\\[[0-9;]*m//g' | grep -E 's[a-zA-Z0-9]{15}' -o"
 
     # What's the status of the current scanning
     status:
-      - "export ID=$(cat scan_id.txt); echo $ID; satori scan $ID status"
+      - "satori scan ${{test.scan.run.stdout}} status"
 
     # Stop the scan execution
     stop:
-      - "export ID=$(cat scan_id.txt); echo $ID; satori scan $ID stop"
+      - "satori scan ${{test.scan.run.stdout}} stop"
 
     # Restart a scan execution
     # start:
@@ -231,21 +239,23 @@ positive:
     create:
       - satori team test_team create
 
-    # list the repos associated to the 'test_team' and their team members
-    single:
-      - satori team test_team
+    parallel:
+      setParallel: true
+      # list the repos associated to the 'test_team' and their team members
+      single:
+        - satori team test_team
 
-    # list the members of the 'test_team'
-    members:
-      - satori team test_team members
-    
-    # list your TEAM members
-    settings:
-      - satori team test_team settings
+      # list the members of the 'test_team'
+      members:
+        - satori team test_team members
 
-    # list your TEAM settings
-    get_config:
-      - satori team test_team get_config notification_email
+      # list your TEAM members
+      settings:
+        - satori team test_team settings
+
+      # list your TEAM settings
+      get_config:
+        - satori team test_team get_config notification_email
 
     # show your TEAM's config setting for a specific value
     set_config:
@@ -286,7 +296,7 @@ positive:
     delete:
       - satori team test_team delete
 
-negative:
+negative_test:
   assertReturnCodeNot: 0
   assertStderrNotContains:
     - Traceback
@@ -296,6 +306,7 @@ negative:
     - object has no attribute
 
   run:
+    setParallel: true
     fail:
       - satori run .satori/fail.yml --sync
 
