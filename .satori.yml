@@ -88,27 +88,27 @@ test:
       setParallel: true
       # show a report
       single:
-        - "satori report ${{test.report.new_sync.stdout}}"
+        - "satori report ${{test.report.new_sync.stdout.trim()}}"
 
       # show a json report
       json:
-        - "satori report ${{test.report.new_sync.stdout}} --json"
+        - "satori report ${{test.report.new_sync.stdout.trim()}} --json"
 
       # make a report public
       public:
-        - "satori report ${{test.report.new_sync.stdout}} public"
+        - "satori report ${{test.report.new_sync.stdout.trim()}} public"
 
       # show the output associated to a report
       output:
-        - "satori report ${{test.report.new_sync.stdout}} output"
+        - "satori report ${{test.report.new_sync.stdout.trim()}} output"
 
       # download the files associated to a report
       files:
-        - "satori report ${{test.report.new_sync.stdout}} files"
+        - "satori report ${{test.report.new_sync.stdout.trim()}} files"
 
     # delete the files, the output and the report
     delete:
-      - "satori report ${{test.report.new_sync.stdout}} delete"
+      - "satori report ${{test.report.new_sync.stdout.trim()}} delete"
 
     # run asynchronously a local playbook
     new_async: # new report for stop is needed because the first one is already stopped
@@ -116,7 +116,7 @@ test:
 
     # stop a running report
     stop: # wait until start
-      - "sleep 10; echo ${{test.report.new_async}}; satori report ${{test.report.new_async}} stop"
+      - "sleep 10; echo ${{test.report.new_async.stdout.trim()}}; satori report ${{test.report.new_async.stdout.trim()}} stop"
 
   playbook:
     list:
@@ -133,7 +133,7 @@ test:
     read:
       setParallel: true
       private_playbook_by_report_id:
-        - "echo ${{test.report.new_async.stdout}}; satori playbook ${{test.report.new_async.stdout}}"
+        - "echo ${{test.report.new_async.stdout.trim()}}; satori playbook ${{test.report.new_async.stdout.trim()}}"
 
       private_playbook_by_id:
         - "satori playbooks --json|jq -r '.[0].id'"
@@ -142,10 +142,10 @@ test:
         - satori playbook satori://secrets/detect-secrets.yml
 
     public_flag:
-      - "satori playbook ${{test.playbooks.read.private_playbook_by_id.stdout}} public"
+      - "satori playbook ${{test.playbooks.read.private_playbook_by_id.stdout.trim()}} public"
 
     delete_private:
-      - "satori playbook ${{test.playbooks.read.private_playbook_by_id.stdout}} delete"
+      - "satori playbook ${{test.playbooks.read.private_playbook_by_id.stdout.trim()}} delete"
 
   repo:
     # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
@@ -179,27 +179,27 @@ test:
 
     # list the reports associated to a monitor
     single: # wait until start
-      - "satori monitor ${{test.monitor.new.stdout}}"
+      - "satori monitor ${{test.monitor.new.stdout.trim()}}"
 
     # make a monitor's reports public
     public: #
-      - "satori monitor ${{test.monitor.new.stdout}} public"
+      - "satori monitor ${{test.monitor.new.stdout.trim()}} public"
 
     # stop a monitor
     start:
-      - "satori monitor ${{test.monitor.new.stdout}} start"
+      - "satori monitor ${{test.monitor.new.stdout.trim()}} start"
 
     # start a monitor
     stop:
-      - "satori monitor ${{test.monitor.new.stdout}} stop"
+      - "satori monitor ${{test.monitor.new.stdout.trim()}} stop"
 
     # delete the reports associated to a monitor
     clean:
-      - "satori monitor ${{test.monitor.new.stdout}} clean"
+      - "satori monitor ${{test.monitor.new.stdout.trim()}} clean"
 
     # delete the monitor
     delete:
-      - "satori monitor ${{test.monitor.new.stdout}} delete"
+      - "satori monitor ${{test.monitor.new.stdout.trim()}} delete"
 
   scan:
     # # To be developed: list the current scans
@@ -216,11 +216,11 @@ test:
 
     # What's the status of the current scanning
     status:
-      - "satori scan ${{test.scan.run.stdout}} status"
+      - "satori scan ${{test.scan.run.stdout.trim()}} status"
 
     # Stop the scan execution
     stop:
-      - "satori scan ${{test.scan.run.stdout}} stop"
+      - "satori scan ${{test.scan.run.stdout.trim()}} stop"
 
     # Restart a scan execution
     # start:
