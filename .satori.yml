@@ -133,7 +133,7 @@ test:
     read:
       setParallel: true
       private_playbook_by_report_id:
-        - "echo ${{test.report.new_async}}; satori playbook ${{test.report.new_async.stdout}}"
+        - "echo ${{test.report.new_async.stdout}}; satori playbook ${{test.report.new_async.stdout}}"
 
       private_playbook_by_id:
         - "satori playbooks --json|jq -r '.[0].id'"
