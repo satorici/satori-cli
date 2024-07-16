@@ -142,10 +142,10 @@ test:
         - satori playbook satori://secrets/detect-secrets.yml
 
     public_flag:
-      - "satori playbook ${{test.playbooks.read.private_playbook_by_id.stdout.trim()}} public"
+      - satori playbook ${{test.playbook.read.private_playbook_by_id.stdout.trim()}} public
 
     delete_private:
-      - "satori playbook ${{test.playbooks.read.private_playbook_by_id.stdout.trim()}} delete"
+      - satori playbook ${{test.playbook.read.private_playbook_by_id.stdout.trim()}} delete
 
   repo:
     # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
