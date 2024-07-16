@@ -139,8 +139,7 @@ class LocalCommand(BaseCommand):
                 windows_host = platform.system() == "Windows"
 
                 if isinstance(command, str):
-                    dec = b64decode(command)
-                    args = (dec.decode(errors="ignore")) if windows_host else dec
+                    args = command if windows_host else command.encode()
                 elif isinstance(command, list):
                     args = [
                         arg.decode(errors="ignore") if windows_host else arg
