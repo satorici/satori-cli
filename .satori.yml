@@ -62,7 +62,7 @@ test:
 
     # execute a public Satori CI playbook and pass parameters
     url_output:
-      - 'satori run satori://web/testssl.yml --data=''{"URL":"https://satori.ci"}'' --output'
+      - satori run satori://web/testssl.yml --data='{"HOST":"https://satori.ci"}' --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
