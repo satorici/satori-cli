@@ -2,7 +2,7 @@ settings:
   name: "Satori CLI Tests"
   log: slack
   public: true
-  image: public.ecr.aws/docker/library/python:slim
+  image: public.ecr.aws/docker/library/python:3.9-slim-bullseye
 
 import:
   - "satori://secrets/semgrep.yml"
@@ -13,8 +13,8 @@ test:
   install:
     updates:
       - apt update
-    git:
-      - apt install -y python3 python3-pip git jq
+    tools:
+      - apt install -y --no-install-recommends git jq
     satori:
       - pip install .
 
@@ -44,7 +44,7 @@ test:
 
     # execute a public Satori CI playbook locally and pass parameters
     url_output:
-      - satori local ./ -p satori://web/testssl.yml --data='{"URL":"https://satori.ci"}' --output
+      - satori local ./ -p satori://web/testssl.yml --data='{"HOST":"https://satori.ci"}' --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
