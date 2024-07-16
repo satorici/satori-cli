@@ -42,9 +42,9 @@ def make_bundle(playbook: Path, base_dir: Path):
     with open(playbook) as f, ZipFile(obj, "x") as zip_file:
         references = get_references(f.read(), base_dir)
         zip_file.write(playbook, ".satori.yml")
-        for key, paths in references.items():
+        for _key, paths in references.items():
             for path in paths:
-                zip_file.write(base_dir / path, Path(key, path))
+                zip_file.write(base_dir / path, path)
 
     obj.seek(0)
     return obj
