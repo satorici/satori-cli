@@ -115,7 +115,7 @@ class TeamCommand(BaseCommand):
             )
             return
         elif action == "get_config":
-            info = client.get(f"/teams/{id}/config/{config_name}").json()
+            info = client.get(f"/teams/{id}/config/{config_name}").text
         elif action == "set_config":
             info = client.put(
                 f"/teams/{id}/config",
