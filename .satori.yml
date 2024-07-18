@@ -124,28 +124,28 @@ test:
       private:
         - satori playbooks
 
-      public:
-        - satori playbooks --public
-
       monitors:
         - satori playbooks --monitor true
+    
+    public:
+        - satori playbooks --public
 
     read:
       setParallel: true
       private_playbook_by_report_id:
         - "echo ${{test.report.new_async.stdout.trim()}}; satori playbook ${{test.report.new_async.stdout.trim()}}"
 
-      private_playbook_by_id:
-        - "satori playbooks --json|jq -r '.[0].id'"
-
       public_playbook:
         - satori playbook satori://secrets/detect-secrets.yml
 
+    private_playbook_by_id:
+        - "satori playbooks --json|jq -r '.[0].id'"
+
     public_flag:
-      - satori playbook ${{test.playbook.read.private_playbook_by_id.stdout.trim()}} public
+      - satori playbook ${{test.playbook.private_playbook_by_id.stdout.trim()}} public
 
     delete_private:
-      - satori playbook ${{test.playbook.read.private_playbook_by_id.stdout.trim()}} delete
+      - satori playbook ${{test.playbook.private_playbook_by_id.stdout.trim()}} delete
 
   repo:
     # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
