@@ -607,3 +607,15 @@ def missing_ymls(playbook: dict, root: str):
 
 def get_offset(page, limit):
     return (page - 1) * limit
+
+
+def detect_boolean(s: Any) -> Optional[bool]:
+    if not isinstance(s, str):
+        return None
+    s = s.lower()
+    if s == "true":
+        return True
+    elif s == "false":
+        return False
+    else:
+        return None

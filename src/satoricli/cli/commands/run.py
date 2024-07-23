@@ -6,7 +6,7 @@ import uuid
 import warnings
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import httpx
 import yaml
@@ -18,6 +18,7 @@ from satoricli.validations import validate_parameters
 
 from ..utils import (
     console,
+    detect_boolean,
     download_files,
     error_console,
     missing_ymls,
@@ -44,6 +45,8 @@ def new_run(
     packet: Optional[Path] = None,
     secrets: Optional[dict] = None,
     settings: Optional[dict] = None,
+    save_report: Union[str, bool, None] = None,
+    save_output: Union[str, bool, None] = None,
 ) -> list[str]:
     data = client.post(
         "/runs",
@@ -53,6 +56,8 @@ def new_run(
             "settings": json.dumps(settings) if settings else None,
             "with_files": bool(packet),
             "modes": json.dumps(modes) if modes else None,
+            "save_report": save_report,
+            "save_output": save_output,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -132,6 +137,8 @@ class RunCommand(BaseCommand):
             "--playbook",
             help="if PATH is a directory this playbook will be used",
         )
+        parser.add_argument("--save-report", type=str, default=None)
+        parser.add_argument("--save-output", type=str, default=None)
 
         settings = parser.add_argument_group("run settings")
         monitor = settings.add_mutually_exclusive_group()
@@ -156,12 +163,19 @@ class RunCommand(BaseCommand):
         path: str,
         sync: bool,
         data: Optional[dict],
+        save_report: Union[str, bool, None],
+        save_output: Union[str, bool, None],
         playbook: Optional[str],
         output: bool,
         report: bool,
         files: bool,
         **kwargs,
     ):
+        if save_report:
+            save_report = detect_boolean(save_report) or save_report
+        if save_output:
+            save_output = detect_boolean(save_output)
+
         modes = {"sync": sync, "output": output, "report": report}
         if data and not validate_parameters(data):
             raise ValueError("Malformed parameters")
@@ -176,7 +190,14 @@ class RunCommand(BaseCommand):
         if "://" in path:
             with warnings.catch_warnings(record=True):
                 validate_settings(cli_settings)
-            ids = new_run(path=path, modes=modes, secrets=data, settings=cli_settings)
+            ids = new_run(
+                path=path,
+                modes=modes,
+                secrets=data,
+                settings=cli_settings,
+                save_report=save_report,
+                save_output=save_output,
+            )
 
             is_monitor = False
             monitor_id = None
@@ -202,6 +223,8 @@ class RunCommand(BaseCommand):
                     bundle=bundle,
                     secrets=data,
                     settings=settings,
+                    save_report=save_report,
+                    save_output=save_output,
                 )
         elif (base := Path(path)).is_dir():
             settings = {}
@@ -252,6 +275,8 @@ class RunCommand(BaseCommand):
                     secrets=data,
                     packet=packet,
                     settings=settings,
+                    save_report=save_report,
+                    save_output=save_output,
                 )
         else:
             error_console.print("ERROR: Invalid PATH")
