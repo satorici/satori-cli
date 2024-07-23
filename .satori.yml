@@ -74,7 +74,7 @@ test:
       - "satori run .satori/import/pass.yml -s | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
 
     dont_save:
-      - "satori run --save-report 'False' --save-output 'False' --report --output | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
+      - "satori run .satori/import/pass.yml --save-report 'False' --save-output 'False' --report --output | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
 
     #echo_ID:
     #- [ "export ID=$(cat report_id.txt); echo $ID" ]
