@@ -172,10 +172,10 @@ class RunCommand(BaseCommand):
         **kwargs,
     ):
         if save_report:
-            save_report = detect_boolean(save_report) or save_report
+            temp_report = detect_boolean(save_report)
+            save_report = save_report if temp_report is None else temp_report
         if save_output:
             save_output = detect_boolean(save_output)
-
         modes = {"sync": sync, "output": output, "report": report}
         if data and not validate_parameters(data):
             raise ValueError("Malformed parameters")

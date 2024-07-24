@@ -613,9 +613,9 @@ def detect_boolean(s: Any) -> Optional[bool]:
     if not isinstance(s, str):
         return None
     s = s.lower()
-    if s == "true":
+    if s in ("true", "on", "y", "yes", "1"):
         return True
-    elif s == "false":
+    elif s in ("false", "off", "n", "no", "0"):
         return False
     else:
         return None
