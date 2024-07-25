@@ -7,7 +7,7 @@ from base64 import b64decode, b64encode
 from dataclasses import asdict
 from pathlib import Path
 from tempfile import SpooledTemporaryFile
-from typing import Optional
+from typing import Optional, Union
 
 import httpx
 import yaml
@@ -45,8 +45,8 @@ def new_local_run(
 
 
 def replace_variables(
-    value: str | list[str], testcase: dict[str, str]
-) -> list | bytes | str:
+    value: Union[str, list[str]], testcase: dict[str, str]
+) -> Union[list, bytes, str]:
     if isinstance(value, str):
         for secret_key, secret_value in testcase.items():
             value = replace_secrets(value, secret_key, secret_value)
