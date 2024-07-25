@@ -28,6 +28,8 @@ from ..utils import (
 )
 from .base import BaseCommand
 
+IS_LINUX = platform.system() == "Linux"
+
 
 def new_local_run(
     bundle=None, playbook_uri: Optional[str] = None, secrets: Optional[dict] = None
@@ -40,6 +42,25 @@ def new_local_run(
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
+
+
+def replace_variables(
+    value: str | list[str], testcase: dict[str, str]
+) -> list | bytes | str:
+    if isinstance(value, str):
+        for secret_key, secret_value in testcase.items():
+            value = replace_secrets(value, secret_key, secret_value)
+        return value.encode(errors="ignore") if IS_LINUX else value
+    else:
+        for key, test_value in testcase.items():
+            for i, arg in enumerate(value):
+                value[i] = replace_secrets(arg, key, test_value)
+        return [arg.encode(errors="ignore") for arg in value] if IS_LINUX else value
+
+
+def replace_secrets(old: str, secret_id: str, secret_value: str) -> str:
+    value = b64decode(secret_value).decode(errors="ignore")
+    return old.replace("${{" + secret_id + "}}", value)
 
 
 class BytesEncoder(json.JSONEncoder):
@@ -133,19 +154,8 @@ class LocalCommand(BaseCommand):
 
             for line in s.iter_lines():
                 message: dict = json.loads(line)
-                command = message["value"]
                 progress.update(task, description="Running [b]" + message["path"])
-
-                windows_host = platform.system() == "Windows"
-
-                if isinstance(command, str):
-                    args = command if windows_host else command.encode()
-                elif isinstance(command, list):
-                    args = [
-                        arg.decode(errors="ignore") if windows_host else arg
-                        for arg in command
-                    ]
-
+                args = replace_variables(message["value"], message["testcase"])
                 out = run(args, message.get("settings", {}).get("setCommandTimeout"))
                 message["output"] = asdict(out)
                 results.write(f"{json.dumps(message, cls=BytesEncoder)}\n".encode())
