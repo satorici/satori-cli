@@ -84,6 +84,7 @@ def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
         path = PLAYBOOKS_DIR / playbook_id.removeprefix("satori://")
 
         if path.is_file():
-            autosyntax(path.read_text(), lexer="YAML")
+            text = path.read_text()
+            autosyntax(text.replace("\\n", "\n"), lexer="YAML")
         else:
             console.print("[red]Playbook not found")
