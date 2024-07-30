@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
+from rich.markdown import Markdown
+from rich.panel import Panel
 
 from .cli.utils import autosyntax, autotable, console
 from .validations import get_parameters
@@ -84,6 +86,11 @@ def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
         path = PLAYBOOKS_DIR / playbook_id.removeprefix("satori://")
 
         if path.is_file():
-            autosyntax(path.read_text(), lexer="YAML")
+            text = path.read_text()
+            yml = yaml.safe_load(text)
+            if description := yml.get("settings", {}).get("description"):
+                mk = Markdown(description)
+                console.print(Panel(mk))
+            autosyntax(text, lexer="YAML")
         else:
             console.print("[red]Playbook not found")
