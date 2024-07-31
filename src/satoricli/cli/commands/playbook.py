@@ -21,10 +21,21 @@ class PlaybookCommand(BaseCommand):
             default="show",
             help="action to perform",
         )
+        parser.add_argument(
+            "--original",
+            action="store_true",
+            help="Display playbook without formatting",
+        )
 
-    def __call__(self, id: str, action: Literal["show", "delete", "public"], **kwargs):
+    def __call__(
+        self,
+        id: str,
+        action: Literal["show", "delete", "public"],
+        original: bool,
+        **kwargs,
+    ):
         if id.startswith("satori://"):
-            display_public_playbooks(id)
+            display_public_playbooks(id, original)
             return
 
         list_separator = "-" * 48

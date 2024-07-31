@@ -74,7 +74,9 @@ def get_playbook_name(filename: Path):
         pass
 
 
-def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
+def display_public_playbooks(
+    playbook_id: Optional[str] = None, original: bool = False
+) -> None:
     if not sync():
         return
 
@@ -87,6 +89,9 @@ def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
 
         if path.is_file():
             text = path.read_text()
+            if original:
+                autosyntax(text, lexer="YAML")
+                return
             yml = yaml.safe_load(text)
             if name := yml.get("settings", {}).get("name"):
                 console.rule(name)
