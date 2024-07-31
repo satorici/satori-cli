@@ -90,13 +90,13 @@ def display_public_playbooks(
         if path.is_file():
             text = path.read_text()
             if original:
-                autosyntax(text, lexer="YAML")
+                print(text)
                 return
             yml = yaml.safe_load(text)
-            if name := yml.get("settings", {}).get("name"):
-                console.rule(name)
-                del yml["settings"]["name"]
             if description := yml.get("settings", {}).get("description"):
+                if name := yml.get("settings", {}).get("name"):
+                    description = f"## {name}\n{description}"
+                    del yml["settings"]["name"]
                 mk = Markdown(description)
                 console.print(Panel(mk))
                 del yml["settings"]["description"]
