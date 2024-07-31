@@ -2,12 +2,11 @@ from argparse import ArgumentParser
 from typing import Optional
 
 from satoricli.api import client
-from satoricli.cli.utils import autotable, BootstrapTable, autoformat
-
+from satoricli.cli.utils import BootstrapTable, autoformat, autotable
 from satoricli.playbooks import display_public_playbooks
 
-from .base import BaseCommand
 from ..utils import get_offset
+from .base import BaseCommand
 
 
 class PlaybooksCommand(BaseCommand):

@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
+from rich.markdown import Markdown
+from rich.panel import Panel
 
 from .cli.utils import autosyntax, autotable, console
 from .validations import get_parameters
@@ -72,7 +74,9 @@ def get_playbook_name(filename: Path):
         pass
 
 
-def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
+def display_public_playbooks(
+    playbook_id: Optional[str] = None, original: bool = False
+) -> None:
     if not sync():
         return
 
@@ -85,6 +89,17 @@ def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
 
         if path.is_file():
             text = path.read_text()
-            autosyntax(text.replace("\\n", "\n"), lexer="YAML")
+            if original:
+                print(text)
+                return
+            yml = yaml.safe_load(text)
+            if description := yml.get("settings", {}).get("description"):
+                if name := yml.get("settings", {}).get("name"):
+                    description = f"## {name}\n{description}"
+                    del yml["settings"]["name"]
+                mk = Markdown(description)
+                console.print(Panel(mk))
+                del yml["settings"]["description"]
+            autosyntax(yaml.dump(yml), lexer="YAML")
         else:
             console.print("[red]Playbook not found")
