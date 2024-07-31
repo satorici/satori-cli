@@ -88,9 +88,13 @@ def display_public_playbooks(playbook_id: Optional[str] = None) -> None:
         if path.is_file():
             text = path.read_text()
             yml = yaml.safe_load(text)
+            if name := yml.get("settings", {}).get("name"):
+                console.rule(name)
+                del yml["settings"]["name"]
             if description := yml.get("settings", {}).get("description"):
                 mk = Markdown(description)
                 console.print(Panel(mk))
-            autosyntax(text, lexer="YAML")
+                del yml["settings"]["description"]
+            autosyntax(yaml.dump(yml), lexer="YAML")
         else:
             console.print("[red]Playbook not found")
