@@ -27,17 +27,20 @@ class RepoCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=(
-                "show",
-                "commits",
-                "run",
-                "pending",
-                "tests",
-            ),
+            choices=("show", "commits", "run", "pending", "tests", "playbook"),
             nargs="?",
             default="show",
             help="action to perform",
         )
+        parser.add_argument(
+            "action2",
+            metavar="ACTION2",
+            choices=("list", "add", "del"),
+            nargs="?",
+            default="list",
+            help="action to perform",
+        )
+        parser.add_argument("playbook_uri", default=None)
         parser.add_argument("--delete-commits", action="store_true")
         parser.add_argument("-d", "--data", help="Secrets")
         parser.add_argument("-b", "--branch", default="main", help="Repo branch")
@@ -62,7 +65,10 @@ class RepoCommand(BaseCommand):
             "run",
             "pending",
             "tests",
+            "playbook",
         ],
+        action2: Literal["list", "add", "del"],
+        playbook_uri: Optional[str],
         sync: bool,
         output: bool,
         report: bool,
@@ -154,6 +160,19 @@ class RepoCommand(BaseCommand):
             else:
                 autotable(info)
             return
+        elif action == "playbook":
+            if action2 == "list":
+                info = client.get(f"/repos/playbooks/{repository}").json()
+            elif action2 == "add":
+                if not playbook_uri:
+                    error_console.print("Please insert a playbook name")
+                    raise
+                info = client.put(
+                    f"/repos/playbooks/{repository}", params={"playbook": playbook_uri}
+                ).json()
+            else:  # del
+                info = client.delete(f"/repos/playbooks/{repository}").json()
+                info = {"Status": "Playbook deleted"}
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 
