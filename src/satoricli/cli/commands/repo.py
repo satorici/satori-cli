@@ -174,8 +174,8 @@ class RepoCommand(BaseCommand):
                 f"/repos/{repository}/playbooks", params={"playbook": playbook_uri}
             ).json()
         elif action == "playbook_del":
-            info = client.delete(f"/repos/{repository}/playbooks").json()
-            info = {"Status": "Playbook deleted"}
+            client.delete(f"/repos/{repository}/playbooks")
+            info = {"message": "Playbook deleted"}
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 
