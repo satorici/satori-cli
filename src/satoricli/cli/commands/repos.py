@@ -35,7 +35,7 @@ class ReposCommand(BaseCommand):
             default="list",
             help="action to perform",
         )
-        parser.add_argument("playbook", default=None)
+        parser.add_argument("playbook", default=None, nargs="?")
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
         parser.add_argument(
@@ -74,6 +74,8 @@ class ReposCommand(BaseCommand):
                 data = client.get(
                     "/repos/playbooks", params={"offset": offset, "limit": limit}
                 ).json()
+                autotable(data["rows"], page=page, limit=limit)
+                return
             elif action2 == "add":
                 if not playbook:
                     error_console.print("Please insert a playbook name")
@@ -82,6 +84,6 @@ class ReposCommand(BaseCommand):
                     "/repos/playbooks", params={"playbook": playbook}
                 ).json()
             else:  # del
-                data = client.delete("/repos/playbooks").json()
+                client.delete("/repos/playbooks", params={"playbook": playbook})
                 data = {"Status": "Playbook deleted"}
             autoformat(data, jsonfmt=kwargs["json"])
