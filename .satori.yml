@@ -167,6 +167,26 @@ test:
     commits:
       - satori repo satoridev01/hello_world commits
 
+    playbooks:
+      setParallel: true
+      list:
+        - satori repos playbook list
+
+      add:
+        - satori repos playbook add satori://test
+
+      del:
+        - satori repos playbook del
+
+      single_list:
+        - satori repo satoridev01/hello_world playbook list
+
+      single_add:
+        - satori repo satoridev01/hello_world playbook add satori://test
+
+      single_del:
+        - satori repo satoridev01/hello_world playbook del
+
     # TODO: get the forks of a certain repo (required for fork-scan)
     #check_forks:
     #  - [satori repo satoridev01/hello_world check-forks]
