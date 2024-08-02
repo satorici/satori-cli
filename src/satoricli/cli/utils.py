@@ -102,7 +102,9 @@ error_console = Console(
 logging.basicConfig(
     level="CRITICAL",
     format="%(message)s",
-    handlers=[RichHandler(rich_tracebacks=True, show_time=False)],
+    handlers=[
+        RichHandler(rich_tracebacks=True, show_time=False, tracebacks_show_locals=True)
+    ],
 )
 log = logging.getLogger()
 

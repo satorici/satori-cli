@@ -11,7 +11,7 @@ from ..exceptions import SatoriRequestError
 from ..utils import load_config
 from .commands.config import ConfigCommand
 from .commands.root import RootCommand
-from .utils import error_console
+from .utils import error_console, log, logging
 
 VERSION = metadata.version("satori-ci")
 
@@ -74,6 +74,10 @@ def main():
             error_console.print(key)
         sys.exit(1)
 
+    # Set debug mode
+    if args["debug"]:
+        log.setLevel(logging.DEBUG)
+
     try:
         sys.exit(root.run(args))
     except SatoriRequestError as e:
@@ -81,5 +85,8 @@ def main():
         error_console.print(f"Status code: {e.status_code}")
         sys.exit(1)
     except Exception as e:
-        error_console.print(e)
+        if args["debug"]:
+            log.exception(e)
+        else:
+            error_console.print(e)
         sys.exit(1)
