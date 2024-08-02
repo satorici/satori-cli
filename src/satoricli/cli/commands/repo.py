@@ -27,20 +27,13 @@ class RepoCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=(
-                "show",
-                "commits",
-                "run",
-                "pending",
-                "tests",
-                "playbook",
-                "playbook_list",
-                "playbook_add",
-                "playbook_del",
-            ),
+            choices=("show", "commits", "run", "pending", "tests", "playbook"),
             nargs="?",
             default="show",
             help="action to perform",
+        )
+        parser.add_argument(
+            "action2", choices=("list", "add", "del"), nargs="?", default="list"
         )
         parser.add_argument("playbook_uri", nargs="?", default=None)
         parser.add_argument("--delete-commits", action="store_true")
@@ -61,17 +54,8 @@ class RepoCommand(BaseCommand):
     def __call__(
         self,
         repository: str,
-        action: Literal[
-            "show",
-            "commits",
-            "run",
-            "pending",
-            "tests",
-            "playbook",
-            "playbook_list",
-            "playbook_add",
-            "playbook_del",
-        ],
+        action: Literal["show", "commits", "run", "pending", "tests", "playbook"],
+        action2: Literal["list", "add", "del"],
         playbook_uri: Optional[str],
         sync: bool,
         output: bool,
@@ -164,18 +148,19 @@ class RepoCommand(BaseCommand):
             else:
                 autotable(info)
             return
-        elif action == "playbook_list":
-            info = client.get(f"/repos/{repository}/playbooks").json()
-        elif action == "playbook_add":
-            if not playbook_uri:
-                error_console.print("Please insert a playbook name")
-                raise
-            info = client.put(
-                f"/repos/{repository}/playbooks", params={"playbook": playbook_uri}
-            ).json()
-        elif action == "playbook_del":
-            client.delete(f"/repos/{repository}/playbooks")
-            info = {"message": "Playbook deleted"}
+        elif action == "playbook":
+            if action2 == "list":
+                info = client.get(f"/repos/{repository}/playbooks").json()
+            elif action2 == "add":
+                if not playbook_uri:
+                    error_console.print("Please insert a playbook name")
+                    raise
+                info = client.put(
+                    f"/repos/{repository}/playbooks", params={"playbook": playbook_uri}
+                ).json()
+            elif action2 == "del":
+                client.delete(f"/repos/{repository}/playbooks")
+                info = {"message": "Playbook deleted"}
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 

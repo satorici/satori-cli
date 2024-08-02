@@ -22,18 +22,15 @@ class ReposCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=(
-                "show",
-                "playbook",
-                "playbook_list",
-                "playbook_add",
-                "playbook_del",
-            ),
+            choices=("show", "playbook"),
             nargs="?",
             default="show",
             help="action to perform",
         )
-        parser.add_argument("playbook", default=None, nargs="?")
+        parser.add_argument(
+            "action2", choices=("list", "add", "del"), nargs="?", default="list"
+        )
+        parser.add_argument("playbook_uri", default=None, nargs="?")
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
         parser.add_argument(
@@ -42,14 +39,9 @@ class ReposCommand(BaseCommand):
 
     def __call__(
         self,
-        action: Literal[
-            "show",
-            "playbook",
-            "playbook_list",
-            "playbook_add",
-            "playbook_del",
-        ],
-        playbook: Optional[str],
+        action: Literal["show", "playbook"],
+        action2: Literal["list", "add", "del"],
+        playbook_uri: Optional[str],
         page: int,
         limit: int,
         pending: bool,
@@ -72,18 +64,21 @@ class ReposCommand(BaseCommand):
                 group_table(BootstrapTable(**repos), "team", "Private", page, limit)
             else:
                 autoformat(repos, jsonfmt=kwargs["json"], list_separator="-" * 48)
-        if action == "playbook_list":
-            data = client.get(
-                "/repos/playbooks", params={"offset": offset, "limit": limit}
-            ).json()
-            autotable(data["rows"], page=page, limit=limit)
-            return
-        elif action == "playbook_add":
-            if not playbook:
-                error_console.print("Please insert a playbook name")
-                raise
-            data = client.put("/repos/playbooks", params={"playbook": playbook}).json()
-        elif action == "playbook_del":
-            client.delete("/repos/playbooks", params={"playbook": playbook})
-            data = {"message": "Playbook deleted"}
-        autoformat(data, jsonfmt=kwargs["json"])
+        else:  # playbook
+            if action2 == "list":
+                data = client.get(
+                    "/repos/playbooks", params={"offset": offset, "limit": limit}
+                ).json()
+                autotable(data["rows"], page=page, limit=limit)
+                return
+            elif action2 == "add":
+                if not playbook_uri:
+                    error_console.print("Please insert a playbook name")
+                    raise
+                data = client.put(
+                    "/repos/playbooks", params={"playbook": playbook_uri}
+                ).json()
+            elif action2 == "del":
+                client.delete("/repos/playbooks", params={"playbook": playbook_uri})
+                data = {"message": "Playbook deleted"}
+            autoformat(data, jsonfmt=kwargs["json"])
