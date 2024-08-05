@@ -22,10 +22,9 @@ from ..utils import (
     download_files,
     error_console,
     missing_ymls,
-    print_output,
-    print_summary,
+    print_execution_output,
     validate_config,
-    wait,
+    wait_run,
 )
 from .base import BaseCommand
 from .report import ReportCommand
@@ -303,15 +302,18 @@ class RunCommand(BaseCommand):
             return
 
         if sync or report or output or files:
-            wait(run[0])
+            wait_run(run["id"])
 
-        ret = print_summary(run[0], kwargs["json"]) if sync else 0
+        # ret = print_summary(run[0], kwargs["json"]) if sync else 0
+        ret = 0
+
+        executions = client.get(f"/runs/{run['id']}/executions").json()
 
         if report:
             ReportCommand.print_report_asrt(run[0], kwargs["json"])
 
         if output:
-            print_output(run[0], kwargs["json"])
+            print_execution_output(executions["items"][0]["id"], kwargs["json"])
 
         if files and config and has_files(config):
             download_files(run[0])
