@@ -1,3 +1,4 @@
+import re
 import sys
 from datetime import datetime
 from importlib import metadata
@@ -11,7 +12,7 @@ from ..exceptions import SatoriRequestError
 from ..utils import load_config
 from .commands.config import ConfigCommand
 from .commands.root import RootCommand
-from .utils import error_console, log, logging, console
+from .utils import console, error_console, log, logging
 
 VERSION = metadata.version("satori-ci")
 
@@ -82,13 +83,19 @@ def main():
         exit_code = root.run(args)
         export = args["export"]
         if export:
-            file_name = f"output.{export}"
             if export == "html":
-                console.save_html(file_name)
+                content = console.export_html()
             elif export == "svg":
-                console.save_svg(file_name)
+                content = console.export_svg(title="satori-cli")
+                # remove non xml utf-8 chars
+                regex = (
+                    r"[^\x09\x0A\x0D\x20-\xFF\x85\xA0-\uD7FF\uE000-\uFDCF\uFDE0-\uFFFD]"
+                )
+                content = re.sub(regex, "", content, flags=re.MULTILINE)
             else:
-                console.save_text(file_name)
+                content = console.export_text()
+            with open(f"output.{export}", "w") as f:
+                f.write(content)
         sys.exit(exit_code)
     except SatoriRequestError as e:
         error_console.print(f"ERROR: {e}")
