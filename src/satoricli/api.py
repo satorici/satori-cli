@@ -31,7 +31,7 @@ def raise_on_error(res: Response):
         res.__dict__ = client.send(res.request).__dict__
         return
 
-    if not res.is_success:
+    if res.is_error:
         try:
             res.read()
             message = res.json().get("detail", "Unknown error")
