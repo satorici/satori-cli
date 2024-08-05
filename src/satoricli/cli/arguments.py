@@ -25,3 +25,6 @@ profile_arg.add_argument("-P", "--profile", default="default")
 
 debug_arg = ArgumentParser(add_help=False)
 debug_arg.add_argument("--debug", action="store_true", help="Display debug info")
+
+export_arg = ArgumentParser(add_help=False)
+export_arg.add_argument("--export", choices=("html", "svg", "txt"))

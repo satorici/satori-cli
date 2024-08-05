@@ -11,7 +11,7 @@ from ..exceptions import SatoriRequestError
 from ..utils import load_config
 from .commands.config import ConfigCommand
 from .commands.root import RootCommand
-from .utils import error_console, log, logging
+from .utils import error_console, log, logging, console
 
 VERSION = metadata.version("satori-ci")
 
@@ -79,7 +79,17 @@ def main():
         log.setLevel(logging.DEBUG)
 
     try:
-        sys.exit(root.run(args))
+        exit_code = root.run(args)
+        export = args["export"]
+        if export:
+            file_name = f"output.{export}"
+            if export == "html":
+                console.save_html(file_name)
+            elif export == "svg":
+                console.save_svg(file_name)
+            else:
+                console.save_text(file_name)
+        sys.exit(exit_code)
     except SatoriRequestError as e:
         error_console.print(f"ERROR: {e}")
         error_console.print(f"Status code: {e.status_code}")

@@ -94,7 +94,7 @@ satori_theme = Theme(
         "satori.id": "blue",
     }
 )
-console = Console(highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False)
+console = Console(highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False, record=True)
 error_console = Console(
     highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False, stderr=True
 )
