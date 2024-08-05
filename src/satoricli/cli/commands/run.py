@@ -48,21 +48,28 @@ def new_run(
     save_report: Union[str, bool, None] = None,
     save_output: Union[str, bool, None] = None,
 ) -> list[str]:
+    res = client.post("/bundles", files={"upload": bundle})
+
+    if not res.is_success:
+        raise Exception("Could not upload bundle")
+
+    bundle_id = res.text
+
     data = client.post(
         "/runs",
-        data={
+        json={
+            "bundle_id": bundle_id,
             "path": path,
-            "secrets": json.dumps(secrets) if secrets else None,
+            "secrets": secrets,
             "settings": json.dumps(settings) if settings else None,
             "with_files": bool(packet),
             "modes": json.dumps(modes) if modes else None,
             "save_report": save_report,
             "save_output": save_output,
         },
-        files={"bundle": bundle} if bundle else {"": ""},
     ).json()
 
-    if arc := data["upload_data"]:
+    if arc := data["files_upload"]:
         try:
             with progress_open(
                 packet, "rb", description="Uploading...", console=error_console
@@ -72,7 +79,7 @@ def new_run(
         finally:
             os.remove(packet)
 
-    return data["report_ids"]
+    return data
 
 
 def new_monitor(
@@ -190,7 +197,7 @@ class RunCommand(BaseCommand):
         if "://" in path:
             with warnings.catch_warnings(record=True):
                 validate_settings(cli_settings)
-            ids = new_run(
+            run = new_run(
                 path=path,
                 modes=modes,
                 secrets=data,
@@ -217,7 +224,7 @@ class RunCommand(BaseCommand):
             if is_monitor:
                 monitor_id = new_monitor(bundle, settings, secrets=data)
             else:
-                ids = new_run(
+                run = new_run(
                     path=path,
                     modes=modes,
                     bundle=bundle,
@@ -268,7 +275,7 @@ class RunCommand(BaseCommand):
             if is_monitor:
                 monitor_id = new_monitor(bundle, settings, packet=packet, secrets=data)
             else:
-                ids = new_run(
+                run = new_run(
                     path=playbook_path,
                     modes=modes,
                     bundle=bundle,
@@ -283,13 +290,10 @@ class RunCommand(BaseCommand):
             return 1
 
         if not is_monitor and not kwargs["json"]:
-            for report_id in ids:
-                console.print("Report ID:", report_id)
-                console.print(
-                    f"Report: https://satori.ci/report_details/?n={report_id}"
-                )
+            console.print("Run ID:", run["id"])
+            console.print(f"Report: https://satori.ci/report_details/?n={run['id']}")
         elif not is_monitor and kwargs["json"]:
-            console.print_json(data={"ids": ids})
+            console.print_json(data=run)
         elif is_monitor and not kwargs["json"]:
             console.print("Monitor ID:", monitor_id)
             console.print(f"Monitor: https://satori.ci/monitor?id={monitor_id}")
@@ -299,17 +303,17 @@ class RunCommand(BaseCommand):
             return
 
         if sync or report or output or files:
-            wait(ids[0])
+            wait(run[0])
 
-        ret = print_summary(ids[0], kwargs["json"]) if sync else 0
+        ret = print_summary(run[0], kwargs["json"]) if sync else 0
 
         if report:
-            ReportCommand.print_report_asrt(ids[0], kwargs["json"])
+            ReportCommand.print_report_asrt(run[0], kwargs["json"])
 
         if output:
-            print_output(ids[0], kwargs["json"])
+            print_output(run[0], kwargs["json"])
 
         if files and config and has_files(config):
-            download_files(ids[0])
+            download_files(run[0])
 
         return ret
