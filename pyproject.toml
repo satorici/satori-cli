@@ -29,3 +29,6 @@ build-backend = "pdm.backend"
 
 [project.scripts]
 satori = "satoricli:main"
+
+[tool.pdm.scripts]
+_.env_file = ".env"
