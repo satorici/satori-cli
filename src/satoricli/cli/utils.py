@@ -490,6 +490,23 @@ def wait(report_id: str):
             time.sleep(1)
 
 
+def wait_run(run_id: int):
+    with Progress(
+        SpinnerColumn("dots2"),
+        TextColumn("[progress.description]Status: {task.description}"),
+        TimeElapsedColumn(),
+        console=error_console,
+    ) as progress:
+        task = progress.add_task("Fetching data")
+        status = "QUEUED"
+
+        while status != "FINISHED":
+            res = client.get(f"/runs/{run_id}")
+            status = res.json()["status"]
+            progress.update(task, description=status)
+            time.sleep(1)
+
+
 def download_files(report_id: str):
     r = client.get(f"/outputs/{report_id}/files")
     with httpx.stream("GET", r.json()["url"]) as s:
@@ -512,6 +529,34 @@ def print_output(report_id: str, print_json: bool = False):
                 console.out(line, highlight=False)
         else:
             format_outputs(s.iter_lines())
+
+
+def print_execution_output(execution_id: int, print_json: bool = False):
+    with client.stream("GET", f"/executions/{execution_id}/output", timeout=300) as s:
+        if print_json:
+            for line in s.iter_lines():
+                console.out(line, highlight=False)
+        else:
+            for line in s.iter_lines():
+                output = json.loads(line)
+
+                console.rule()
+
+                console.print("[blue]Return code:[/blue]", output["return_code"])
+                console.print("[blue]Stdout:[/blue]")
+                if output["stdout"]:
+                    console.out(
+                        b64decode(output["stdout"]).decode(errors="ignore"),
+                        highlight=False,
+                    )
+                console.print("[blue]Stderr:[/blue]")
+                if output["stderr"]:
+                    console.out(
+                        b64decode(output["stderr"]).decode(errors="ignore"),
+                        highlight=False,
+                    )
+                if output["os_error"]:
+                    console.out(output["os_error"])
 
 
 def print_summary(report_id: str, print_json: bool = False):
