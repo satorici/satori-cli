@@ -37,14 +37,15 @@ class PlaybooksCommand(BaseCommand):
     def __call__(
         self, page: int, limit: int, public: bool, monitor: Optional[str], **kwargs
     ):
-        if public:
-            display_public_playbooks()
-            return
         offset = get_offset(page, limit)
         params: dict = {"offset": offset, "limit": limit}
-        if monitor:
-            params["monitor"] = monitor
-        data = client.get("/playbooks", params=params).json()
+        if not public:  
+            if monitor:
+                params["monitor"] = monitor
+            data = client.get("/playbooks", params=params).json()
+        else:
+            data = client.get("/playbooks/public", params=params).json()
+        
 
         if not kwargs["json"]:
             autotable(BootstrapTable(**data), limit=limit, page=page, widths=(16,))
