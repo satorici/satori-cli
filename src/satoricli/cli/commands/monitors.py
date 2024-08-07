@@ -9,8 +9,8 @@ from satoricli.cli.utils import (
     group_table,
 )
 
-from .base import BaseCommand
 from ..utils import get_offset
+from .base import BaseCommand
 
 
 class MonitorsCommand(BaseCommand):
@@ -25,17 +25,33 @@ class MonitorsCommand(BaseCommand):
         )
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
+        parser.add_argument(
+            "--public", action="store_true", help="Fetch public monitors"
+        )
 
-    def __call__(self, deleted: bool, pending: bool, page: int, limit: int, **kwargs):
+    def __call__(
+        self,
+        deleted: bool,
+        pending: bool,
+        page: int,
+        limit: int,
+        public: bool,
+        **kwargs,
+    ):
         offset = get_offset(page, limit)
-        monitors = client.get(
-            "/monitors",
-            params={
-                "deleted": deleted,
-                "limit": limit,
-                "offset": offset,
-            },
-        ).json()
+        if public:
+            monitors = client.get(
+                "/monitors/public",
+                params={
+                    "deleted": deleted,
+                    "limit": limit,
+                    "offset": offset,
+                },
+            ).json()
+        else:
+            monitors = client.get(
+                "/monitors", params={"limit": limit, "offset": offset}
+            ).json()
 
         if not kwargs["json"]:
             # Only get pending monitors when is not a json output and on first page
