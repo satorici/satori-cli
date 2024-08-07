@@ -12,12 +12,14 @@ class ScansCommand(BaseCommand):
     def register_args(self, parser: ArgumentParser):
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
+        parser.add_argument("--public", action="store_true", help="Fetch public scans")
 
-    def __call__(self, page: int, limit: int, **kwargs):
-        repos = client.get("/scan", params={"page": page, "limit": limit}).json()
+    def __call__(self, page: int, limit: int, public: bool, **kwargs):
+        url = "/scan/public" if public else "/scan"
+        scans = client.get(url, params={"page": page, "limit": limit}).json()
 
         if not kwargs["json"]:
-            # Group repos by team name
-            autotable(BootstrapTable(**repos), page=page, limit=limit, widths=(16,))
+            # Group scans by team name
+            autotable(BootstrapTable(**scans), page=page, limit=limit, widths=(16,))
         else:
-            autoformat(repos, jsonfmt=kwargs["json"], list_separator="-" * 48)
+            autoformat(scans, jsonfmt=kwargs["json"], list_separator="-" * 48)

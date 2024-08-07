@@ -15,10 +15,16 @@ class ReportsCommand(BaseCommand):
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
         parser.add_argument("-f", "--filter")
+        parser.add_argument(
+            "--public", action="store_true", help="Fetch public reports"
+        )
 
-    def __call__(self, page: int, limit: int, filter: Optional[str], **kwargs):
+    def __call__(
+        self, page: int, limit: int, filter: Optional[str], public: bool, **kwargs
+    ):
+        url = "/reports/public" if public else "/reports"
         res = client.get(
-            "/reports", params={"page": page, "limit": limit, "filters": filter}
+            url, params={"page": page, "limit": limit, "filters": filter}
         ).json()
 
         if not kwargs["json"]:
@@ -55,8 +61,10 @@ class ReportsCommand(BaseCommand):
                     }
                     for report in res["rows"]
                 ],
-                widths=(16,)
+                widths=(16,),
             )
-            console.print(f"Page {page} of {ceil(res['total'] / limit)} | Total: {res['total']}")
+            console.print(
+                f"Page {page} of {ceil(res['total'] / limit)} | Total: {res['total']}"
+            )
         else:
             autoformat(res["rows"], jsonfmt=kwargs["json"])
