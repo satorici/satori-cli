@@ -36,9 +36,7 @@ class ReposCommand(BaseCommand):
         parser.add_argument(
             "--pending", action="store_true", help="Show pending actions"
         )
-        parser.add_argument(
-            "--public", action="store_true", help="Fetch public repos"
-        )
+        parser.add_argument("--public", action="store_true", help="Fetch public repos")
 
     def __call__(
         self,
@@ -53,14 +51,8 @@ class ReposCommand(BaseCommand):
     ):
         offset = get_offset(page, limit)
         if action == "show":
-            if public:
-                repos = client.get(
-                    "/repos/public", params={"offset": offset, "limit": limit}
-                ).json()
-            else:
-                repos = client.get(
-                    "/repos", params={"offset": offset, "limit": limit}
-                ).json()
+            url = "/repos/public" if public else "/repos"
+            repos = client.get(url, params={"offset": offset, "limit": limit}).json()
 
             if not kwargs["json"]:
                 # Only get pending repos when is not a json output and on first page

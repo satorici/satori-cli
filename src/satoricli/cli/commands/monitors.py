@@ -39,19 +39,10 @@ class MonitorsCommand(BaseCommand):
         **kwargs,
     ):
         offset = get_offset(page, limit)
-        if public:
-            monitors = client.get(
-                "/monitors/public",
-                params={
-                    "deleted": deleted,
-                    "limit": limit,
-                    "offset": offset,
-                },
-            ).json()
-        else:
-            monitors = client.get(
-                "/monitors", params={"limit": limit, "offset": offset}
-            ).json()
+        url = "/monitors/public" if public else "/monitors"
+        monitors = client.get(
+            url, params={"deleted": deleted, "limit": limit, "offset": offset}
+        ).json()
 
         if not kwargs["json"]:
             # Only get pending monitors when is not a json output and on first page
