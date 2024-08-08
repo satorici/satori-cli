@@ -3,7 +3,7 @@ from math import ceil
 from typing import Optional
 
 from satoricli.api import client
-from satoricli.cli.utils import autotable, console, autoformat
+from satoricli.cli.utils import autoformat, autotable, console
 
 from .base import BaseCommand
 

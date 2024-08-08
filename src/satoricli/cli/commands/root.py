@@ -63,6 +63,7 @@ class RootCommand(BaseCommand):
         parser.add_argument(
             "--pending", action="store_true", help="Show pending actions"
         )
+        parser.add_argument("--public", action="store_true", help="Fetch public")
 
     def help(self):
         def add_rows(table: Table, rows):

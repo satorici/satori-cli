@@ -1,9 +1,10 @@
 from argparse import ArgumentParser
 
 from satoricli.api import client
-from satoricli.cli.utils import autotable, console
+from satoricli.cli.utils import BootstrapTable, autoformat, autotable, console
 
 from .base import BaseCommand
+from .report import ReportCommand
 
 
 class DashboardCommand(BaseCommand):
@@ -13,16 +14,32 @@ class DashboardCommand(BaseCommand):
         parser.add_argument(
             "--pending", action="store_true", help="Show pending actions"
         )
+        parser.add_argument("--public", action="store_true", help="Fetch public")
 
-    def __call__(self, pending: bool, **kwargs):
-        data = client.get("/dashboard")
+    def __call__(self, pending: bool, public: bool, **kwargs):
+        print_json = kwargs["json"]
+        if public:
+            self.print_section("/repos/public", "Repos", print_json)
+            self.print_section("/reports/public", "Reports", print_json)
+            self.print_section("/monitors/public", "Monitors", print_json)
+            self.print_section("/scan/public", "Scans", print_json)
+        else:
+            data = client.get("/dashboard")
+            if print_json:
+                console.print_json(data.text)
+                return
+            self.generate_dashboard(data.json(), pending)
 
-        if kwargs["json"]:
-            console.print_json(data.text)
-            return
-
-        info = data.json()
-        self.generate_dashboard(info, pending)
+    def print_section(self, url: str, title: str, print_json: bool) -> None:
+        data = client.get(url).json()
+        if not print_json:
+            console.rule(title)
+            if title == "Reports":
+                ReportCommand.print_report_list(data["rows"])
+                return
+            autotable(BootstrapTable(**data))
+        else:
+            autoformat(data, jsonfmt=True)
 
     @staticmethod
     def generate_dashboard(info: dict, pending: bool = False):
