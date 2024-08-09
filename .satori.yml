@@ -30,7 +30,6 @@ test:
 
   # show the user's dashboard
   dashboard:
-    setParallel: true
     private:
       - satori
     public:
@@ -53,6 +52,9 @@ test:
     # define inputs on your playbook and execute it with different combination of parameters
     input:
       - satori local .satori/input.yml --report --output
+
+  wait:
+    - echo waiting...
 
   run:
     setParallel: true
@@ -94,7 +96,7 @@ test:
     parallel:
       setParallel: true
 
-      public:
+      list_public:
         - satori reports --public
 
       # show a report
@@ -191,13 +193,13 @@ test:
         - satori repos playbook del
 
       single_list:
-        - satori repo satoridev01/hello_world playbook list
+        - satori repo satoridev01/Hello_C_World playbook list
 
       single_add:
-        - satori repo satoridev01/hello_world playbook add satori://test
+        - satori repo satoridev01/Hello_C_World playbook add satori://test
 
       single_del:
-        - satori repo satoridev01/hello_world playbook del
+        - satori repo satoridev01/Hello_C_World playbook del
 
     # TODO: get the forks of a certain repo (required for fork-scan)
     #check_forks:
@@ -213,7 +215,7 @@ test:
       - "sleep 5; satori monitors"
 
     list_public:
-      - satori monitors public
+      - satori monitors --public
 
     # list the reports associated to a monitor
     single: # wait until start
