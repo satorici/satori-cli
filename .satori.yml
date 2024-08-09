@@ -30,7 +30,11 @@ test:
 
   # show the user's dashboard
   dashboard:
-    - satori
+    setParallel: true
+    private:
+      - satori
+    public:
+      - satori --public
 
   local:
     setParallel: true
@@ -89,6 +93,10 @@ test:
 
     parallel:
       setParallel: true
+
+      public:
+        - satori reports --public
+
       # show a report
       single:
         - "satori report ${{test.report.new_sync.stdout.trim()}}"
@@ -155,6 +163,9 @@ test:
     list:
       - satori repos
 
+    list_public:
+      - satori repos --public
+
     # list the commits and the reports associated to a repository
     single:
       - satori repo satoridev01/hello_world
@@ -169,6 +180,7 @@ test:
 
     playbooks:
       setParallel: true
+
       list:
         - satori repos playbook list
 
@@ -200,6 +212,9 @@ test:
     list:
       - "sleep 5; satori monitors"
 
+    list_public:
+      - satori monitors public
+
     # list the reports associated to a monitor
     single: # wait until start
       - "satori monitor ${{test.monitor.new.stdout.trim()}}"
@@ -228,6 +243,9 @@ test:
     # # To be developed: list the current scans
     list:
       - satori scans
+
+    list_public:
+      - satori scans --public
 
     # Get the commits of a certain repo (required for scans)
     check_commits:
