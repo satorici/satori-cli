@@ -7,6 +7,7 @@ import httpx
 from satoricli.api import client
 
 from ..utils import (
+    BootstrapTable,
     autoformat,
     autotable,
     console,
@@ -151,6 +152,9 @@ class RepoCommand(BaseCommand):
         elif action == "playbook":
             if action2 == "list":
                 info = client.get(f"/repos/{repository}/playbooks").json()
+                if not kwargs["json"]:
+                    autotable(BootstrapTable(**info))
+                    return
             elif action2 == "add":
                 if not playbook_uri:
                     error_console.print("Please insert a playbook name")
