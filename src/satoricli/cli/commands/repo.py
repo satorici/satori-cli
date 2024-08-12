@@ -28,7 +28,15 @@ class RepoCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=("show", "commits", "run", "pending", "tests", "playbook"),
+            choices=(
+                "show",
+                "commits",
+                "run",
+                "pending",
+                "tests",
+                "playbook",
+                "public",
+            ),
             nargs="?",
             default="show",
             help="action to perform",
@@ -165,6 +173,8 @@ class RepoCommand(BaseCommand):
             elif action2 == "del":
                 client.delete(f"/repos/{repository}/playbooks")
                 info = {"message": "Playbook deleted"}
+        elif action == "public":
+            info = client.patch(f"/repos/{repository}", json={"public": "invert"}).json()
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 

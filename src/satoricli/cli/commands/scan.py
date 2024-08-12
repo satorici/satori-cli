@@ -31,6 +31,7 @@ class ScanCommand(BaseCommand):
                 "clean",
                 "check-forks",
                 "check-commits",
+                "public",
             ),
             nargs="?",
             default="new",
@@ -56,9 +57,11 @@ class ScanCommand(BaseCommand):
             "new",
             "stop",
             "status",
+            "reports",
             "clean",
             "check-forks",
             "check-commits",
+            "public",
         ],
         coverage: float,
         sync: bool,
@@ -126,6 +129,8 @@ class ScanCommand(BaseCommand):
             ).json()
             if sync:
                 return ScanCommand.scan_sync(repository)
+        elif action == "public":
+            info = client.patch(f"/scan/{repository}", json={"public": "invert"}).json()
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 
     @staticmethod
@@ -175,7 +180,7 @@ class ScanCommand(BaseCommand):
     def check_scan_id(self, scan_id: str) -> None:
         if not re.match(r"s\w{15}", scan_id):
             raise Exception("Please enter a scan ID")
-        
+
     def check_repo_id(self, repo_id: str) -> None:
         if not re.match(r"[^/]+/[^/]+", repo_id):
             raise Exception("Please enter a repo ID")
