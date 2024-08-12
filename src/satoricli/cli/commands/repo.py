@@ -235,6 +235,7 @@ class RepoCommand(BaseCommand):
             console.print(f"Report: https://satori.ci/report_details/?n={report_id}")
         else:
             console.print(f"Repo: {scan_data['repo']} | Status: {scan_data['status']}")
+            return
 
         if sync or output or report:
             wait(report_id)
