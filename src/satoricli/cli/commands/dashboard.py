@@ -19,10 +19,10 @@ class DashboardCommand(BaseCommand):
     def __call__(self, pending: bool, public: bool, **kwargs):
         print_json = kwargs["json"]
         if public:
-            self.print_section("/repos/public", "Repos", print_json)
-            self.print_section("/reports/public", "Reports", print_json)
             self.print_section("/monitors/public", "Monitors", print_json)
+            self.print_section("/repos/public", "Repos", print_json)
             self.print_section("/scan/public", "Scans", print_json)
+            self.print_section("/reports/public", "Reports", print_json)
         else:
             data = client.get("/dashboard")
             if print_json:
