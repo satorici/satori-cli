@@ -4,7 +4,7 @@ from satoricli.api import client
 from satoricli.cli.utils import BootstrapTable, autoformat, autotable, console
 
 from .base import BaseCommand
-from .report import ReportCommand
+from .reports import ReportsCommand
 
 
 class DashboardCommand(BaseCommand):
@@ -35,7 +35,7 @@ class DashboardCommand(BaseCommand):
         if not print_json:
             console.rule(title)
             if title == "Reports":
-                ReportCommand.print_report_list(data["rows"])
+                ReportsCommand.print_table(data["rows"])
                 return
             autotable(BootstrapTable(**data))
         else:

@@ -31,40 +31,44 @@ class ReportsCommand(BaseCommand):
             if res["total"] == 0:
                 console.print("No reports found")
                 return
-
-            autotable(
-                [
-                    {
-                        "id": report["id"],
-                        "team": report.get("team"),
-                        "playbook_path": report.get("playbook_path"),
-                        "playbook_name": report.get("playbook_name"),
-                        "execution": report.get("executions"),
-                        "status": report.get("status"),
-                        "result": report.get("result"),
-                        "public": report.get("public"),
-                        "execution_time": report.get("execution_time"),
-                        "user": report.get("user"),
-                        "errors": report.get("errors"),
-                        "date": report.get("date"),
-                        # "fails": report.get("fails"),
-                        # "repo": report.get("repo"),
-                        # "branches": report.get("branches"),
-                        # "hash": report.get("hash"),
-                        # "commit_date": report.get("commit_date"),
-                        # "commit_author": report.get("commit_author"),
-                        # "commit_email": report.get("commit_email"),
-                        # "secrets_count": report.get("secrets_count"),
-                        # "playbook_id": report.get("playbook_id"),
-                        # "testcases": report.get("testcases"),
-                        # "report_url": report.get("report_url"),
-                    }
-                    for report in res["rows"]
-                ],
-                widths=(16,),
-            )
+            
+            self.print_table(res["rows"])
             console.print(
                 f"Page {page} of {ceil(res['total'] / limit)} | Total: {res['total']}"
             )
         else:
             autoformat(res["rows"], jsonfmt=kwargs["json"])
+
+    @staticmethod
+    def print_table(reports: list) -> None:
+        autotable(
+            [
+                {
+                    "id": report["id"],
+                    "team": report.get("team"),
+                    "playbook_path": report.get("playbook_path"),
+                    "playbook_name": report.get("playbook_name"),
+                    "execution": report.get("executions"),
+                    "status": report.get("status"),
+                    "result": report.get("result"),
+                    "public": report.get("public"),
+                    "execution_time": report.get("execution_time"),
+                    "user": report.get("user"),
+                    "errors": report.get("errors"),
+                    "date": report.get("date"),
+                    # "fails": report.get("fails"),
+                    # "repo": report.get("repo"),
+                    # "branches": report.get("branches"),
+                    # "hash": report.get("hash"),
+                    # "commit_date": report.get("commit_date"),
+                    # "commit_author": report.get("commit_author"),
+                    # "commit_email": report.get("commit_email"),
+                    # "secrets_count": report.get("secrets_count"),
+                    # "playbook_id": report.get("playbook_id"),
+                    # "testcases": report.get("testcases"),
+                    # "report_url": report.get("report_url"),
+                }
+                for report in reports
+            ],
+            widths=(16,),
+        )
