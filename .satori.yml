@@ -179,6 +179,16 @@ test:
     commits:
       - satori repo satoridev01/hello_world commits
 
+    secrets:
+      add:
+        - satori repo satoridev01/hello_world params add var=value
+
+      list:
+        - satori repo satoridev01/hello_world params
+
+      del:
+        - satori repo satoridev01/hello_world params del var
+
     playbooks:
       setParallel: true
 

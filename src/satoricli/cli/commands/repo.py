@@ -36,6 +36,7 @@ class RepoCommand(BaseCommand):
                 "tests",
                 "playbook",
                 "public",
+                "params",
             ),
             nargs="?",
             default="show",
@@ -63,7 +64,9 @@ class RepoCommand(BaseCommand):
     def __call__(
         self,
         repository: str,
-        action: Literal["show", "commits", "run", "pending", "tests", "playbook"],
+        action: Literal[
+            "show", "commits", "run", "pending", "tests", "playbook", "params"
+        ],
         action2: Literal["list", "add", "del"],
         playbook_uri: Optional[str],
         sync: bool,
@@ -174,8 +177,24 @@ class RepoCommand(BaseCommand):
                 client.delete(f"/repos/{repository}/playbooks")
                 info = {"message": "Playbook deleted"}
         elif action == "public":
-            info = client.patch(f"/repos/{repository}", json={"public": "invert"}).json()
-
+            info = client.patch(
+                f"/repos/{repository}", json={"public": "invert"}
+            ).json()
+        elif action == "params":
+            if action2 == "list":
+                info = client.get(f"/repos/{repository}/secrets").json()
+                if not kwargs["json"]:
+                    autotable(BootstrapTable(**info), numerate=True)
+                    return
+            elif action2 == "add":
+                info = client.post(
+                    f"/repos/{repository}/secrets", params={"secret": playbook_uri}
+                ).json()
+            elif action2 == "del":
+                client.delete(
+                    f"/repos/{repository}/secrets", params={"key": playbook_uri}
+                )
+                info = {"message": f"Secret {playbook_uri} deleted"}
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 
     @staticmethod
