@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from typing import Literal
 
 from satoricli.api import client
-from satoricli.cli.utils import autoformat, autotable
+from satoricli.cli.utils import BootstrapTable, autoformat, autotable
 
 from .base import BaseCommand
 
@@ -23,12 +23,16 @@ class MonitorCommand(BaseCommand):
         parser.add_argument(
             "--clean", action="store_true", help="clean all report related"
         )
+        parser.add_argument("-p", "--page", type=int, default=1)
+        parser.add_argument("-l", "--limit", type=int, default=20)
 
     def __call__(
         self,
         id: str,
         action: Literal["show", "start", "stop", "delete", "public", "clean"],
         clean: bool,
+        page: int,
+        limit: int,
         **kwargs,
     ):
         if action == "delete":
@@ -36,11 +40,13 @@ class MonitorCommand(BaseCommand):
             print("Monitor deleted")
             return
         elif action == "show":
-            info = client.get(f"/monitors/{id}").json()
+            info = client.get(
+                f"/monitors/{id}", params={"page": page, "limit": limit}
+            ).json()
             if not kwargs["json"]:
                 reports = info.pop("reports")
                 autoformat(info)
-                autotable(reports)
+                autotable(BootstrapTable(**reports), page=page, limit=limit)
                 return
         elif action == "public":
             info = client.patch(f"/monitors/{id}", json={"public": "invert"}).json()
