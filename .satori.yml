@@ -217,8 +217,9 @@ test:
   monitor:
     # run a new monitor
     new:
-      - "satori run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | grep -E 'm[a-zA-Z0-9]{15}' -o"
-
+      #- "satori run .satori/monitor.yml -s | grep 'Monitor ID' | sed 's/\\x1b\\[[0-9;]*m//g' | grep -E 'm[a-zA-Z0-9]{15}' -o"
+      - "satori run .satori/monitor.yml -s | grep 'Monitor ID' | grep -oE 'm[a-zA-Z0-9]{15}' | tr -d '\n'"
+      
     # list the monitors
     list:
       - "sleep 5; satori monitors"
@@ -289,7 +290,7 @@ test:
 
     # create team 'test_team'
     create:
-      - satori team test_team create
+      - satori team test_team create --debug
 
     parallel:
       setParallel: true
