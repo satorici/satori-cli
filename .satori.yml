@@ -199,7 +199,7 @@ test:
         - satori repos playbook add satori://test
 
       del:
-        - satori repos playbook del
+        - satori repos playbook del satori://test
 
       single_list:
         - satori repo satoridev01/Hello_C_World playbook list
@@ -360,6 +360,8 @@ negative_test:
 
   run:
     setParallel: true
+    repos_playbook_del:
+      - satori repos playbook del
     fail:
       - satori run .satori/fail.yml --sync
 
