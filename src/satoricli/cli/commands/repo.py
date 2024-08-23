@@ -173,11 +173,13 @@ class RepoCommand(BaseCommand):
                 if not playbook_uri:
                     error_console.print("Please insert a playbook name")
                     raise
-                info = client.put(
+                info = client.post(
                     f"/repos/{repository}/playbooks", params={"playbook": playbook_uri}
                 ).json()
             elif action2 == "del":
-                client.delete(f"/repos/{repository}/playbooks")
+                client.delete(
+                    f"/repos/{repository}/playbooks", params={"playbook": playbook_uri}
+                )
                 info = {"message": "Playbook deleted"}
         elif action == "public":
             info = client.patch(

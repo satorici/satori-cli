@@ -76,7 +76,7 @@ class ReposCommand(BaseCommand):
                 if not playbook_uri:
                     error_console.print("Please insert a playbook name")
                     raise
-                data = client.put(
+                data = client.post(
                     "/repos/playbooks", params={"playbook": playbook_uri}
                 ).json()
             elif action2 == "del":
