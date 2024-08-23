@@ -132,7 +132,10 @@ class RepoCommand(BaseCommand):
                 info["reports"] = reports
                 console.print_json(data=info)
             else:
+                playbooks = info.get("playbooks", {})
+                info["playbooks"] = ""
                 autoformat(info)
+                autotable(playbooks.get("rows"))
                 console.print("Reports:")
                 reports_cols = [
                     {
