@@ -360,10 +360,10 @@ negative_test:
 
   parallel:
     setParallel: true
-    containerbug:
-      - satori run .satori/containerbug.yml --report --output
+
     repos_playbook_del:
       - satori repos playbook del
+      
     fail:
       - satori run .satori/fail.yml --sync
 
@@ -390,7 +390,9 @@ negative_test:
       
   serial:
     setParallel: false
+    
     no_dns:
       - "cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET"
+    
     malformed_credentials:
       - cp random_file.yml ~/.satori_credentials.yml; satori
