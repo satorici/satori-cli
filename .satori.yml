@@ -351,7 +351,7 @@ test:
 
 negative_test:
   assertReturnCodeNot: 0
-  assertStdoutNotContains:
+  assertStderrNotContains:
     - Traceback
     - malformed node
     - invalid syntax
