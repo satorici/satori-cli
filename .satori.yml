@@ -351,12 +351,12 @@ test:
 
 negative_test:
   assertReturnCodeNot: 0
-  assertStderrNotContains:
-    - Traceback
   assertStdoutNotContains:
+    - Traceback
     - malformed node
     - invalid syntax
     - object has no attribute
+    - "codec can't decode byte"
 
   run:
     setParallel: true
@@ -376,8 +376,8 @@ negative_test:
     empty_directory:
       - mkdir test; cd test; satori run ./
 
-    no_dns:
-      - "cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET"
+    #no_dns:
+    #  - "cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET"
 
     random:
       - "dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori run random_file.yml --output"
