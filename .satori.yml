@@ -356,7 +356,7 @@ negative_test:
     - malformed node
     - invalid syntax
     - object has no attribute
-    - "codec can't decode byte"
+    - "codec can\\'t decode byte"
 
   parallel:
     setParallel: true
