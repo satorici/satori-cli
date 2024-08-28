@@ -360,6 +360,8 @@ negative_test:
 
   run:
     setParallel: true
+    containerbug:
+      - satori run .satori/containerbug.yml --report --output
     repos_playbook_del:
       - satori repos playbook del
     fail:
