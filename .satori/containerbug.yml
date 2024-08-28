@@ -1,0 +1,7 @@
+settings:
+  name: "/bin/sh: 1: cannot create /proc/sys/kernel/core_pattern: Read-only file system"
+
+test:
+  assertStderr: False
+  run:
+  - echo core >/proc/sys/kernel/core_pattern
