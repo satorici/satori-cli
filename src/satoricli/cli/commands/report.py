@@ -25,7 +25,7 @@ class ReportCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=("show", "output", "stop", "files", "delete", "public"),
+            choices=("show", "output", "stop", "files", "delete", "public", "status"),
             nargs="?",
             default="show",
             help="action to perform",
@@ -55,6 +55,9 @@ class ReportCommand(BaseCommand):
             print("Report deleted")
         elif action == "public":
             res = client.patch(f"/reports/{id}", json={"public": "invert"}).json()
+            autoformat(res)
+        elif action == "status":
+            res = client.get(f"/reports/{id}/status").text
             autoformat(res)
 
     @staticmethod
