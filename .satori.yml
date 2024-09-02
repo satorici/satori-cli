@@ -208,7 +208,7 @@ test:
         - satori repo satoridev01/Hello_C_World playbook add satori://test
 
       single_del:
-        - satori repo satoridev01/Hello_C_World playbook del
+        - satori repo satoridev01/Hello_C_World playbook del satori://test
 
     # TODO: get the forks of a certain repo (required for fork-scan)
     #check_forks:
@@ -290,7 +290,7 @@ test:
 
     # create team 'test_team'
     create:
-      - satori team test_team create --debug
+      - satori team test_team create
 
     parallel:
       setParallel: true
