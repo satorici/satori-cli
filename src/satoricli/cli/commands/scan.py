@@ -85,7 +85,7 @@ class ScanCommand(BaseCommand):
                 if playbook.startswith("satori://"):
                     config = playbook
 
-            info = client.get(
+            info = client.post(
                 "/scan/repo",
                 params={
                     "url": repository,
