@@ -1,6 +1,7 @@
 import json
 import logging
 import random
+import re
 import time
 import warnings
 from base64 import b64decode
@@ -621,3 +622,10 @@ def detect_boolean(s: Any) -> Optional[bool]:
         return False
     else:
         return None
+
+
+def load_cli_params(string: str) -> tuple:
+    m = re.match(r"(?P<key>[^=]+?)=(?P<value>.+)", string)
+    if m is None:
+        raise Exception("Failed to load data")
+    return m.group("key"), m.group("value")

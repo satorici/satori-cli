@@ -13,6 +13,7 @@ import httpx
 import yaml
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from satori_runner import run
+
 from satoricli.api import client
 from satoricli.bundler import make_bundle
 from satoricli.cli.commands.report import ReportCommand
@@ -21,6 +22,7 @@ from satoricli.validations import validate_parameters
 from ..utils import (
     console,
     error_console,
+    load_cli_params,
     missing_ymls,
     print_output,
     print_summary,
@@ -80,7 +82,7 @@ class LocalCommand(BaseCommand):
             "--playbook",
             help="if TARGET is a directory this playbook will be used",
         )
-        parser.add_argument("-d", "--data", type=json.loads)
+        parser.add_argument("-d", "--data", type=load_cli_params, action="append")
         parser.add_argument("--report", action="store_true")
         parser.add_argument("--output", action="store_true")
         parser.add_argument("--summary", action="store_true")
@@ -95,6 +97,7 @@ class LocalCommand(BaseCommand):
         summary: bool,
         **kwargs,
     ):
+        data = dict(data) if data else None
         if data and not validate_parameters(data):
             raise ValueError("Malformed parameters")
 

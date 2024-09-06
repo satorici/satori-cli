@@ -12,6 +12,7 @@ import httpx
 import yaml
 from rich.progress import open as progress_open
 from satorici.validator import validate_settings
+
 from satoricli.api import client
 from satoricli.bundler import make_bundle
 from satoricli.validations import validate_parameters
@@ -21,6 +22,7 @@ from ..utils import (
     detect_boolean,
     download_files,
     error_console,
+    load_cli_params,
     missing_ymls,
     print_output,
     print_summary,
@@ -131,7 +133,7 @@ class RunCommand(BaseCommand):
 
     def register_args(self, parser: ArgumentParser):
         parser.add_argument("path", metavar="PATH")
-        parser.add_argument("-d", "--data", type=json.loads)
+        parser.add_argument("-d", "--data", type=load_cli_params, action="append")
         parser.add_argument(
             "-p",
             "--playbook",
@@ -177,6 +179,8 @@ class RunCommand(BaseCommand):
         if save_output:
             save_output = detect_boolean(save_output)
         modes = {"sync": sync, "output": output, "report": report}
+
+        data = dict(data) if data else None
         if data and not validate_parameters(data):
             raise ValueError("Malformed parameters")
 
