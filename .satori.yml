@@ -19,7 +19,6 @@ test:
 
   # the -P or --profile parameters allows you to use different Satori CI API Tokens
   token_saved:
-    setParallel: true
     create_profile:
       - satori config token "not_a_token" --profile test_user
 
