@@ -26,6 +26,7 @@ from ..utils import (
     missing_ymls,
     print_output,
     print_summary,
+    tuple_to_dict,
     validate_config,
     wait,
 )
@@ -164,7 +165,7 @@ class RunCommand(BaseCommand):
         self,
         path: str,
         sync: bool,
-        data: Optional[dict],
+        data: Optional[tuple],
         save_report: Union[str, bool, None],
         save_output: Union[str, bool, None],
         playbook: Optional[str],
@@ -180,8 +181,8 @@ class RunCommand(BaseCommand):
             save_output = detect_boolean(save_output)
         modes = {"sync": sync, "output": output, "report": report}
 
-        data = dict(data) if data else None
-        if data and not validate_parameters(data):
+        parsed_data = tuple_to_dict(data) if data else None
+        if parsed_data and not validate_parameters(parsed_data):
             raise ValueError("Malformed parameters")
 
         cli_settings = get_cli_settings(kwargs)
@@ -197,7 +198,7 @@ class RunCommand(BaseCommand):
             ids = new_run(
                 path=path,
                 modes=modes,
-                secrets=data,
+                secrets=parsed_data,
                 settings=cli_settings,
                 save_report=save_report,
                 save_output=save_output,
@@ -206,7 +207,7 @@ class RunCommand(BaseCommand):
             is_monitor = False
             monitor_id = None
         elif (file_path := Path(path)).is_file():
-            if not validate_config(file_path, set(data.keys()) if data else set()):
+            if not validate_config(file_path, set(parsed_data.keys()) if parsed_data else set()):
                 return 1
 
             bundle = make_bundle(file_path, file_path.parent)
@@ -219,13 +220,13 @@ class RunCommand(BaseCommand):
             warn_settings(settings)
 
             if is_monitor:
-                monitor_id = new_monitor(bundle, settings, secrets=data)
+                monitor_id = new_monitor(bundle, settings, secrets=parsed_data)
             else:
                 ids = new_run(
                     path=path,
                     modes=modes,
                     bundle=bundle,
-                    secrets=data,
+                    secrets=parsed_data,
                     settings=settings,
                     save_report=save_report,
                     save_output=save_output,
@@ -257,7 +258,7 @@ class RunCommand(BaseCommand):
                 warn_settings(settings)
 
                 if not validate_config(
-                    dir_playbook, set(data.keys()) if data else set()
+                    dir_playbook, set(parsed_data.keys()) if parsed_data else set()
                 ):
                     return 1
 
@@ -270,13 +271,13 @@ class RunCommand(BaseCommand):
                 bundle = make_bundle(dir_playbook, dir_playbook.parent)
 
             if is_monitor:
-                monitor_id = new_monitor(bundle, settings, packet=packet, secrets=data)
+                monitor_id = new_monitor(bundle, settings, packet=packet, secrets=parsed_data)
             else:
                 ids = new_run(
                     path=playbook_path,
                     modes=modes,
                     bundle=bundle,
-                    secrets=data,
+                    secrets=parsed_data,
                     packet=packet,
                     settings=settings,
                     save_report=save_report,

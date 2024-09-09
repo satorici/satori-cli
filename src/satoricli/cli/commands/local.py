@@ -26,6 +26,7 @@ from ..utils import (
     missing_ymls,
     print_output,
     print_summary,
+    tuple_to_dict,
     validate_config,
 )
 from .base import BaseCommand
@@ -90,34 +91,40 @@ class LocalCommand(BaseCommand):
     def __call__(
         self,
         target: str,
-        data: Optional[dict],
+        data: Optional[tuple],
         playbook: Optional[str],
         report: bool,
         output: bool,
         summary: bool,
         **kwargs,
     ):
-        data = dict(data) if data else None
-        if data and not validate_parameters(data):
+        parsed_data = tuple_to_dict(data) if data else None
+        if parsed_data and not validate_parameters(parsed_data):
             raise ValueError("Malformed parameters")
 
         workdir = Path(target) if os.path.isdir(target) else Path()
 
         if (playbook and "://" in playbook) or "://" in target:
-            local_run = new_local_run(playbook_uri=playbook or target, secrets=data)
+            local_run = new_local_run(
+                playbook_uri=playbook or target, secrets=parsed_data
+            )
         elif (playbook and os.path.isfile(playbook)) or os.path.isfile(target):
             path = Path(playbook or target)
 
-            if not validate_config(path, set(data.keys()) if data else set()):
+            if not validate_config(
+                path, set(parsed_data.keys()) if parsed_data else set()
+            ):
                 return 1
 
             bundle = make_bundle(path, path.parent)
-            local_run = new_local_run(bundle, secrets=data)
+            local_run = new_local_run(bundle, secrets=parsed_data)
         elif os.path.isdir(target):
             playbook_path = workdir / ".satori.yml"
             config = yaml.safe_load(playbook_path.read_bytes())
 
-            if not validate_config(playbook_path, set(data.keys()) if data else set()):
+            if not validate_config(
+                playbook_path, set(parsed_data.keys()) if parsed_data else set()
+            ):
                 return 1
 
             bundle = make_bundle(playbook_path, playbook_path.parent)
@@ -128,7 +135,7 @@ class LocalCommand(BaseCommand):
                     "folder that have not been imported."
                 )
 
-            local_run = new_local_run(bundle, secrets=data)
+            local_run = new_local_run(bundle, secrets=parsed_data)
         else:
             error_console.print("ERROR: Invalid args")
             return 1

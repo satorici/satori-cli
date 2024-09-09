@@ -1,3 +1,4 @@
+import argparse
 import json
 import logging
 import random
@@ -95,7 +96,9 @@ satori_theme = Theme(
         "satori.id": "blue",
     }
 )
-console = Console(highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False, record=True)
+console = Console(
+    highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False, record=True
+)
 error_console = Console(
     highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False, stderr=True
 )
@@ -625,7 +628,22 @@ def detect_boolean(s: Any) -> Optional[bool]:
 
 
 def load_cli_params(string: str) -> tuple:
-    m = re.match(r"(?P<key>[^=]+?)=(?P<value>.+)", string)
+    "Parses a string in the format KEY=VALUE and extracts the key and value."
+    m = re.match(r"(?P<key>\w+?)=(?P<value>.+)", string)
     if m is None:
-        raise Exception("Failed to load data")
+        raise argparse.ArgumentTypeError("Must be in the format KEY=VALUE")
     return m.group("key"), m.group("value")
+
+
+def tuple_to_dict(args: tuple[str, str]) -> dict:
+    "Converts a tuple of (key,value) pairs into a dictionary"
+    defined_vars = {}
+    for key, value in args:
+        if key in defined_vars:
+            if isinstance(defined_vars[key], list):
+                defined_vars[key].append(value)
+            else:
+                defined_vars[key] = [defined_vars[key], value]
+        else:
+            defined_vars[key] = value
+    return defined_vars
