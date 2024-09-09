@@ -46,7 +46,7 @@ test:
 
     # execute a public Satori CI playbook locally and pass parameters
     url_output:
-      - satori local ./ -p satori://web/testssl.yml --data='{"HOST":"https://satori.ci"}' --output
+      - satori local ./ -p satori://web/testssl.yml --data HOST=https://satori.ci --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
@@ -67,7 +67,7 @@ test:
 
     # execute a public Satori CI playbook and pass parameters
     url_output:
-      - satori run satori://web/testssl.yml --data='{"HOST":"https://satori.ci"}' --output
+      - satori run satori://web/testssl.yml --data HOST=https://satori.ci --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
@@ -380,7 +380,7 @@ negative_test:
       - "dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori run random_file.yml --output"
 
     malformed_or_invalid_json_data:
-      - "satori run .satori/empty.yml --data={'A':'B'}; satori run .satori/empty.yml --data={'A':'B','C':'D'}"
+      - satori run .satori/empty.yml --data A=B; satori run .satori/empty.yml -d A=B -d C=D
 
     deleted_report:
       - satori report ${{test.report.dont_save.stdout.trim()}}
