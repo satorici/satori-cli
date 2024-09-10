@@ -2,10 +2,9 @@ from argparse import ArgumentParser
 from typing import Optional
 
 from satoricli.api import client
-from satoricli.cli.utils import BootstrapTable, autoformat, autotable
-from satoricli.playbooks import display_public_playbooks
+from satoricli.cli.utils import autoformat, autotable
 
-from ..utils import get_offset
+from ..utils import console, get_offset
 from .base import BaseCommand
 
 
@@ -39,15 +38,28 @@ class PlaybooksCommand(BaseCommand):
     ):
         offset = get_offset(page, limit)
         params: dict = {"offset": offset, "limit": limit}
-        if not public:  
+        if not public:
             if monitor:
                 params["monitor"] = monitor
             data = client.get("/playbooks", params=params).json()
         else:
             data = client.get("/playbooks/public", params=params).json()
-        
 
         if not kwargs["json"]:
-            autotable(BootstrapTable(**data), limit=limit, page=page, widths=(16,))
+            sast_list = filter(lambda x: not bool(x.get("parameters")), data["rows"])
+            dast_list = filter(lambda x: bool(x.get("parameters")), data["rows"])
+            console.rule("SAST")
+            autotable([{"uri": x["uri"], "name": x["name"]} for x in sast_list])
+            console.rule("DAST")
+            autotable(
+                [
+                    {
+                        "uri": x["uri"],
+                        "name": x["name"],
+                        "parameters": "\n".join(x["parameters"]),
+                    }
+                    for x in dast_list
+                ]
+            )
         else:
             autoformat(data["rows"], jsonfmt=kwargs["json"], list_separator="-" * 48)
