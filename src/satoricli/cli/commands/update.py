@@ -1,3 +1,4 @@
+import platform
 import subprocess
 import sys
 from argparse import ArgumentParser
@@ -16,10 +17,12 @@ class UpdateCommand(BaseCommand):
     def __call__(self, **kwargs):
         console.print(f"Going to run: {sys.executable} -m pip install -U satori-ci")
 
-        proc = subprocess.run(
-            [sys.executable, "-m", "pip", "install", "-U", "satori-ci"],
-            stdout=sys.stdout,
-            stderr=sys.stderr,
-        )
+        args = [sys.executable, "-m", "pip", "install", "-U", "satori-ci"]
+
+        if platform.system() == "Windows":
+            subprocess.Popen(args)
+            return
+
+        proc = subprocess.run(args, stdout=sys.stdout, stderr=sys.stderr)
 
         return proc.returncode
