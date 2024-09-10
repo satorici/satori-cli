@@ -16,4 +16,10 @@ class UpdateCommand(BaseCommand):
     def __call__(self, **kwargs):
         console.print(f"Going to run: {sys.executable} -m pip install -U satori-ci")
 
-        subprocess.Popen([sys.executable, "-m", "pip", "install", "-U", "satori-ci"])
+        proc = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "-U", "satori-ci"],
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+        )
+
+        return proc.returncode
