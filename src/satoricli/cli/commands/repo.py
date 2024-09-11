@@ -107,8 +107,7 @@ class RepoCommand(BaseCommand):
                 timeout=300,
             ).json()
 
-            for scan_data in info:
-                self.repo_run(scan_data, sync, output, report, kwargs)
+            self.repo_run(info, sync, output, report, kwargs)
 
             return
         elif action == "pending":
@@ -249,19 +248,14 @@ class RepoCommand(BaseCommand):
     def repo_run(
         self, scan_data: dict, sync: bool, output: bool, report: bool, kwargs: dict
     ):
-        if "error" in scan_data:
-            error_console.print(f"[error]{scan_data['error']}")
-            return 1
+        autoformat(scan_data, jsonfmt=kwargs["json"])
 
-        if scan_data["id"].startswith("r"):
-            report_id = scan_data["id"]
-            console.print("Report ID:", report_id)
-            console.print(f"Report: https://satori.ci/report_details/?n={report_id}")
-        else:
-            console.print(f"Repo: {scan_data['repo']} | Status: {scan_data['status']}")
-            return
-
-        if sync or output or report:
+        if any((sync, output, report)) and scan_data["status"] == "Running":
+            reports_list = []
+            while not reports_list:
+                res = client.get(f"/scan/reports/{scan_data['id']}").json()
+                reports_list = res.get("rows")
+            report_id = reports_list[0]["id"]
             wait(report_id)
             if sync:
                 print_summary(report_id, kwargs["json"])
