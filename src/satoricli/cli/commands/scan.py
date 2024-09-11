@@ -118,8 +118,9 @@ class ScanCommand(BaseCommand):
             info = client.get(
                 f"/scan/reports/{repository}", params={"limit": limit, "page": page}
             ).json()
-            autotable(BootstrapTable(**info), page=page, limit=limit)
-            return
+            if not kwargs["json"]:
+                autotable(BootstrapTable(**info), page=page, limit=limit)
+                return
         elif action == "check-forks":
             info = client.get(f"/scan/{repository}/check-forks").json()
         elif action == "check-commits":
