@@ -4,7 +4,7 @@ from typing import Optional
 from satoricli.api import client
 from satoricli.cli.utils import autoformat, autotable
 
-from ..utils import console, get_offset
+from ..utils import BootstrapTable, console, get_offset
 from .base import BaseCommand
 
 
@@ -38,14 +38,14 @@ class PlaybooksCommand(BaseCommand):
     ):
         offset = get_offset(page, limit)
         params: dict = {"offset": offset, "limit": limit}
-        if not public:
+        if public:
+            data = client.get("/playbooks/public", params=params).json()
+        else:
             if monitor:
                 params["monitor"] = monitor
             data = client.get("/playbooks", params=params).json()
-        else:
-            data = client.get("/playbooks/public", params=params).json()
 
-        if not kwargs["json"]:
+        if public and not kwargs["json"]:
             sast_list = filter(lambda x: not bool(x.get("parameters")), data["rows"])
             dast_list = filter(lambda x: bool(x.get("parameters")), data["rows"])
             console.rule("SAST")
@@ -61,5 +61,7 @@ class PlaybooksCommand(BaseCommand):
                     for x in dast_list
                 ]
             )
-        else:
+        elif kwargs["json"]:
             autoformat(data["rows"], jsonfmt=kwargs["json"], list_separator="-" * 48)
+        else:
+            autotable(BootstrapTable(**data), limit=limit, page=page, widths=(16,))
