@@ -12,7 +12,7 @@ class PlaybookCommand(BaseCommand):
     name = "playbook"
 
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("id", metavar="ID", nargs="?")
+        parser.add_argument("id", metavar="ID")
         parser.add_argument(
             "action",
             metavar="ACTION",
