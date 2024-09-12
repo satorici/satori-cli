@@ -35,13 +35,17 @@ IS_LINUX = platform.system() == "Linux"
 
 
 def new_local_run(
-    bundle=None, playbook_uri: Optional[str] = None, secrets: Optional[dict] = None
+    bundle=None,
+    playbook_uri: Optional[str] = None,
+    secrets: Optional[dict] = None,
+    name: Optional[str] = None,
 ) -> dict:
     return client.post(
         "/runs/local",
         data={
             "secrets": json.dumps(secrets) if secrets else None,
             "playbook_uri": playbook_uri,
+            "name": name,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -87,6 +91,7 @@ class LocalCommand(BaseCommand):
         parser.add_argument("--report", action="store_true")
         parser.add_argument("--output", action="store_true")
         parser.add_argument("--summary", action="store_true")
+        parser.add_argument("--name", type=str)
 
     def __call__(
         self,
@@ -96,6 +101,7 @@ class LocalCommand(BaseCommand):
         report: bool,
         output: bool,
         summary: bool,
+        name: str,
         **kwargs,
     ):
         parsed_data = tuple_to_dict(data) if data else None
@@ -106,7 +112,7 @@ class LocalCommand(BaseCommand):
 
         if (playbook and "://" in playbook) or "://" in target:
             local_run = new_local_run(
-                playbook_uri=playbook or target, secrets=parsed_data
+                playbook_uri=playbook or target, secrets=parsed_data, name=name
             )
         elif (playbook and os.path.isfile(playbook)) or os.path.isfile(target):
             path = Path(playbook or target)
@@ -117,7 +123,7 @@ class LocalCommand(BaseCommand):
                 return 1
 
             bundle = make_bundle(path, path.parent)
-            local_run = new_local_run(bundle, secrets=parsed_data)
+            local_run = new_local_run(bundle, secrets=parsed_data, name=name)
         elif os.path.isdir(target):
             playbook_path = workdir / ".satori.yml"
             config = yaml.safe_load(playbook_path.read_bytes())
@@ -135,7 +141,7 @@ class LocalCommand(BaseCommand):
                     "folder that have not been imported."
                 )
 
-            local_run = new_local_run(bundle, secrets=parsed_data)
+            local_run = new_local_run(bundle, secrets=parsed_data, name=name)
         else:
             error_console.print("ERROR: Invalid args")
             return 1
