@@ -2,7 +2,12 @@ from argparse import ArgumentParser
 from typing import Literal
 
 from satoricli.api import client
-from satoricli.cli.utils import BootstrapTable, autoformat, autotable
+from satoricli.cli.utils import (
+    BootstrapTable,
+    autoformat,
+    autotable,
+    remove_keys_list_dict,
+)
 
 from .base import BaseCommand
 
@@ -44,7 +49,8 @@ class MonitorCommand(BaseCommand):
                 f"/monitors/{id}", params={"page": page, "limit": limit}
             ).json()
             if not kwargs["json"]:
-                reports = info.pop("reports")
+                reports: dict = info.pop("reports")
+                reports["rows"] = remove_keys_list_dict(reports["rows"], ("fails",))
                 autoformat(info)
                 autotable(BootstrapTable(**reports), page=page, limit=limit)
                 return

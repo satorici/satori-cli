@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from itertools import zip_longest
 from math import ceil
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Iterable, Optional, Union
 
 import httpx
 import yaml
@@ -647,3 +647,7 @@ def tuple_to_dict(args: tuple[str, str]) -> dict:
         else:
             defined_vars[key] = value
     return defined_vars
+
+
+def remove_keys_list_dict(list_dict: list[dict], keys_to_remove: Iterable) -> list:
+    return [{k: v for k, v in d.items() if k not in keys_to_remove} for d in list_dict]
