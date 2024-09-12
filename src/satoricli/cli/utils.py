@@ -66,7 +66,7 @@ class SatoriHighlighter(RegexHighlighter):
         r"(?P<testcase_pass>\w+ > [^:]+: Pass$)",
         r"(?P<testcase_fail>\w+ > [^:]+: Fail$)",
         r"(?P<db_date>\d{4}-\d?\d-\d?\d(\w|\s)\d{2}:\d{2}:\d{2})",
-        r"(?P<id>(r|m|p)\w{15}$)",
+        r"(?P<id>(r|m|p|s)\w{15}$)",
     ]
 
 
@@ -93,7 +93,7 @@ satori_theme = Theme(
         "satori.testcase_pass": "green",
         "satori.testcase_fail": "red",
         "satori.db_date": "bright_magenta",
-        "satori.id": "blue",
+        "satori.id": "dark_slate_gray2",
     }
 )
 console = Console(
