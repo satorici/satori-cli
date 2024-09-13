@@ -90,7 +90,7 @@ class LocalCommand(BaseCommand):
         parser.add_argument("-d", "--data", type=load_cli_params, action="append")
         parser.add_argument("--report", action="store_true")
         parser.add_argument("--output", action="store_true")
-        parser.add_argument("--summary", action="store_true")
+        parser.add_argument("-s", "--sync", action="store_true", help="Summary")
         parser.add_argument("--name", type=str)
 
     def __call__(
@@ -100,7 +100,7 @@ class LocalCommand(BaseCommand):
         playbook: Optional[str],
         report: bool,
         output: bool,
-        summary: bool,
+        sync: bool,
         name: str,
         **kwargs,
     ):
@@ -184,7 +184,7 @@ class LocalCommand(BaseCommand):
             )
             progress.update(task, description="Completed")
 
-        if summary:
+        if sync:
             print_summary(report_id, kwargs["json"])
 
         if report:
