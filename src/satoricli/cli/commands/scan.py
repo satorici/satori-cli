@@ -6,13 +6,15 @@ from pathlib import Path
 from typing import Literal, Optional
 
 from rich.live import Live
+from websocket import WebSocketApp
+
 from satoricli.api import WS_HOST, client
 from satoricli.cli.utils import BootstrapTable, autoformat, autotable, console
-from websocket import WebSocketApp
 
 from ..arguments import date_args
 from .base import BaseCommand
 
+SCANID_REGEX = re.compile(r"s\w{15}")
 
 class ScanCommand(BaseCommand):
     name = "scan"
@@ -75,6 +77,10 @@ class ScanCommand(BaseCommand):
         limit: int,
         **kwargs,
     ):
+        if SCANID_REGEX.match(repository) and action == "new":
+            # show scan status instead of trying to create a new scan if is a scan id
+            action = "status"
+
         if action == "new":
             config = None
 
@@ -179,7 +185,7 @@ class ScanCommand(BaseCommand):
             return 1
 
     def check_scan_id(self, scan_id: str) -> None:
-        if not re.match(r"s\w{15}", scan_id):
+        if not SCANID_REGEX.match(scan_id):
             raise Exception("Please enter a scan ID")
 
     def check_repo_id(self, repo_id: str) -> None:
