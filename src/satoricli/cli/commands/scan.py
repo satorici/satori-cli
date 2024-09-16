@@ -9,12 +9,19 @@ from rich.live import Live
 from websocket import WebSocketApp
 
 from satoricli.api import WS_HOST, client
-from satoricli.cli.utils import BootstrapTable, autoformat, autotable, console
+from satoricli.cli.utils import (
+    BootstrapTable,
+    autoformat,
+    autotable,
+    console,
+    remove_keys_list_dict,
+)
 
 from ..arguments import date_args
 from .base import BaseCommand
 
 SCANID_REGEX = re.compile(r"s\w{15}")
+
 
 class ScanCommand(BaseCommand):
     name = "scan"
@@ -125,6 +132,7 @@ class ScanCommand(BaseCommand):
                 f"/scan/reports/{repository}", params={"limit": limit, "page": page}
             ).json()
             if not kwargs["json"]:
+                info["rows"] = remove_keys_list_dict(info["rows"], ("fails", "created"))
                 autotable(BootstrapTable(**info), page=page, limit=limit)
                 return
         elif action == "check-forks":
