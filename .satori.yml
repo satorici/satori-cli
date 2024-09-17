@@ -389,6 +389,9 @@ negative_test:
 
     deleted_output:
       - satori report ${{test.report.dont_save.stdout.trim()}} output
+
+    deleted_monitor:
+      - satori monitor ${{test.monitor.new.stdout}}
       
   serial:
     setParallel: false
