@@ -5,7 +5,7 @@ import yaml
 from rich.markdown import Markdown
 from rich.panel import Panel
 
-from .cli.utils import autosyntax, autotable, console
+from .cli.utils import autosyntax, autotable, console, remove_yaml_prop
 from .validations import get_parameters
 
 PLAYBOOKS_DIR = Path.home() / ".satori/playbooks"
@@ -92,14 +92,14 @@ def display_public_playbooks(
             if original:
                 print(text)
                 return
-            yml = yaml.safe_load(text)
-            if description := yml.get("settings", {}).get("description"):
-                if name := yml.get("settings", {}).get("name"):
+            loaded_yaml = yaml.safe_load(text)
+            if description := loaded_yaml.get("settings", {}).get("description"):
+                if name := loaded_yaml.get("settings", {}).get("name"):
                     description = f"## {name}\n{description}"
-                    del yml["settings"]["name"]
                 mk = Markdown(description)
                 console.print(Panel(mk))
-                del yml["settings"]["description"]
-            autosyntax(yaml.dump(yml), lexer="YAML")
+            yml = remove_yaml_prop(text, "description")
+            yml = remove_yaml_prop(yml, "name")
+            autosyntax(yml, lexer="YAML")
         else:
             console.print("[red]Playbook not found")

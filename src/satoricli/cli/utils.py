@@ -651,3 +651,32 @@ def tuple_to_dict(args: tuple[str, str]) -> dict:
 
 def remove_keys_list_dict(list_dict: list[dict], keys_to_remove: Iterable) -> list:
     return [{k: v for k, v in d.items() if k not in keys_to_remove} for d in list_dict]
+
+
+def remove_yaml_prop(yaml_content: str, key_to_remove: str) -> str:
+    """Removes a specific key from a YAML content string.
+
+    Args:
+        yaml_content: str 
+            The YAML content string.
+        key_to_remove: str 
+            The key to be removed.
+
+    Returns:
+        The YAML content string without the specified key.
+    """
+    lines = yaml_content.split("\n")
+    new_lines = []
+    in_prop = False
+    reg = re.compile(rf"^(\s+){key_to_remove}:(.+)")
+    space_m = 0
+    for line in lines:
+        if re.match(rf"^{' '*space_m}\S", line) and in_prop:
+            new_lines.append(line)
+            in_prop = False
+        elif m := reg.match(line):
+            in_prop = True
+            space_m = len(m.group(1))
+        elif not in_prop:
+            new_lines.append(line)
+    return "\n".join(new_lines)
