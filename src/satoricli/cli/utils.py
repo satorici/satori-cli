@@ -657,9 +657,9 @@ def remove_yaml_prop(yaml_content: str, key_to_remove: str) -> str:
     """Removes a specific key from a YAML content string.
 
     Args:
-        yaml_content: str 
+        yaml_content: str
             The YAML content string.
-        key_to_remove: str 
+        key_to_remove: str
             The key to be removed.
 
     Returns:
@@ -671,7 +671,7 @@ def remove_yaml_prop(yaml_content: str, key_to_remove: str) -> str:
     reg = re.compile(rf"^(\s+){key_to_remove}:(.+)")
     space_m = 0
     for line in lines:
-        if re.match(rf"^{' '*space_m}\S", line) and in_prop:
+        if re.match(r"^\s{0," + str(space_m) + r"}\S", line) and in_prop:
             new_lines.append(line)
             in_prop = False
         elif m := reg.match(line):
