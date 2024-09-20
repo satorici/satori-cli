@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform"]
 lock_version = "4.5.0"
-content_hash = "sha256:f790f41721d163f90bd865b30794d106534fa1adfc53a6d666b3192c195e159b"
+content_hash = "sha256:95f41b5baa8b6bcdc966391ef418b213d5b1c31afccfc0bc3fea26aff6d897d4"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -309,7 +309,7 @@ files = [
 
 [[package]]
 name = "satori-playbook-validator"
-version = "3.7.10"
+version = "3.7.11"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
@@ -317,8 +317,8 @@ dependencies = [
     "fastjsonschema>=2.18.1",
 ]
 files = [
-    {file = "satori_playbook_validator-3.7.10-py3-none-any.whl", hash = "sha256:80e1b4b7a1ed3432d2778f465d7c6c6c966d89ded3a48280167a4662cbba72c0"},
-    {file = "satori_playbook_validator-3.7.10.tar.gz", hash = "sha256:aee9f7ba04d8838541a08a0b24c07b9b1e88182e249015d7f8eab8c33f689d15"},
+    {file = "satori_playbook_validator-3.7.11-py3-none-any.whl", hash = "sha256:38c2a5aaac56ce2fce8db36db91a564427fd68d111c2b36bc3959f13fb935fa3"},
+    {file = "satori_playbook_validator-3.7.11.tar.gz", hash = "sha256:030269b52e66c294c4125fa2f78c6502d654c024f162d6044bdd0e503c84b8d2"},
 ]
 
 [[package]]
