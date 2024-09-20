@@ -70,32 +70,31 @@ class SatoriHighlighter(RegexHighlighter):
     ]
 
 
-satori_theme = Theme(
-    {
-        "debug": "dim blue",
-        "info": "dim cyan",
-        "warning": "yellow",
-        "danger": "bold red",
-        "error": "red",
-        "critical": "on red",
-        "multiline": "yellow",
-        "satori.email": "cyan",
-        "satori.pass": "chartreuse1",
-        "satori.pending": "dark_slate_gray3",
-        "satori.fail": "bright_red",
-        "satori.unknown": "bright_yellow",
-        "satori.satori_com": "turquoise2",
-        "satori.satori_uri": "dark_turquoise",
-        "satori.key": "white b",
-        "satori.value": "cyan1",
-        "satori.number": "deep_sky_blue1",
-        "satori.uuid": "purple",
-        "satori.testcase_pass": "green",
-        "satori.testcase_fail": "red",
-        "satori.db_date": "bright_magenta",
-        "satori.id": "dark_slate_gray2",
-    }
-)
+SATORI_STYLES = {
+    "debug": "dim blue",
+    "info": "dim cyan",
+    "warning": "yellow",
+    "danger": "bold red",
+    "error": "red",
+    "critical": "on red",
+    "multiline": "yellow",
+    "satori.email": "cyan",
+    "satori.pass": "chartreuse1",
+    "satori.pending": "dark_slate_gray3",
+    "satori.fail": "bright_red",
+    "satori.unknown": "bright_yellow",
+    "satori.satori_com": "turquoise2",
+    "satori.satori_uri": "dark_turquoise",
+    "satori.key": "white b",
+    "satori.value": "cyan1",
+    "satori.number": "deep_sky_blue1",
+    "satori.uuid": "purple",
+    "satori.testcase_pass": "green",
+    "satori.testcase_fail": "red",
+    "satori.db_date": "bright_magenta",
+    "satori.id": "dark_slate_gray2",
+}
+satori_theme = Theme(SATORI_STYLES)
 console = Console(
     highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False, record=True
 )
