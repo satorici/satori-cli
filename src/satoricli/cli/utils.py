@@ -54,9 +54,9 @@ class SatoriHighlighter(RegexHighlighter):
     highlights = [
         r"(?P<value>(?<=:\s)\w+$)",
         r"(?P<email>[\w-]+@([\w-]+\.)+[\w-]+)",
-        r"(?P<pass>((^|(:|>) )(p|P)ass|(c|C)ompleted|(y|Y)es|(t|T)rue)($|\s))",
+        r"(?P<pass>((^|(:|>) )(p|P)ass|(c|C)ompleted|(t|T)rue)($|\s))",
         r"(?P<pending>((^|: )(p|P)ending|(r|R)unning)($|\s))",
-        r"(?P<fail>((^|(:|>) )(f|F)ail(\(\d+\))?|(e|E)rror|(n|N)o|(f|F)alse)($|\s))",
+        r"(?P<fail>((^|(:|>) )(f|F)ail(\(\d+\))?|(e|E)rror|(f|F)alse)($|\s))",
         r"(?P<unknown>((^|: )(u|U)nknown|undefined|null|None|(S|s)topped)($|\s))",
         r"(?P<satori_com>https?:\/\/(www\.)satori-ci\.com\S+)",
         r"(?P<satori_uri>satori:\/\/\S+)",
@@ -67,6 +67,8 @@ class SatoriHighlighter(RegexHighlighter):
         r"(?P<testcase_fail>\w+ > [^:]+: Fail$)",
         r"(?P<db_date>\d{4}-\d?\d-\d?\d(\w|\s)\d{2}:\d{2}:\d{2})",
         r"(?P<id>(r|m|p|s)\w{15}$)",
+        r"(?P<yes>^Yes$)",
+        r"(?P<no>^No$)",
     ]
 
 
@@ -93,6 +95,8 @@ SATORI_STYLES = {
     "satori.testcase_fail": "red",
     "satori.db_date": "bright_magenta",
     "satori.id": "dark_slate_gray2",
+    "satori.no": "chartreuse1",
+    "satori.yes": "bright_red",
 }
 satori_theme = Theme(SATORI_STYLES)
 console = Console(
