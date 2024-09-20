@@ -18,9 +18,6 @@ class MonitorsCommand(BaseCommand):
 
     def register_args(self, parser: ArgumentParser):
         parser.add_argument(
-            "--deleted", action="store_true", help="Show deleted monitors"
-        )
-        parser.add_argument(
             "--pending", action="store_true", help="Show pending actions"
         )
         parser.add_argument("-p", "--page", type=int, default=1)
@@ -29,20 +26,10 @@ class MonitorsCommand(BaseCommand):
             "--public", action="store_true", help="Fetch public monitors"
         )
 
-    def __call__(
-        self,
-        deleted: bool,
-        pending: bool,
-        page: int,
-        limit: int,
-        public: bool,
-        **kwargs,
-    ):
+    def __call__(self, pending: bool, page: int, limit: int, public: bool, **kwargs):
         offset = get_offset(page, limit)
         url = "/monitors/public" if public else "/monitors"
-        monitors = client.get(
-            url, params={"deleted": deleted, "limit": limit, "offset": offset}
-        ).json()
+        monitors = client.get(url, params={"limit": limit, "offset": offset}).json()
 
         if not kwargs["json"]:
             # Only get pending monitors when is not a json output and on first page
