@@ -134,7 +134,7 @@ class RepoCommand(BaseCommand):
                 playbooks = info.get("playbooks", {})
                 info["playbooks"] = ""
                 autoformat(info)
-                autotable(playbooks.get("rows"))
+                autotable(playbooks.get("rows", []))
                 console.print("Reports:")
                 reports_cols = [
                     {
