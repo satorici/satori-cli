@@ -118,7 +118,7 @@ class RootCommand(BaseCommand):
             ("--output", "Show the output"),
             (
                 "--files",
-                "Download the files created (if Fles was set to True in settings)",
+                "Download the files created if the setting files was set to True",
             ),
         ]
         add_rows(run_sync, rows)
