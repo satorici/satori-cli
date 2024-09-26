@@ -128,7 +128,7 @@ class RootCommand(BaseCommand):
         )
         rows = [
             (
-                '--data=\'{"VAR":"This is the value of VAR"}\'',
+                '--data VAR="This is the value of VAR"',
                 "Provide values for the undefined playbook variables",
             )
         ]
