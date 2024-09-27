@@ -102,7 +102,7 @@ class RootCommand(BaseCommand):
             ("satori run playbook.yml", "Upload the playbook and run it"),
             (
                 'satori run ./ --playbook="satori://..."',
-                "Run a public playbook from Satori on the current dir",
+                "Upload the current dir and run the specified playbook",
             ),
         ]
         add_rows(run_async, rows)
