@@ -1,6 +1,6 @@
 settings:
   name: "Satori CLI Tests"
-  log: slack
+  log: slack, discord, email, telegram
   image: public.ecr.aws/docker/library/python:3.9-slim-bullseye
 
 import:
