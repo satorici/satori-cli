@@ -231,11 +231,11 @@ class RootCommand(BaseCommand):
             ),
             ("satori monitor ID start", "Start a monitor ID"),
             (
-                "satori monitor ID clean",
+                "satori scan ID clean",
                 "Delete all the reports associated to the monitor ID",
             ),
-            ("satori monitor ID delete", "Delete the monitor"),
-            ("satori monitor ID public", "Toggle the monitor's visibility"),
+            ("satori scan ID delete", "Delete the monitor"),
+            ("satori scan ID public", "Toggle the monitor's visibility"),
         ]
         add_rows(scans, rows)
 
