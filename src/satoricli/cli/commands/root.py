@@ -217,25 +217,25 @@ class RootCommand(BaseCommand):
                 "Get the repository forks before scanning",
             ),
             (
-                "satori scan GithubUser/Repo status",
-                "Show the status of the scan on the repo",
+                "satori scan ID status",
+                "Show the status of the scan",
             ),
             ("satori scan GithubUser/Repo stop", "Stop the scan on the repo"),
             (
-                "satori scan GithubUser/Repo start",
-                "Start a previously stopped scan on the repo",
+                "satori scan ID start",
+                "Start a previously stopped scan",
             ),
             (
-                "satori scan GithubUser/Repo clean",
-                "Delete the reports associated to the repo",
+                "satori scan ID clean",
+                "Delete the reports associated to the scan",
             ),
             ("satori monitor ID start", "Start a monitor ID"),
             (
                 "satori monitor ID clean",
                 "Delete all the reports associated to the monitor ID",
             ),
-            ("satori monitor ID delete", "Delete the monitor ID"),
-            ("satori monitor ID public", "Toggles the monitor's visibility"),
+            ("satori monitor ID delete", "Delete the monitor"),
+            ("satori monitor ID public", "Toggle the monitor's visibility"),
         ]
         add_rows(scans, rows)
 
