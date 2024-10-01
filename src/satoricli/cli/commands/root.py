@@ -178,7 +178,8 @@ class RootCommand(BaseCommand):
                 "satori repo GithubUser/Repo",
                 "Shows the repository Visibility, CI, Playbook, Status, Result and its team.",
             ),
-            ("satori repo GithubUser/Repo run", "Run using the latest commit"),
+            ("satori repo GithubUser/Repo run", "Run the repository's playbook on the latest commit"),
+            ("satori repo GithubUser/Repo run --playbook=\"satori://...\"", "Run another playbook on the latest commit"),
             (
                 "satori repo GithubUser/Repo commits",
                 "Show the list of commits and the reports associated",
@@ -205,8 +206,12 @@ class RootCommand(BaseCommand):
         rows = [
             ("satori scans", "List scans"),
             (
-                "satori scan GithubUser/Repo -c N",
-                "Scan the Github repository with a coverage of 1 (default) to 100",
+                "satori scan GithubUser/Repo [-c N]",
+                "Scan the Github repository with the repository's playbook a coverage of 1 (default) to 100",
+            ),
+            (
+                "satori scan GithubUser/Repo [--playbook=\"satori://...\"]",
+                "Scan the Github repository with a different playbook",
             ),
             (
                 "satori scan GithubUser/Repo check-commits",
