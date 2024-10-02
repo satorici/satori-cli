@@ -3,6 +3,6 @@ settings:
   name: Download files
 
 touch:
-- [ touch Hello ]
+- touch Hello
 echo:
-- [ echo "Hello World" > Hello2 ]
+- echo "Hello World" > Hello2
