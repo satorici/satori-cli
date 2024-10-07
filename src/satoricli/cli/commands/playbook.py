@@ -16,7 +16,11 @@ class PlaybookCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=("show", "delete", "public"),
+            choices=(
+                "show",
+                # "delete",
+                "public",
+            ),
             nargs="?",
             default="show",
             help="action to perform",
@@ -30,7 +34,11 @@ class PlaybookCommand(BaseCommand):
     def __call__(
         self,
         id: str,
-        action: Literal["show", "delete", "public"],
+        action: Literal[
+            "show",
+            # "delete",
+            "public",
+        ],
         original: bool,
         **kwargs,
     ):
@@ -43,10 +51,10 @@ class PlaybookCommand(BaseCommand):
         if action == "show":
             data = client.get(f"/playbooks/{id}").json()
             list_separator = None
-        elif action == "delete":
-            data = client.delete(f"/playbooks/{id}")
-            print("Playbook Deleted")
-            return
+        # elif action == "delete":
+        #     data = client.delete(f"/playbooks/{id}")
+        #     print("Playbook Deleted")
+        #     return
         elif action == "public":
             data = client.patch(f"/playbooks/{id}", json={"public": "invert"}).json()
 
