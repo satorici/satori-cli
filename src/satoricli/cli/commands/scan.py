@@ -41,6 +41,7 @@ class ScanCommand(BaseCommand):
                 "check-forks",
                 "check-commits",
                 "public",
+                "delete",
             ),
             nargs="?",
             default="new",
@@ -71,6 +72,7 @@ class ScanCommand(BaseCommand):
             "check-forks",
             "check-commits",
             "public",
+            "delete",
         ],
         coverage: float,
         sync: bool,
@@ -113,10 +115,13 @@ class ScanCommand(BaseCommand):
             if sync:
                 return self.scan_sync(repository)
         elif action == "clean":
-            self.check_repo_id(repository)
-            info = client.get(
-                f"repos/{repository}/clean", params={"delete_commits": delete_commits}
-            ).json()
+            client.delete(
+                f"scan/{repository}/reports", params={"delete_commits": delete_commits}
+            )
+            info = {"message": "Scan reports cleaned"}
+        elif action == "delete":
+            client.delete(f"scan/{repository}")
+            info = {"message": "Scan deleted"}
         elif action == "stop":
             self.check_scan_id(repository)
             info = client.get(f"/scan/stop/{repository}").json()
