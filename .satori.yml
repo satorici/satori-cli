@@ -265,15 +265,18 @@ test:
 
     # Run the .satori.yml playbook with a certain coverage on the repo
     run:
-      - "satori scan satoridev01/hello_world -c 50 | grep 'id:' | sed 's/\\x1b\\[[0-9;]*m//g' | grep -E 's[a-zA-Z0-9]{15}' -o"
-
+      #- "satori scan satoridev01/hello_world -c 50 | grep 'id:' | sed 's/\\x1b\\[[0-9;]*m//g' | grep -E 's[a-zA-Z0-9]{15}' -o"
+      - satori scan satoridev01/hello_world -c 50 | grep 'id:' | grep -Eo 's[a-zA-Z0-9]{15}' | tr -d '\n'
+      
     # What's the status of the current scanning
     status:
-      - "satori scan ${{test.scan.run.stdout.trim()}} status"
+      #- "satori scan ${{test.scan.run.stdout.trim()}} status"
+      - satori scan ${{test.scan.run.stdout}} status
 
     # Stop the scan execution
     stop:
-      - "satori scan ${{test.scan.run.stdout.trim()}} stop"
+      #- "satori scan ${{test.scan.run.stdout.trim()}} stop"
+      - satori scan ${{test.scan.run.stdout}} stop
 
     # Restart a scan execution
     # start:
@@ -282,7 +285,11 @@ test:
     # Delete the scan reports
     clean:
       - satori scan satoridev01/hello_world clean
-
+      #- satori scan ${{test.scan.run.stdout}} clean
+    
+    #delete:
+    #  - satori scan ${{test.scan.run.stdout}} delete
+    
   teams:
     # list teams and repos without teams
     list:
