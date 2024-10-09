@@ -76,10 +76,12 @@ test:
   report:
     # run synchronously a local playbook
     new_sync:
-      - "satori run .satori/import/pass.yml -s | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
+      #- "satori run .satori/import/pass.yml -s | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
+      - satori run .satori/import/pass.yml -s | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
 
     dont_save:
-      - "satori run .satori/import/pass.yml --save-report 'False' --save-output 'False' --report --output | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
+      #- "satori run .satori/import/pass.yml --save-report 'False' --save-output 'False' --report --output | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
+      - satori run .satori/import/pass.yml --save-report 'False' --save-output 'False' --report --output | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
 
     #echo_ID:
     #- [ "export ID=$(cat report_id.txt); echo $ID" ]
@@ -100,35 +102,43 @@ test:
 
       # show a report
       single:
-        - "satori report ${{test.report.new_sync.stdout.trim()}}"
+        #- "satori report ${{test.report.new_sync.stdout.trim()}}"
+        - satori report ${{test.report.new_sync.stdout}}
 
       # show a json report
       json:
-        - "satori report ${{test.report.new_sync.stdout.trim()}} --json"
+        #- "satori report ${{test.report.new_sync.stdout.trim()}} --json"
+        - satori report ${{test.report.new_sync.stdout}} --json
 
       # make a report public
       public:
-        - "satori report ${{test.report.new_sync.stdout.trim()}} public"
+        #- "satori report ${{test.report.new_sync.stdout.trim()}} public"
+        - satori report ${{test.report.new_sync.stdout}} public
 
       # show the output associated to a report
       output:
-        - "satori report ${{test.report.new_sync.stdout.trim()}} output"
+        #- "satori report ${{test.report.new_sync.stdout.trim()}} output"
+        - satori report ${{test.report.new_sync.stdout}} output
 
       # download the files associated to a report
       files:
-        - "satori report ${{test.report.new_sync.stdout.trim()}} files"
+        #- "satori report ${{test.report.new_sync.stdout.trim()}} files"
+        - satori report ${{test.report.new_sync.stdout}} files
 
     # delete the files, the output and the report
     delete:
-      - "satori report ${{test.report.new_sync.stdout.trim()}} delete"
+      #- "satori report ${{test.report.new_sync.stdout.trim()}} delete"
+      - satori report ${{test.report.new_sync.stdout}} delete
 
     # run asynchronously a local playbook
     new_async: # new report for stop is needed because the first one is already stopped
-      - "satori run .satori/import/pass.yml | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
+      #- "satori run .satori/import/pass.yml | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o"
+      - satori run .satori/import/pass.yml | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
 
     # stop a running report
     stop: # wait until start
-      - "sleep 10; echo ${{test.report.new_async.stdout.trim()}}; satori report ${{test.report.new_async.stdout.trim()}} stop"
+      #- "sleep 10; echo ${{test.report.new_async.stdout.trim()}}; satori report ${{test.report.new_async.stdout.trim()}} stop"
+      - sleep 10; echo ${{test.report.new_async.stdout}}; satori report ${{test.report.new_async.stdout}} stop
 
   playbook:
     list:
@@ -145,16 +155,19 @@ test:
     read:
       setParallel: true
       private_playbook_by_report_id:
-        - "echo ${{test.report.new_async.stdout.trim()}}; satori playbook ${{test.report.new_async.stdout.trim()}}"
+        #- "echo ${{test.report.new_async.stdout.trim()}}; satori playbook ${{test.report.new_async.stdout.trim()}}"
+        - echo ${{test.report.new_async.stdout}}; satori playbook ${{test.report.new_async.stdout}}
 
       public_playbook:
         - satori playbook satori://secrets/detect-secrets.yml
 
     private_playbook_by_id:
-      - "satori playbooks --json|jq -r '.[0].id'"
+      #- "satori playbooks --json|jq -r '.[0].id'"
+      - satori playbooks --json | jq -r '.[0].id' | tr -d '\n'
 
     public_flag:
-      - satori playbook ${{test.playbook.private_playbook_by_id.stdout.trim()}} public
+      #- satori playbook ${{test.playbook.private_playbook_by_id.stdout.trim()}} public
+      - satori playbook ${{test.playbook.private_playbook_by_id.stdout}} public
 
     # delete_private:
     #   - satori playbook ${{test.playbook.private_playbook_by_id.stdout.trim()}} delete
@@ -229,27 +242,33 @@ test:
 
     # list the reports associated to a monitor
     single: # wait until start
-      - "satori monitor ${{test.monitor.new.stdout.trim()}}"
+      #- "satori monitor ${{test.monitor.new.stdout.trim()}}"
+      - satori monitor ${{test.monitor.new.stdout}}
 
     # make a monitor's reports public
     public: #
-      - "satori monitor ${{test.monitor.new.stdout.trim()}} public"
+      #- "satori monitor ${{test.monitor.new.stdout.trim()}} public"
+      - satori monitor ${{test.monitor.new.stdout}} public
 
     # stop a monitor
     start:
-      - "satori monitor ${{test.monitor.new.stdout.trim()}} start"
+      #- "satori monitor ${{test.monitor.new.stdout.trim()}} start"
+      - satori monitor ${{test.monitor.new.stdout}} start
 
     # start a monitor
     stop:
-      - "satori monitor ${{test.monitor.new.stdout.trim()}} stop"
+      #- "satori monitor ${{test.monitor.new.stdout.trim()}} stop"
+      - satori monitor ${{test.monitor.new.stdout}} stop
 
     # delete the reports associated to a monitor
     clean:
-      - "satori monitor ${{test.monitor.new.stdout.trim()}} clean"
+      #- "satori monitor ${{test.monitor.new.stdout.trim()}} clean"
+      - satori monitor ${{test.monitor.new.stdout}} clean
 
     # delete the monitor
     delete:
-      - "satori monitor ${{test.monitor.new.stdout.trim()}} delete"
+      #- "satori monitor ${{test.monitor.new.stdout.trim()}} delete"
+      - satori monitor ${{test.monitor.new.stdout}} delete
 
   scan:
     # # To be developed: list the current scans
@@ -280,7 +299,7 @@ test:
 
     # Restart a scan execution
     # start:
-    #   - [satori scan satoridev01/hello_world start]
+    #   - satori scan satoridev01/hello_world start
 
     # Delete the scan reports
     clean:
@@ -387,16 +406,19 @@ negative_test:
       - mkdir test; cd test; satori run ./
       
     random:
-      - "dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori run random_file.yml --output"
+      #- "dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori run random_file.yml --output"
+      - dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori run random_file.yml --output
 
     malformed_or_invalid_json_data:
       - satori run .satori/empty.yml --data A=B; satori run .satori/empty.yml -d A=B -d C=D
 
     deleted_report:
-      - satori report ${{test.report.dont_save.stdout.trim()}}
+      #- satori report ${{test.report.dont_save.stdout.trim()}}
+      - satori report ${{test.report.dont_save.stdout}}
 
     deleted_output:
-      - satori report ${{test.report.dont_save.stdout.trim()}} output
+      #- satori report ${{test.report.dont_save.stdout.trim()}} output
+      - satori report ${{test.report.dont_save.stdout}} output
 
     deleted_monitor:
       - satori monitor ${{test.monitor.new.stdout}}
@@ -405,7 +427,8 @@ negative_test:
     setParallel: false
     
     no_dns:
-      - "cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET"
+      #- "cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET"
+      - cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET
     
     malformed_credentials:
       - cp random_file.yml ~/.satori_credentials.yml; satori
