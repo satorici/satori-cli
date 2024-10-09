@@ -134,7 +134,7 @@ class ScanCommand(BaseCommand):
         elif action == "reports":
             self.check_scan_id(repository)
             info = client.get(
-                f"/scan/reports/{repository}", params={"limit": limit, "page": page}
+                f"/scan/{repository}/reports", params={"limit": limit, "page": page}
             ).json()
             if not kwargs["json"]:
                 info["rows"] = remove_keys_list_dict(info["rows"], ("fails", "created"))
