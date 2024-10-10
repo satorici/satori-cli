@@ -25,16 +25,29 @@ class ReportCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=("show", "output", "stop", "files", "delete", "public", "status"),
+            choices=(
+                "show",
+                "output",
+                "stop",
+                "files",
+                "delete",
+                "public",
+                "status",
+                "set-team",
+            ),
             nargs="?",
             default="show",
             help="action to perform",
         )
+        parser.add_argument("team", nargs="?", default=None)
 
     def __call__(
         self,
         id: str,
-        action: Literal["show", "output", "stop", "files", "delete", "public"],
+        action: Literal[
+            "show", "output", "stop", "files", "delete", "public", "set-team"
+        ],
+        team: str,
         **kwargs,
     ):
         if action == "show":
@@ -58,6 +71,9 @@ class ReportCommand(BaseCommand):
             autoformat(res)
         elif action == "status":
             res = client.get(f"/reports/{id}/status").text
+            autoformat(res)
+        elif action == "set-team":
+            res = client.patch(f"/reports/{id}/team", params={"team_name": team}).json()
             autoformat(res)
 
     @staticmethod
