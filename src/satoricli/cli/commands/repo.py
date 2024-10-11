@@ -179,7 +179,7 @@ class RepoCommand(BaseCommand):
                 client.delete(
                     f"/repos/{repository}/playbooks", params={"playbook": playbook_uri}
                 )
-                info = {"message": "Playbook deleted"}
+                info = {"message": "Repo playbook deleted"}
         elif action == "public":
             info = client.patch(
                 f"/repos/{repository}", json={"public": "invert"}
