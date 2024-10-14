@@ -62,7 +62,7 @@ class ReposCommand(BaseCommand):
                         console.rule("[b red]Pending actions", style="red")
                         autotable(pending_repos["rows"], "bold red", widths=(50, 50))
                 # Group repos by team name
-                group_table(BootstrapTable(**repos), "team", "Private", page, limit)
+                group_table(BootstrapTable(**repos), "teams", "Private", page, limit)
             else:
                 autoformat(repos, jsonfmt=kwargs["json"], list_separator="-" * 48)
         else:  # playbook
