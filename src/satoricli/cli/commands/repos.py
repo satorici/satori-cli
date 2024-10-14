@@ -81,5 +81,5 @@ class ReposCommand(BaseCommand):
                 ).json()
             elif action2 == "del":
                 client.delete("/repos/playbooks", params={"playbook": playbook_uri})
-                data = {"message": "Playbook deleted"}
+                data = {"message": "Global playbook deleted"}
             autoformat(data, jsonfmt=kwargs["json"])
