@@ -453,16 +453,17 @@ def group_table(
     """
     groups = {}
     for row in table.rows:
-        key_value: str = row[key]
-        if not key_value:
+        new_groups: list = row[key] if isinstance(row[key], list) else [row[key]]
+        if not new_groups:
             # If is empty add to default group
-            key_value = default_group
+            new_groups = [default_group]
         row.pop(key, None)  # dont print the key again
-        if key_value not in groups:
-            # Create a new group if doesnt exist
-            groups[key_value] = []
-        # Add the item to the group
-        groups[key_value].append(row)
+        for g in new_groups:
+            if g not in groups:
+                # Create a new group if doesnt exist
+                groups[g] = []
+            # Add the item to the group
+            groups[g].append(row)
 
     # Print the tables
     for group in groups.keys():
