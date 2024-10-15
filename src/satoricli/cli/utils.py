@@ -459,6 +459,9 @@ def group_table(
             new_groups = [default_group]
         row.pop(key, None)  # dont print the key again
         for g in new_groups:
+            if isinstance(g, dict):
+                # e.g. {"id":"idXXXX","name":"GroupName"}
+                g = f"{g['name']}({g['id']})"
             if g not in groups:
                 # Create a new group if doesnt exist
                 groups[g] = []
