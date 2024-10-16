@@ -59,6 +59,9 @@ class ScanCommand(BaseCommand):
         parser.add_argument("--playbook", help="Playbook url or file")
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
+        parser.add_argument(
+            "-T", "--team", type=str, default="Private", help="Run as specific team"
+        )
 
     def __call__(
         self,
@@ -84,6 +87,7 @@ class ScanCommand(BaseCommand):
         playbook: Optional[str],
         page: int,
         limit: int,
+        team: str,
         **kwargs,
     ):
         if SCANID_REGEX.match(repository) and action == "new":
@@ -110,6 +114,7 @@ class ScanCommand(BaseCommand):
                     "from": from_date,
                     "to": to_date,
                     "branch": branch,
+                    "team": team,
                 },
             ).json()
             if sync:
