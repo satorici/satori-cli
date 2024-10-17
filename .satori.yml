@@ -27,6 +27,10 @@ test:
     set_token:
       - satori config token ${{TOKEN}}
 
+    # set default team to run all tests
+    set_team:
+      - satori config default_team SatoriCI
+
   # show the user's dashboard
   dashboard:
     private:
