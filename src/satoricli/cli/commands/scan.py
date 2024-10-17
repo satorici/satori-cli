@@ -105,8 +105,8 @@ class ScanCommand(BaseCommand):
                     config = playbook
 
             info = client.post(
-                "/scan/repo",
-                params={
+                "/scan",
+                json={
                     "url": repository,
                     "data": data,
                     "playbook": config,
