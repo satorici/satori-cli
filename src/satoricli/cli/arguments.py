@@ -28,3 +28,8 @@ debug_arg.add_argument("--debug", action="store_true", help="Display debug info"
 
 export_arg = ArgumentParser(add_help=False)
 export_arg.add_argument("--export", choices=("html", "svg", "txt"))
+
+team_arg = ArgumentParser(add_help=False)
+team_arg.add_argument(
+    "-T", "--team", type=str, default="Private", help="Run as specific team"
+)

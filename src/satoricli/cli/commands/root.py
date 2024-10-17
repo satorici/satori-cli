@@ -5,7 +5,7 @@ from importlib import metadata
 from rich.console import Group
 from rich.table import Column, Table
 
-from ..arguments import json_arg, profile_arg, debug_arg, export_arg
+from ..arguments import debug_arg, export_arg, json_arg, profile_arg, team_arg
 from .base import BaseCommand
 from .config import ConfigCommand
 from .dashboard import DashboardCommand
@@ -22,10 +22,10 @@ from .reports import ReportsCommand
 from .repos import ReposCommand
 from .run import RunCommand
 from .scan import ScanCommand
+from .scans import ScansCommand
 from .team import TeamCommand
 from .teams import TeamsCommand
 from .update import UpdateCommand
-from .scans import ScansCommand
 
 VERSION = metadata.version("satori-ci")
 
@@ -50,10 +50,10 @@ class RootCommand(BaseCommand):
         HelpCommand,
         UpdateCommand,
         LocalCommand,
-        ScansCommand
+        ScansCommand,
     )
     name = "satori"
-    global_options = (profile_arg, json_arg, debug_arg, export_arg)
+    global_options = (profile_arg, json_arg, debug_arg, export_arg, team_arg)
     default_subcommand = DashboardCommand
 
     def register_args(self, parser: ArgumentParser):
@@ -178,8 +178,14 @@ class RootCommand(BaseCommand):
                 "satori repo GithubUser/Repo",
                 "Shows the repository Visibility, CI, Playbook, Status, Result and its team.",
             ),
-            ("satori repo GithubUser/Repo run", "Run the repository's playbook on the latest commit"),
-            ("satori repo GithubUser/Repo run --playbook=\"satori://...\"", "Run another playbook on the latest commit"),
+            (
+                "satori repo GithubUser/Repo run",
+                "Run the repository's playbook on the latest commit",
+            ),
+            (
+                'satori repo GithubUser/Repo run --playbook="satori://..."',
+                "Run another playbook on the latest commit",
+            ),
             (
                 "satori repo GithubUser/Repo commits",
                 "Show the list of commits and the reports associated",
@@ -210,7 +216,7 @@ class RootCommand(BaseCommand):
                 "Scan the Github repository with the repository's playbook a coverage of 1 (default) to 100",
             ),
             (
-                "satori scan GithubUser/Repo [--playbook=\"satori://...\"]",
+                'satori scan GithubUser/Repo [--playbook="satori://..."]',
                 "Scan the Github repository with a different playbook",
             ),
             (
@@ -225,10 +231,7 @@ class RootCommand(BaseCommand):
                 "satori scan ID status",
                 "Show the status of the scan",
             ),
-            (
-                "satori scan ID stop", 
-                "Stop the scan on the repo"
-            ),
+            ("satori scan ID stop", "Stop the scan on the repo"),
             (
                 "satori scan ID start",
                 "Start a previously stopped scan",
@@ -237,14 +240,8 @@ class RootCommand(BaseCommand):
                 "satori scan ID clean",
                 "Delete the reports associated to the scan",
             ),
-            (
-                "satori scan ID delete", 
-                "Delete the scan"
-            ),
-            (
-                "satori scan ID public", 
-                "Toggle the scan's visibility"
-            ),
+            ("satori scan ID delete", "Delete the scan"),
+            ("satori scan ID public", "Toggle the scan's visibility"),
         ]
         add_rows(scans, rows)
 

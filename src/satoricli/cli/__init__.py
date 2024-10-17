@@ -58,6 +58,7 @@ def main():
         sys.exit(1)
 
     if config:
+        config["team"] = args["team"]
         try:
             configure_client(**config)
         except Exception as e:

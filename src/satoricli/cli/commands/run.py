@@ -144,9 +144,6 @@ class RunCommand(BaseCommand):
             "--playbook",
             help="if PATH is a directory this playbook will be used",
         )
-        parser.add_argument(
-            "-T", "--team", type=str, default="Private", help="Run as specific team"
-        )
         parser.add_argument("--save-report", type=str, default=None)
         parser.add_argument("--save-output", type=str, default=None)
 

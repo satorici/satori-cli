@@ -89,9 +89,6 @@ class LocalCommand(BaseCommand):
             "--playbook",
             help="if TARGET is a directory this playbook will be used",
         )
-        parser.add_argument(
-            "-T", "--team", type=str, default="Private", help="Run as specific team"
-        )
         parser.add_argument("-d", "--data", type=load_cli_params, action="append")
         parser.add_argument("--report", action="store_true")
         parser.add_argument("--output", action="store_true")

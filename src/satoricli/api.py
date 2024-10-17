@@ -29,9 +29,10 @@ client = Client(
 
 
 def configure_client(
-    token: str, timeout: Optional[int] = None, host: Optional[str] = None
-):
+    token: str, team: str, timeout: Optional[int] = None, host: Optional[str] = None
+) -> None:
     client.headers.update({"Authorization": f"Bearer {token}"})
+    client.headers.update({"Satori-Team": team})
 
     if host:
         client.base_url = host
