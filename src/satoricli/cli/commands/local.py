@@ -35,6 +35,7 @@ IS_LINUX = platform.system() == "Linux"
 
 
 def new_local_run(
+    team: str,
     bundle=None,
     playbook_uri: Optional[str] = None,
     secrets: Optional[dict] = None,
@@ -46,6 +47,7 @@ def new_local_run(
             "secrets": json.dumps(secrets) if secrets else None,
             "playbook_uri": playbook_uri,
             "name": name,
+            "team": team,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -102,6 +104,7 @@ class LocalCommand(BaseCommand):
         output: bool,
         sync: bool,
         name: str,
+        team: str,
         **kwargs,
     ):
         parsed_data = tuple_to_dict(data) if data else None
@@ -112,7 +115,7 @@ class LocalCommand(BaseCommand):
 
         if (playbook and "://" in playbook) or "://" in target:
             local_run = new_local_run(
-                playbook_uri=playbook or target, secrets=parsed_data, name=name
+                team, playbook_uri=playbook or target, secrets=parsed_data, name=name
             )
         elif (playbook and os.path.isfile(playbook)) or os.path.isfile(target):
             path = Path(playbook or target)
@@ -123,7 +126,7 @@ class LocalCommand(BaseCommand):
                 return 1
 
             bundle = make_bundle(path, path.parent)
-            local_run = new_local_run(bundle, secrets=parsed_data, name=name)
+            local_run = new_local_run(team, bundle, secrets=parsed_data, name=name)
         elif os.path.isdir(target):
             playbook_path = workdir / ".satori.yml"
             config = yaml.safe_load(playbook_path.read_bytes())
@@ -141,7 +144,7 @@ class LocalCommand(BaseCommand):
                     "folder that have not been imported."
                 )
 
-            local_run = new_local_run(bundle, secrets=parsed_data, name=name)
+            local_run = new_local_run(team, bundle, secrets=parsed_data, name=name)
         else:
             error_console.print("ERROR: Invalid args")
             return 1

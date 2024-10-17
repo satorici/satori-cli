@@ -43,6 +43,7 @@ def make_packet(path: str):
 def new_run(
     *,
     path: str,
+    team: str,
     modes: Optional[dict] = None,
     bundle: Optional[Any] = None,
     packet: Optional[Path] = None,
@@ -61,6 +62,7 @@ def new_run(
             "modes": json.dumps(modes) if modes else None,
             "save_report": save_report,
             "save_output": save_output,
+            "team": team,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -81,6 +83,7 @@ def new_run(
 def new_monitor(
     bundle,
     settings: dict,
+    team: str,
     *,
     packet: Optional[Path] = None,
     secrets: Optional[dict] = None,
@@ -91,6 +94,7 @@ def new_monitor(
             "secrets": json.dumps(secrets) if secrets else None,
             "settings": json.dumps(settings),
             "with_files": bool(packet),
+            "team": team,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -172,6 +176,7 @@ class RunCommand(BaseCommand):
         output: bool,
         report: bool,
         files: bool,
+        team: str,
         **kwargs,
     ):
         if save_report:
@@ -197,6 +202,7 @@ class RunCommand(BaseCommand):
                 validate_settings(cli_settings)
             ids = new_run(
                 path=path,
+                team=team,
                 modes=modes,
                 secrets=parsed_data,
                 settings=cli_settings,
@@ -207,7 +213,9 @@ class RunCommand(BaseCommand):
             is_monitor = False
             monitor_id = None
         elif (file_path := Path(path)).is_file():
-            if not validate_config(file_path, set(parsed_data.keys()) if parsed_data else set()):
+            if not validate_config(
+                file_path, set(parsed_data.keys()) if parsed_data else set()
+            ):
                 return 1
 
             bundle = make_bundle(file_path, file_path.parent)
@@ -220,10 +228,11 @@ class RunCommand(BaseCommand):
             warn_settings(settings)
 
             if is_monitor:
-                monitor_id = new_monitor(bundle, settings, secrets=parsed_data)
+                monitor_id = new_monitor(bundle, settings, team, secrets=parsed_data)
             else:
                 ids = new_run(
                     path=path,
+                    team=team,
                     modes=modes,
                     bundle=bundle,
                     secrets=parsed_data,
@@ -271,10 +280,13 @@ class RunCommand(BaseCommand):
                 bundle = make_bundle(dir_playbook, dir_playbook.parent)
 
             if is_monitor:
-                monitor_id = new_monitor(bundle, settings, packet=packet, secrets=parsed_data)
+                monitor_id = new_monitor(
+                    bundle, settings, team, packet=packet, secrets=parsed_data
+                )
             else:
                 ids = new_run(
                     path=playbook_path,
+                    team=team,
                     modes=modes,
                     bundle=bundle,
                     secrets=parsed_data,

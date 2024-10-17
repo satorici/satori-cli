@@ -84,6 +84,7 @@ class ScanCommand(BaseCommand):
         playbook: Optional[str],
         page: int,
         limit: int,
+        team: str,
         **kwargs,
     ):
         if SCANID_REGEX.match(repository) and action == "new":
@@ -101,8 +102,8 @@ class ScanCommand(BaseCommand):
                     config = playbook
 
             info = client.post(
-                "/scan/repo",
-                params={
+                "/scan",
+                json={
                     "url": repository,
                     "data": data,
                     "playbook": config,
@@ -110,6 +111,7 @@ class ScanCommand(BaseCommand):
                     "from": from_date,
                     "to": to_date,
                     "branch": branch,
+                    "team": team,
                 },
             ).json()
             if sync:
@@ -145,7 +147,7 @@ class ScanCommand(BaseCommand):
         elif action == "check-commits":
             console.print(f"Checking the list of commits of the repo {repository}")
             info = client.post(
-                f"/scan/{repository}/check-commits", params={"branch": branch}
+                "/scan/check-commits", json={"repo": repository, "branch": branch}
             ).json()
             if sync:
                 return ScanCommand.scan_sync(repository)
