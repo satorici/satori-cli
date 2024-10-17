@@ -14,7 +14,7 @@ class ConfigCommand(BaseCommand):
         parser.add_argument(
             "key",
             metavar="KEY",
-            choices=("token", "host", "timeout"),
+            choices=("token", "host", "timeout", "default_team"),
             nargs="?",
         )
         parser.add_argument("value", metavar="VALUE", nargs="?")
