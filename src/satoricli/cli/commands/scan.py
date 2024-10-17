@@ -147,7 +147,7 @@ class ScanCommand(BaseCommand):
         elif action == "check-commits":
             console.print(f"Checking the list of commits of the repo {repository}")
             info = client.post(
-                f"/scan/{repository}/check-commits", params={"branch": branch}
+                "/scan/check-commits", json={"repo": repository, "branch": branch}
             ).json()
             if sync:
                 return ScanCommand.scan_sync(repository)
