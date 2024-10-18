@@ -103,7 +103,7 @@ class RepoCommand(BaseCommand):
 
             info = client.post(
                 "/scan/last",
-                params={"url": repository, "data": data or "", "playbook": playbook},
+                json={"url": repository, "data": data or "", "playbook": playbook},
                 timeout=300,
             ).json()
 
