@@ -101,7 +101,7 @@ class ReportCommand(BaseCommand):
             add_table_row(
                 [
                     ["Execution type", report["execution"], "bright_magenta"],
-                    ["Public", report["public"]],
+                    ["Visibility", report["visibility"]],
                     ["Execution time", report.get("execution_time")],
                     ["User", report["user"]],
                     ["Date", report["date"].replace("T", " ")],
@@ -167,7 +167,7 @@ class ReportCommand(BaseCommand):
         add_table_row(
             [
                 ["Execution type", report["execution"], "bright_magenta"],
-                ["Public", report["public"]],
+                ["Visibility", report["visibility"]],
                 ["Source", report["source"]],
                 ["Execution time", report.get("execution_time")],
                 ["Monitor", report["monitor_id"]],

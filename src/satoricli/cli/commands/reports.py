@@ -51,7 +51,7 @@ class ReportsCommand(BaseCommand):
                     "execution": report.get("execution"),
                     "status": report.get("status"),
                     "result": report.get("result"),
-                    "public": report.get("public"),
+                    "visibility": report.get("visibility"),
                     "execution_time": report.get("execution_time"),
                     "user": report.get("user"),
                     "date": report.get("date")
