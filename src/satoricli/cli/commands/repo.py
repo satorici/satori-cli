@@ -35,7 +35,7 @@ class RepoCommand(BaseCommand):
                 "pending",
                 "tests",
                 "playbook",
-                "public",
+                "set-visibility",
                 "params",
             ),
             nargs="?",
@@ -43,7 +43,10 @@ class RepoCommand(BaseCommand):
             help="action to perform",
         )
         parser.add_argument(
-            "action2", choices=("list", "add", "del"), nargs="?", default="list"
+            "action2",
+            choices=("list", "add", "del", "public", "private", "unlisted"),
+            nargs="?",
+            default="list",
         )
         parser.add_argument("playbook_uri", nargs="?", default=None)
         parser.add_argument("--delete-commits", action="store_true")
@@ -65,9 +68,16 @@ class RepoCommand(BaseCommand):
         self,
         repository: str,
         action: Literal[
-            "show", "commits", "run", "pending", "tests", "playbook", "params"
+            "show",
+            "commits",
+            "run",
+            "pending",
+            "tests",
+            "playbook",
+            "params",
+            "set-visibility",
         ],
-        action2: Literal["list", "add", "del"],
+        action2: Literal["list", "add", "del", "Public", "Private", "Unlisted"],
         playbook_uri: Optional[str],
         sync: bool,
         output: bool,
@@ -180,9 +190,9 @@ class RepoCommand(BaseCommand):
                     f"/repos/{repository}/playbooks", params={"playbook": playbook_uri}
                 )
                 info = {"message": "Repo playbook deleted"}
-        elif action == "public":
+        elif action == "set-visibility":
             info = client.patch(
-                f"/repos/{repository}", json={"public": "invert"}
+                f"/repos/{repository}", json={"visibility": action2}
             ).json()
         elif action == "params":
             if action2 == "list":

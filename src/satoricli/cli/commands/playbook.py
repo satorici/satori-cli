@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import Literal
+from typing import Literal, Optional
 
 from satoricli.api import client
 from satoricli.cli.utils import autoformat
@@ -19,12 +19,13 @@ class PlaybookCommand(BaseCommand):
             choices=(
                 "show",
                 # "delete",
-                "public",
+                "set-visibility",
             ),
             nargs="?",
             default="show",
             help="action to perform",
         )
+        parser.add_argument("action2", nargs="?", default=None)
         parser.add_argument(
             "--original",
             action="store_true",
@@ -37,8 +38,9 @@ class PlaybookCommand(BaseCommand):
         action: Literal[
             "show",
             # "delete",
-            "public",
+            "set-visibility",
         ],
+        action2: Optional[str],
         original: bool,
         **kwargs,
     ):
@@ -55,8 +57,8 @@ class PlaybookCommand(BaseCommand):
         #     data = client.delete(f"/playbooks/{id}")
         #     print("Playbook Deleted")
         #     return
-        elif action == "public":
-            data = client.patch(f"/playbooks/{id}", json={"public": "invert"}).json()
+        elif action == "set-visibility":
+            data = client.patch(f"/playbooks/{id}", json={"visibility": action2}).json()
 
         autoformat(
             data, jsonfmt=kwargs["json"], list_separator=list_separator, table=True

@@ -47,6 +47,7 @@ class ScanCommand(BaseCommand):
             default="new",
             help="action to perform",
         )
+        parser.add_argument("action2", nargs="?", default=None)
         parser.add_argument(
             "-c", "--coverage", type=float, default=1.0, help="coverage"
         )
@@ -74,6 +75,7 @@ class ScanCommand(BaseCommand):
             "public",
             "delete",
         ],
+        action2: Optional[str],
         coverage: float,
         sync: bool,
         delete_commits: bool,
@@ -151,8 +153,10 @@ class ScanCommand(BaseCommand):
             ).json()
             if sync:
                 return ScanCommand.scan_sync(repository)
-        elif action == "public":
-            info = client.patch(f"/scan/{repository}", json={"public": "invert"}).json()
+        elif action == "set-visibility":
+            info = client.patch(
+                f"/scan/{repository}", json={"visibility": action2}
+            ).json()
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 
     @staticmethod

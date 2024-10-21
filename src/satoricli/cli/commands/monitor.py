@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import Literal
+from typing import Literal, Optional
 
 from satoricli.api import client
 from satoricli.cli.utils import (
@@ -20,11 +20,12 @@ class MonitorCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=("show", "start", "stop", "delete", "public", "clean"),
+            choices=("show", "start", "stop", "delete", "set-visibility", "clean"),
             nargs="?",
             default="show",
             help="action to perform",
         )
+        parser.add_argument("action2", nargs="?", default=None)
         parser.add_argument(
             "--clean", action="store_true", help="clean all report related"
         )
@@ -34,7 +35,8 @@ class MonitorCommand(BaseCommand):
     def __call__(
         self,
         id: str,
-        action: Literal["show", "start", "stop", "delete", "public", "clean"],
+        action: Literal["show", "start", "stop", "delete", "set-visibility", "clean"],
+        action2: Optional[str],
         clean: bool,
         page: int,
         limit: int,
@@ -54,8 +56,8 @@ class MonitorCommand(BaseCommand):
                 autoformat(info)
                 autotable(BootstrapTable(**reports), page=page, limit=limit)
                 return
-        elif action == "public":
-            info = client.patch(f"/monitors/{id}", json={"public": "invert"}).json()
+        elif action == "set-visibility":
+            info = client.patch(f"/monitors/{id}", json={"visibility": action2}).json()
         elif action in ("start", "stop"):
             client.patch(f"/monitors/{id}/{action}")
             print(f"Monitor {'stopped' if action == 'stop' else 'started'}")
