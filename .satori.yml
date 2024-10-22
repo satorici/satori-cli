@@ -107,9 +107,9 @@ test:
       json:
         - satori report ${{test.report.new_sync.stdout}} --json
 
-      # make a report public
-      public:
-        - satori report ${{test.report.new_sync.stdout}} public
+      # make a report public (disabled)
+      # public:
+      #   - satori report ${{test.report.new_sync.stdout}} set-visibility Public
 
       # show the output associated to a report
       output:
@@ -155,7 +155,7 @@ test:
       - satori playbooks --json | jq -r '.[0].id' | tr -d '\n'
 
     public_flag:
-      - satori playbook ${{test.playbook.private_playbook_by_id.stdout}} public
+      - satori playbook ${{test.playbook.private_playbook_by_id.stdout}} set-visibility Public
 
     # delete_private:
     #   - satori playbook ${{test.playbook.private_playbook_by_id.stdout.trim()}} delete
@@ -233,7 +233,7 @@ test:
 
     # make a monitor's reports public
     public: #
-      - satori monitor ${{test.monitor.new.stdout}} public
+      - satori monitor ${{test.monitor.new.stdout}} set-visibility Public
 
     # stop a monitor
     start:
