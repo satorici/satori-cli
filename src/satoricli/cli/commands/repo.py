@@ -44,7 +44,7 @@ class RepoCommand(BaseCommand):
         )
         parser.add_argument(
             "action2",
-            choices=("list", "add", "del", "public", "private", "unlisted"),
+            choices=("list", "add", "del", "Public", "Private", "Unlisted"),
             nargs="?",
             default="list",
         )

@@ -25,16 +25,7 @@ class ReportCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=(
-                "show",
-                "output",
-                "stop",
-                "files",
-                "delete",
-                "public",
-                "status",
-                "set-team",
-            ),
+            choices=("show", "output", "stop", "files", "delete", "status", "set-team"),
             nargs="?",
             default="show",
             help="action to perform",
@@ -44,9 +35,7 @@ class ReportCommand(BaseCommand):
     def __call__(
         self,
         id: str,
-        action: Literal[
-            "show", "output", "stop", "files", "delete", "public", "set-team"
-        ],
+        action: Literal["show", "output", "stop", "files", "delete", "set-team"],
         team: str,
         **kwargs,
     ):
@@ -66,9 +55,9 @@ class ReportCommand(BaseCommand):
         elif action == "delete":
             client.delete(f"/reports/{id}")
             print("Report deleted")
-        elif action == "public":
-            res = client.patch(f"/reports/{id}", json={"public": "invert"}).json()
-            autoformat(res)
+        # elif action == "set-visibility":
+        #     res = client.patch(f"/reports/{id}", json={"public": "invert"}).json()
+        #     autoformat(res)
         elif action == "status":
             res = client.get(f"/reports/{id}/status").text
             autoformat(res)

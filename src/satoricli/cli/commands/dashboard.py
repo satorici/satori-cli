@@ -70,7 +70,7 @@ class DashboardCommand(BaseCommand):
                 reports.append(
                     {
                         "id": report["id"],
-                        "public": report["public"],
+                        "visibility": report["visibility"],
                         "execution type": report["execution"],
                         "name": report["playbook_name"],
                         "status": report["status"],
