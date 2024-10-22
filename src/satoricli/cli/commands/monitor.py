@@ -3,9 +3,11 @@ from typing import Literal, Optional
 
 from satoricli.api import client
 from satoricli.cli.utils import (
+    VISIBILITY_VALUES,
     BootstrapTable,
     autoformat,
     autotable,
+    error_console,
     remove_keys_list_dict,
 )
 
@@ -20,7 +22,7 @@ class MonitorCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=("show", "start", "stop", "delete", "set-visibility", "clean"),
+            choices=("show", "start", "stop", "delete", "visibility", "clean"),
             nargs="?",
             default="show",
             help="action to perform",
@@ -35,7 +37,7 @@ class MonitorCommand(BaseCommand):
     def __call__(
         self,
         id: str,
-        action: Literal["show", "start", "stop", "delete", "set-visibility", "clean"],
+        action: Literal["show", "start", "stop", "delete", "visibility", "clean"],
         action2: Optional[str],
         clean: bool,
         page: int,
@@ -56,8 +58,15 @@ class MonitorCommand(BaseCommand):
                 autoformat(info)
                 autotable(BootstrapTable(**reports), page=page, limit=limit)
                 return
-        elif action == "set-visibility":
-            info = client.patch(f"/monitors/{id}", json={"visibility": action2}).json()
+        elif action == "visibility":
+            if not action2 or action2.capitalize() not in VISIBILITY_VALUES:
+                error_console.print(
+                    f"Allowed values for visibility: {VISIBILITY_VALUES}"
+                )
+                return 1
+            info = client.patch(
+                f"/monitors/{id}", json={"visibility": action2.capitalize()}
+            ).json()
         elif action in ("start", "stop"):
             client.patch(f"/monitors/{id}/{action}")
             print(f"Monitor {'stopped' if action == 'stop' else 'started'}")

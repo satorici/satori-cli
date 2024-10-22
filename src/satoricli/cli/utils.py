@@ -36,6 +36,7 @@ from satoricli.validations import get_parameters, has_executions
 
 __decorations = "▢•○░"
 __random_colors = ["green", "blue", "red"]
+VISIBILITY_VALUES = ("public", "private", "unlisted")
 
 
 @dataclass

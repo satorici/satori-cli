@@ -10,10 +10,12 @@ from websocket import WebSocketApp
 
 from satoricli.api import WS_HOST, client
 from satoricli.cli.utils import (
+    VISIBILITY_VALUES,
     BootstrapTable,
     autoformat,
     autotable,
     console,
+    error_console,
     remove_keys_list_dict,
 )
 
@@ -40,7 +42,7 @@ class ScanCommand(BaseCommand):
                 "clean",
                 "check-forks",
                 "check-commits",
-                "set-visibility",
+                "visibility",
                 "delete",
             ),
             nargs="?",
@@ -72,7 +74,7 @@ class ScanCommand(BaseCommand):
             "clean",
             "check-forks",
             "check-commits",
-            "set-visibility",
+            "visibility",
             "delete",
         ],
         action2: Optional[str],
@@ -153,9 +155,14 @@ class ScanCommand(BaseCommand):
             ).json()
             if sync:
                 return ScanCommand.scan_sync(repository)
-        elif action == "set-visibility":
+        elif action == "visibility":
+            if not action2 or action2.capitalize() not in VISIBILITY_VALUES:
+                error_console.print(
+                    f"Allowed values for visibility: {VISIBILITY_VALUES}"
+                )
+                return 1
             info = client.patch(
-                f"/scan/{repository}", json={"visibility": action2}
+                f"/scan/{repository}", json={"visibility": action2.capitalize()}
             ).json()
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 

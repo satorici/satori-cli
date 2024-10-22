@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from typing import Literal, Optional
 
 from satoricli.api import client
-from satoricli.cli.utils import autoformat
+from satoricli.cli.utils import VISIBILITY_VALUES, autoformat, error_console
 from satoricli.playbooks import display_public_playbooks
 
 from .base import BaseCommand
@@ -19,7 +19,7 @@ class PlaybookCommand(BaseCommand):
             choices=(
                 "show",
                 # "delete",
-                "set-visibility",
+                "visibility",
             ),
             nargs="?",
             default="show",
@@ -38,7 +38,7 @@ class PlaybookCommand(BaseCommand):
         action: Literal[
             "show",
             # "delete",
-            "set-visibility",
+            "visibility",
         ],
         action2: Optional[str],
         original: bool,
@@ -57,8 +57,15 @@ class PlaybookCommand(BaseCommand):
         #     data = client.delete(f"/playbooks/{id}")
         #     print("Playbook Deleted")
         #     return
-        elif action == "set-visibility":
-            data = client.patch(f"/playbooks/{id}", json={"visibility": action2}).json()
+        elif action == "visibility":
+            if not action2 or action2.capitalize() not in VISIBILITY_VALUES:
+                error_console.print(
+                    f"Allowed values for visibility: {VISIBILITY_VALUES}"
+                )
+                return 1
+            data = client.patch(
+                f"/playbooks/{id}", json={"visibility": action2.capitalize()}
+            ).json()
 
         autoformat(
             data, jsonfmt=kwargs["json"], list_separator=list_separator, table=True

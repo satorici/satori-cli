@@ -4,6 +4,7 @@ from typing import Literal
 
 from rich.syntax import Syntax
 from rich.table import Table
+
 from satoricli.api import client
 from satoricli.cli.utils import (
     add_table_row,
@@ -11,10 +12,13 @@ from satoricli.cli.utils import (
     autosyntax,
     console,
     download_files,
+    error_console,
     print_output,
 )
 
 from .base import BaseCommand
+
+VISIBILITY_VALUES = ("undefined", "public", "private", "unlisted")
 
 
 class ReportCommand(BaseCommand):
@@ -25,7 +29,16 @@ class ReportCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=("show", "output", "stop", "files", "delete", "status", "set-team"),
+            choices=(
+                "show",
+                "output",
+                "stop",
+                "files",
+                "delete",
+                "status",
+                "set-team",
+                "visibility",
+            ),
             nargs="?",
             default="show",
             help="action to perform",
@@ -35,7 +48,9 @@ class ReportCommand(BaseCommand):
     def __call__(
         self,
         id: str,
-        action: Literal["show", "output", "stop", "files", "delete", "set-team"],
+        action: Literal[
+            "show", "output", "stop", "files", "delete", "set-team", "visibility"
+        ],
         team: str,
         **kwargs,
     ):
@@ -55,9 +70,16 @@ class ReportCommand(BaseCommand):
         elif action == "delete":
             client.delete(f"/reports/{id}")
             print("Report deleted")
-        # elif action == "set-visibility":
-        #     res = client.patch(f"/reports/{id}", json={"public": "invert"}).json()
-        #     autoformat(res)
+        elif action == "visibility":
+            if not team or team.capitalize() not in VISIBILITY_VALUES:
+                error_console.print(
+                    f"Allowed values for visibility: {VISIBILITY_VALUES}"
+                )
+                return 1
+            res = client.patch(
+                f"/reports/{id}", json={"visibility": team.capitalize()}
+            ).json()
+            autoformat(res)
         elif action == "status":
             res = client.get(f"/reports/{id}/status").text
             autoformat(res)

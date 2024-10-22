@@ -35,7 +35,7 @@ class RepoCommand(BaseCommand):
                 "pending",
                 "tests",
                 "playbook",
-                "set-visibility",
+                "visibility",
                 "params",
             ),
             nargs="?",
@@ -44,7 +44,7 @@ class RepoCommand(BaseCommand):
         )
         parser.add_argument(
             "action2",
-            choices=("list", "add", "del", "Public", "Private", "Unlisted"),
+            choices=("list", "add", "del", "public", "private", "unlisted"),
             nargs="?",
             default="list",
         )
@@ -75,7 +75,7 @@ class RepoCommand(BaseCommand):
             "tests",
             "playbook",
             "params",
-            "set-visibility",
+            "visibility",
         ],
         action2: Literal["list", "add", "del", "Public", "Private", "Unlisted"],
         playbook_uri: Optional[str],
@@ -190,9 +190,9 @@ class RepoCommand(BaseCommand):
                     f"/repos/{repository}/playbooks", params={"playbook": playbook_uri}
                 )
                 info = {"message": "Repo playbook deleted"}
-        elif action == "set-visibility":
+        elif action == "visibility":
             info = client.patch(
-                f"/repos/{repository}", json={"visibility": action2}
+                f"/repos/{repository}", json={"visibility": action2.capitalize()}
             ).json()
         elif action == "params":
             if action2 == "list":

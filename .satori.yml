@@ -107,9 +107,9 @@ test:
       json:
         - satori report ${{test.report.new_sync.stdout}} --json
 
-      # make a report public (disabled)
-      # public:
-      #   - satori report ${{test.report.new_sync.stdout}} set-visibility Public
+      # make a report public
+      public:
+        - satori report ${{test.report.new_sync.stdout}} visibility public
 
       # show the output associated to a report
       output:
@@ -155,7 +155,7 @@ test:
       - satori playbooks --json | jq -r '.[0].id' | tr -d '\n'
 
     public_flag:
-      - satori playbook ${{test.playbook.private_playbook_by_id.stdout}} set-visibility Public
+      - satori playbook ${{test.playbook.private_playbook_by_id.stdout}} visibility public
 
     # delete_private:
     #   - satori playbook ${{test.playbook.private_playbook_by_id.stdout.trim()}} delete
@@ -219,7 +219,7 @@ test:
     # run a new monitor
     new:
       - satori run .satori/monitor.yml -s | grep 'Monitor ID' | grep -oE 'm[a-zA-Z0-9]{15}' | tr -d '\n'
-      
+
     # list the monitors
     list:
       - sleep 5; satori monitors
@@ -233,7 +233,7 @@ test:
 
     # make a monitor's reports public
     public: #
-      - satori monitor ${{test.monitor.new.stdout}} set-visibility Public
+      - satori monitor ${{test.monitor.new.stdout}} visibility public
 
     # stop a monitor
     start:
@@ -266,7 +266,7 @@ test:
     # Run the .satori.yml playbook with a certain coverage on the repo
     run:
       - satori scan satoridev01/hello_world -c 50 | grep 'id:' | grep -Eo 's[a-zA-Z0-9]{15}' | tr -d '\n'
-      
+
     # What's the status of the current scanning
     status:
       - satori scan ${{test.scan.run.stdout}} status
@@ -283,10 +283,10 @@ test:
     clean:
       - satori scan satoridev01/hello_world clean
       #- satori scan ${{test.scan.run.stdout}} clean
-    
+
     #delete:
     #  - satori scan ${{test.scan.run.stdout}} delete
-    
+
   teams:
     # list teams and repos without teams
     list:
@@ -367,7 +367,7 @@ negative_test:
 
     repos_playbook_del:
       - satori repos playbook del
-      
+
     fail:
       - satori run .satori/fail.yml --sync
 
@@ -382,7 +382,7 @@ negative_test:
 
     empty_directory:
       - mkdir test; cd test; satori run ./
-      
+
     random:
       - dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori run random_file.yml --output
 
@@ -399,12 +399,12 @@ negative_test:
 
     deleted_monitor:
       - satori monitor ${{test.monitor.new.stdout}}
-      
+
   serial:
     setParallel: false
-    
+
     no_dns:
       - cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET
-    
+
     malformed_credentials:
       - cp random_file.yml ~/.satori_credentials.yml; satori
