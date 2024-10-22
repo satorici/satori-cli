@@ -63,6 +63,7 @@ class RepoCommand(BaseCommand):
         parser.add_argument("-s", "--sync", action="store_true")
         parser.add_argument("-o", "--output", action="store_true")
         parser.add_argument("-r", "--report", action="store_true")
+        parser.add_argument("--visibility", choices=("public", "private", "unlisted"))
 
     def __call__(
         self,
@@ -89,6 +90,7 @@ class RepoCommand(BaseCommand):
         fail: bool,
         playbook: Optional[str],
         pending: bool,
+        visibility: Optional[Literal["public", "private", "unlisted"]],
         **kwargs,
     ):
         if action == "tests":
@@ -113,7 +115,12 @@ class RepoCommand(BaseCommand):
 
             info = client.post(
                 "/scan/last",
-                json={"url": repository, "data": data or "", "playbook": playbook},
+                json={
+                    "url": repository,
+                    "data": data or "",
+                    "playbook": playbook,
+                    "visibility": visibility,
+                },
                 timeout=300,
             ).json()
 

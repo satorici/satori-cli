@@ -71,7 +71,7 @@ class ReportCommand(BaseCommand):
             client.delete(f"/reports/{id}")
             print("Report deleted")
         elif action == "visibility":
-            if not team or team.capitalize() not in VISIBILITY_VALUES:
+            if not team or team not in VISIBILITY_VALUES:
                 error_console.print(
                     f"Allowed values for visibility: {VISIBILITY_VALUES}"
                 )

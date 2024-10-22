@@ -59,7 +59,7 @@ class MonitorCommand(BaseCommand):
                 autotable(BootstrapTable(**reports), page=page, limit=limit)
                 return
         elif action == "visibility":
-            if not action2 or action2.capitalize() not in VISIBILITY_VALUES:
+            if not action2 or action2 not in VISIBILITY_VALUES:
                 error_console.print(
                     f"Allowed values for visibility: {VISIBILITY_VALUES}"
                 )
