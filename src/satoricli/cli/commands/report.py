@@ -43,7 +43,7 @@ class ReportCommand(BaseCommand):
             default="show",
             help="action to perform",
         )
-        parser.add_argument("team", nargs="?", default=None)
+        parser.add_argument("action2", nargs="?", default=None)
 
     def __call__(
         self,
@@ -51,7 +51,7 @@ class ReportCommand(BaseCommand):
         action: Literal[
             "show", "output", "stop", "files", "delete", "set-team", "visibility"
         ],
-        team: str,
+        action2: str,
         **kwargs,
     ):
         if action == "show":
@@ -71,20 +71,20 @@ class ReportCommand(BaseCommand):
             client.delete(f"/reports/{id}")
             print("Report deleted")
         elif action == "visibility":
-            if not team or team not in VISIBILITY_VALUES:
+            if not action2 or action2 not in VISIBILITY_VALUES:
                 error_console.print(
                     f"Allowed values for visibility: {VISIBILITY_VALUES}"
                 )
                 return 1
             res = client.patch(
-                f"/reports/{id}", json={"visibility": team.capitalize()}
+                f"/reports/{id}", json={"visibility": action2.capitalize()}
             ).json()
             autoformat(res)
         elif action == "status":
             res = client.get(f"/reports/{id}/status").text
             autoformat(res)
         elif action == "set-team":
-            res = client.patch(f"/reports/{id}/team", params={"team_name": team}).json()
+            res = client.patch(f"/reports/{id}/team", params={"team_name": action2}).json()
             autoformat(res)
 
     @staticmethod
