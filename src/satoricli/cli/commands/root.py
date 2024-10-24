@@ -5,7 +5,7 @@ from importlib import metadata
 from rich.console import Group
 from rich.table import Column, Table
 
-from ..arguments import debug_arg, export_arg, json_arg, profile_arg, team_arg
+from ..arguments import debug_arg, export_arg, json_arg, profile_arg, team_arg, config_arg
 from .base import BaseCommand
 from .config import ConfigCommand
 from .dashboard import DashboardCommand
@@ -53,7 +53,7 @@ class RootCommand(BaseCommand):
         ScansCommand,
     )
     name = "satori"
-    global_options = (profile_arg, json_arg, debug_arg, export_arg, team_arg)
+    global_options = (profile_arg, json_arg, debug_arg, export_arg, team_arg, config_arg)
     default_subcommand = DashboardCommand
 
     def register_args(self, parser: ArgumentParser):
