@@ -272,8 +272,9 @@ class RepoCommand(BaseCommand):
         if any((sync, output, report)) and scan_data["status"] == "Running":
             reports_list = []
             while not reports_list:
-                res = client.get(f"/scan/reports/{scan_data['id']}").json()
+                res = client.get(f"/scan/{scan_data['id']}/reports").json()
                 reports_list = res.get("rows")
+                time.sleep(1)
             report_id = reports_list[0]["id"]
             wait(report_id)
             if sync:
