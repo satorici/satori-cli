@@ -303,7 +303,7 @@ class RunCommand(BaseCommand):
             for report_id in ids:
                 console.print("Report ID:", report_id)
                 console.print(
-                    f"Report: https://satori.ci/report_details/?n={report_id}"
+                    f"Report: https://satori.ci/report/{report_id}"
                 )
         elif not is_monitor and kwargs["json"]:
             console.print_json(data={"ids": ids})

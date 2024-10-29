@@ -71,7 +71,7 @@ foo@bar:~$ satori run ./ --sync
 Satori CI 1.2.3 - Automated Software Testing Platform
 Uploading... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 331/331 bytes 0:00:00
 UUID: AOQxDWDkXpZp
-Report: https://satori.ci/report_details/?n=AOQxDWDkXpZp
+Report: https://satori.ci/report/AOQxDWDkXpZp
 - Report status: Completed | Result: Pass | Elapsed time: 62.6s
   • test: test > python
   • asserts:
