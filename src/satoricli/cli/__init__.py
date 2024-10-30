@@ -49,13 +49,25 @@ def main():
     root = RootCommand()
     args = root.parse_args()
 
+    # Check if the command is "update" and handle it separately
+    if len(sys.argv) > 1 and sys.argv[1] == "update":
+        try:
+            exit_code = root.run(args)
+            sys.exit(exit_code)
+        except Exception as e:
+            error_console.print(f"Error during update: {e}")
+            sys.exit(1)
+
     try:
         config = load_config(args.get("config")).get(args["profile"])
     except Exception as e:
-        error_console.print(
-            f"[error]ERROR:[/] Your credentials file is corrupted or not found."
-        )
-        sys.exit(1)
+        if not isinstance(args["func"], ConfigCommand):
+            error_console.print(
+                f"[error]ERROR:[/] Your credentials file is corrupted or not found."
+            )
+            sys.exit(1)
+        else:
+            config = None
 
     if config:
         try:
@@ -66,6 +78,7 @@ def main():
             )
             sys.exit(1)
     elif not isinstance(args["func"], ConfigCommand):
+        # Allow config cmd only if profile not found
         error_console.print(
             f"[error]ERROR:[/] Profile {args['profile']} not found.",
             "These are the profiles available:",
@@ -80,17 +93,9 @@ def main():
             configure_client(**config)
         except Exception as e:
             error_console.print(
-                f"[error]ERROR:[/] Cannot find your profile in your .satori_credentials.yml file. Is it corrupted?"
+                f"[error]ERROR:[/] Cannot find your profile in your credentials file. Is it corrupted?"
             )
             sys.exit(1)
-    elif not isinstance(args["func"], ConfigCommand):
-        error_console.print(
-            f"[error]ERROR:[/] Profile {args['profile']} not found.",
-            "These are the profiles available:",
-        )
-        for key in load_config():
-            error_console.print(key)
-        sys.exit(1)
 
     # Set debug mode
     if args["debug"]:
