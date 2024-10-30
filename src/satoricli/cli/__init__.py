@@ -49,6 +49,7 @@ def main():
     root = RootCommand()
     args = root.parse_args()
 
+    # Check if the command is "update" and handle it separately
     if len(sys.argv) > 1 and sys.argv[1] == "update":
         try:
             exit_code = root.run(args)
