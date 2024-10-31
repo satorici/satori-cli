@@ -281,8 +281,7 @@ test:
 
     # Delete the scan reports
     clean:
-      - satori scan satoridev01/hello_world clean
-      #- satori scan ${{test.scan.run.stdout}} clean
+      - satori scan ${{test.scan.run.stdout}} clean
 
     #delete:
     #  - satori scan ${{test.scan.run.stdout}} delete
