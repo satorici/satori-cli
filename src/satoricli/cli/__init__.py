@@ -49,16 +49,26 @@ def main():
     root = RootCommand()
     args = root.parse_args()
 
+    if len(sys.argv) > 1 and sys.argv[1] == "update":
+        try:
+            exit_code = root.run(args)
+            sys.exit(exit_code)
+        except Exception as e:
+            error_console.print(f"Error during update: {e}")
+            sys.exit(1)
+
     try:
-        config = load_config().get(args["profile"])
+        config = load_config(args.get("config")).get(args["profile"])
     except Exception as e:
-        error_console.print(
-            f"[error]ERROR:[/] Your .satori_credentials.yml file in your home is corrupted."
-        )
-        sys.exit(1)
+        if not isinstance(args["func"], ConfigCommand):
+            error_console.print(
+                f"[error]ERROR:[/] Your .satori_credentials.yml file is corrupted or not found."
+            )
+            sys.exit(1)
+        else:
+            config = None
 
     if config:
-        config["team"] = args["team"]
         try:
             configure_client(**config)
         except Exception as e:
@@ -72,9 +82,19 @@ def main():
             f"[error]ERROR:[/] Profile {args['profile']} not found.",
             "These are the profiles available:",
         )
-        for key in load_config():
+        for key in load_config(args.get("config")):
             error_console.print(key)
         sys.exit(1)
+
+    if config:
+        config["team"] = args["team"]
+        try:
+            configure_client(**config)
+        except Exception as e:
+            error_console.print(
+                f"[error]ERROR:[/] Cannot find your profile in your .satori_credentials.yml file. Is it corrupted?"
+            )
+            sys.exit(1)
 
     # Set debug mode
     if args["debug"]:
