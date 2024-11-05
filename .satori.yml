@@ -26,7 +26,11 @@ test:
     # define the default token for the configuration
     set_token:
       - satori config token ${{TOKEN}}
-
+    
+    # execution with satori_credentials.yml file outside $HOME directory
+    config_test_positive:
+      - satori local pass.yml --config=/data --report
+    
     # set default team to run all tests
     set_team:
       - satori config default_team SatoriCI
@@ -365,6 +369,10 @@ negative_test:
   parallel:
     setParallel: true
 
+    # Invalid execution with satori_credentials.yml file located outside $HOME
+    config_test_negative:
+      - satori local file.yml --config=/tmp --report
+      
     repos_playbook_del:
       - satori repos playbook del
 
