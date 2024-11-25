@@ -4,4 +4,4 @@ settings:
 test:
   assertStdoutNotContains: "Hello World"
   echo:
-  - [ echo Hello World ]
+  - echo Hello World
