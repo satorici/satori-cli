@@ -39,7 +39,7 @@ def check_for_update():
 def main():
     timestamp = (datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
     error_console.print(
-        f"[dim]Satori CI {VERSION} - Automated Cloud Testing - "
+        f"[dim]Satori CI {VERSION} - Automated Testing - "
         f"Started on {timestamp}"
     )
 
