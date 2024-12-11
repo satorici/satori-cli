@@ -161,6 +161,10 @@ test:
     #   - satori playbook ${{test.playbook.private_playbook_by_id.stdout.trim()}} delete
 
   repo:
+    # add a new repository to private team
+    add_repo:
+      - satori team Private add --repo='satoridev01/hello_world'
+
     # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
     list:
       - satori repos
@@ -189,6 +193,9 @@ test:
 
       del:
         - satori repo satoridev01/hello_world params del var
+
+    delete_repo:
+      - satori team Private del --repo='satoridev01/hello_world'
 
     playbooks:
       setParallel: true
