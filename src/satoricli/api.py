@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from importlib import metadata
 from typing import Optional
 
 from httpx import Client, Response
@@ -7,6 +8,7 @@ from .exceptions import SatoriRequestError
 
 HOST = "https://api.satori.ci"
 WS_HOST = "wss://api.satori.ci"
+VERSION = metadata.version("satori-ci")
 
 
 def raise_on_error(res: Response):
@@ -35,8 +37,13 @@ def configure_client(
     timeout: Optional[int] = None,
     host: Optional[str] = None,
 ) -> None:
-    client.headers.update({"Authorization": f"Bearer {token}"})
-    client.headers.update({"Satori-Team": team or default_team or "Private"})
+    client.headers.update(
+        {
+            "Authorization": f"Bearer {token}",
+            "Satori-Team": team or default_team or "Private",
+            "user-agent": f"satori-cli/{VERSION}",
+        }
+    )
 
     if host:
         client.base_url = host
