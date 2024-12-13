@@ -61,7 +61,11 @@ class DashboardCommand(BaseCommand):
             autotable(info["monitors"]["list"]["rows"], "b blue", True)
         if info["repos"]["list"]["rows"]:
             console.rule("[b green]Github Repositories", style="green")
-            autotable(info["repos"]["list"]["rows"], "b green", True)
+            repos = [
+                {**repo, "teams": ",".join(team["name"] for team in repo["teams"])}
+                for repo in info["repos"]["list"]["rows"]
+            ]
+            autotable(repos, "b green", True)
         if info["reports"]["rows"]:
             console.rule("[b red]Last 10 Reports", style="red")
             reports = []
