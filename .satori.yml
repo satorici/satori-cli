@@ -204,17 +204,17 @@ test:
         list:
           - satori repos playbook list
 
-        add:
-          - satori repos playbook add satori://test
-
         single_list:
-        - satori repo satoridev01/Hello_C_World playbook list
+          - satori repo satoridev01/Hello_C_World playbook list
 
-        single_add:
-        - satori repo satoridev01/Hello_C_World playbook add satori://test
+      add:
+        - satori repos playbook add satori://test
 
       del:
         - satori repos playbook del satori://test
+
+      single_add:
+        - satori repo satoridev01/Hello_C_World playbook add satori://test
 
       single_del:
         - satori repo satoridev01/Hello_C_World playbook del satori://test
