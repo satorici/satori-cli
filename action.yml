@@ -1,0 +1,20 @@
+name: Satori CI - Automated Testing
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  satori-cli_run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: run
+        env:
+          SATORITOKEN: ${{ secrets.SATORITOKEN }}
+        run: |
+          pip3 install satori-ci
+          satori config token $SATORITOKEN
+          satori local ./ --report
