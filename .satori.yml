@@ -1,0 +1,417 @@
+settings:
+  name: "Satori CLI Tests"
+  log: slack
+  image: public.ecr.aws/docker/library/python:3.9-slim-bullseye
+  #report: pdf
+
+import:
+  - "satori://secrets/semgrep.yml"
+
+test:
+  assertReturnCode: 0
+  assertStderrNotContains: Traceback
+  install:
+    updates:
+      - apt update
+    tools:
+      - apt install -y --no-install-recommends git jq
+    satori:
+      - pip install .
+
+  # the -P or --profile parameters allows you to use different Satori CI API Tokens
+  token_saved:
+    create_profile:
+      - satori config token "not_a_token" --profile test_user
+
+    # define the default token for the configuration
+    set_token:
+      - satori config token ${{TOKEN}}
+
+    # set default team to run all tests
+    set_team:
+      - satori config default_team SatoriCI
+
+  # show the user's dashboard
+  dashboard:
+    private:
+      - satori
+    public:
+      - satori --public
+
+  local:
+    setParallel: true
+    # execute a Satori CI playbook locally and show the report once its done
+    pass_report:
+      - satori local ./ -p .satori/import/pass.yml --report
+
+    # execute a Satori CI playbook locally on a directory with a .satori.yml playbook
+    import_sync:
+      - satori local .satori/import --sync
+
+    # execute a public Satori CI playbook locally and pass parameters
+    url_output:
+      - satori local ./ -p satori://web/testssl.yml --data HOST=https://satori.ci --output
+
+    # define inputs on your playbook and execute it with different combination of parameters
+    input:
+      - satori local .satori/input.yml --report --output
+
+  wait:
+    - echo waiting...
+
+  run:
+    setParallel: true
+    # execute a Satori CI playbook and show the report once its done with 4 CPUs
+    pass_report:
+      - satori run .satori/import/pass.yml --report --cpu 256 --memory 512
+
+    # execute a Satori CI playbook locally on a directory with a .satori.yml playbook
+    import_sync:
+      - satori run .satori/import --sync
+
+    # execute a public Satori CI playbook and pass parameters
+    url_output:
+      - satori run satori://web/testssl.yml --data HOST=https://satori.ci --output
+
+    # define inputs on your playbook and execute it with different combination of parameters
+    input:
+      - satori run .satori/input.yml --report --output
+
+  report:
+    # run synchronously a local playbook
+    new_sync:
+      - satori run .satori/import/pass.yml -s | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
+
+    dont_save:
+      - satori run .satori/import/pass.yml --save-report 'False' --save-output 'False' --report --output | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
+
+    # list the reports generated
+    list:
+      - satori reports
+
+    # list the pending reports
+    filter:
+      - satori reports --filter="status=Pending"
+
+    parallel:
+      setParallel: true
+
+      list_public:
+        - satori reports --public
+
+      # show a report
+      single:
+        - satori report ${{test.report.new_sync.stdout}}
+
+      # show a json report
+      json:
+        - satori report ${{test.report.new_sync.stdout}} --json
+
+      # make a report public
+      public:
+        - satori report ${{test.report.new_sync.stdout}} visibility public
+
+      # show the output associated to a report
+      output:
+        - satori report ${{test.report.new_sync.stdout}} output
+
+      # download the files associated to a report
+      files:
+        - satori report ${{test.report.new_sync.stdout}} files
+
+    # delete the files, the output and the report
+    delete:
+      - satori report ${{test.report.new_sync.stdout}} delete
+
+    # run asynchronously a local playbook
+    new_async: # new report for stop is needed because the first one is already stopped
+      - satori run .satori/import/pass.yml | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
+
+    # stop a running report
+    stop: # wait until start
+      - sleep 10; echo ${{test.report.new_async.stdout}}; satori report ${{test.report.new_async.stdout}} stop
+
+  playbook:
+    list:
+      setParallel: true
+      private:
+        - satori playbooks
+
+      monitors:
+        - satori playbooks --monitor true
+
+    public:
+      - satori playbooks --public
+
+    read:
+      setParallel: true
+      private_playbook_by_report_id:
+        - echo ${{test.report.new_async.stdout}}; satori playbook ${{test.report.new_async.stdout}}
+
+      public_playbook:
+        - satori playbook satori://secrets/detect-secrets.yml
+
+    private_playbook_by_id:
+      - satori playbooks --json | jq -r '.[0].id' | tr -d '\n'
+
+    public_flag:
+      - satori playbook ${{test.playbook.private_playbook_by_id.stdout}} visibility public
+
+    # delete_private:
+    #   - satori playbook ${{test.playbook.private_playbook_by_id.stdout.trim()}} delete
+
+  repo:
+    # add a new repository to private team
+    add_repo:
+      - satori team Private add --repo='satoridev01/hello_world'
+
+    # list the repositories showing to which team they belong, if they are connected to Github CI, info about the playbook and the latest results obtained
+    list:
+      - satori repos
+
+    list_public:
+      - satori repos --public
+
+    # list the commits and the reports associated to a repository
+    single:
+      - satori repo satoridev01/hello_world
+
+    # simulate a push from the latest version to run the .satori.yml playbook from the repo
+    run:
+      - satori repo satoridev01/hello_world run
+
+    # list the commits of a certain repo
+    commits:
+      - satori repo satoridev01/hello_world commits
+
+    secrets:
+      add:
+        - satori repo satoridev01/hello_world params add var=value
+
+      list:
+        - satori repo satoridev01/hello_world params
+
+      del:
+        - satori repo satoridev01/hello_world params del var
+
+    delete_repo:
+      - satori team Private del --repo='satoridev01/hello_world'
+
+    playbooks:
+      parallel:
+        setParallel: true
+
+        list:
+          - satori repos playbook list
+
+        single_list:
+          - satori repo satoridev01/Hello_C_World playbook list
+
+      add:
+        - satori repos playbook add satori://test
+
+      del:
+        - satori repos playbook del satori://test
+
+      single_add:
+        - satori repo satoridev01/Hello_C_World playbook add satori://test
+
+      single_del:
+        - satori repo satoridev01/Hello_C_World playbook del satori://test
+
+    # TODO: get the forks of a certain repo (required for fork-scan)
+    #check_forks:
+    #  - [satori repo satoridev01/hello_world check-forks]
+
+  monitor:
+    # run a new monitor
+    new:
+      - satori run .satori/monitor.yml -s | grep 'Monitor ID' | grep -oE 'm[a-zA-Z0-9]{15}' | tr -d '\n'
+
+    # list the monitors
+    list:
+      - sleep 5; satori monitors
+
+    list_public:
+      - satori monitors --public
+
+    # list the reports associated to a monitor
+    single: # wait until start
+      - satori monitor ${{test.monitor.new.stdout}}
+
+    # make a monitor's reports public
+    public: #
+      - satori monitor ${{test.monitor.new.stdout}} visibility public
+
+    # stop a monitor
+    start:
+      - satori monitor ${{test.monitor.new.stdout}} start
+
+    # start a monitor
+    stop:
+      - satori monitor ${{test.monitor.new.stdout}} stop
+
+    # delete the reports associated to a monitor
+    clean:
+      - satori monitor ${{test.monitor.new.stdout}} clean
+
+    # delete the monitor
+    delete:
+      - satori monitor ${{test.monitor.new.stdout}} delete
+
+  scan:
+    # # To be developed: list the current scans
+    list:
+      - satori scans
+
+    list_public:
+      - satori scans --public
+
+    # Get the commits of a certain repo (required for scans)
+    check_commits:
+      - satori scan satoridev01/hello_world check-commits
+
+    # Run the .satori.yml playbook with a certain coverage on the repo
+    run:
+      - satori scan satoridev01/hello_world -c 50 | grep 'id:' | grep -Eo 's[a-zA-Z0-9]{15}' | tr -d '\n'
+
+    # What's the status of the current scanning
+    status:
+      - satori scan ${{test.scan.run.stdout}} status
+
+    # Stop the scan execution
+    stop:
+      - satori scan ${{test.scan.run.stdout}} stop
+
+    # Restart a scan execution
+    # start:
+    #   - satori scan satoridev01/hello_world start
+
+    # Delete the scan reports
+    clean:
+      - satori scan ${{test.scan.run.stdout}} clean
+
+    #delete:
+    #  - satori scan ${{test.scan.run.stdout}} delete
+
+  teams:
+    # list teams and repos without teams
+    list:
+      - satori teams
+
+    # create team 'test_team'
+    create:
+      - satori team test_team create --debug
+
+    parallel:
+      setParallel: true
+      # list the repos associated to the 'test_team' and their team members
+      single:
+        - satori team test_team
+
+      # list the members of the 'test_team'
+      members:
+        - satori team test_team members
+
+      # list your TEAM members
+      settings:
+        - satori team test_team settings
+
+      # list your TEAM settings
+      get_config:
+        - satori team test_team get_config notification_email
+
+    # show your TEAM's config setting for a specific value
+    set_config:
+      - satori team test_team set_config notification_email test@satori.ci
+    # set your TEAM CONFIG setting
+
+    # add the email 'test@satori.ci' as a member of the team 'test_team'
+    add_member:
+      - satori team test_team add --email='test@satori.ci'
+
+    # delete the email 'test@satori.ci' as a member of the team 'test_team'
+    delete_member:
+      - satori team test_team del --email='test@satori.ci'
+
+    add_github_member:
+      - satori team test_team add --github='satoridev02'
+
+    delete_github_member:
+      - satori team test_team del --github='satoridev02'
+
+    # add the repo 'satoridev01/hello_world' to the team 'test_team'
+    add_repo:
+      - satori team test_team add --repo='satoridev01/hello_world'
+
+    # list the repos associated to the 'test_team'
+    team_with_repos:
+      - satori team test_team repos
+
+    # delete the repo 'satoridev01/hello_world' from the team 'test_team'
+    del_repo:
+      - satori team test_team del --repo='satoridev01/hello_world'
+
+    # list the repos associated to the 'test_team'
+    team_without_repos:
+      - satori team test_team repos
+
+    # delete the 'test_team'
+    delete:
+      - satori team test_team delete
+
+negative_test:
+  assertReturnCodeNot: 0
+  assertStderrNotContains:
+    - Traceback
+    - malformed node
+    - invalid syntax
+    - object has no attribute
+    - "codec can\\'t decode byte"
+
+  parallel:
+    setParallel: true
+
+    repos_playbook_del:
+      - satori repos playbook del
+
+    fail:
+      - satori run .satori/fail.yml --sync
+
+    fail_import:
+      - satori run .satori/fail_import.yml --sync
+
+    empty_playbook:
+      - satori run .satori/empty.yml --report
+
+    empty_playbook_id:
+      - satori playbook
+
+    empty_directory:
+      - mkdir test; cd test; satori run ./
+
+    random:
+      - dd if=/dev/urandom of=random_file.yml bs=1024 count=1; satori run random_file.yml --output
+
+    malformed_or_invalid_json_data:
+      - satori run .satori/empty.yml --data A=B; satori run .satori/empty.yml -d A=B -d C=D
+
+    deleted_report:
+      #- satori report ${{test.report.dont_save.stdout.trim()}}
+      - satori report ${{test.report.dont_save.stdout}}
+
+    deleted_output:
+      #- satori report ${{test.report.dont_save.stdout.trim()}} output
+      - satori report ${{test.report.dont_save.stdout}} output
+
+    deleted_monitor:
+      - satori monitor ${{test.monitor.new.stdout}}
+
+  serial:
+    setParallel: false
+
+    no_dns:
+      - cp /etc/resolv.conf /etc/resolv.conf.bak; echo 'nameserver 0.0.0.0' > /etc/resolv.conf ; satori; RET=$?; cat /etc/resolv.conf.bak > /etc/resolv.conf; return $RET
+
+    malformed_credentials:
+      - cp random_file.yml ~/.satori_credentials.yml; satori

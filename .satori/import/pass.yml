@@ -1,0 +1,23 @@
+settings:
+  files: True
+  name: Pass playbook
+
+mutation:
+- - value: "Hello World"
+    mutate: radamsa
+    mutate_qty: 10
+  - value: "Hello World"
+    mutate: zzuf
+    mutate_qty: 10
+
+tests:
+  positive:
+    assertReturnCode: 0
+    assertStdoutEqual: "Hello World"
+    echo:
+    - echo -n Hello World
+  
+  negative:
+    assertStdoutNotEqual: "Hello World"
+    echo:
+    - echo -n ${{mutation}}

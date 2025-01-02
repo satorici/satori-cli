@@ -1,0 +1,8 @@
+settings:
+  files: True
+  name: Download files
+
+touch:
+- touch Hello
+echo:
+- echo "Hello World" > Hello2

@@ -1,0 +1,31 @@
+[project]
+name = "satori-ci"
+version = "1.37.12"
+description = "Satori CI - Automated Testing"
+authors = [
+    {name = "Satori CI CLI", email = "info@satori.ci"},
+]
+dependencies = [
+    "satori-playbook-validator>=3.7.11",
+    "satori-docs==1.3.5",
+    "pyyaml>=6.0",
+    "flatdict>=4.0.1",
+    "rich>=13.0",
+    "gitpython>=3.1.31",
+    "packaging>=23.1",
+    "websocket-client>=1.6.1",
+    "httpx>=0.24.1",
+    "satori-runner==0.1.0",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = {file = "LICENSE"}
+
+[project.urls]
+Homepage = "https://satori.ci"
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project.scripts]
+satori = "satoricli:main"

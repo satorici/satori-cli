@@ -1,0 +1,7 @@
+settings:
+  name: Fail playbook
+
+test:
+  assertStdoutNotContains: "Hello World"
+  echo:
+  - echo Hello World

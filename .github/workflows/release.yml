@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      # Run workflow on version tags, e.g:
+      # git tag v1.0.0 -m ""
+      # git push origin v1.0.0
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9"]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: run
+        id: run
+        env:
+          PDMUSER: ${{ secrets.PDMUSER }}
+          PDMPASS: ${{ secrets.PDMPASS }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          #pdm publish --username $PDMUSER --password $PDMPASS
+          pdm publish --username __token__ --password $PYPI_TOKEN
+
+    #   - name: Create Github release
+    #     uses: softprops/action-gh-release@v1
+    #     with:
+    #       draft: true
+    #       generate_release_notes: true
+    #       files: |
+    #         ./${{ steps.run.outputs.archive }}
+    #         ./${{ steps.run.outputs.archive-checksum }}
+    #       body: "Release"

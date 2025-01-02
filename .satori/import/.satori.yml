@@ -1,0 +1,7 @@
+settings:
+  name: Import playbooks
+  image: public.ecr.aws/docker/library/python
+
+import:
+  - "file://pass.yml"
+  - "satori://secrets/trufflehog.yml"

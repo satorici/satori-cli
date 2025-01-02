@@ -1,0 +1,8 @@
+settings:
+  name: Monitor playbook
+  rate: 20 hours
+
+test:
+  assertStdoutContains: "Hello World"
+  echo:
+  - echo Hello World

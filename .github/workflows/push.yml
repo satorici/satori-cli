@@ -1,0 +1,26 @@
+name: Satori CLI Action
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  pdm-upload:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: run
+        env:
+          PDMUSER: ${{ secrets.PDMUSER }}
+          PDMPASS: ${{ secrets.PDMPASS }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          #pdm publish --username $PDMUSER --password $PDMPASS
+          pdm publish --username __token__ --password $PYPI_TOKEN
