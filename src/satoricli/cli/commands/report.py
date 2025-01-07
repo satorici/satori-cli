@@ -196,7 +196,7 @@ class ReportCommand(BaseCommand):
                     ["Repo", report["repo"]],
                     ["Branch", report["branches"]],
                     ["Hash", report["hash"]],
-                    ["Parent", report["parent_hash"]],
+                    ["Parent", report.get("parent_hash")],
                 ],
                 table,
             )
