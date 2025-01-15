@@ -134,7 +134,7 @@ class RepoCommand(BaseCommand):
         elif action == "show":
             reports = client.get(
                 "/reports",
-                params={"filters": f"repo={repository}"},
+                params={"filters": f"repo={repository},ignore=scan"},
             ).json()
             try:
                 info = client.get(
