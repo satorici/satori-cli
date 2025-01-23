@@ -195,3 +195,6 @@ class LocalCommand(BaseCommand):
 
         if output:
             print_output(report_id, kwargs["json"])
+
+        report_data = client.get(f"/reports/{report_id}").json()
+        return 0 if report_data["fails"] == 0 else 1
