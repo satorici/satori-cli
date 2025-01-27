@@ -3,7 +3,7 @@ from math import ceil
 from typing import Optional
 
 from satoricli.api import client
-from satoricli.cli.utils import autoformat, autotable, console
+from satoricli.cli.utils import autoformat, autotable, console, execution_time
 
 from .base import BaseCommand
 
@@ -31,7 +31,12 @@ class ReportsCommand(BaseCommand):
             if res["total"] == 0:
                 console.print("No reports found")
                 return
-            
+
+            res["rows"] = [
+                {**x, "execution_time": execution_time(x["execution_time"])}
+                for x in res["rows"]
+            ]
+
             self.print_table(res["rows"])
             console.print(
                 f"Page {page} of {ceil(res['total'] / limit)} | Total: {res['total']}"
@@ -54,7 +59,7 @@ class ReportsCommand(BaseCommand):
                     "visibility": report.get("visibility"),
                     "execution_time": report.get("execution_time"),
                     "user": report.get("user"),
-                    "date": report.get("date")
+                    "date": report.get("date"),
                 }
                 for report in reports
             ],

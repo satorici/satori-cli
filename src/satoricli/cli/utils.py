@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import math
 import random
 import re
 import time
@@ -474,7 +475,7 @@ def group_table(
         console.rule(f"[b]{group}", style="cyan")
         autotable(groups[group], "bold blue", widths=widths)
 
-    console.print(f"Page {page} of {ceil(table.total / limit)} | Total: {table.total }")
+    console.print(f"Page {page} of {ceil(table.total / limit)} | Total: {table.total}")
 
 
 def wait(report_id: str):
@@ -688,3 +689,13 @@ def remove_yaml_prop(yaml_content: str, key_to_remove: str) -> str:
         elif not in_prop:
             new_lines.append(line)
     return "\n".join(new_lines)
+
+
+def execution_time(seconds: Optional[float]) -> str:
+    if seconds is None:
+        return "-"
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    seconds_remainder = math.ceil(seconds % 60)
+
+    return f"{hours:02d}:{minutes:02d}:{seconds_remainder:02d}"

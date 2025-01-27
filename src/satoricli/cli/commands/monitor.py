@@ -8,6 +8,7 @@ from satoricli.cli.utils import (
     autoformat,
     autotable,
     error_console,
+    execution_time,
     remove_keys_list_dict,
 )
 
@@ -55,6 +56,10 @@ class MonitorCommand(BaseCommand):
             if not kwargs["json"]:
                 reports: dict = info.pop("reports")
                 reports["rows"] = remove_keys_list_dict(reports["rows"], ("fails",))
+                reports["rows"] = [
+                    {**x, "execution_time": execution_time(x["execution_time"])}
+                    for x in reports["rows"]
+                ]
                 autoformat(info)
                 autotable(BootstrapTable(**reports), page=page, limit=limit)
                 return

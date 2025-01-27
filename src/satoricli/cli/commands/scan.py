@@ -16,6 +16,7 @@ from satoricli.cli.utils import (
     autotable,
     console,
     error_console,
+    execution_time,
     remove_keys_list_dict,
 )
 
@@ -144,6 +145,10 @@ class ScanCommand(BaseCommand):
             ).json()
             if not kwargs["json"]:
                 info["rows"] = remove_keys_list_dict(info["rows"], ("fails", "created"))
+                info["rows"] = [
+                    {**x, "execution_time": execution_time(x["execution_time"])}
+                    for x in info["rows"]
+                ]
                 autotable(BootstrapTable(**info), page=page, limit=limit)
                 return
         elif action == "check-forks":

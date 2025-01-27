@@ -13,6 +13,7 @@ from satoricli.cli.utils import (
     console,
     download_files,
     error_console,
+    execution_time,
     print_output,
 )
 
@@ -84,7 +85,9 @@ class ReportCommand(BaseCommand):
             res = client.get(f"/reports/{id}/status").text
             autoformat(res)
         elif action == "set-team":
-            res = client.patch(f"/reports/{id}/team", params={"team_name": action2}).json()
+            res = client.patch(
+                f"/reports/{id}/team", params={"team_name": action2}
+            ).json()
             autoformat(res)
 
     @staticmethod
@@ -113,7 +116,7 @@ class ReportCommand(BaseCommand):
                 [
                     ["Execution type", report["execution"], "bright_magenta"],
                     ["Visibility", report["visibility"]],
-                    ["Execution time", report.get("execution_time")],
+                    ["Execution time", execution_time(report.get("execution_time"))],
                     ["User", report["user"]],
                     ["Date", report["date"].replace("T", " ")],
                     ["Status", report["status"]],
@@ -180,7 +183,7 @@ class ReportCommand(BaseCommand):
                 ["Execution type", report["execution"], "bright_magenta"],
                 ["Visibility", report["visibility"]],
                 ["Source", report["source"]],
-                ["Execution time", report.get("execution_time")],
+                ["Execution time", execution_time(report.get("execution_time"))],
                 ["Monitor", report["monitor_id"]],
                 ["Date", report["created"].replace("T", " ")],
                 ["Status", report["status"]],
@@ -222,7 +225,7 @@ class ReportCommand(BaseCommand):
         if report["report"]:
             ReportCommand.print_report_summary(report["report"], table)
         if report["delta"]:
-            table.add_row(f"[b]Report:[/]\n{autoformat(report['delta'],echo=False)}")
+            table.add_row(f"[b]Report:[/]\n{autoformat(report['delta'], echo=False)}")
         if report["user_warnings"]:
             table.add_row(
                 "[warning]Warnings and Errors:[/]\n ○ "

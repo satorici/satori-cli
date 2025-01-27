@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Literal, Optional
 
 import httpx
+
 from satoricli.api import client
 
 from ..utils import (
@@ -12,6 +13,7 @@ from ..utils import (
     autotable,
     console,
     error_console,
+    execution_time,
     print_output,
     print_summary,
     wait,
@@ -162,7 +164,7 @@ class RepoCommand(BaseCommand):
                             report["hash"][:7] if report["hash"] else report["hash"]
                         ),
                         "Commit author": report["commit_author"],
-                        "Execution time": report["execution_time"],
+                        "Execution time": execution_time(report["execution_time"]),
                         "Result": report["result"],
                         "Status": report["status"],
                         "User": report["user"],
