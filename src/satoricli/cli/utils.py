@@ -697,5 +697,12 @@ def execution_time(seconds: Optional[float]) -> str:
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
     seconds_remainder = math.ceil(seconds % 60)
-
+    # Handle case where seconds round up to 60
+    if seconds_remainder == 60:
+        seconds_remainder = 0
+        minutes += 1
+    # Handle case where minutes reach 60
+    if minutes == 60:
+        minutes = 0
+        hours += 1
     return f"{hours:02d}:{minutes:02d}:{seconds_remainder:02d}"
