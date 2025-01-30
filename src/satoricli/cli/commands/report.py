@@ -14,6 +14,7 @@ from satoricli.cli.utils import (
     download_files,
     error_console,
     execution_time,
+    get_command_params,
     print_output,
 )
 
@@ -191,6 +192,8 @@ class ReportCommand(BaseCommand):
             ],
             table,
         )
+
+        add_table_row([["Parameters", get_command_params(report["run_params"])]], table)
 
         if report.get("repo"):
             # Add the repo data in another row if exist
