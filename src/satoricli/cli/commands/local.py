@@ -1,6 +1,7 @@
 import json
 import os
 import platform
+import sys
 import time
 from argparse import ArgumentParser
 from base64 import b64decode, b64encode
@@ -48,6 +49,7 @@ def new_local_run(
             "playbook_uri": playbook_uri,
             "name": name,
             "team": team,
+            "run_params": " ".join(sys.argv[1:]),
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()

@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import sys
 import tempfile
 import uuid
 import warnings
@@ -51,6 +52,7 @@ def new_run(
     settings: Optional[dict] = None,
     save_report: Union[str, bool, None] = None,
     save_output: Union[str, bool, None] = None,
+    params: Union[str, None] = None,
 ) -> list[str]:
     data = client.post(
         "/runs",
@@ -63,6 +65,7 @@ def new_run(
             "save_report": save_report,
             "save_output": save_output,
             "team": team,
+            "run_params": " ".join(sys.argv[1:]),
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -302,9 +305,7 @@ class RunCommand(BaseCommand):
         if not is_monitor and not kwargs["json"]:
             for report_id in ids:
                 console.print("Report ID:", report_id)
-                console.print(
-                    f"Report: https://satori.ci/report/{report_id}"
-                )
+                console.print(f"Report: https://satori.ci/report/{report_id}")
         elif not is_monitor and kwargs["json"]:
             console.print_json(data={"ids": ids})
         elif is_monitor and not kwargs["json"]:
