@@ -706,3 +706,12 @@ def execution_time(seconds: Optional[float]) -> str:
         minutes = 0
         hours += 1
     return f"{hours:02d}:{minutes:02d}:{seconds_remainder:02d}"
+
+
+def get_command_params(command: Optional[str]) -> Optional[str]:
+    if command is None:
+        return None
+    regex = re.compile(r"(-d |--data=)(\S+=\S+)")
+    res = regex.findall(command)
+    params = [x[1] for x in res]
+    return " ".join(params)

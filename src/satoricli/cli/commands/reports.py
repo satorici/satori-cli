@@ -3,7 +3,13 @@ from math import ceil
 from typing import Optional
 
 from satoricli.api import client
-from satoricli.cli.utils import autoformat, autotable, console, execution_time
+from satoricli.cli.utils import (
+    autoformat,
+    autotable,
+    console,
+    execution_time,
+    get_command_params,
+)
 
 from .base import BaseCommand
 
@@ -32,11 +38,6 @@ class ReportsCommand(BaseCommand):
                 console.print("No reports found")
                 return
 
-            res["rows"] = [
-                {**x, "execution_time": execution_time(x["execution_time"])}
-                for x in res["rows"]
-            ]
-
             self.print_table(res["rows"])
             console.print(
                 f"Page {page} of {ceil(res['total'] / limit)} | Total: {res['total']}"
@@ -50,15 +51,16 @@ class ReportsCommand(BaseCommand):
             [
                 {
                     "id": report["id"],
-                    "team": report.get("team"),
+                    # "team": report.get("team"),
+                    "params": get_command_params(report.get("run_params")),
                     "playbook_path": report.get("playbook_path"),
                     "playbook_name": report.get("playbook_name"),
                     "execution": report.get("execution"),
                     "status": report.get("status"),
                     "result": report.get("result"),
-                    "visibility": report.get("visibility"),
-                    "execution_time": report.get("execution_time"),
-                    "user": report.get("user"),
+                    # "visibility": report.get("visibility"),
+                    "execution_time": execution_time(report.get("execution_time")),
+                    # "user": report.get("user"),
                     "date": report.get("date"),
                 }
                 for report in reports
