@@ -193,8 +193,6 @@ class ReportCommand(BaseCommand):
             table,
         )
 
-        add_table_row([["Parameters", get_command_params(report["run_params"])]], table)
-
         if report.get("repo"):
             # Add the repo data in another row if exist
             add_table_row(
@@ -213,6 +211,9 @@ class ReportCommand(BaseCommand):
             playbook_line.append(["Path", report["playbook_path"]])
         if report["secrets_count"]:
             playbook_line.append(["Parameters", report["secrets_count"]])
+        params = get_command_params(report["run_params"])
+        if params:
+            playbook_line.append(["Parameters", params])
         add_table_row(playbook_line, table)
 
         # Highlight the playbook content
