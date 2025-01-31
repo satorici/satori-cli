@@ -1,5 +1,6 @@
 import json
 import re
+import sys
 from argparse import ArgumentParser
 from datetime import date
 from pathlib import Path
@@ -117,6 +118,7 @@ class ScanCommand(BaseCommand):
                     "to": to_date,
                     "branch": branch,
                     "team": team,
+                    "run_params": " ".join(sys.argv[1:]),
                 },
             ).json()
             if sync:
