@@ -207,7 +207,7 @@ class ReportCommand(BaseCommand):
             )
 
         # Add the playbook data in a new row
-        playbook_line = [["Playbook", report["playbook_id"]]]
+        playbook_line = []
         if report["playbook_path"]:
             playbook_line.append(["Path", report["playbook_path"]])
         if report["secrets_count"]:
@@ -215,7 +215,8 @@ class ReportCommand(BaseCommand):
         params = get_command_params(report["run_params"])
         if params:
             playbook_line.append(["Parameters", params])
-        add_table_row(playbook_line, table)
+        if playbook_line:
+            add_table_row(playbook_line, table)
 
         # Highlight the playbook content
         playbook_content = autosyntax(report["playbook"], echo=False)
