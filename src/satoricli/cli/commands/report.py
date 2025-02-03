@@ -138,12 +138,13 @@ class ReportCommand(BaseCommand):
                 )
 
             # Playbooks Line
-            playbook_line = [["Playbook", report["playbook_id"]]]
+            playbook_line = []
             if report["playbook_path"]:
                 playbook_line.append(["Path", report["playbook_path"]])
             if report["secrets_count"]:
                 playbook_line.append(["Parameters", report["secrets_count"]])
-            add_table_row(playbook_line, table)
+            if playbook_line:
+                add_table_row(playbook_line, table)
 
             if report["testcases"]:
                 tests = ""
