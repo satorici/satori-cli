@@ -207,13 +207,16 @@ class ReportCommand(BaseCommand):
             )
 
         # Add the playbook data in a new row
-        playbook_line = []
+        playbook_line = None
         if report["playbook_path"]:
+            playbook_line = []
             playbook_line.append(["Path", report["playbook_path"]])
         if report["secrets_count"]:
+            playbook_line = playbook_line or []
             playbook_line.append(["Parameters", report["secrets_count"]])
         params = get_command_params(report["run_params"])
         if params:
+            playbook_line = playbook_line or []
             playbook_line.append(["Parameters", params])
         if playbook_line:
             add_table_row(playbook_line, table)
