@@ -41,7 +41,7 @@ def file_finder() -> list[dict]:
     playbooks = []
 
     for playbook in PLAYBOOKS_DIR.rglob("*.yml"):
-        if ".github" in playbook.parts:
+        if ".github" in playbook.parts or playbook.name == ".satori.yml":
             continue
 
         try:

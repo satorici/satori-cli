@@ -40,6 +40,7 @@ class PlaybooksCommand(BaseCommand):
         params: dict = {"offset": offset, "limit": limit}
         if public:
             data = client.get("/playbooks/public", params=params).json()
+            data["rows"] = [row for row in data["rows"] if row["uri"] != "satori://.satori.yml"]
         else:
             if monitor:
                 params["monitor"] = monitor
