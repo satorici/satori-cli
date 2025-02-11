@@ -217,7 +217,7 @@ class ReportCommand(BaseCommand):
             playbook_line.append(["Parameters", params])
         if len(playbook_line) > 0:
             add_table_row(playbook_line, table)
-    
+
         # Highlight the playbook content
         playbook_content = autosyntax(report["playbook"], echo=False)
         if isinstance(playbook_content, Syntax):
@@ -251,27 +251,30 @@ class ReportCommand(BaseCommand):
             Table to add the content
         """
         for report in report_data:
+            if not report["asserts"]:
+                continue
             assert_props = [
                 ["Test", report["test"]],
             ]
             if report.get("severity"):
                 assert_props.append(["Severity", report["severity"]])
-            assert_props.extend(
-                [
-                    ["Testcases", report["testcases"]],
-                    ["Test status", report["test_status"]],
-                    ["Testcase’s Assertions Failed", report["total_fails"]],
-                ]
+            test_status = (
+                report["test_status"]
+                if not report["total_fails"]
+                else f"Fail({report['total_fails']})"
             )
+            assert_props.extend([["Test status", test_status]])
             row = add_table_row(assert_props, table, echo=False) or ""
             for ast in report["asserts"]:
+                assert_status = (
+                    ast["status"] if not ast["count"] else f"Fail({ast['count']})"
+                )
                 row += "\n" + (
                     add_table_row(
                         [
                             ["Assert", ast["assert"]],
-                            ["Assertions Failed", ast["count"]],
                             ["Expected", ast["expected"]],
-                            ["Status", ast["status"]],
+                            ["Status", assert_status],
                         ],
                         table,
                         echo=False,
