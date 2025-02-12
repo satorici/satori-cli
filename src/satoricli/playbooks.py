@@ -60,11 +60,19 @@ def file_finder() -> list[dict]:
                 "uri": f"{scheme}://" + playbook.relative_to(PLAYBOOKS_DIR).as_posix(),
                 "name": get_playbook_name(playbook),
                 "parameters": ", ".join(parameters),
+                "image": get_playbook_image(playbook),
             }
         )
 
     return playbooks
 
+def get_playbook_image(filename: Path) -> str:
+    """Get playbook image from settings or return empty string if not found"""
+    try:
+        config = yaml.safe_load(filename.read_text())
+        return config["settings"]["image"]
+    except Exception:
+        return ""
 
 def get_playbook_name(filename: Path):
     try:

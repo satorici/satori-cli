@@ -1,5 +1,7 @@
 from argparse import ArgumentParser
 from typing import Optional
+from pathlib import Path
+import yaml
 
 from satoricli.api import client
 from satoricli.cli.utils import autoformat, autotable
@@ -36,11 +38,21 @@ class PlaybooksCommand(BaseCommand):
     def __call__(
         self, page: int, limit: int, public: bool, monitor: Optional[str], **kwargs
     ):
+        PLAYBOOKS_DIR = Path.home() / ".satori/playbooks"
         offset = get_offset(page, limit)
         params: dict = {"offset": offset, "limit": limit}
         if public:
             data = client.get("/playbooks/public", params=params).json()
             data["rows"] = [row for row in data["rows"] if row["uri"] != "satori://.satori.yml"]
+            
+            for row in data["rows"]:
+                try:
+                    playbook_path = PLAYBOOKS_DIR / row["uri"].removeprefix("satori://")
+                    if playbook_path.is_file():
+                        config = yaml.safe_load(playbook_path.read_text())
+                        row["image"] = config.get("settings", {}).get("image", "")
+                except Exception:
+                    row["image"] = ""
         else:
             if monitor:
                 params["monitor"] = monitor
@@ -50,7 +62,7 @@ class PlaybooksCommand(BaseCommand):
             sast_list = filter(lambda x: not bool(x.get("parameters")), data["rows"])
             dast_list = filter(lambda x: bool(x.get("parameters")), data["rows"])
             console.rule("SAST")
-            autotable([{"uri": x["uri"], "name": x["name"]} for x in sast_list])
+            autotable([{"uri": x["uri"], "name": x["name"], "image": x.get("image", "")} for x in sast_list])
             console.rule("DAST")
             autotable(
                 [
@@ -58,6 +70,7 @@ class PlaybooksCommand(BaseCommand):
                         "uri": x["uri"],
                         "name": x["name"],
                         "parameters": "\n".join(x["parameters"]),
+                        "image": x.get("image", "")
                     }
                     for x in dast_list
                 ]
