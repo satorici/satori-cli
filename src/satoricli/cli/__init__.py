@@ -11,6 +11,7 @@ from ..api import configure_client
 from ..exceptions import SatoriRequestError
 from ..utils import load_config
 from .commands.config import ConfigCommand
+from .commands.playbooks import PlaybooksCommand
 from .commands.root import RootCommand
 from .utils import console, error_console, log, logging
 
@@ -39,8 +40,7 @@ def check_for_update():
 def main():
     timestamp = (datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
     error_console.print(
-        f"[dim]Satori CI {VERSION} - Automated Testing - "
-        f"Started on {timestamp}"
+        f"[dim]Satori CI {VERSION} - Automated Testing - Started on {timestamp}"
     )
 
     if environ.get("SATORI_CLI_NO_UPDATE_CHECK") != "1":
@@ -76,7 +76,10 @@ def main():
                 f"[error]ERROR:[/] Cannot find your profile in your .satori_credentials.yml file. Is it corrupted?"
             )
             sys.exit(1)
-    elif not isinstance(args["func"], ConfigCommand):
+    elif not isinstance(args["func"], ConfigCommand) and not (
+        # allow playbooks --public
+        args["public"] and isinstance(args["func"], PlaybooksCommand)
+    ):
         # Allow config cmd only if profile not found
         error_console.print(
             f"[error]ERROR:[/] Profile {args['profile']} not found.",
