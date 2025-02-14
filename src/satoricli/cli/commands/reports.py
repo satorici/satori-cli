@@ -7,6 +7,7 @@ from satoricli.cli.utils import (
     autoformat,
     autotable,
     console,
+    date_formatter,
     execution_time,
     get_command_params,
 )
@@ -59,9 +60,9 @@ class ReportsCommand(BaseCommand):
                     "status": report.get("status"),
                     "result": report.get("result"),
                     # "visibility": report.get("visibility"),
-                    "execution_time": execution_time(report.get("execution_time")),
+                    "runtime": execution_time(report.get("execution_time")),
                     # "user": report.get("user"),
-                    "date": report.get("date"),
+                    "date": date_formatter(report.get("date")),
                 }
                 for report in reports
             ],

@@ -56,10 +56,14 @@ class MonitorCommand(BaseCommand):
             if not kwargs["json"]:
                 reports: dict = info.pop("reports")
                 reports["rows"] = remove_keys_list_dict(reports["rows"], ("fails",))
-                reports["rows"] = [
-                    {**x, "execution_time": execution_time(x["execution_time"])}
-                    for x in reports["rows"]
-                ]
+                rows = []
+                for row in reports["rows"]:
+                    row["date"] = row["created"]
+                    row["runtime"] = execution_time(row["execution_time"])
+                    del row["execution_time"]
+                    del row["created"]
+                    rows.append(row)
+                reports["rows"] = rows
                 autoformat(info)
                 autotable(BootstrapTable(**reports), page=page, limit=limit)
                 return

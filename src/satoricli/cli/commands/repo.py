@@ -12,6 +12,7 @@ from ..utils import (
     autoformat,
     autotable,
     console,
+    date_formatter,
     error_console,
     execution_time,
     print_output,
@@ -164,11 +165,11 @@ class RepoCommand(BaseCommand):
                             report["hash"][:7] if report["hash"] else report["hash"]
                         ),
                         "Commit author": report["commit_author"],
-                        "Execution time": execution_time(report["execution_time"]),
+                        "Runtime": execution_time(report["execution_time"]),
                         "Result": report["result"],
                         "Status": report["status"],
                         "User": report["user"],
-                        "Date": report["date"],
+                        "Date": date_formatter(report["date"]),
                     }
                     for report in reports["rows"]
                 ]

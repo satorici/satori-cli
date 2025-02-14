@@ -1,7 +1,13 @@
 from argparse import ArgumentParser
 
 from satoricli.api import client
-from satoricli.cli.utils import BootstrapTable, autoformat, autotable, console
+from satoricli.cli.utils import (
+    BootstrapTable,
+    autoformat,
+    autotable,
+    console,
+    date_formatter,
+)
 
 from .base import BaseCommand
 from .reports import ReportsCommand
@@ -79,7 +85,7 @@ class DashboardCommand(BaseCommand):
                         "name": report["playbook_name"],
                         "status": report["status"],
                         "result": report["result"],
-                        "date": report["date"].replace("T", " "),
+                        "date": date_formatter(report["date"]),
                         "team": report["team"],
                     }
                 )
