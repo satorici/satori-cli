@@ -715,3 +715,12 @@ def get_command_params(command: Optional[str]) -> Optional[str]:
     res = regex.findall(command)
     params = [x[1] for x in res]
     return " ".join(params)
+
+
+def date_formatter(value: str) -> str:
+    """Convert 2023-08-16T08:00:41 to 2023-08-16 08:00"""
+    date_regex = r"(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}):\d{2}"
+
+    if value:
+        return re.sub(date_regex, r"\1 \2", value)
+    return "-"
