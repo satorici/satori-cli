@@ -7,6 +7,7 @@ from satoricli.cli.utils import (
     BootstrapTable,
     autoformat,
     autotable,
+    date_formatter,
     error_console,
     execution_time,
     remove_keys_list_dict,
@@ -58,7 +59,7 @@ class MonitorCommand(BaseCommand):
                 reports["rows"] = remove_keys_list_dict(reports["rows"], ("fails",))
                 rows = []
                 for row in reports["rows"]:
-                    row["date"] = row["created"]
+                    row["date"] = date_formatter(row["created"])
                     row["runtime"] = execution_time(row["execution_time"])
                     del row["execution_time"]
                     del row["created"]

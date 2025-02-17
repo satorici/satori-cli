@@ -156,7 +156,11 @@ class RepoCommand(BaseCommand):
                 playbooks = info.get("playbooks", {})
                 info["playbooks"] = ""
                 autoformat(info)
-                autotable(playbooks.get("rows", []))
+                rows = [
+                    {**x, "added": date_formatter(x["added"])}
+                    for x in playbooks.get("rows", [])
+                ]
+                autotable(rows)
                 console.print("Reports:")
                 reports_cols = [
                     {
