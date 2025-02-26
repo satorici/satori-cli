@@ -274,7 +274,7 @@ class ReportCommand(BaseCommand):
                     add_table_row(
                         [
                             ["Assert", ast["assert"]],
-                            ["Expected", ast["expected"]],
+                            ["Assert Value", ast["expected"]],
                             ["Status", assert_status],
                         ],
                         table,

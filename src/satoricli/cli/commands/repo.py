@@ -286,7 +286,7 @@ class RepoCommand(BaseCommand):
             wait(report_id)
             if sync:
                 print_summary(report_id, kwargs["json"])
-            if output:
-                print_output(report_id, kwargs["json"])
             if report:
                 ReportCommand.print_report_asrt(report_id, kwargs["json"])
+            if output:
+                print_output(report_id, kwargs["json"])
