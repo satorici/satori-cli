@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 from typing import Optional
-from pathlib import Path
 import shutil
 
 from satoricli.api import client
@@ -22,38 +21,37 @@ class PlaybooksCommand(BaseCommand):
 
     @staticmethod
     def calculate_widths(sast_rows, dast_rows):
-        """Calculate widths ensuring URI is never truncated and columns align between tables"""
+        """Calculate widths ensuring URI and Parameters are never truncated"""
         terminal_width = shutil.get_terminal_size().columns
         
         all_rows = sast_rows + dast_rows
         uri_width = max(len(row["uri"]) for row in all_rows)
         
-        MIN_IMAGE_WIDTH = 20
+        max_params_length = 0
+        if dast_rows:
+            max_params_length = max(len("\n".join(row.get("parameters", []))) for row in dast_rows)
+        
+        MIN_IMAGE_WIDTH = 15
         MIN_NAME_WIDTH = 10
-        MIN_PARAMS_WIDTH = 8
         
         BORDER_PADDING = 3
         SAST_PADDING = BORDER_PADDING * 3
-        DAST_PADDING = BORDER_PADDING * 4        
-
-        available_width = terminal_width - uri_width - max(SAST_PADDING, DAST_PADDING)
+        DAST_PADDING = BORDER_PADDING * 4
         
-        image_width = MIN_IMAGE_WIDTH
+        available_width = terminal_width - uri_width - max_params_length - max(SAST_PADDING, DAST_PADDING)
         
-        remaining_width = available_width - image_width
+        if available_width < 0:
+            image_width = MIN_IMAGE_WIDTH
+            name_width = max(MIN_NAME_WIDTH, terminal_width - uri_width - max_params_length - DAST_PADDING - image_width)
+        else:
+            image_width = max(MIN_IMAGE_WIDTH, available_width // 3)
+            name_width = max(MIN_NAME_WIDTH, available_width - image_width)
         
-        if remaining_width < MIN_NAME_WIDTH + MIN_PARAMS_WIDTH:
-            image_width = max(10, available_width - (MIN_NAME_WIDTH + MIN_PARAMS_WIDTH))
-            remaining_width = available_width - image_width
-        
-        dast_name_width = max(MIN_NAME_WIDTH, int(remaining_width * 0.85))
-        params_width = max(MIN_PARAMS_WIDTH, remaining_width - dast_name_width)
-        
-        sast_name_width = dast_name_width + params_width
+        sast_name_width = name_width + max_params_length
         
         return {
             'sast': (uri_width, sast_name_width, image_width),
-            'dast': (uri_width, dast_name_width, params_width, image_width)
+            'dast': (uri_width, name_width, max_params_length, image_width)
         }
 
     def register_args(self, parser: ArgumentParser):
@@ -116,7 +114,7 @@ class PlaybooksCommand(BaseCommand):
                     {
                         "uri": x["uri"],
                         "name": x["name"][:widths['dast'][1]] + "..." if len(x["name"]) > widths['dast'][1] else x["name"],
-                        "parameters": ("\n".join(x["parameters"]))[:widths['dast'][2]] + "..." if len("\n".join(x["parameters"])) > widths['dast'][2] else "\n".join(x["parameters"]),
+                        "parameters": "\n".join(x["parameters"]),  # Sin truncar
                         "image": self.truncate_image_name(x["image"], widths['dast'][3])
                     }
                     for x in dast_list
