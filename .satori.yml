@@ -57,7 +57,7 @@ test:
 
     # execute a public Satori CI playbook locally and pass parameters
     url_output:
-      - satori local ./ -p satori://web/tls/testssl.yml --data HOST=https://satori.ci --output
+      - satori local ./ -p satori://web/tls/testssl.yml --data URL=https://satori.ci --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
@@ -78,7 +78,7 @@ test:
 
     # execute a public Satori CI playbook and pass parameters
     url_output:
-      - satori run satori://web/tls/testssl.yml --data HOST=https://satori.ci --output
+      - satori run satori://web/tls/testssl.yml --data URL=https://satori.ci --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
