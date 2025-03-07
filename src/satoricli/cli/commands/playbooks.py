@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from typing import Optional
 import shutil
+import sys
 
 from satoricli.api import client
 from satoricli.cli.utils import autoformat, autotable
@@ -13,25 +14,59 @@ class PlaybooksCommand(BaseCommand):
     name = "playbooks"
 
     @staticmethod
-    def truncate_image_name(image_name: str, max_length: int = 20) -> str:
+    def truncate_image_name(image_name: str, max_length: int = 29) -> str:
         """Truncate image name to specified length, adding ... if necessary"""
         if len(image_name) <= max_length:
             return image_name.ljust(max_length)
         return image_name[:max_length-3] + "..."
 
     @staticmethod
+    def is_piped_output():
+        """Check if output is being piped or redirected"""
+        return not sys.stdout.isatty()
+
+    @staticmethod
     def calculate_widths(sast_rows, dast_rows):
         """Calculate widths ensuring URI and Parameters are never truncated"""
-        terminal_width = shutil.get_terminal_size().columns
+        is_piped = PlaybooksCommand.is_piped_output()
         
         all_rows = sast_rows + dast_rows
-        uri_width = max(len(row["uri"]) for row in all_rows)
+        uri_width = max(len(row["uri"]) for row in all_rows) if all_rows else 30
         
         max_params_length = 0
         if dast_rows:
-            max_params_length = max(len("\n".join(row.get("parameters", []))) for row in dast_rows)
+            raw_params_length = max(len("\n".join(row.get("parameters", []))) for row in dast_rows)
+            max_params_length = min(raw_params_length, 30)
         
-        MIN_IMAGE_WIDTH = 15
+        if is_piped:
+            estimated_width = 160
+            
+            MIN_IMAGE_WIDTH = 15
+            MIN_NAME_WIDTH = 15
+            
+            BORDER_PADDING = 3
+            SAST_PADDING = BORDER_PADDING * 3
+            DAST_PADDING = BORDER_PADDING * 4
+
+            dast_available = estimated_width - uri_width - max_params_length - DAST_PADDING
+            
+            if dast_available < (MIN_IMAGE_WIDTH + MIN_NAME_WIDTH):
+                image_width = MIN_IMAGE_WIDTH
+                name_width = MIN_NAME_WIDTH
+            else:
+                image_width = int(min(MIN_IMAGE_WIDTH * 2, dast_available * 0.2))
+                name_width = int(dast_available - image_width)
+            
+            sast_name_width = name_width + max_params_length
+            
+            return {
+                'sast': (uri_width, sast_name_width, image_width),
+                'dast': (uri_width, name_width, max_params_length, image_width)
+            }
+        
+        terminal_width = shutil.get_terminal_size().columns
+        
+        MIN_IMAGE_WIDTH = 10
         MIN_NAME_WIDTH = 10
         
         BORDER_PADDING = 3
@@ -44,7 +79,7 @@ class PlaybooksCommand(BaseCommand):
             image_width = MIN_IMAGE_WIDTH
             name_width = max(MIN_NAME_WIDTH, terminal_width - uri_width - max_params_length - DAST_PADDING - image_width)
         else:
-            image_width = max(MIN_IMAGE_WIDTH, available_width // 3)
+            image_width = max(MIN_IMAGE_WIDTH, min(available_width // 3, 25))
             name_width = max(MIN_NAME_WIDTH, available_width - image_width)
         
         sast_name_width = name_width + max_params_length
@@ -114,7 +149,7 @@ class PlaybooksCommand(BaseCommand):
                     {
                         "uri": x["uri"],
                         "name": x["name"][:widths['dast'][1]] + "..." if len(x["name"]) > widths['dast'][1] else x["name"],
-                        "parameters": "\n".join(x["parameters"]),  # Sin truncar
+                        "parameters": ("\n".join(x["parameters"]))[:widths['dast'][2]] + "..." if len("\n".join(x["parameters"])) > widths['dast'][2] else "\n".join(x["parameters"]),
                         "image": self.truncate_image_name(x["image"], widths['dast'][3])
                     }
                     for x in dast_list
