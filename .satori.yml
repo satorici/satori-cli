@@ -3,6 +3,8 @@ settings:
   log: slack
   image: public.ecr.aws/docker/library/python:3.9-slim-bullseye
   #report: pdf
+  redacted:
+    - TOKEN
 
 import:
   - "satori://secrets/semgrep.yml"
@@ -30,6 +32,11 @@ test:
     # set default team to run all tests
     set_team:
       - satori config default_team SatoriCI
+
+  import_output:
+    check_token:
+      setOutput: test.token_saved.set_token
+      assertStdoutContains: token updated
 
   # show the user's dashboard
   dashboard:
