@@ -22,6 +22,7 @@ from satoricli.validations import validate_parameters
 
 from ..utils import (
     console,
+    detect_boolean,
     error_console,
     load_cli_params,
     missing_ymls,
@@ -96,6 +97,8 @@ class LocalCommand(BaseCommand):
         parser.add_argument("--output", action="store_true")
         parser.add_argument("-s", "--sync", action="store_true", help="Summary")
         parser.add_argument("--name", type=str)
+        parser.add_argument("--save-report", type=str, default=None)
+        parser.add_argument("--save-output", type=str, default=None)
 
     def __call__(
         self,
@@ -107,8 +110,16 @@ class LocalCommand(BaseCommand):
         sync: bool,
         name: str,
         team: str,
+        save_report: Union[str, bool, None],
+        save_output: Union[str, bool, None],
         **kwargs,
     ):
+        if save_report:
+            temp_report = detect_boolean(save_report)
+            save_report = save_report if temp_report is None else temp_report
+        if save_output:
+            save_output = detect_boolean(save_output)
+
         parsed_data = tuple_to_dict(data) if data else None
         if parsed_data and not validate_parameters(parsed_data):
             raise ValueError("Malformed parameters")
@@ -185,7 +196,11 @@ class LocalCommand(BaseCommand):
             client.put(
                 f"/runs/local/{report_id}",
                 files={"results": results},
-                params={"run_time": time.monotonic() - start_time},
+                params={
+                    "run_time": time.monotonic() - start_time,
+                    "save_report": save_report,
+                    "save_output": save_output,
+                },
             )
             progress.update(task, description="Completed")
 
