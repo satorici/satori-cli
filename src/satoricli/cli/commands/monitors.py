@@ -40,9 +40,10 @@ class MonitorsCommand(BaseCommand):
                     autotable(pending_monitors["rows"], "b red", widths=(50, 50))
             console.rule("[b blue]Monitors", style="blue")
             table = BootstrapTable(**monitors)
+            width = (6, 5, 30, 5, 5, 5)
             if public:
-                autotable(table, page=page, limit=limit, widths=(16,))
+                autotable(table, page=page, limit=limit, widths=width)
             else:
-                group_table(table, "team", "Private", page, limit, widths=(16,))
+                group_table(table, "team", "Private", page, limit, widths=width)
         else:
             autoformat(monitors, jsonfmt=kwargs["json"], list_separator="-" * 48)
