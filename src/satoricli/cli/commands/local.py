@@ -114,17 +114,12 @@ class LocalCommand(BaseCommand):
         save_output: Union[str, bool, None],
         **kwargs,
     ):
-        if save_report:
-            temp_report = detect_boolean(save_report)
-            save_report = save_report if temp_report is None else temp_report
-        if save_output:
-            save_output = detect_boolean(save_output)
-
         parsed_data = tuple_to_dict(data) if data else None
         if parsed_data and not validate_parameters(parsed_data):
             raise ValueError("Malformed parameters")
 
         workdir = Path(target) if os.path.isdir(target) else Path()
+        config = None
 
         if (playbook and "://" in playbook) or "://" in target:
             local_run = new_local_run(
@@ -132,6 +127,7 @@ class LocalCommand(BaseCommand):
             )
         elif (playbook and os.path.isfile(playbook)) or os.path.isfile(target):
             path = Path(playbook or target)
+            config = yaml.safe_load(path.read_bytes())
 
             if not validate_config(
                 path, set(parsed_data.keys()) if parsed_data else set()
@@ -161,6 +157,20 @@ class LocalCommand(BaseCommand):
         else:
             error_console.print("ERROR: Invalid args")
             return 1
+
+        save_output_setting = True
+        save_report_setting = True
+        if config and config.get("settings"):
+            if config["settings"].get("saveOutput") is not None:
+                save_output_setting = config["settings"]["saveOutput"]
+            if config["settings"].get("saveReport") is not None:
+                save_report_setting = config["settings"]["saveReport"]
+        save_output = (
+            detect_boolean(save_output) if save_output else save_output_setting
+        )
+        save_report = (
+            detect_boolean(save_report) if save_report else save_report_setting
+        )
 
         report_id = local_run["report_id"]
 
