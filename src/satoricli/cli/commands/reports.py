@@ -35,9 +35,9 @@ class ReportsCommand(BaseCommand):
         ).json()
 
         if not kwargs["json"]:
-            if res["total"] == 0:
+            if not res["total"]:
                 console.print("No reports found")
-                return
+                return 1
 
             self.print_table(res["rows"])
             console.print(
