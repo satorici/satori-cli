@@ -7,7 +7,7 @@ import uuid
 import warnings
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union, get_args
 
 import httpx
 import yaml
@@ -34,6 +34,8 @@ from ..utils import (
 from .base import BaseCommand
 from .report import ReportCommand
 
+VISIBILITY_VALUES = Literal["undefined", "public", "private", "unlisted"]
+
 
 def make_packet(path: str):
     temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
@@ -53,6 +55,7 @@ def new_run(
     save_report: Union[str, bool, None] = None,
     save_output: Union[str, bool, None] = None,
     params: Union[str, None] = None,
+    visibility: VISIBILITY_VALUES = "undefined",
 ) -> list[str]:
     data = client.post(
         "/runs",
@@ -66,6 +69,7 @@ def new_run(
             "save_output": save_output,
             "team": team,
             "run_params": " ".join(sys.argv[1:]),
+            "visibility": visibility.capitalize(),
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -167,6 +171,9 @@ class RunCommand(BaseCommand):
         sync.add_argument("-o", "--output", action="store_true")
         sync.add_argument("-r", "--report", action="store_true")
         sync.add_argument("-f", "--files", action="store_true")
+        parser.add_argument(
+            "--visibility", choices=get_args(VISIBILITY_VALUES), default="undefined"
+        )
 
     def __call__(
         self,
@@ -180,6 +187,7 @@ class RunCommand(BaseCommand):
         report: bool,
         files: bool,
         team: str,
+        visibility: VISIBILITY_VALUES = "undefined",
         **kwargs,
     ):
         if save_report:
@@ -211,6 +219,7 @@ class RunCommand(BaseCommand):
                 settings=cli_settings,
                 save_report=save_report,
                 save_output=save_output,
+                visibility=visibility,
             )
 
             is_monitor = False
@@ -242,6 +251,7 @@ class RunCommand(BaseCommand):
                     settings=settings,
                     save_report=save_report,
                     save_output=save_output,
+                    visibility=visibility,
                 )
         elif (base := Path(path)).is_dir():
             settings = {}
@@ -297,6 +307,7 @@ class RunCommand(BaseCommand):
                     settings=settings,
                     save_report=save_report,
                     save_output=save_output,
+                    visibility=visibility,
                 )
         else:
             error_console.print("ERROR: Invalid PATH")

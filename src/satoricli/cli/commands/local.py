@@ -8,7 +8,7 @@ from base64 import b64decode, b64encode
 from dataclasses import asdict
 from pathlib import Path
 from tempfile import SpooledTemporaryFile
-from typing import Optional, Union
+from typing import Literal, Optional, Union, get_args
 
 import httpx
 import yaml
@@ -34,6 +34,7 @@ from ..utils import (
 from .base import BaseCommand
 
 IS_LINUX = platform.system() == "Linux"
+VISIBILITY_VALUES = Literal["undefined", "public", "private", "unlisted"]
 
 
 def new_local_run(
@@ -42,6 +43,7 @@ def new_local_run(
     playbook_uri: Optional[str] = None,
     secrets: Optional[dict] = None,
     name: Optional[str] = None,
+    visibility: VISIBILITY_VALUES = "undefined",
 ) -> dict:
     return client.post(
         "/runs/local",
@@ -51,6 +53,7 @@ def new_local_run(
             "name": name,
             "team": team,
             "run_params": " ".join(sys.argv[1:]),
+            "visibility": visibility.capitalize(),
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -99,6 +102,9 @@ class LocalCommand(BaseCommand):
         parser.add_argument("--name", type=str)
         parser.add_argument("--save-report", type=str, default=None)
         parser.add_argument("--save-output", type=str, default=None)
+        parser.add_argument(
+            "--visibility", choices=get_args(VISIBILITY_VALUES), default="undefined"
+        )
 
     def __call__(
         self,
@@ -112,6 +118,7 @@ class LocalCommand(BaseCommand):
         team: str,
         save_report: Union[str, bool, None],
         save_output: Union[str, bool, None],
+        visibility: VISIBILITY_VALUES,
         **kwargs,
     ):
         parsed_data = tuple_to_dict(data) if data else None
@@ -123,7 +130,11 @@ class LocalCommand(BaseCommand):
 
         if (playbook and "://" in playbook) or "://" in target:
             local_run = new_local_run(
-                team, playbook_uri=playbook or target, secrets=parsed_data, name=name
+                team,
+                playbook_uri=playbook or target,
+                secrets=parsed_data,
+                name=name,
+                visibility=visibility,
             )
         elif (playbook and os.path.isfile(playbook)) or os.path.isfile(target):
             path = Path(playbook or target)
@@ -135,7 +146,9 @@ class LocalCommand(BaseCommand):
                 return 1
 
             bundle = make_bundle(path, path.parent)
-            local_run = new_local_run(team, bundle, secrets=parsed_data, name=name)
+            local_run = new_local_run(
+                team, bundle, secrets=parsed_data, name=name, visibility=visibility
+            )
         elif os.path.isdir(target):
             playbook_path = workdir / ".satori.yml"
             config = yaml.safe_load(playbook_path.read_bytes())
@@ -153,7 +166,9 @@ class LocalCommand(BaseCommand):
                     "folder that have not been imported."
                 )
 
-            local_run = new_local_run(team, bundle, secrets=parsed_data, name=name)
+            local_run = new_local_run(
+                team, bundle, secrets=parsed_data, name=name, visibility=visibility
+            )
         else:
             error_console.print("ERROR: Invalid args")
             return 1
