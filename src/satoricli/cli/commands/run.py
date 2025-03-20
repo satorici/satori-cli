@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 import uuid
 import warnings
 from argparse import ArgumentParser
@@ -75,6 +76,13 @@ def new_run(
     ).json()
 
     if arc := data["upload_data"]:
+        if arc.get("type") == "scan":
+            reports_list = []
+            while not reports_list:
+                res = client.get(f"/scan/{data['report_ids'][0]}/reports").json()
+                reports_list = res.get("rows")
+                time.sleep(1)
+            return [x["id"] for x in reports_list]
         try:
             with progress_open(
                 packet, "rb", description="Uploading...", console=error_console
