@@ -17,7 +17,7 @@ from satorici.validator import validate_settings
 
 from satoricli.api import client
 from satoricli.bundler import make_bundle
-from satoricli.validations import validate_parameters
+from satoricli.validations import validate_parameters, get_parameters
 
 from ..utils import (
     console,
@@ -148,6 +148,12 @@ def warn_settings(settings: dict):
             error_console.print("[warning]WARNING:[/]", w.message)
 
 
+def get_parameters_from_env(playbook_path: str):
+    with open(playbook_path) as f:
+        playbook: dict = yaml.safe_load(f)
+    return {k: [v] for k, v in os.environ.items() if k in get_parameters(playbook)}
+
+
 class RunCommand(BaseCommand):
     name = "run"
 
@@ -233,9 +239,11 @@ class RunCommand(BaseCommand):
             is_monitor = False
             monitor_id = None
         elif (file_path := Path(path)).is_file():
-            if not validate_config(
-                file_path, set(parsed_data.keys()) if parsed_data else set()
-            ):
+            # HOOK HERE
+            provided_var_names = set(parsed_data.keys()) if parsed_data else set()
+            env_vars = get_parameters_from_env(file_path)
+
+            if not validate_config(file_path, set(env_vars) | provided_var_names):
                 return 1
 
             bundle = make_bundle(file_path, file_path.parent)
@@ -247,15 +255,17 @@ class RunCommand(BaseCommand):
 
             warn_settings(settings)
 
+            secrets = env_vars | (parsed_data or {})
+
             if is_monitor:
-                monitor_id = new_monitor(bundle, settings, team, secrets=parsed_data)
+                monitor_id = new_monitor(bundle, settings, team, secrets=secrets)
             else:
                 ids = new_run(
                     path=path,
                     team=team,
                     modes=modes,
                     bundle=bundle,
-                    secrets=parsed_data,
+                    secrets=secrets,
                     settings=settings,
                     save_report=save_report,
                     save_output=save_output,
@@ -265,6 +275,7 @@ class RunCommand(BaseCommand):
             settings = {}
             packet = make_packet(base)
             bundle = None
+            secrets = None
 
             if playbook and "://" in playbook:
                 playbook_path = playbook
@@ -287,8 +298,12 @@ class RunCommand(BaseCommand):
 
                 warn_settings(settings)
 
+                provided_var_names = set(parsed_data.keys()) if parsed_data else set()
+                env_vars = get_parameters_from_env(file_path)
+
+                # HOOK HERE
                 if not validate_config(
-                    dir_playbook, set(parsed_data.keys()) if parsed_data else set()
+                    dir_playbook, set(env_vars) | provided_var_names
                 ):
                     return 1
 
@@ -300,9 +315,11 @@ class RunCommand(BaseCommand):
 
                 bundle = make_bundle(dir_playbook, dir_playbook.parent)
 
+                secrets = env_vars | (parsed_data or {})
+
             if is_monitor:
                 monitor_id = new_monitor(
-                    bundle, settings, team, packet=packet, secrets=parsed_data
+                    bundle, settings, team, packet=packet, secrets=secrets
                 )
             else:
                 ids = new_run(
@@ -310,7 +327,7 @@ class RunCommand(BaseCommand):
                     team=team,
                     modes=modes,
                     bundle=bundle,
-                    secrets=parsed_data,
+                    secrets=secrets,
                     packet=packet,
                     settings=settings,
                     save_report=save_report,
