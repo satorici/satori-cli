@@ -488,7 +488,7 @@ def wait(report_id: str):
         task = progress.add_task("Fetching data")
         status = "Unknown"
 
-        while status not in ("Completed", "Stopped"):
+        while status not in ("Completed", "Stopped", "Timeout"):
             with disable_error_raise() as c:
                 res = c.get(f"/reports/{report_id}/status")
 
