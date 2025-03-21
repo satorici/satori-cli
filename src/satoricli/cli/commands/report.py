@@ -311,5 +311,7 @@ class ReportCommand(BaseCommand):
                 )
                 ReportCommand.print_report_summary(report_data["report"], table)
                 console.print(table)
+        elif report_data["status"] == "Timeout":
+            console.print("[error]Report timed out")
         else:
             console.print("[error]Report not found")
