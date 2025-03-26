@@ -1,13 +1,39 @@
 from argparse import ArgumentParser
-from typing import Literal, Optional
+from typing import Literal, Optional, get_args
 
 from satoricli.api import client
-from satoricli.cli.utils import autoformat, autotable, console
+from satoricli.cli.utils import (
+    VISIBILITY_VALUES,
+    BootstrapTable,
+    autoformat,
+    autotable,
+    console,
+    error_console,
+    get_offset,
+)
 
 from .base import BaseCommand
 from .dashboard import DashboardCommand
 from .report import ReportCommand
-from ..utils import BootstrapTable, get_offset
+
+ACTIONS = Literal[
+    "show",
+    "create",
+    "members",
+    "repos",
+    "monitors",
+    "reports",
+    "get_config",
+    "set_config",
+    "get_token",
+    "refresh_token",
+    "del",
+    "delete",
+    "add",
+    "settings",
+    "playbooks",
+    "visibility",
+]
 
 
 class TeamCommand(BaseCommand):
@@ -26,23 +52,7 @@ class TeamCommand(BaseCommand):
         parser.add_argument(
             "action",
             nargs="?",
-            choices=(
-                "show",
-                "create",
-                "members",
-                "repos",
-                "monitors",
-                "reports",
-                "get_config",
-                "set_config",
-                "get_token",
-                "refresh_token",
-                "del",
-                "delete",
-                "add",
-                "settings",
-                "playbooks",
-            ),
+            choices=get_args(ACTIONS),
             default="show",
         )
         parser.add_argument("config_name", nargs="?")
@@ -53,23 +63,7 @@ class TeamCommand(BaseCommand):
     def __call__(
         self,
         id: str,
-        action: Literal[
-            "show",
-            "create",
-            "members",
-            "repos",
-            "monitors",
-            "reports",
-            "get_config",
-            "set_config",
-            "get_token",
-            "refresh_token",
-            "del",
-            "delete",
-            "add",
-            "settings",
-            "playbooks",
-        ],
+        action: ACTIONS,
         role: Optional[str],
         repo: Optional[str],
         email: Optional[str],
@@ -159,5 +153,14 @@ class TeamCommand(BaseCommand):
             if not kwargs["json"]:
                 autotable(info, "b blue")
                 return
+        elif action == "visibility":
+            if not config_name or config_name not in VISIBILITY_VALUES:
+                error_console.print(
+                    f"Allowed values for visibility: {VISIBILITY_VALUES}"
+                )
+                return 1
+            info = client.patch(
+                f"/teams/{id}/visibility", json={"visibility": config_name.capitalize()}
+            ).json()
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48, table=True)
