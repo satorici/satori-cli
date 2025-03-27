@@ -154,13 +154,22 @@ class TeamCommand(BaseCommand):
                 autotable(info, "b blue")
                 return
         elif action == "visibility":
-            if not config_name or config_name not in VISIBILITY_VALUES:
+            if not config_name:
+                current = client.get(f"/teams/{id}/visibility").text
+                console.print(f"The current visibility is [b]{current}")
+                return 0
+            if config_name in VISIBILITY_VALUES:
+                info = client.patch(
+                    f"/teams/{id}/visibility",
+                    json={"visibility": config_name.capitalize()},
+                ).json()
+                console.print(
+                    f"The visibility has been set to [b]{config_name.capitalize()}"
+                )
+            else:
                 error_console.print(
                     f"Allowed values for visibility: {VISIBILITY_VALUES}"
                 )
                 return 1
-            info = client.patch(
-                f"/teams/{id}/visibility", json={"visibility": config_name.capitalize()}
-            ).json()
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48, table=True)
