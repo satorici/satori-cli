@@ -299,7 +299,7 @@ class RunCommand(BaseCommand):
                 warn_settings(settings)
 
                 provided_var_names = set(parsed_data.keys()) if parsed_data else set()
-                env_vars = get_parameters_from_env(file_path)
+                env_vars = get_parameters_from_env(playbook_path)
 
                 # HOOK HERE
                 if not validate_config(
