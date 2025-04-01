@@ -17,7 +17,7 @@ from satorici.validator import validate_settings
 
 from satoricli.api import client
 from satoricli.bundler import make_bundle
-from satoricli.validations import validate_parameters, get_parameters
+from satoricli.validations import get_parameters, validate_parameters
 
 from ..utils import (
     console,
@@ -57,6 +57,7 @@ def new_run(
     save_output: Union[str, bool, None] = None,
     params: Union[str, None] = None,
     visibility: VISIBILITY_VALUES = "undefined",
+    clone: Optional[bool] = None,
 ) -> list[str]:
     data = client.post(
         "/runs",
@@ -71,6 +72,7 @@ def new_run(
             "team": team,
             "run_params": " ".join(sys.argv[1:]),
             "visibility": visibility.capitalize(),
+            "clone": clone,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -167,6 +169,7 @@ class RunCommand(BaseCommand):
         )
         parser.add_argument("--save-report", type=str, default=None)
         parser.add_argument("--save-output", type=str, default=None)
+        parser.add_argument("--clone", action="store_true", default=None)
 
         settings = parser.add_argument_group("run settings")
         monitor = settings.add_mutually_exclusive_group()
@@ -202,6 +205,7 @@ class RunCommand(BaseCommand):
         files: bool,
         team: str,
         visibility: VISIBILITY_VALUES = "undefined",
+        clone: Optional[bool] = None,
         **kwargs,
     ):
         if save_report:
@@ -234,6 +238,7 @@ class RunCommand(BaseCommand):
                 save_report=save_report,
                 save_output=save_output,
                 visibility=visibility,
+                clone=clone,
             )
 
             is_monitor = False
@@ -270,6 +275,7 @@ class RunCommand(BaseCommand):
                     save_report=save_report,
                     save_output=save_output,
                     visibility=visibility,
+                    clone=clone,
                 )
         elif (base := Path(path)).is_dir():
             settings = {}
@@ -333,6 +339,7 @@ class RunCommand(BaseCommand):
                     save_report=save_report,
                     save_output=save_output,
                     visibility=visibility,
+                    clone=clone,
                 )
         else:
             error_console.print("ERROR: Invalid PATH")
