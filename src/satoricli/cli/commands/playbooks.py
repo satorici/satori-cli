@@ -47,7 +47,7 @@ class PlaybooksCommand(BaseCommand):
             BORDER_PADDING = 3
             SAST_PADDING = BORDER_PADDING * 3
             DAST_PADDING = BORDER_PADDING * 4
-
+            
             dast_available = estimated_width - uri_width - max_params_length - DAST_PADDING
             
             if dast_available < (MIN_IMAGE_WIDTH + MIN_NAME_WIDTH):
@@ -79,14 +79,16 @@ class PlaybooksCommand(BaseCommand):
             image_width = MIN_IMAGE_WIDTH
             name_width = max(MIN_NAME_WIDTH, terminal_width - uri_width - max_params_length - DAST_PADDING - image_width)
         else:
-            image_width = max(MIN_IMAGE_WIDTH, min(available_width // 3, 25))
-            name_width = max(MIN_NAME_WIDTH, available_width - image_width)
+            image_width_sast = max(MIN_IMAGE_WIDTH, min(available_width // 3, 25)) +1
+            image_width_dast = max(MIN_IMAGE_WIDTH, min(available_width // 3, 25)) +1
+            
+            name_width = max(MIN_NAME_WIDTH, available_width - image_width_dast) - 2
         
         sast_name_width = name_width + max_params_length
         
         return {
-            'sast': (uri_width, sast_name_width, image_width),
-            'dast': (uri_width, name_width, max_params_length, image_width)
+            'sast': (uri_width, sast_name_width, image_width_sast),
+            'dast': (uri_width, name_width, max_params_length, image_width_dast)
         }
 
     def register_args(self, parser: ArgumentParser):
