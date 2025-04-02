@@ -57,7 +57,7 @@ def new_run(
     save_output: Union[str, bool, None] = None,
     params: Union[str, None] = None,
     visibility: VISIBILITY_VALUES = "undefined",
-    clone: Optional[bool] = None,
+    clone: Optional[str] = None,
 ) -> list[str]:
     data = client.post(
         "/runs",
@@ -169,7 +169,7 @@ class RunCommand(BaseCommand):
         )
         parser.add_argument("--save-report", type=str, default=None)
         parser.add_argument("--save-output", type=str, default=None)
-        parser.add_argument("--clone", action="store_true", default=None)
+        parser.add_argument("--clone", type=str, default=None)
 
         settings = parser.add_argument_group("run settings")
         monitor = settings.add_mutually_exclusive_group()
@@ -205,7 +205,7 @@ class RunCommand(BaseCommand):
         files: bool,
         team: str,
         visibility: VISIBILITY_VALUES = "undefined",
-        clone: Optional[bool] = None,
+        clone: Optional[str] = None,
         **kwargs,
     ):
         if save_report:
