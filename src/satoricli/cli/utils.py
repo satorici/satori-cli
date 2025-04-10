@@ -393,12 +393,10 @@ def capitalize_list(items: list[str]) -> list[str]:
     return list(new_list)
 
 
-def format_outputs(outputs):
+def format_outputs(outputs: list) -> None:
     current_path = ""
 
-    for line in outputs:
-        output = json.loads(line)
-
+    for output in outputs:
         if current_path != output["path"]:
             console.rule(f"[b]{output['path']}[/b]")
             current_path = output["path"]
@@ -412,7 +410,7 @@ def format_outputs(outputs):
             testcase.add_column()
 
             for key, value in output["testcase"].items():
-                testcase.add_row(key, b64decode(value).decode(errors="ignore"))
+                testcase.add_row(key, value)
 
             console.print("[blue]Testcase:[/blue]")
             console.print(testcase)
@@ -420,16 +418,10 @@ def format_outputs(outputs):
         console.print("[blue]Return code:[/blue]", output["output"]["return_code"])
         console.print("[blue]Stdout:[/blue]")
         if output["output"]["stdout"]:
-            console.out(
-                b64decode(output["output"]["stdout"]).decode(errors="ignore"),
-                highlight=False,
-            )
+            console.out(output["output"]["stdout"], highlight=False)
         console.print("[blue]Stderr:[/blue]")
         if output["output"]["stderr"]:
-            console.out(
-                b64decode(output["output"]["stderr"]).decode(errors="ignore"),
-                highlight=False,
-            )
+            console.out(output["output"]["stderr"], highlight=False)
         if output["output"]["os_error"]:
             console.out(output["output"]["os_error"])
 
@@ -517,14 +509,12 @@ def download_files(report_id: str):
                     f.write(chunk)
 
 
-def print_output(report_id: str, print_json: bool = False):
-    r = client.get(f"/outputs/{report_id}")
-    with httpx.stream("GET", r.json()["url"], timeout=300) as s:
-        if print_json:
-            for line in s.iter_lines():
-                console.out(line, highlight=False)
-        else:
-            format_outputs(s.iter_lines())
+def print_output(report_id: str, print_json: bool = False) -> None:
+    res = client.get(f"/outputs/{report_id}").json()
+    if print_json:
+        console.out(res, highlight=False)
+    else:
+        format_outputs(res)
 
 
 def print_summary(report_id: str, print_json: bool = False):
