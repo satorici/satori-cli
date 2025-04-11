@@ -716,7 +716,7 @@ def date_formatter(value: str) -> str:
     return "-"
 
 
-def output_to_string(text: bytes | str | None) -> str | None:
+def output_to_string(text: Union[bytes, str, None]) -> Union[str, None]:
     """Decode bytes to str in utf-8"""
     return (
         codecs.decode(text, "utf-8", errors="backslashreplace")
