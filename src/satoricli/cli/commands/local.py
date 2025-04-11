@@ -1,3 +1,4 @@
+import codecs
 import json
 import os
 import platform
@@ -7,7 +8,6 @@ from argparse import ArgumentParser
 from base64 import b64decode, b64encode
 from dataclasses import asdict
 from pathlib import Path
-from tempfile import SpooledTemporaryFile
 from typing import Literal, Optional, Union, get_args
 
 import httpx
@@ -45,6 +45,12 @@ def new_local_run(
     name: Optional[str] = None,
     visibility: VISIBILITY_VALUES = "undefined",
 ) -> dict:
+    """
+    Create a new local run.
+
+    Returns:
+        dict: The response from the API. {"report_id":"<id>","recipe":"<url>","token":"Bearer <token>"}
+    """
     return client.post(
         "/runs/local",
         data={
@@ -197,7 +203,6 @@ class LocalCommand(BaseCommand):
 
         with (
             httpx.stream("GET", local_run["recipe"]) as s,
-            SpooledTemporaryFile(4096) as results,
             Progress(
                 SpinnerColumn("dots2"),
                 TextColumn("[progress.description]Status: {task.description}"),
@@ -209,23 +214,39 @@ class LocalCommand(BaseCommand):
             task = progress.add_task("Starting execution")
             start_time = time.monotonic()
 
+            headers = {"Authorization": "Bearer " + local_run["token"]}
+
             for line in s.iter_lines():
                 message: dict = json.loads(line)
                 progress.update(task, description="Running [b]" + message["path"])
                 args = replace_variables(message["value"], message["testcase"])
                 out = run(args, message.get("settings", {}).get("setCommandTimeout"))
-                message["output"] = asdict(out)
-                results.write(f"{json.dumps(message, cls=BytesEncoder)}\n".encode())
+                output_dict = asdict(out)
+                output_dict["stdout"] = (
+                    codecs.decode(out.stdout, "utf-8", errors="surrogateescape")
+                    if out.stdout
+                    else None
+                )
+                output_dict["stderr"] = (
+                    codecs.decode(out.stderr, "utf-8", errors="surrogateescape")
+                    if out.stderr
+                    else None
+                )
+                result = {
+                    "path": message.pop("path"),
+                    **output_dict,
+                    "command": message,
+                }
+                client.post("outputs/upload", json=result, headers=headers)
 
-            results.seek(0)
             client.put(
-                f"/runs/local/{report_id}",
-                files={"results": results},
+                "/runs/local/upload",
                 params={
                     "run_time": time.monotonic() - start_time,
                     "save_report": save_report,
                     "save_output": save_output,
                 },
+                headers=headers,
             )
             progress.update(task, description="Completed")
 
