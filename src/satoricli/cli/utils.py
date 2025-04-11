@@ -1,4 +1,5 @@
 import argparse
+import codecs
 import json
 import logging
 import math
@@ -6,7 +7,6 @@ import random
 import re
 import time
 import warnings
-from base64 import b64decode
 from dataclasses import dataclass
 from itertools import zip_longest
 from math import ceil
@@ -714,3 +714,12 @@ def date_formatter(value: str) -> str:
     if value:
         return re.sub(date_regex, r"\1 \2", value)
     return "-"
+
+
+def output_to_string(text: bytes | str | None) -> str | None:
+    """Decode bytes to str in utf-8"""
+    return (
+        codecs.decode(text, "utf-8", errors="backslashreplace")
+        if isinstance(text, (bytes, memoryview, bytearray))
+        else text
+    )

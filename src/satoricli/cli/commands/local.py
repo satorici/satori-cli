@@ -21,6 +21,7 @@ from satoricli.cli.commands.report import ReportCommand
 from satoricli.validations import validate_parameters
 
 from ..utils import (
+    output_to_string,
     console,
     detect_boolean,
     error_console,
@@ -222,16 +223,9 @@ class LocalCommand(BaseCommand):
                 args = replace_variables(message["value"], message["testcase"])
                 out = run(args, message.get("settings", {}).get("setCommandTimeout"))
                 output_dict = asdict(out)
-                output_dict["stdout"] = (
-                    codecs.decode(out.stdout, "utf-8", errors="surrogateescape")
-                    if out.stdout
-                    else None
-                )
-                output_dict["stderr"] = (
-                    codecs.decode(out.stderr, "utf-8", errors="surrogateescape")
-                    if out.stderr
-                    else None
-                )
+                output_dict["stdout"] = output_to_string(out.stdout)
+                output_dict["stderr"] = output_to_string(out.stderr)
+                output_dict["os_error"] = output_to_string(out.os_error)
                 result = {
                     "path": message.pop("path"),
                     **output_dict,
