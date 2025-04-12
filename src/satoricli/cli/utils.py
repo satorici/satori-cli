@@ -470,7 +470,7 @@ def group_table(
     console.print(f"Page {page} of {ceil(table.total / limit)} | Total: {table.total}")
 
 
-def wait(report_id: str):
+def wait(report_id: str, live: bool = False):
     with Progress(
         SpinnerColumn("dots2"),
         TextColumn("[progress.description]Status: {task.description}"),
@@ -479,10 +479,17 @@ def wait(report_id: str):
     ) as progress:
         task = progress.add_task("Fetching data")
         status = "Unknown"
+        last_output = ""
 
         while status not in ("Completed", "Stopped", "Timeout"):
             with disable_error_raise() as c:
                 res = c.get(f"/reports/{report_id}/status")
+                if live:
+                    out = c.get(f"/outputs/{report_id}").json()
+                    if out and out[-1]["path"] != last_output:
+                        last_output = out[-1]["path"]
+                        console.print()
+                        format_outputs([out[-1]])
 
             if res.is_success:
                 status = res.text

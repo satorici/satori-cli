@@ -360,7 +360,7 @@ class RunCommand(BaseCommand):
             return
 
         if sync or report or output or files:
-            wait(ids[0])
+            wait(ids[0], live=output)
 
         ret = print_summary(ids[0], kwargs["json"]) if sync else 0
 
