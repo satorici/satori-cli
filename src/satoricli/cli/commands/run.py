@@ -367,7 +367,7 @@ class RunCommand(BaseCommand):
         if report:
             ReportCommand.print_report_asrt(ids[0], kwargs["json"])
 
-        if output:
+        if output and kwargs["json"]:
             print_output(ids[0], kwargs["json"])
 
         if files and config and has_files(config):
