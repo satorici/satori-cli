@@ -401,9 +401,10 @@ def format_outputs(outputs: list) -> None:
             console.rule(f"[b]{output['path']}[/b]")
             current_path = output["path"]
 
-        console.print(f"[b][green]Command:[/green] {output['original']}[/b]")
+        if output.get('original'):
+            console.print(f"[b][green]Command:[/green] {output['original']}[/b]")
 
-        if output["testcase"]:
+        if output.get("testcase"):
             testcase = Table(show_header=False, show_edge=False)
 
             testcase.add_column(style="b")
