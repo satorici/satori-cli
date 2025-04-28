@@ -274,7 +274,12 @@ class ReportCommand(BaseCommand):
                     add_table_row(
                         [
                             ["Assert", ast["assert"]],
-                            ["Assert Value", ast["expected"]],
+                            [
+                                "Assert Value",
+                                ast["expected"].strip()
+                                if isinstance(ast["expected"], str)
+                                else "",
+                            ],
                             ["Status", assert_status],
                         ],
                         table,
