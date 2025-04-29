@@ -35,7 +35,7 @@ from ..utils import (
 from .base import BaseCommand
 from .report import ReportCommand
 
-VISIBILITY_VALUES = Literal["undefined", "public", "private", "unlisted"]
+VISIBILITY_VALUES = Literal["public", "private", "unlisted"]
 
 
 def make_packet(path: str):
@@ -56,7 +56,7 @@ def new_run(
     save_report: Union[str, bool, None] = None,
     save_output: Union[str, bool, None] = None,
     params: Union[str, None] = None,
-    visibility: VISIBILITY_VALUES = "undefined",
+    visibility: Optional[VISIBILITY_VALUES] = None,
     clone: Optional[str] = None,
 ) -> list[str]:
     data = client.post(
@@ -71,7 +71,7 @@ def new_run(
             "save_output": save_output,
             "team": team,
             "run_params": " ".join(sys.argv[1:]),
-            "visibility": visibility.capitalize(),
+            "visibility": visibility.capitalize() if visibility else None,
             "clone": clone,
         },
         files={"bundle": bundle} if bundle else {"": ""},
@@ -189,7 +189,7 @@ class RunCommand(BaseCommand):
         sync.add_argument("-r", "--report", action="store_true")
         sync.add_argument("-f", "--files", action="store_true")
         parser.add_argument(
-            "--visibility", choices=get_args(VISIBILITY_VALUES), default="undefined"
+            "--visibility", choices=get_args(VISIBILITY_VALUES), default=None
         )
 
     def __call__(
@@ -204,7 +204,7 @@ class RunCommand(BaseCommand):
         report: bool,
         files: bool,
         team: str,
-        visibility: VISIBILITY_VALUES = "undefined",
+        visibility: Optional[VISIBILITY_VALUES] = None,
         clone: Optional[str] = None,
         **kwargs,
     ):

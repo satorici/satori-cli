@@ -21,12 +21,12 @@ from satoricli.cli.commands.report import ReportCommand
 from satoricli.validations import validate_parameters
 
 from ..utils import (
-    output_to_string,
     console,
     detect_boolean,
     error_console,
     load_cli_params,
     missing_ymls,
+    output_to_string,
     print_output,
     print_summary,
     tuple_to_dict,
@@ -35,7 +35,7 @@ from ..utils import (
 from .base import BaseCommand
 
 IS_LINUX = platform.system() == "Linux"
-VISIBILITY_VALUES = Literal["undefined", "public", "private", "unlisted"]
+VISIBILITY_VALUES = Literal["public", "private", "unlisted"]
 
 
 def new_local_run(
@@ -44,7 +44,7 @@ def new_local_run(
     playbook_uri: Optional[str] = None,
     secrets: Optional[dict] = None,
     name: Optional[str] = None,
-    visibility: VISIBILITY_VALUES = "undefined",
+    visibility: Optional[VISIBILITY_VALUES] = None,
 ) -> dict:
     """
     Create a new local run.
@@ -60,7 +60,7 @@ def new_local_run(
             "name": name,
             "team": team,
             "run_params": " ".join(sys.argv[1:]),
-            "visibility": visibility.capitalize(),
+            "visibility": visibility.capitalize() if visibility else None,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -110,7 +110,7 @@ class LocalCommand(BaseCommand):
         parser.add_argument("--save-report", type=str, default=None)
         parser.add_argument("--save-output", type=str, default=None)
         parser.add_argument(
-            "--visibility", choices=get_args(VISIBILITY_VALUES), default="undefined"
+            "--visibility", choices=get_args(VISIBILITY_VALUES), default=None
         )
 
     def __call__(
@@ -125,7 +125,7 @@ class LocalCommand(BaseCommand):
         team: str,
         save_report: Union[str, bool, None],
         save_output: Union[str, bool, None],
-        visibility: VISIBILITY_VALUES,
+        visibility: Optional[VISIBILITY_VALUES],
         **kwargs,
     ):
         parsed_data = tuple_to_dict(data) if data else None

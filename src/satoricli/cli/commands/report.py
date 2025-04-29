@@ -21,7 +21,7 @@ from satoricli.cli.utils import (
 
 from .base import BaseCommand
 
-VISIBILITY_VALUES = ("undefined", "public", "private", "unlisted")
+VISIBILITY_VALUES = ("public", "private", "unlisted")
 
 
 class ReportCommand(BaseCommand):
