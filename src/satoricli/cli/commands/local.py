@@ -250,7 +250,7 @@ class LocalCommand(BaseCommand):
         if report:
             ReportCommand.print_report_asrt(report_id, kwargs["json"])
 
-        if output and kwargs["json"]:
+        if output:
             print_output(report_id, kwargs["json"])
 
         report_data = client.get(f"/reports/{report_id}").json()
