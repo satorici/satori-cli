@@ -1,11 +1,9 @@
-import codecs
 import json
 import os
 import platform
 import sys
 import time
 from argparse import ArgumentParser
-from base64 import b64decode, b64encode
 from dataclasses import asdict
 from pathlib import Path
 from typing import Literal, Optional, Union, get_args
@@ -81,15 +79,7 @@ def replace_variables(
 
 
 def replace_secrets(old: str, secret_id: str, secret_value: str) -> str:
-    value = b64decode(secret_value).decode(errors="ignore")
-    return old.replace("${{" + secret_id + "}}", value)
-
-
-class BytesEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, bytes):
-            return b64encode(o).decode()
-        return super().default(o)
+    return old.replace("${{" + secret_id + "}}", secret_value)
 
 
 class LocalCommand(BaseCommand):
