@@ -104,6 +104,7 @@ def new_monitor(
     *,
     packet: Optional[Path] = None,
     secrets: Optional[dict] = None,
+    visibility: Optional[VISIBILITY_VALUES] = None,
 ) -> str:
     data = client.post(
         "/monitors",
@@ -112,6 +113,7 @@ def new_monitor(
             "settings": json.dumps(settings),
             "with_files": bool(packet),
             "team": team,
+            "visibility": visibility.capitalize() if visibility else "Private",
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -263,7 +265,9 @@ class RunCommand(BaseCommand):
             secrets = env_vars | (parsed_data or {})
 
             if is_monitor:
-                monitor_id = new_monitor(bundle, settings, team, secrets=secrets)
+                monitor_id = new_monitor(
+                    bundle, settings, team, secrets=secrets, visibility=visibility
+                )
             else:
                 ids = new_run(
                     path=path,
@@ -325,7 +329,12 @@ class RunCommand(BaseCommand):
 
             if is_monitor:
                 monitor_id = new_monitor(
-                    bundle, settings, team, packet=packet, secrets=secrets
+                    bundle,
+                    settings,
+                    team,
+                    packet=packet,
+                    secrets=secrets,
+                    visibility=visibility,
                 )
             else:
                 ids = new_run(
@@ -353,7 +362,7 @@ class RunCommand(BaseCommand):
             console.print_json(data={"ids": ids})
         elif is_monitor and not kwargs["json"]:
             console.print("Monitor ID:", monitor_id)
-            console.print(f"Monitor: https://satori.ci/monitor?id={monitor_id}")
+            console.print(f"Monitor: https://satori.ci/monitor/{monitor_id}")
             return
         elif is_monitor and kwargs["json"]:
             console.print_json(data={"monitor_id": monitor_id})
