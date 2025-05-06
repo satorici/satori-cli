@@ -50,10 +50,7 @@ class TeamCommand(BaseCommand):
 
         parser.add_argument("id")
         parser.add_argument(
-            "action",
-            nargs="?",
-            choices=get_args(ACTIONS),
-            default="show",
+            "action", nargs="?", choices=get_args(ACTIONS), default="show"
         )
         parser.add_argument("config_name", nargs="?")
         parser.add_argument("config_value", nargs="?")
