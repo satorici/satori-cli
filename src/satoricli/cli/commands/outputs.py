@@ -69,6 +69,7 @@ class OutputsCommand(BaseCommand):
         # parser.add_argument(
         #     "--query", type=str, help="Filter by output string (support regex)"
         # )
+        parser.add_argument("--monitor", type=str, help="Filter by monitor ID")
 
     def __call__(
         self,
@@ -82,6 +83,7 @@ class OutputsCommand(BaseCommand):
         report_visibility: Optional[REPORT_VISIBILITY] = None,
         result: Optional[RESULTS] = None,
         # query: Optional[str] = None,
+        monitor: Optional[str] = None,
         **kwargs,
     ):
         if action == "show":
@@ -116,6 +118,7 @@ class OutputsCommand(BaseCommand):
                 # "query": query,
                 "limit": 10,
                 "page": 1,
+                "monitor": monitor,
             }
 
             # Save response
