@@ -98,7 +98,11 @@ test:
 
     # list the pending reports
     filter:
-      - satori reports --filter="status=Running"
+      - satori reports show --filter="status=Running"
+
+    # search
+    search:
+      - satori reports search
 
     parallel:
       setParallel: true
