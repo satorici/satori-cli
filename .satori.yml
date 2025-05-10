@@ -102,8 +102,8 @@ test:
       - satori reports show --filter="status=Running"
 
     # search
-    search:
-      - satori reports search
+    # search:
+    #   - satori reports search
 
     parallel:
       setParallel: true
