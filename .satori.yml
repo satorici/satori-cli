@@ -3,6 +3,7 @@ settings:
   log: slack
   image: public.ecr.aws/docker/library/python:3.9-slim-bullseye
   #report: pdf
+  timeout: 1800
   redacted:
     - TOKEN
 
