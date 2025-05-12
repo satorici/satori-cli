@@ -401,7 +401,7 @@ def format_outputs(outputs: list) -> None:
             console.rule(f"[b]{output['path']}[/b]")
             current_path = output["path"]
 
-        if output.get('original'):
+        if output.get("original"):
             console.print(f"[b][green]Command:[/green] {output['original']}[/b]")
 
         if output.get("testcase"):
@@ -471,7 +471,7 @@ def group_table(
     console.print(f"Page {page} of {ceil(table.total / limit)} | Total: {table.total}")
 
 
-def wait(report_id: str, live: bool = False):
+def wait(report_id: str, live: bool = False) -> None:
     with Progress(
         SpinnerColumn("dots2"),
         TextColumn("[progress.description]Status: {task.description}"),
@@ -480,17 +480,19 @@ def wait(report_id: str, live: bool = False):
     ) as progress:
         task = progress.add_task("Fetching data")
         status = "Unknown"
-        last_output = ""
+        printed = []
 
         while status not in ("Completed", "Stopped", "Timeout"):
             with disable_error_raise() as c:
                 res = c.get(f"/reports/{report_id}/status")
                 if live:
                     out = c.get(f"/outputs/{report_id}").json()
-                    if out and out[-1]["path"] != last_output:
-                        last_output = out[-1]["path"]
-                        console.print()
-                        format_outputs([out[-1]])
+                    for o in out:
+                        out_id = o["path"] + "|" + o["original"]
+                        if out_id not in printed:
+                            console.print()
+                            format_outputs([o])
+                            printed.append(out_id)
 
             if res.is_success:
                 status = res.text
