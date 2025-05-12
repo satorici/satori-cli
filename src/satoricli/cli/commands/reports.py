@@ -68,7 +68,9 @@ class ReportsCommand(BaseCommand):
         #     "--query", type=str, help="Filter by output string (support regex)"
         # )
         search_parser.add_argument("--monitor", type=str, help="Filter by monitor ID")
-        search_parser.add_argument("--download", action="store_true")
+        search_parser.add_argument(
+            "--download", action="store_true", help="Download reports outputs to files"
+        )
 
     def __call__(
         self,
