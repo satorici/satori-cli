@@ -638,7 +638,7 @@ def detect_boolean(s: Any) -> Optional[bool]:
 
 def load_cli_params(string: str) -> tuple:
     "Parses a string in the format KEY=VALUE and extracts the key and value."
-    m = re.match(r"(?P<key>\w+?)=(?P<value>.+)", string)
+    m = re.match(r"(?P<key>\w+?)=(?P<value>.*)", string)
     if m is None:
         raise argparse.ArgumentTypeError("Must be in the format KEY=VALUE")
     return m.group("key"), m.group("value")
