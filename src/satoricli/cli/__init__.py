@@ -13,7 +13,6 @@ from ..utils import load_config
 from .commands.config import ConfigCommand
 from .commands.playbooks import PlaybooksCommand
 from .commands.root import RootCommand
-from .commands.shards import ShardsCommand  # Add the import for ShardsCommand
 from .utils import console, error_console, log, logging
 
 VERSION = metadata.version("satori-ci")
@@ -61,7 +60,7 @@ def main():
     try:
         config = load_config(args.get("config")).get(args["profile"])
     except Exception as e:
-        if not isinstance(args["func"], ConfigCommand) and not isinstance(args["func"], ShardsCommand):
+        if not isinstance(args["func"], ConfigCommand):
             error_console.print(
                 f"[error]ERROR:[/] Your .satori_credentials.yml file is corrupted or not found."
             )
@@ -80,7 +79,7 @@ def main():
     elif not isinstance(args["func"], ConfigCommand) and not (
         # allow playbooks --public
         args["public"] and isinstance(args["func"], PlaybooksCommand)
-    ) and not isinstance(args["func"], ShardsCommand):  # Add the check for ShardsCommand here
+    ):
         # Allow config cmd only if profile not found
         error_console.print(
             f"[error]ERROR:[/] Profile {args['profile']} not found.",
