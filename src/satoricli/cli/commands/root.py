@@ -26,6 +26,7 @@ from .scans import ScansCommand
 from .team import TeamCommand
 from .teams import TeamsCommand
 from .update import UpdateCommand
+from .shards import ShardsCommand
 
 VERSION = metadata.version("satori-ci")
 
@@ -51,6 +52,7 @@ class RootCommand(BaseCommand):
         UpdateCommand,
         LocalCommand,
         ScansCommand,
+        ShardsCommand,
     )
     name = "satori"
     global_options = (profile_arg, json_arg, debug_arg, export_arg, team_arg, config_arg)
