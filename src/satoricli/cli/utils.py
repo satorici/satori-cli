@@ -644,7 +644,7 @@ def load_cli_params(string: str) -> tuple:
     return m.group("key"), m.group("value")
 
 
-def tuple_to_dict(args: tuple[str, str]) -> dict:
+def tuple_to_dict(args: list[tuple[str, str]]) -> dict:
     "Converts a tuple of (key,value) pairs into a dictionary"
     defined_vars = {}
     for key, value in args:

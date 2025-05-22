@@ -174,7 +174,9 @@ class RunCommand(BaseCommand):
 
     def register_args(self, parser: ArgumentParser):
         parser.add_argument("path", metavar="PATH")
-        parser.add_argument("-d", "--data", type=load_cli_params, action="append")
+        parser.add_argument(
+            "-d", "--data", type=load_cli_params, action="append", default=[]
+        )
         parser.add_argument(
             "-p",
             "--playbook",
@@ -183,7 +185,9 @@ class RunCommand(BaseCommand):
         parser.add_argument("--save-report", type=str, default=None)
         parser.add_argument("--save-output", type=str, default=None)
         parser.add_argument("--clone", type=str, default=None)
-        parser.add_argument("-df", "--data-file", type=str, action="append", default=[])
+        parser.add_argument(
+            "-df", "--data-file", type=load_cli_params, action="append", default=[]
+        )
 
         settings = parser.add_argument_group("run settings")
         monitor = settings.add_mutually_exclusive_group()
@@ -210,8 +214,8 @@ class RunCommand(BaseCommand):
         self,
         path: str,
         sync: bool,
-        data: Optional[tuple],
-        data_file: list[str],
+        data: list[tuple[str, str]],
+        data_file: list[tuple[str, str]],
         save_report: Union[str, bool, None],
         save_output: Union[str, bool, None],
         playbook: Optional[str],
@@ -223,6 +227,10 @@ class RunCommand(BaseCommand):
         clone: Optional[str] = None,
         **kwargs,
     ):
+        include_list = []
+        for file in data_file:
+            data.append((file[0], f"read({file[1]})"))
+            include_list.append(file[1])
         if save_report:
             temp_report = detect_boolean(save_report)
             save_report = save_report if temp_report is None else temp_report
@@ -293,7 +301,7 @@ class RunCommand(BaseCommand):
                     save_output=save_output,
                     visibility=visibility,
                     clone=clone,
-                    packet=include_files(data_file),
+                    packet=include_files(include_list),
                 )
         elif (base := Path(path)).is_dir():
             settings = {}
