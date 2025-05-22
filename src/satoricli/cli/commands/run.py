@@ -38,6 +38,17 @@ from .report import ReportCommand
 VISIBILITY_VALUES = Literal["public", "private", "unlisted"]
 
 
+def include_files(include: list[str]) -> Optional[str]:
+    if not include:
+        return
+    temp_dir = Path(tempfile.gettempdir(), str(uuid.uuid4()))
+    os.makedirs(temp_dir, exist_ok=True)
+    for file in include:
+        shutil.copy(file, temp_dir)
+    shutil.make_archive(str(temp_dir), "gztar", temp_dir)
+    return f"{temp_dir}.tar.gz"
+
+
 def make_packet(path: str):
     temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
     shutil.make_archive(str(temp_file), "gztar", path)
@@ -172,6 +183,7 @@ class RunCommand(BaseCommand):
         parser.add_argument("--save-report", type=str, default=None)
         parser.add_argument("--save-output", type=str, default=None)
         parser.add_argument("--clone", type=str, default=None)
+        parser.add_argument("-df", "--data-file", type=str, action="append", default=[])
 
         settings = parser.add_argument_group("run settings")
         monitor = settings.add_mutually_exclusive_group()
@@ -199,6 +211,7 @@ class RunCommand(BaseCommand):
         path: str,
         sync: bool,
         data: Optional[tuple],
+        data_file: list[str],
         save_report: Union[str, bool, None],
         save_output: Union[str, bool, None],
         playbook: Optional[str],
@@ -280,6 +293,7 @@ class RunCommand(BaseCommand):
                     save_output=save_output,
                     visibility=visibility,
                     clone=clone,
+                    packet=include_files(data_file),
                 )
         elif (base := Path(path)).is_dir():
             settings = {}
