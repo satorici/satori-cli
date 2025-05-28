@@ -1,6 +1,7 @@
 import json
 import os
 import platform
+import re
 import sys
 import time
 from argparse import ArgumentParser
@@ -34,6 +35,8 @@ from .base import BaseCommand
 
 IS_LINUX = platform.system() == "Linux"
 VISIBILITY_VALUES = Literal["public", "private", "unlisted"]
+FUNCTIONS_RE = re.compile(r"(read|trim|strip)\((.+)\)")
+FUNCTIONS_SUB_RE = re.compile(r"(.+)\${{(.+)}}(.+)?")
 
 
 def new_local_run(
@@ -68,18 +71,32 @@ def replace_variables(
     value: Union[str, list[str]], testcase: dict[str, str]
 ) -> Union[list, bytes, str]:
     if isinstance(value, str):
-        for secret_key, secret_value in testcase.items():
-            value = replace_secrets(value, secret_key, secret_value)
+        for param_key, param_value in testcase.items():
+            if m := FUNCTIONS_RE.search(param_value):
+                value = execute_functions(value, m.group(1), m.group(2))
+            else:
+                value = replace_params(value, param_key, param_value)
         return value.encode(errors="ignore") if IS_LINUX else value
     else:
-        for key, test_value in testcase.items():
+        for param_key, param_value in testcase.items():
+            if m := FUNCTIONS_RE.search(param_value):
+                # Run as shell if satori function is used
+                value = execute_functions(" ".join(value), m.group(1), m.group(2))
+                return value.encode(errors="ignore") if IS_LINUX else value
             for i, arg in enumerate(value):
-                value[i] = replace_secrets(arg, key, test_value)
+                value[i] = replace_params(arg, param_key, param_value)
         return [arg.encode(errors="ignore") for arg in value] if IS_LINUX else value
 
 
-def replace_secrets(old: str, secret_id: str, secret_value: str) -> str:
+def replace_params(old: str, secret_id: str, secret_value: str) -> str:
     return old.replace("${{" + secret_id + "}}", secret_value)
+
+
+def execute_functions(original: str, function: str, param: str) -> str:
+    if function == "read":
+        return FUNCTIONS_SUB_RE.sub(f"cat {param} | xargs -IX \\1X\\3", original)
+    else:
+        return original
 
 
 class LocalCommand(BaseCommand):
@@ -92,7 +109,9 @@ class LocalCommand(BaseCommand):
             "--playbook",
             help="if TARGET is a directory this playbook will be used",
         )
-        parser.add_argument("-d", "--data", type=load_cli_params, action="append")
+        parser.add_argument(
+            "-d", "--data", type=load_cli_params, action="append", default=[]
+        )
         parser.add_argument("--report", action="store_true")
         parser.add_argument("--output", action="store_true")
         parser.add_argument("-s", "--sync", action="store_true", help="Summary")
@@ -102,11 +121,15 @@ class LocalCommand(BaseCommand):
         parser.add_argument(
             "--visibility", choices=get_args(VISIBILITY_VALUES), default=None
         )
+        parser.add_argument(
+            "-df", "--data-file", type=load_cli_params, action="append", default=[]
+        )
 
     def __call__(
         self,
         target: str,
-        data: Optional[tuple],
+        data: list[tuple[str, str]],
+        data_file: list[tuple[str, str]],
         playbook: Optional[str],
         report: bool,
         output: bool,
@@ -118,6 +141,8 @@ class LocalCommand(BaseCommand):
         visibility: Optional[VISIBILITY_VALUES],
         **kwargs,
     ):
+        for file in data_file:
+            data.append((file[0], f"read({file[1]})"))
         parsed_data = tuple_to_dict(data) if data else None
         if parsed_data and not validate_parameters(parsed_data):
             raise ValueError("Malformed parameters")
