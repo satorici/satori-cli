@@ -401,7 +401,7 @@ class RunCommand(BaseCommand):
         if output and kwargs["json"]:
             print_output(ids[0], kwargs["json"])
 
-        if files and config and has_files(config):
+        if files and config and config.get("settings", {}).get("files"):
             download_files(ids[0])
 
         return ret
