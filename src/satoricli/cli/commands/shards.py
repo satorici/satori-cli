@@ -20,10 +20,40 @@ class ShardsCommand(BaseCommand):
     def register_args(self, parser: ArgumentParser):
         parser.add_argument("--shard", required=True, help="Current shard and total (X/Y format)")
         parser.add_argument("--seed", type=int, required=True, help="Seed for pseudorandom permutation")
-        parser.add_argument("--input", dest="input_file", required=True, help="Input file with addresses (any path)")
-        parser.add_argument("--blacklist", dest="exclude_file", help="File with addresses to exclude (any path)")
+        parser.add_argument("--input", dest="input_file", required=True, help="Input file with addresses OR direct IP/CIDR (e.g., 192.168.1.0/24, 10.0.0.1-10.0.0.255)")
+        parser.add_argument("--exclude", dest="exclude_file", help="File with addresses to exclude OR direct IP/CIDR to exclude (e.g., 192.168.1.0/24)")
         parser.add_argument("--results", dest="results_file", help="Save results to text file (must have .txt extension or no extension; default is .txt)")
         parser.add_argument("--processes", type=int, default=None, help="Number of processes (default: CPU count)")
+
+    def is_direct_input(self, input_str: str) -> bool:
+        """Check if input is a direct IP/CIDR/range instead of a file path"""
+        if '/' in input_str and self.is_valid_cidr(input_str):
+            return True
+        if '-' in input_str and self.is_valid_ip_range(input_str):
+            return True
+        if self.is_ip_address(input_str):
+            return True
+        if not os.path.exists(input_str) and ('.' in input_str or ':' in input_str):
+            return True
+        return False
+    
+    def is_valid_cidr(self, cidr_str: str) -> bool:
+        """Check if string is a valid CIDR notation"""
+        try:
+            IPNetwork(cidr_str)
+            return True
+        except:
+            return False
+    
+    def is_valid_ip_range(self, range_str: str) -> bool:
+        """Check if string is a valid IP range (e.g., 192.168.1.1-192.168.1.255)"""
+        if '-' not in range_str:
+            return False
+        try:
+            start_ip, end_ip = range_str.split('-', 1)
+            return self.is_ip_address(start_ip.strip()) and self.is_ip_address(end_ip.strip())
+        except:
+            return False
 
     def ip_to_int(self, ip_str: str) -> int:
         """Convert IP string to integer using fast socket.inet_aton"""
@@ -61,32 +91,57 @@ class ShardsCommand(BaseCommand):
     def build_blacklist_ranges(self, file_path: str) -> list:
         """Build sorted list of (start, end) integer ranges for faster lookup"""
         ranges = []
-        with open(file_path, 'r') as f:
-            for line in f:
-                entry = line.strip()
-                if not entry or entry.startswith("#"):
-                    continue
-                try:
-                    if ':' in entry and '/' not in entry and '-' not in entry:
-                        parts = entry.split(':')
-                        if self.is_ip_address(parts[0]):
-                            entry = parts[0]
-                    
-                    if '/' in entry and (self.is_ip_address(entry.split('/')[0]) or '.' in entry.split('/')[0]):
-                        network = IPNetwork(entry)
-                        ranges.append((int(network.first), int(network.last)))
-                    elif '-' in entry:
-                        start_ip, end_ip = entry.split('-')
-                        start_int = self.ip_to_int(start_ip.strip())
-                        end_int = self.ip_to_int(end_ip.strip())
-                        if start_int and end_int:
-                            ranges.append((start_int, end_int))
-                    elif self.is_ip_address(entry):
-                        ip_int = self.ip_to_int(entry)
-                        if ip_int:
-                            ranges.append((ip_int, ip_int))
-                except Exception:
-                    continue
+        
+        if self.is_direct_input(file_path):
+            entry = file_path.strip()
+            try:
+                if ':' in entry and '/' not in entry and '-' not in entry:
+                    parts = entry.split(':')
+                    if self.is_ip_address(parts[0]):
+                        entry = parts[0]
+                
+                if '/' in entry and (self.is_ip_address(entry.split('/')[0]) or '.' in entry.split('/')[0]):
+                    network = IPNetwork(entry)
+                    ranges.append((int(network.first), int(network.last)))
+                elif '-' in entry:
+                    start_ip, end_ip = entry.split('-')
+                    start_int = self.ip_to_int(start_ip.strip())
+                    end_int = self.ip_to_int(end_ip.strip())
+                    if start_int and end_int:
+                        ranges.append((start_int, end_int))
+                elif self.is_ip_address(entry):
+                    ip_int = self.ip_to_int(entry)
+                    if ip_int:
+                        ranges.append((ip_int, ip_int))
+            except Exception:
+                pass
+        else:
+            with open(file_path, 'r') as f:
+                for line in f:
+                    entry = line.strip()
+                    if not entry or entry.startswith("#"):
+                        continue
+                    try:
+                        if ':' in entry and '/' not in entry and '-' not in entry:
+                            parts = entry.split(':')
+                            if self.is_ip_address(parts[0]):
+                                entry = parts[0]
+                        
+                        if '/' in entry and (self.is_ip_address(entry.split('/')[0]) or '.' in entry.split('/')[0]):
+                            network = IPNetwork(entry)
+                            ranges.append((int(network.first), int(network.last)))
+                        elif '-' in entry:
+                            start_ip, end_ip = entry.split('-')
+                            start_int = self.ip_to_int(start_ip.strip())
+                            end_int = self.ip_to_int(end_ip.strip())
+                            if start_int and end_int:
+                                ranges.append((start_int, end_int))
+                        elif self.is_ip_address(entry):
+                            ip_int = self.ip_to_int(entry)
+                            if ip_int:
+                                ranges.append((ip_int, ip_int))
+                    except Exception:
+                        continue
         
         ranges.sort()
         
@@ -100,7 +155,7 @@ class ShardsCommand(BaseCommand):
         return merged
 
     def is_range_completely_blacklisted(self, range_start: int, range_end: int, blacklist_ranges: list) -> bool:
-        """Check if entire range is covered by blacklist - ULTRA FAST SKIP"""
+        """Check if entire range is covered by exclude list - ULTRA FAST SKIP"""
         if not blacklist_ranges:
             return False
             
@@ -123,7 +178,7 @@ class ShardsCommand(BaseCommand):
         return False
 
     def is_ip_in_ranges_vectorized(self, ip_array: np.ndarray, ranges: list) -> np.ndarray:
-        """Vectorized blacklist check using numpy for massive speedup"""
+        """Vectorized exclude list check using numpy for massive speedup"""
         if not ranges or len(ip_array) == 0:
             return np.zeros(len(ip_array), dtype=bool)
             
@@ -195,7 +250,7 @@ class ShardsCommand(BaseCommand):
         return socket.inet_ntoa(struct.pack("!I", ip_int))
 
     def subtract_blacklist_from_range(self, range_start: int, range_end: int, blacklist_ranges: list) -> list:
-        """HARDCORE: Pre-filter blacklist to get only valid IP segments - MASSIVE speedup"""
+        """HARDCORE: Pre-filter exclude list to get only valid IP segments - MASSIVE speedup"""
         if not blacklist_ranges:
             return [(range_start, range_end)]
         
@@ -221,7 +276,7 @@ class ShardsCommand(BaseCommand):
 
     def process_ip_range_pre_filtered(self, range_start: int, range_end: int, blacklist_ranges: list, 
                                     shard_x: int, shard_y: int, seed: int) -> tuple:
-        """ULTRA-FAST: Process only non-blacklisted segments - skip billions of blacklisted IPs"""
+        """ULTRA-FAST: Process only non-excluded segments - skip billions of excluded IPs"""
         
         valid_segments = self.subtract_blacklist_from_range(range_start, range_end, blacklist_ranges)
         
@@ -259,45 +314,85 @@ class ShardsCommand(BaseCommand):
         
         return total_processed, total_excluded, selected_ips
 
+    def parse_direct_input(self, input_str: str) -> tuple:
+        """Parse direct input and return (ip_ranges, non_ip_entries)"""
+        ip_ranges = []
+        non_ip_entries = []
+        
+        entry = input_str.strip()
+        try:
+            if ':' in entry and '/' not in entry and '-' not in entry:
+                parts = entry.split(':')
+                if self.is_ip_address(parts[0]):
+                    entry = parts[0]
+            
+            if '/' in entry and (self.is_ip_address(entry.split('/')[0]) or 
+                (entry.count('.') >= 3 and '-' not in entry)):
+                network = IPNetwork(entry)
+                ip_ranges.append((int(network.first), int(network.last)))
+            elif '-' in entry and self.is_ip_address(entry.split('-')[0].strip()):
+                start_ip, end_ip = entry.split('-')
+                start_int = self.ip_to_int(start_ip.strip())
+                end_int = self.ip_to_int(end_ip.strip())
+                if start_int and end_int:
+                    ip_ranges.append((start_int, end_int))
+            elif self.is_ip_address(entry):
+                ip_int = self.ip_to_int(entry)
+                if ip_int:
+                    ip_ranges.append((ip_int, ip_int))
+            else:
+                clean_entry = self.extract_domain_from_entry(entry)
+                if clean_entry:
+                    non_ip_entries.append(clean_entry)
+        except Exception:
+            clean_entry = self.extract_domain_from_entry(entry)
+            if clean_entry:
+                non_ip_entries.append(clean_entry)
+        
+        return ip_ranges, non_ip_entries
+
     def read_file_addresses_ultra_parallel(self, file_path: str, blacklist_ranges: list, shard_x: int, shard_y: int, seed: int, num_processes: int, total_items: int) -> tuple:
         """Ultra parallel processing with dynamic work queue for perfect load balancing"""
         
         ip_ranges = []
         non_ip_entries = []
         
-        with open(file_path, 'r') as f:
-            for line in f:
-                entry = line.strip()
-                if not entry or entry.startswith("#"):
-                    continue
-                try:
-                    if ':' in entry and '/' not in entry and '-' not in entry:
-                        parts = entry.split(':')
-                        if self.is_ip_address(parts[0]):
-                            entry = parts[0]
-                    
-                    if '/' in entry and (self.is_ip_address(entry.split('/')[0]) or 
-                        (entry.count('.') >= 3 and '-' not in entry)):
-                        network = IPNetwork(entry)
-                        ip_ranges.append((int(network.first), int(network.last)))
-                    elif '-' in entry and self.is_ip_address(entry.split('-')[0].strip()):
-                        start_ip, end_ip = entry.split('-')
-                        start_int = self.ip_to_int(start_ip.strip())
-                        end_int = self.ip_to_int(end_ip.strip())
-                        if start_int and end_int:
-                            ip_ranges.append((start_int, end_int))
-                    elif self.is_ip_address(entry):
-                        ip_int = self.ip_to_int(entry)
-                        if ip_int:
-                            ip_ranges.append((ip_int, ip_int))
-                    else:
+        if self.is_direct_input(file_path):
+            ip_ranges, non_ip_entries = self.parse_direct_input(file_path)
+        else:
+            with open(file_path, 'r') as f:
+                for line in f:
+                    entry = line.strip()
+                    if not entry or entry.startswith("#"):
+                        continue
+                    try:
+                        if ':' in entry and '/' not in entry and '-' not in entry:
+                            parts = entry.split(':')
+                            if self.is_ip_address(parts[0]):
+                                entry = parts[0]
+                        
+                        if '/' in entry and (self.is_ip_address(entry.split('/')[0]) or 
+                            (entry.count('.') >= 3 and '-' not in entry)):
+                            network = IPNetwork(entry)
+                            ip_ranges.append((int(network.first), int(network.last)))
+                        elif '-' in entry and self.is_ip_address(entry.split('-')[0].strip()):
+                            start_ip, end_ip = entry.split('-')
+                            start_int = self.ip_to_int(start_ip.strip())
+                            end_int = self.ip_to_int(end_ip.strip())
+                            if start_int and end_int:
+                                ip_ranges.append((start_int, end_int))
+                        elif self.is_ip_address(entry):
+                            ip_int = self.ip_to_int(entry)
+                            if ip_int:
+                                ip_ranges.append((ip_int, ip_int))
+                        else:
+                            clean_entry = self.extract_domain_from_entry(entry)
+                            if clean_entry:
+                                non_ip_entries.append(clean_entry)
+                    except Exception:
                         clean_entry = self.extract_domain_from_entry(entry)
                         if clean_entry:
                             non_ip_entries.append(clean_entry)
-                except Exception:
-                    clean_entry = self.extract_domain_from_entry(entry)
-                    if clean_entry:
-                        non_ip_entries.append(clean_entry)
         
         selected_non_ip = []
         for entry in non_ip_entries:
@@ -350,36 +445,64 @@ class ShardsCommand(BaseCommand):
     def count_total_items(self, file_path: str) -> int:
         """Quick count of total items (IPs + domains/URLs) for progress tracking"""
         total = 0
-        with open(file_path, 'r') as f:
-            for line in f:
-                entry = line.strip()
-                if not entry or entry.startswith("#"):
-                    continue
-                try:
-                    if ':' in entry and '/' not in entry and '-' not in entry:
-                        parts = entry.split(':')
-                        if self.is_ip_address(parts[0]):
-                            entry = parts[0]
-                    
-                    if '/' in entry and (self.is_ip_address(entry.split('/')[0]) or 
-                        (entry.count('.') >= 3 and '-' not in entry)):
-                        network = IPNetwork(entry)
-                        total += int(network.last) - int(network.first) + 1
-                    elif '-' in entry and self.is_ip_address(entry.split('-')[0].strip()):
-                        start_ip, end_ip = entry.split('-')
-                        start_int = self.ip_to_int(start_ip.strip())
-                        end_int = self.ip_to_int(end_ip.strip())
-                        if start_int and end_int:
-                            total += end_int - start_int + 1
-                        else:
-                            total += 1
+        
+        if self.is_direct_input(file_path):
+            entry = file_path.strip()
+            try:
+                if ':' in entry and '/' not in entry and '-' not in entry:
+                    parts = entry.split(':')
+                    if self.is_ip_address(parts[0]):
+                        entry = parts[0]
+                
+                if '/' in entry and (self.is_ip_address(entry.split('/')[0]) or 
+                    (entry.count('.') >= 3 and '-' not in entry)):
+                    network = IPNetwork(entry)
+                    total += int(network.last) - int(network.first) + 1
+                elif '-' in entry and self.is_ip_address(entry.split('-')[0].strip()):
+                    start_ip, end_ip = entry.split('-')
+                    start_int = self.ip_to_int(start_ip.strip())
+                    end_int = self.ip_to_int(end_ip.strip())
+                    if start_int and end_int:
+                        total += end_int - start_int + 1
                     else:
                         total += 1
-                except Exception:
+                else:
                     total += 1
+            except Exception:
+                total += 1
+        else:
+            # Process as file
+            with open(file_path, 'r') as f:
+                for line in f:
+                    entry = line.strip()
+                    if not entry or entry.startswith("#"):
+                        continue
+                    try:
+                        if ':' in entry and '/' not in entry and '-' not in entry:
+                            parts = entry.split(':')
+                            if self.is_ip_address(parts[0]):
+                                entry = parts[0]
+                        
+                        if '/' in entry and (self.is_ip_address(entry.split('/')[0]) or 
+                            (entry.count('.') >= 3 and '-' not in entry)):
+                            network = IPNetwork(entry)
+                            total += int(network.last) - int(network.first) + 1
+                        elif '-' in entry and self.is_ip_address(entry.split('-')[0].strip()):
+                            start_ip, end_ip = entry.split('-')
+                            start_int = self.ip_to_int(start_ip.strip())
+                            end_int = self.ip_to_int(end_ip.strip())
+                            if start_int and end_int:
+                                total += end_int - start_int + 1
+                            else:
+                                total += 1
+                        else:
+                            total += 1
+                    except Exception:
+                        total += 1
         return total
 
     def __call__(self, **kwargs):
+        import sys
 
         shard = kwargs["shard"]
         seed = kwargs["seed"]
@@ -405,11 +528,15 @@ class ShardsCommand(BaseCommand):
             try:
                 blacklist_ranges = self.build_blacklist_ranges(exclude_file)
             except Exception as e:
-                error_console.print(f"[error] Failed to load blacklist: {str(e)}")
+                error_console.print(f"[error] Failed to load exclude list: {str(e)}")
                 return 1
 
         total_items = self.count_total_items(input_file)
-        console.print(f"Processing {total_items:,} items using {num_processes} cores...")
+        
+        output_redirected = not sys.stdout.isatty()
+        use_results_file = results_file is not None
+        
+        error_console.print(f"Processing {total_items:,} items using {num_processes} cores...")
         
         start_time = time.time()
         
@@ -417,7 +544,7 @@ class ShardsCommand(BaseCommand):
             SpinnerColumn(),
             TextColumn("[bold blue]Running..."),
             TimeElapsedColumn(),
-            console=console,
+            console=error_console,
             refresh_per_second=10
         ) as progress:
             task = progress.add_task("Processing...", total=None)
@@ -427,7 +554,7 @@ class ShardsCommand(BaseCommand):
         
         end_time = time.time()
         
-        console.print(f"Completed in {end_time - start_time:.1f}s - Selected {len(selected_items):,} items - Excluded {total_excluded:,} IPs")
+        error_console.print(f"Completed in {end_time - start_time:.1f}s - Selected {len(selected_items):,} items - Excluded {total_excluded:,} IPs")
         
         included = total_processed - total_excluded
 
@@ -446,15 +573,20 @@ class ShardsCommand(BaseCommand):
                 with open(output_path, 'w') as f:
                     for addr in selected_items:
                         f.write(f"{addr}\n")
-                console.print(f"Saved to {output_path}")
+                error_console.print(f"Saved to {output_path}")
             except Exception as e:
                 error_console.print(f"[error] Failed to write output file: {str(e)}")
                 return 1
+        else:
+            
+            for addr in selected_items:
+                print(addr)
+        
         return 0
 
 
 def process_prefiltered_chunk_worker(chunk_range: tuple, blacklist_ranges: list, shard_x: int, shard_y: int, seed: int, chunk_id: int) -> tuple:
-    """HARDCORE worker with blacklist pre-filtering - skip billions of blacklisted IPs"""
+    """HARDCORE worker with exclude list pre-filtering - skip billions of excluded IPs"""
     cmd = ShardsCommand()
     
     range_start, range_end = chunk_range
