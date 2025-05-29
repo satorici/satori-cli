@@ -19,7 +19,7 @@ class ShardsCommand(BaseCommand):
 
     def register_args(self, parser: ArgumentParser):
         parser.add_argument("--shard", required=True, help="Current shard and total (X/Y format)")
-        parser.add_argument("--seed", type=int, required=True, help="Seed for pseudorandom permutation")
+        parser.add_argument("--seed", type=int, default=1, help="Seed for pseudorandom permutation (default: 1)")
         parser.add_argument("--input", dest="input_file", required=True, help="Input file with addresses OR direct IP/CIDR (e.g., 192.168.1.0/24, 10.0.0.1-10.0.0.255)")
         parser.add_argument("--exclude", dest="exclude_file", help="File with addresses to exclude OR direct IP/CIDR to exclude (e.g., 192.168.1.0/24)")
         parser.add_argument("--results", dest="results_file", help="Save results to text file (must have .txt extension or no extension; default is .txt)")
