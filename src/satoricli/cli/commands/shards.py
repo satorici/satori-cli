@@ -23,7 +23,6 @@ class ShardsCommand(BaseCommand):
         parser.add_argument("--input", dest="input_file", required=True, help="Input file with addresses OR direct IP/CIDR (e.g., 192.168.1.0/24, 10.0.0.1-10.0.0.255)")
         parser.add_argument("--exclude", dest="exclude_file", help="File with addresses to exclude OR direct IP/CIDR to exclude (e.g., 192.168.1.0/24)")
         parser.add_argument("--results", dest="results_file", help="Save results to text file (must have .txt extension or no extension; default is .txt)")
-        parser.add_argument("--processes", type=int, default=None, help="Number of processes (default: CPU count)")
 
     def is_direct_input(self, input_str: str) -> bool:
         """Check if input is a direct IP/CIDR/range instead of a file path"""
@@ -351,8 +350,10 @@ class ShardsCommand(BaseCommand):
         
         return ip_ranges, non_ip_entries
 
-    def read_file_addresses_ultra_parallel(self, file_path: str, blacklist_ranges: list, shard_x: int, shard_y: int, seed: int, num_processes: int, total_items: int) -> tuple:
+    def read_file_addresses_ultra_parallel(self, file_path: str, blacklist_ranges: list, shard_x: int, shard_y: int, seed: int, total_items: int) -> tuple:
         """Ultra parallel processing with dynamic work queue for perfect load balancing"""
+        
+        num_processes = mp.cpu_count()
         
         ip_ranges = []
         non_ip_entries = []
@@ -509,7 +510,6 @@ class ShardsCommand(BaseCommand):
         input_file = kwargs["input_file"]
         exclude_file = kwargs.get("exclude_file")
         results_file = kwargs.get("results_file")
-        num_processes = kwargs.get("processes") or mp.cpu_count()
 
         try:
             x_str, y_str = shard.split("/")
@@ -533,10 +533,13 @@ class ShardsCommand(BaseCommand):
 
         total_items = self.count_total_items(input_file)
         
+        # Always use all available CPU cores
+        num_processes = mp.cpu_count()
+        
         output_redirected = not sys.stdout.isatty()
         use_results_file = results_file is not None
         
-        error_console.print(f"Processing {total_items:,} items using {num_processes} cores...")
+        error_console.print(f"Processing {total_items:,} items")
         
         start_time = time.time()
         
@@ -549,7 +552,7 @@ class ShardsCommand(BaseCommand):
         ) as progress:
             task = progress.add_task("Processing...", total=None)
             total_processed, total_excluded, selected_items = self.read_file_addresses_ultra_parallel(
-                input_file, blacklist_ranges, X, Y, seed, num_processes, total_items
+                input_file, blacklist_ranges, X, Y, seed, total_items
             )
         
         end_time = time.time()
