@@ -335,16 +335,16 @@ test:
 
     # show your TEAM's config setting for a specific value
     set_config:
-      - satori team test_team set_config notification_email test@satori.ci
+      - satori team test_team set_config notification_email info@satori-ci.com
     # set your TEAM CONFIG setting
 
-    # add the email 'test@satori.ci' as a member of the team 'test_team'
+    # add the email 'info@satori-ci.com' as a member of the team 'test_team'
     add_member:
-      - satori team test_team add --email='test@satori.ci'
+      - satori team test_team add --email='info@satori-ci.com'
 
-    # delete the email 'test@satori.ci' as a member of the team 'test_team'
+    # delete the email 'info@satori-ci.com' as a member of the team 'test_team'
     delete_member:
-      - satori team test_team del --email='test@satori.ci'
+      - satori team test_team del --email='info@satori-ci.com'
 
     add_github_member:
       - satori team test_team add --github='satoridev02'
