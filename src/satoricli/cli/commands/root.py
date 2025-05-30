@@ -297,4 +297,15 @@ class RootCommand(BaseCommand):
         ]
         add_rows(teams, rows)
 
+        tables.append(shards := HelpTable(*cols(), title="Shards"))
+        rows = [
+            ("satori shards --shard X/Y --input INPUT", "Divide massive datasets into smaller chunks for distributed processing"),
+            ("--shard X/Y", "Shard index X out of Y total shards (required)"),
+            ("--input INPUT", "Input file path or direct IP/CIDR/range/domain/URL (required)"),
+            ("--exclude PATH or ENTRY", "Exclusion file path or direct IP/CIDR/range/domain/URL to exclude"),
+            ("--seed N", "Seed for deterministic pseudorandom distribution (default: 1)"),
+            ("--results PATH", "Output file path (writes to stdout if omitted)"),
+        ]
+        add_rows(shards, rows)
+
         return Group(*tables)
