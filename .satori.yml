@@ -419,6 +419,9 @@ negative_test:
     deleted_monitor:
       - satori monitor ${{test.monitor.new.stdout}}
 
+  shards:
+    - satori shards --shard 1/10 --input 0.0.0.0/24 --exclude 192.168.0.0/16
+
   serial:
     setParallel: false
 
