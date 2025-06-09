@@ -55,7 +55,11 @@ class ReportCommand(BaseCommand):
             default=[],
         )
         parser.add_argument(
-            "--format", dest="text_format", help="Format text output", default="plain"
+            "--format",
+            dest="text_format",
+            help="Format text output (Plain or Markdown text)",
+            default="plain",
+            choices=("plain", "md"),
         )
 
     def __call__(
