@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from itertools import zip_longest
 from math import ceil
 from pathlib import Path
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Iterable, Literal, Optional, Union
 
 import httpx
 import yaml
@@ -416,15 +416,17 @@ def format_outputs(outputs: list) -> None:
             console.print("[blue]Testcase:[/blue]")
             console.print(testcase)
 
-        console.print("[blue]Return code:[/blue]", output["output"]["return_code"])
-        console.print("[blue]Stdout:[/blue]")
-        if output["output"]["stdout"]:
-            console.out(output["output"]["stdout"], highlight=False)
-        console.print("[blue]Stderr:[/blue]")
-        if output["output"]["stderr"]:
-            console.out(output["output"]["stderr"], highlight=False)
-        if output["output"]["os_error"]:
-            console.out(output["output"]["os_error"])
+        output_dict = output["output"]
+        if output_dict.get("return_code") is not None:
+            console.print("[blue]Return code:[/blue]", output_dict["return_code"])
+        if output_dict.get("stdout"):
+            console.print("[blue]Stdout:[/blue]")
+            console.out(output_dict["stdout"], highlight=False)
+        if output_dict.get("stderr"):
+            console.print("[blue]Stderr:[/blue]")
+            console.out(output_dict["stderr"], highlight=False)
+        if output_dict.get("os_error"):
+            console.out(output_dict["os_error"])
 
 
 def group_table(
@@ -519,10 +521,25 @@ def download_files(report_id: str):
                     f.write(chunk)
 
 
-def print_output(report_id: str, print_json: bool = False, test: list = []) -> None:
+def print_output(
+    report_id: str, print_json: bool = False, filter_tests: Optional[list] = None
+) -> None:
     res = client.get(f"/outputs/{report_id}").json()
-    if test:
-        res = [r for r in res if r["path"].replace(":", ".") in test]
+    if filter_tests:
+        # match test.echo | test.echo.stdout | test.echo.stderr | test.echo.os_error
+        output_regex = re.compile(
+            r"^(?P<path>[\w\.]+?)(\.(?P<result>(stdout|stderr|os_error)))?$"
+        )
+        new_res = []
+        for test in res:
+            current_path = test["path"].replace(":", ".")
+            for filter_test in filter_tests:
+                m = output_regex.match(filter_test)
+                if m and current_path == m.group("path"):
+                    if result := m.group("result"):
+                        test["output"] = {result: test["output"][result]}
+                    new_res.append(test)
+        res = new_res
     if print_json:
         console.out(res, highlight=False)
     else:

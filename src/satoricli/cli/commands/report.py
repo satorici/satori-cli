@@ -68,7 +68,7 @@ class ReportCommand(BaseCommand):
             else:
                 ReportCommand.print_report_single(res)
         elif action == "output":
-            print_output(id, print_json=kwargs["json"], test=test)
+            print_output(id, print_json=kwargs["json"], filter_tests=test)
         elif action == "files":
             download_files(id)
         elif action == "stop":
