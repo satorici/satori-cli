@@ -48,7 +48,14 @@ class ReportCommand(BaseCommand):
         )
         parser.add_argument("action2", nargs="?", default=None)
         parser.add_argument(
-            "--test", help="Print specified test output", action="append", default=[]
+            "--test",
+            dest="filter_tests",
+            help="Print specified test output",
+            action="append",
+            default=[],
+        )
+        parser.add_argument(
+            "--format", dest="text_format", help="Format text output", default="plain"
         )
 
     def __call__(
@@ -58,7 +65,8 @@ class ReportCommand(BaseCommand):
             "show", "output", "stop", "files", "delete", "set-team", "visibility"
         ],
         action2: str,
-        test: list,
+        filter_tests: list,
+        text_format: Literal["plain", "md"],
         **kwargs,
     ):
         if action == "show":
@@ -68,7 +76,7 @@ class ReportCommand(BaseCommand):
             else:
                 ReportCommand.print_report_single(res)
         elif action == "output":
-            print_output(id, print_json=kwargs["json"], filter_tests=test)
+            print_output(id, kwargs["json"], filter_tests, text_format)
         elif action == "files":
             download_files(id)
         elif action == "stop":

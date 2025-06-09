@@ -19,6 +19,7 @@ from rich import print_json
 from rich.console import Console
 from rich.highlighter import RegexHighlighter
 from rich.logging import RichHandler
+from rich.markdown import Markdown
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.syntax import Syntax
 from rich.table import Table
@@ -393,7 +394,10 @@ def capitalize_list(items: list[str]) -> list[str]:
     return list(new_list)
 
 
-def format_outputs(outputs: list) -> None:
+def format_outputs(
+    outputs: list,
+    text_format: Literal["plain", "md"] = "plain",
+) -> None:
     current_path = ""
 
     for output in outputs:
@@ -419,13 +423,18 @@ def format_outputs(outputs: list) -> None:
         output_dict = output["output"]
         if output_dict.get("return_code") is not None:
             console.print("[blue]Return code:[/blue]", output_dict["return_code"])
-        if output_dict.get("stdout"):
+        if "stdout" in output_dict:
             console.print("[blue]Stdout:[/blue]")
-            console.out(output_dict["stdout"], highlight=False)
-        if output_dict.get("stderr"):
+            text = output_dict["stdout"]
+            if text_format == "md":
+                text = Markdown(text)
+                console.print(text)
+            else:
+                console.out(text, highlight=False)
+        if "stderr" in output_dict:
             console.print("[blue]Stderr:[/blue]")
             console.out(output_dict["stderr"], highlight=False)
-        if output_dict.get("os_error"):
+        if "os_error" in output_dict:
             console.out(output_dict["os_error"])
 
 
@@ -522,10 +531,13 @@ def download_files(report_id: str):
 
 
 def print_output(
-    report_id: str, print_json: bool = False, filter_tests: Optional[list] = None
+    report_id: str,
+    print_json: bool = False,
+    filter_tests: Optional[list] = None,
+    text_format: Literal["plain", "md"] = "plain",
 ) -> None:
     res = client.get(f"/outputs/{report_id}").json()
-    if filter_tests:
+    if filter_tests:  # Display only selected tests
         # match test.echo | test.echo.stdout | test.echo.stderr | test.echo.os_error
         output_regex = re.compile(
             r"^(?P<path>[\w\.]+?)(\.(?P<result>(stdout|stderr|os_error)))?$"
@@ -534,16 +546,18 @@ def print_output(
         for test in res:
             current_path = test["path"].replace(":", ".")
             for filter_test in filter_tests:
+                # Check if every filter matches the current test
                 m = output_regex.match(filter_test)
                 if m and current_path == m.group("path"):
                     if result := m.group("result"):
+                        # Display only selected result
                         test["output"] = {result: test["output"][result]}
                     new_res.append(test)
         res = new_res
     if print_json:
         console.out(res, highlight=False)
     else:
-        format_outputs(res)
+        format_outputs(res, text_format)
 
 
 def print_summary(report_id: str, print_json: bool = False):
