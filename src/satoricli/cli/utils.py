@@ -519,8 +519,10 @@ def download_files(report_id: str):
                     f.write(chunk)
 
 
-def print_output(report_id: str, print_json: bool = False) -> None:
+def print_output(report_id: str, print_json: bool = False, test: list = []) -> None:
     res = client.get(f"/outputs/{report_id}").json()
+    if test:
+        res = [r for r in res if r["path"].replace(":", ".") in test]
     if print_json:
         console.out(res, highlight=False)
     else:
