@@ -124,6 +124,20 @@ class LocalCommand(BaseCommand):
         parser.add_argument(
             "-df", "--data-file", type=load_cli_params, action="append", default=[]
         )
+        parser.add_argument(
+            "--test",
+            dest="filter_tests",
+            help="Print specified test output",
+            action="append",
+            default=[],
+        )
+        parser.add_argument(
+            "--format",
+            dest="text_format",
+            help="Format text output (Plain or Markdown text)",
+            default="plain",
+            choices=("plain", "md"),
+        )
 
     def __call__(
         self,
@@ -139,6 +153,8 @@ class LocalCommand(BaseCommand):
         save_report: Union[str, bool, None],
         save_output: Union[str, bool, None],
         visibility: Optional[VISIBILITY_VALUES],
+        filter_tests: list,
+        text_format: Literal["plain", "md"],
         **kwargs,
     ):
         for file in data_file:
@@ -266,7 +282,7 @@ class LocalCommand(BaseCommand):
             ReportCommand.print_report_asrt(report_id, kwargs["json"])
 
         if output:
-            print_output(report_id, kwargs["json"])
+            print_output(report_id, kwargs["json"], filter_tests, text_format)
 
         report_data = client.get(f"/reports/{report_id}").json()
         return 0 if report_data["fails"] == 0 else 1

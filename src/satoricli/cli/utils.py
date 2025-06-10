@@ -423,7 +423,7 @@ def format_outputs(
         output_dict = output["output"]
         if output_dict.get("return_code") is not None:
             console.print("[blue]Return code:[/blue]", output_dict["return_code"])
-        if "stdout" in output_dict:
+        if "stdout" in output_dict and output_dict["stdout"] is not None:
             console.print("[blue]Stdout:[/blue]")
             text = output_dict["stdout"]
             if text_format == "md":
@@ -431,10 +431,10 @@ def format_outputs(
                 console.print(text)
             else:
                 console.out(text, highlight=False)
-        if "stderr" in output_dict:
+        if "stderr" in output_dict and output_dict["stderr"] is not None:
             console.print("[blue]Stderr:[/blue]")
             console.out(output_dict["stderr"], highlight=False)
-        if "os_error" in output_dict:
+        if "os_error" in output_dict and output_dict["os_error"] is not None:
             console.out(output_dict["os_error"])
 
 
@@ -482,7 +482,12 @@ def group_table(
     console.print(f"Page {page} of {ceil(table.total / limit)} | Total: {table.total}")
 
 
-def wait(report_id: str, live: bool = False) -> None:
+def wait(
+    report_id: str,
+    live: bool = False,
+    filter_tests: Optional[list] = None,
+    text_format: Literal["plain", "md"] = "plain",
+) -> None:
     with Progress(
         SpinnerColumn("dots2"),
         TextColumn("[progress.description]Status: {task.description}"),
@@ -500,9 +505,12 @@ def wait(report_id: str, live: bool = False) -> None:
                     out = c.get(f"/outputs/{report_id}").json()
                     for o in out:
                         out_id = o["path"] + "|" + o["original"]
-                        if out_id not in printed:
+                        outputs = (
+                            run_test_filter(filter_tests, [o]) if filter_tests else [o]
+                        )
+                        if out_id not in printed and outputs:
                             console.print()
-                            format_outputs([o])
+                            format_outputs(outputs, text_format)
                             printed.append(out_id)
 
             if res.is_success:
@@ -538,26 +546,30 @@ def print_output(
 ) -> None:
     res = client.get(f"/outputs/{report_id}").json()
     if filter_tests:  # Display only selected tests
-        # match test.echo | test.echo.stdout | test.echo.stderr | test.echo.os_error
-        output_regex = re.compile(
-            r"^(?P<path>[\w\.]+?)(\.(?P<result>(stdout|stderr|os_error)))?$"
-        )
-        new_res = []
-        for test in res:
-            current_path = test["path"].replace(":", ".")
-            for filter_test in filter_tests:
-                # Check if every filter matches the current test
-                m = output_regex.match(filter_test)
-                if m and current_path == m.group("path"):
-                    if result := m.group("result"):
-                        # Display only selected result
-                        test["output"] = {result: test["output"][result]}
-                    new_res.append(test)
-        res = new_res
+        res = run_test_filter(filter_tests, res)
     if print_json:
         console.out(res, highlight=False)
     else:
         format_outputs(res, text_format)
+
+
+def run_test_filter(filter_tests: list, tests: list) -> list:
+    # match test.echo | test.echo.stdout | test.echo.stderr | test.echo.os_error
+    output_regex = re.compile(
+        r"^(?P<path>[\w\.]+?)(\.(?P<result>(stdout|stderr|os_error)))?$"
+    )
+    new_res = []
+    for test in tests:
+        current_path = test["path"].replace(":", ".")
+        for filter_test in filter_tests:
+            # Check if every filter matches the current test
+            m = output_regex.match(filter_test)
+            if m and current_path == m.group("path"):
+                if result := m.group("result"):
+                    # Display only selected result
+                    test["output"] = {result: test["output"][result]}
+                new_res.append(test)
+    return new_res
 
 
 def print_summary(report_id: str, print_json: bool = False):

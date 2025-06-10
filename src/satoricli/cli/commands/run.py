@@ -209,6 +209,20 @@ class RunCommand(BaseCommand):
         parser.add_argument(
             "--visibility", choices=get_args(VISIBILITY_VALUES), default=None
         )
+        parser.add_argument(
+            "--test",
+            dest="filter_tests",
+            help="Print specified test output",
+            action="append",
+            default=[],
+        )
+        parser.add_argument(
+            "--format",
+            dest="text_format",
+            help="Format text output (Plain or Markdown text)",
+            default="plain",
+            choices=("plain", "md"),
+        )
 
     def __call__(
         self,
@@ -223,6 +237,8 @@ class RunCommand(BaseCommand):
         report: bool,
         files: bool,
         team: str,
+        filter_tests: list,
+        text_format: Literal["plain", "md"],
         visibility: Optional[VISIBILITY_VALUES] = None,
         clone: Optional[str] = None,
         **kwargs,
@@ -391,7 +407,7 @@ class RunCommand(BaseCommand):
             return
 
         if sync or report or output or files:
-            wait(ids[0], live=output)
+            wait(ids[0], output, filter_tests, text_format)
 
         ret = print_summary(ids[0], kwargs["json"]) if sync else 0
 
