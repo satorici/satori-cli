@@ -1,7 +1,7 @@
 settings:
   name: "Satori CLI Tests"
   log: slack
-  image: public.ecr.aws/docker/library/python:3.9-slim-bullseye
+  image: public.ecr.aws/docker/library/python:3.10-slim-bullseye
   #report: pdf
   timeout: 1800
   redacted:
@@ -371,7 +371,7 @@ test:
     # delete the 'test_team'
     delete:
       - satori team test_team delete
-      
+
   shards:
     - satori shards --shard 1/10 --input 0.0.0.0/24 --exclude 192.168.0.0/16
 
