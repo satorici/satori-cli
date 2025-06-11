@@ -167,13 +167,7 @@ class LocalCommand(BaseCommand):
         config = None
 
         if (playbook and "://" in playbook) or "://" in target:
-            local_run = new_local_run(
-                team,
-                playbook_uri=playbook or target,
-                secrets=parsed_data,
-                name=name,
-                visibility=visibility,
-            )
+            bundle = None
         elif (playbook and os.path.isfile(playbook)) or os.path.isfile(target):
             path = Path(playbook or target)
             config = yaml.safe_load(path.read_bytes())
@@ -184,9 +178,6 @@ class LocalCommand(BaseCommand):
                 return 1
 
             bundle = make_bundle(path, path.parent)
-            local_run = new_local_run(
-                team, bundle, secrets=parsed_data, name=name, visibility=visibility
-            )
         elif os.path.isdir(target):
             playbook_path = workdir / ".satori.yml"
             config = yaml.safe_load(playbook_path.read_bytes())
@@ -203,13 +194,18 @@ class LocalCommand(BaseCommand):
                     "[warning]WARNING:[/] There are some .satori.yml outside the root "
                     "folder that have not been imported."
                 )
-
-            local_run = new_local_run(
-                team, bundle, secrets=parsed_data, name=name, visibility=visibility
-            )
         else:
             error_console.print("ERROR: Invalid args")
             return 1
+
+        local_run = new_local_run(
+            team,
+            bundle,
+            secrets=parsed_data,
+            name=name,
+            visibility=visibility,
+            playbook_uri=playbook or target,
+        )
 
         save_output_setting = True
         save_report_setting = True
