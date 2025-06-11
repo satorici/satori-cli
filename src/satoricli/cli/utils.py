@@ -398,6 +398,18 @@ def format_outputs(
     outputs: list,
     text_format: Literal["plain", "md"] = "plain",
 ) -> None:
+    
+    # If there is only one output and the output has only one element, print it directly
+    if len(outputs) == 1 and len(outputs[0]["output"]) == 1:
+        res = outputs[0]["output"]
+        text = res[next(iter(res))]
+        if text_format == "md":
+            text = Markdown(text)
+            console.print(text)
+        else:
+            console.out(text, highlight=False)
+        return
+
     current_path = ""
 
     for output in outputs:
