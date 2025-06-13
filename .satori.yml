@@ -58,7 +58,7 @@ test:
 
     # execute a public Satori CI playbook locally and pass parameters
     url_output:
-      - satori local ./ -p satori://web/tls/testssl.yml --data URL=https://satori.ci --output
+      - satori local ./ -p satori://web/tls/arjun.yml --data URL=https://satori.ci --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
@@ -79,7 +79,7 @@ test:
 
     # execute a public Satori CI playbook and pass parameters
     url_output:
-      - satori run satori://web/tls/testssl.yml --data URL=https://satori.ci --output
+      - satori run satori://web/tls/arjun.yml --data URL=https://satori.ci --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
@@ -96,6 +96,9 @@ test:
     # list the reports generated
     list:
       - satori reports
+
+    search:
+      - satori reports search
 
     # list the pending reports
     filter:
@@ -130,6 +133,15 @@ test:
       # download the files associated to a report
       files:
         - satori report ${{test.report.new_sync.stdout}} files
+
+      filter_test:
+        - satori report ${{test.report.new_sync.stdout}} output --test tests.positive.echo
+
+      filter_test2:
+        - satori report ${{test.report.new_sync.stdout}} output --test tests.positive.echo.stdout
+
+      filter_format:
+        - satori report ${{test.report.new_sync.stdout}} output --test tests.positive.echo.stdout --format md
 
     # delete the files, the output and the report
     delete:

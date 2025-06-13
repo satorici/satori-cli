@@ -116,6 +116,9 @@ class ReportsCommand(BaseCommand):
                 "monitor": monitor,
             }
 
+            # Remove None values
+            params = {k: v for k, v in params.items() if v is not None}
+
             if not download:
                 params["limit"] = limit
                 params["page"] = page
