@@ -328,7 +328,7 @@ test:
 
     # create team 'test_team'
     create:
-      - satori team test_team create --debug
+      - satori team test_team create
 
     parallel:
       setParallel: true

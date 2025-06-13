@@ -118,14 +118,14 @@ class TeamCommand(BaseCommand):
             info = client.put(f"/teams/{id}/token").json()
         elif action == "del":
             if email:
-                client.request("DELETE", f"/teams/{id}/members", json={"email": email})
+                client.request("DELETE", f"/teams/{id}/members", params={"email": email})
                 console.print("Team member deleted")
             elif repo:
-                client.request("DELETE", f"/teams/{id}/repos", json={"repo": repo})
+                client.request("DELETE", f"/teams/{id}/repos", params={"repo": repo})
                 console.print("Team repo deleted")
             elif github:
                 client.request(
-                    "DELETE", f"/teams/{id}/members", json={"github": github}
+                    "DELETE", f"/teams/{id}/members", params={"github": github}
                 )
                 console.print("Team member deleted")
             else:
