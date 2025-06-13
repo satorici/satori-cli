@@ -1,7 +1,7 @@
-from argparse import ArgumentParser
-from typing import Optional
 import shutil
 import sys
+from argparse import ArgumentParser
+from typing import Optional
 
 from satoricli.api import client
 from satoricli.cli.utils import autoformat, autotable
@@ -150,7 +150,7 @@ class PlaybooksCommand(BaseCommand):
                 [
                     {
                         "uri": x["uri"],
-                        "name": x["name"][:widths['dast'][1]] + "..." if len(x["name"]) > widths['dast'][1] else x["name"],
+                        "name": x["name"][:widths['dast'][1]] + "..." if len(x["name"] or "") > widths['dast'][1] else x["name"],
                         "parameters": ("\n".join(x["parameters"]))[:widths['dast'][2]] + "..." if len("\n".join(x["parameters"])) > widths['dast'][2] else "\n".join(x["parameters"]),
                         "image": self.truncate_image_name(x["image"], widths['dast'][3])
                     }
