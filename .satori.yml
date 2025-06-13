@@ -64,6 +64,9 @@ test:
     input:
       - satori local .satori/input.yml --report --output
 
+    datafile:
+      - satori local .satori/datafile.yml -df out=.satori/datafile.txt --report
+
   wait:
     - echo waiting...
 

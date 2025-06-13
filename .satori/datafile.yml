@@ -1,0 +1,4 @@
+test:
+  assertStdoutContains: "Hello World"
+  echo:
+    - echo ${{out}}
