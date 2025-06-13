@@ -58,7 +58,7 @@ test:
 
     # execute a public Satori CI playbook locally and pass parameters
     url_output:
-      - satori local ./ -p satori://web/tls/arjun.yml --data URL=https://satori.ci --output
+      - satori local ./ -p satori://web/arjun.yml --data URL=https://satori.ci --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
@@ -79,7 +79,7 @@ test:
 
     # execute a public Satori CI playbook and pass parameters
     url_output:
-      - satori run satori://web/tls/arjun.yml --data URL=https://satori.ci --output
+      - satori run satori://web/arjun.yml --data URL=https://satori.ci --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
@@ -98,7 +98,10 @@ test:
       - satori reports
 
     search:
-      - satori reports search
+      - satori reports search | tail
+
+    download:
+      - satori reports search --download
 
     # list the pending reports
     filter:
