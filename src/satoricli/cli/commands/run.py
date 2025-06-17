@@ -188,6 +188,9 @@ class RunCommand(BaseCommand):
         parser.add_argument(
             "-df", "--data-file", type=load_cli_params, action="append", default=[]
         )
+        parser.add_argument(
+            "-i", "--include", dest="include_list", action="append", default=[]
+        )
 
         settings = parser.add_argument_group("run settings")
         monitor = settings.add_mutually_exclusive_group()
@@ -230,6 +233,7 @@ class RunCommand(BaseCommand):
         sync: bool,
         data: list[tuple[str, str]],
         data_file: list[tuple[str, str]],
+        include_list: list,
         save_report: Union[str, bool, None],
         save_output: Union[str, bool, None],
         playbook: Optional[str],
@@ -243,7 +247,6 @@ class RunCommand(BaseCommand):
         clone: Optional[str] = None,
         **kwargs,
     ):
-        include_list = []
         for file in data_file:
             data.append((file[0], f"read({file[1]})"))
             include_list.append(file[1])
