@@ -278,6 +278,7 @@ class RunCommand(BaseCommand):
                 save_output=save_output,
                 visibility=visibility,
                 clone=clone,
+                packet=include_files(include_list),
             )
 
             is_monitor = False
