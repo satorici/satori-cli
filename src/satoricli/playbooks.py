@@ -92,13 +92,14 @@ def display_public_playbooks(
                 print(text)
                 return
             loaded_yaml = yaml.safe_load(text)
-            if description := loaded_yaml.get("settings", {}).get("description"):
-                if name := loaded_yaml.get("settings", {}).get("name"):
+            settings = loaded_yaml.get("settings", {})
+            if description := settings.get("description"):
+                if name := settings.get("name"):
                     description = f"## {name}\n{description}"
+                    text = remove_yaml_prop(text, "name")
                 mk = Markdown(description)
                 console.print(Panel(mk))
-            yml = remove_yaml_prop(text, "description")
-            yml = remove_yaml_prop(yml, "name")
-            autosyntax(yml, lexer="YAML")
+            text = remove_yaml_prop(text, "description")
+            autosyntax(text, lexer="YAML")
         else:
             console.print("[red]Playbook not found")
