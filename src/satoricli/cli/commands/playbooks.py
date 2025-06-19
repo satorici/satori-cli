@@ -16,7 +16,9 @@ class PlaybooksCommand(BaseCommand):
     @staticmethod
     def truncate_image_name(image_name: str, max_length: int = 29) -> str:
         """Truncate image name to specified length, adding ... if necessary"""
-        if len(image_name) <= max_length:
+        if not image_name:
+            return ""
+        elif len(image_name) <= max_length:
             return image_name.ljust(max_length)
         return image_name[:max_length-3] + "..."
 
