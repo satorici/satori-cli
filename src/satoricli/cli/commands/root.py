@@ -10,6 +10,7 @@ from .base import BaseCommand
 from .config import ConfigCommand
 from .dashboard import DashboardCommand
 from .help import HelpCommand
+from .install import InstallCommand
 from .local import LocalCommand
 from .monitor import MonitorCommand
 from .monitors import MonitorsCommand
@@ -53,6 +54,7 @@ class RootCommand(BaseCommand):
         LocalCommand,
         ScansCommand,
         ShardsCommand,
+        InstallCommand
     )
     name = "satori"
     global_options = (profile_arg, json_arg, debug_arg, export_arg, team_arg, config_arg)
