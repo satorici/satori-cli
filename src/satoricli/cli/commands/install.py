@@ -20,10 +20,7 @@ class InstallCommand(BaseCommand):
         url = "https://satori.ci/user-settings/#user-api-token"
         webbrowser.open(url)
         console.print(
-            "A page with your user data has opened, copy your token from the 'User API Token' section and paste it below."
-        )
-        console.print(
-            f"You can also log in manually using the following link: [b blue]{url}[/]"
+            "Log in to Satori CI and get your token from the 'User API Token' page at: [b blue]{url}[/]"
         )
 
         # Get token from user
@@ -33,7 +30,7 @@ class InstallCommand(BaseCommand):
         # Save token
         config = load_config()
         config.setdefault(kwargs["profile"], {})["token"] = token
-        console.print(f"Token updated for profile {kwargs['profile']}")
+        console.print(f"\nSatori CLI Token updated for profile {kwargs['profile']}")
         save_config(config)
 
         # Install v2
@@ -44,11 +41,10 @@ class InstallCommand(BaseCommand):
             "install",
             "git+https://github.com/satorici/cli-v2",
         ]
-        console.print("Installing v2...")
         result = subprocess.run(command, capture_output=True, text=True)
         if result.returncode != 0: # error
-            error_console.print("[bold red]Failed to install v2:[/]")
+            error_console.print("\n[bold red]Failed to install Satori CLI v2:[/]")
             error_console.print(result.stderr)
             return 1
         else:  # ok
-            console.print("v2 installed successfully")
+            console.print("\nSatori CLI v2 installed successfully")
