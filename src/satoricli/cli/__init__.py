@@ -41,7 +41,7 @@ def check_for_update():
 def main():
     timestamp = (datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
     error_console.print(
-        f"[dim]Satori CI {VERSION} - Automated Testing - Started on {timestamp}"
+        f"[dim]Satori CI {VERSION} - Automated Testing - Started on [b bright_magenta]{timestamp}"
     )
 
     if environ.get("SATORI_CLI_NO_UPDATE_CHECK") != "1":
