@@ -768,7 +768,7 @@ def execution_time(seconds: Optional[float]) -> str:
 def get_command_params(command: Optional[str]) -> Optional[str]:
     if command is None:
         return None
-    regex = re.compile(r"(-d |--data=)(\S+=\S+)")
+    regex = re.compile(r"(-d |--data=)(\S+=(?!\[REDACTED\])\S+)")
     res = regex.findall(command)
     params = [x[1] for x in res]
     return " ".join(params)
