@@ -448,6 +448,8 @@ def format_outputs(
             console.out(output_dict["stderr"], highlight=False)
         if "os_error" in output_dict and output_dict["os_error"] is not None:
             console.out(output_dict["os_error"])
+        if "time" in output_dict:
+            console.print("[blue]Runtime:[/blue]", execution_time(output_dict["time"]))
 
 
 def group_table(
