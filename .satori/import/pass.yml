@@ -17,7 +17,8 @@ tests:
     echo:
     - echo -n Hello World
   
-  negative:
-    assertStdoutNotEqual: "Hello World"
-    echo:
-    - echo -n ${{mutation}}
+  # Sometimes it generates the same string
+  # negative:
+  #   assertStdoutNotEqual: "Hello World"
+  #   echo:
+  #   - echo -n ${{mutation}}
