@@ -2,6 +2,7 @@ import json
 import os
 import platform
 import re
+import shlex
 import sys
 import time
 from argparse import ArgumentParser
@@ -94,7 +95,8 @@ def replace_params(old: str, secret_id: str, secret_value: str) -> str:
 
 def execute_functions(original: str, function: str, param: str) -> str:
     if function == "read":
-        return FUNCTIONS_SUB_RE.sub(f"cat {param} | xargs -IX \\1X\\3", original)
+        safe_param = shlex.quote(param)
+        return FUNCTIONS_SUB_RE.sub(f"cat {safe_param} | xargs -IX \\1X\\3", original)
     else:
         return original
 
