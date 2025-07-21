@@ -96,7 +96,10 @@ def replace_params(old: str, secret_id: str, secret_value: str) -> str:
 def execute_functions(original: str, function: str, param: str) -> str:
     if function == "read":
         safe_param = shlex.quote(param)
-        return FUNCTIONS_SUB_RE.sub(f"cat {safe_param} | xargs -IX \\1X\\3", original)
+        original = re.sub(r"do\s*\n", "do ", original)
+        original = re.sub(r"\n\s+", ";", original)
+        original = original.replace("'", "\"")
+        return FUNCTIONS_SUB_RE.sub(f"cat {safe_param} | xargs -IX sh -c '\\1X\\3'", original)
     else:
         return original
 
