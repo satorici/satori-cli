@@ -570,7 +570,7 @@ def print_output(
 def run_test_filter(filter_tests: list, tests: list) -> list:
     # match test.echo | test.echo.stdout | test.echo.stderr | test.echo.os_error
     output_regex = re.compile(
-        r"^(?P<path>[\w\.]+?)(\.(?P<result>(stdout|stderr|os_error)))?$"
+        r"^(?P<path>[\w\.\-]+?)(\.(?P<result>(stdout|stderr|os_error)))?$"
     )
     new_res = []
     for test in tests:
