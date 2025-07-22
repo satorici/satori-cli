@@ -99,7 +99,7 @@ def execute_functions(original: str, function: str, param: str) -> str:
         original = re.sub(r"do\s*\n", "do ", original)
         original = re.sub(r"\n\s*", ";", original)
         original = original.replace("'", "\"")
-        return FUNCTIONS_SUB_RE.sub(f"cat {safe_param} | xargs -IX sh -c '\\1X\\3'", original)
+        return FUNCTIONS_SUB_RE.sub(f"cat {safe_param} | xargs -IX bash -c '\\1X\\3'", original)
     else:
         return original
 
