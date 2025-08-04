@@ -71,6 +71,7 @@ class ReportsCommand(BaseCommand):
         search_parser.add_argument(
             "--download", action="store_true", help="Download reports outputs to files"
         )
+        search_parser.add_argument("--playbook", type=str, help="Filter by playbook")
 
     def __call__(
         self,
@@ -86,6 +87,7 @@ class ReportsCommand(BaseCommand):
         # query: Optional[str] = None,
         monitor: Optional[str] = None,
         download: bool = False,
+        playbook: Optional[str] = None,
         **kwargs,
     ):
         if action in ("show", None):
@@ -114,6 +116,7 @@ class ReportsCommand(BaseCommand):
                 "limit": 10,
                 "page": 1,
                 "monitor": monitor,
+                "playbook": playbook,
             }
 
             # Remove None values
