@@ -1,15 +1,12 @@
-import json
 import re
 import sys
+import time
 from argparse import ArgumentParser
 from datetime import date
 from pathlib import Path
 from typing import Literal, Optional
 
-from rich.live import Live
-from websocket import WebSocketApp
-
-from satoricli.api import WS_HOST, client
+from satoricli.api import client
 from satoricli.cli.utils import (
     VISIBILITY_VALUES,
     BootstrapTable,
@@ -19,6 +16,7 @@ from satoricli.cli.utils import (
     error_console,
     execution_time,
     remove_keys_list_dict,
+    wait,
 )
 
 from ..arguments import date_args
@@ -58,6 +56,9 @@ class ScanCommand(BaseCommand):
         parser.add_argument("--skip-check", action="store_true")
         parser.add_argument("--delete-commits", action="store_true")
         parser.add_argument("-s", "--sync", action="store_true")
+        parser.add_argument("-o", "--output", action="store_true")
+        parser.add_argument("-r", "--report", action="store_true")
+        parser.add_argument("--last", action="store_true", help="Scan last commit only")
         parser.add_argument("-d", "--data", help="Secrets", default="")
         parser.add_argument("-b", "--branch", default="main", help="Repo branch")
         parser.add_argument("--filter", help="Filter names")
@@ -91,6 +92,9 @@ class ScanCommand(BaseCommand):
         page: int,
         limit: int,
         team: str,
+        output: bool,
+        report: bool,
+        last: bool,
         **kwargs,
     ):
         if SCANID_REGEX.match(repository) and action == "new":
@@ -119,10 +123,11 @@ class ScanCommand(BaseCommand):
                     "branch": branch,
                     "team": team,
                     "run_params": " ".join(sys.argv[1:]),
+                    "run_last": last,
                 },
             ).json()
-            if sync:
-                return self.scan_sync(repository)
+            if sync or output or report:
+                return self.scan_sync(info["id"], output, report)
         elif action == "clean":
             client.delete(
                 f"scan/{repository}/reports", params={"delete_commits": delete_commits}
@@ -137,7 +142,7 @@ class ScanCommand(BaseCommand):
         elif action == "status":
             self.check_scan_id(repository)
             if sync:
-                return self.scan_sync(repository)
+                return self.scan_sync(repository, output, report)
             else:
                 info = client.get(f"/scan/status/{repository}").json()
         elif action == "reports":
@@ -174,48 +179,14 @@ class ScanCommand(BaseCommand):
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 
     @staticmethod
-    def scan_sync(id):
-        live = Live("Loading data...", console=console, auto_refresh=False)
-
-        def on_open(app: WebSocketApp):
-            app.send(json.dumps({"action": "scan-status", "id": id}))
-
-        def on_message(app: WebSocketApp, message):
-            print(message)
-            try:
-                # try to load the message as a json
-                stats = json.loads(message)
-                # make text readable
-                output = autoformat(stats, echo=False)
-            except Exception:
-                # if fail print plain text
-                live.update(message)
-            else:
-                if output:
-                    live.update(output)
-            finally:
-                live.refresh()
-
-        def on_error(app: WebSocketApp, error):
-            console.print("[error]Error:[/] " + str(error))
-            app.has_errored = True  # ?????
-
-        def on_close(app: WebSocketApp, close_status_code: int, close_msg: str):
-            if close_status_code != 1000:
-                on_error(app, close_msg)  # ?????
-
-        app = WebSocketApp(
-            WS_HOST,
-            on_open=on_open,
-            on_message=on_message,
-            on_close=on_close,
-            on_error=on_error,
-            header={"Authorization": client.headers["Authorization"]},
-        )
-        app.run_forever()
-
-        if app.has_errored:
-            return 1
+    def scan_sync(scan_id: str, output: bool = False, report: bool = False) -> None:
+        while True:
+            res = client.get(f"/scan/{scan_id}/reports").json()
+            if res["rows"]:
+                for row in res["rows"]:
+                    wait(row["id"], output, report)
+                break
+            time.sleep(1)
 
     def check_scan_id(self, scan_id: str) -> None:
         if not SCANID_REGEX.match(scan_id):
