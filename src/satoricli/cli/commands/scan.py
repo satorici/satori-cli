@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Literal, Optional
 
 from satoricli.api import client
+from satoricli.cli.commands.report import ReportCommand
 from satoricli.cli.utils import (
     VISIBILITY_VALUES,
     BootstrapTable,
@@ -127,7 +128,7 @@ class ScanCommand(BaseCommand):
                 },
             ).json()
             if sync or output or report:
-                return self.scan_sync(info["id"], output, report)
+                return self.scan_sync(info["id"], kwargs, output, report)
         elif action == "clean":
             client.delete(
                 f"scan/{repository}/reports", params={"delete_commits": delete_commits}
@@ -142,7 +143,7 @@ class ScanCommand(BaseCommand):
         elif action == "status":
             self.check_scan_id(repository)
             if sync:
-                return self.scan_sync(repository, output, report)
+                return self.scan_sync(repository, kwargs, output, report)
             else:
                 info = client.get(f"/scan/status/{repository}").json()
         elif action == "reports":
@@ -166,7 +167,7 @@ class ScanCommand(BaseCommand):
                 "/scan/check-commits", json={"repo": repository, "branch": branch}
             ).json()
             if sync:
-                return ScanCommand.scan_sync(repository)
+                return self.scan_sync(repository, kwargs)
         elif action == "visibility":
             if not action2 or action2 not in VISIBILITY_VALUES:
                 error_console.print(
@@ -179,12 +180,16 @@ class ScanCommand(BaseCommand):
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
 
     @staticmethod
-    def scan_sync(scan_id: str, output: bool = False, report: bool = False) -> None:
+    def scan_sync(
+        scan_id: str, kwargs: dict, output: bool = False, report: bool = False
+    ) -> None:
         while True:
             res = client.get(f"/scan/{scan_id}/reports").json()
             if res["rows"]:
                 for row in res["rows"]:
                     wait(row["id"], output, report)
+                    if report:
+                        ReportCommand.print_report_asrt(row["id"], kwargs["json"])
                 break
             time.sleep(1)
 
