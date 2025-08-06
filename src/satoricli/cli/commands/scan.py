@@ -52,14 +52,13 @@ class ScanCommand(BaseCommand):
         )
         parser.add_argument("action2", nargs="?", default=None)
         parser.add_argument(
-            "-c", "--coverage", type=float, default=1.0, help="coverage"
+            "-c", "--coverage", type=float, default=0.0, help="coverage"
         )
         parser.add_argument("--skip-check", action="store_true")
         parser.add_argument("--delete-commits", action="store_true")
         parser.add_argument("-s", "--sync", action="store_true")
         parser.add_argument("-o", "--output", action="store_true")
         parser.add_argument("-r", "--report", action="store_true")
-        parser.add_argument("--last", action="store_true", help="Scan last commit only")
         parser.add_argument("-d", "--data", help="Secrets", default="")
         parser.add_argument("-b", "--branch", default="main", help="Repo branch")
         parser.add_argument("--filter", help="Filter names")
@@ -95,7 +94,6 @@ class ScanCommand(BaseCommand):
         team: str,
         output: bool,
         report: bool,
-        last: bool,
         **kwargs,
     ):
         if SCANID_REGEX.match(repository) and action == "new":
@@ -124,7 +122,7 @@ class ScanCommand(BaseCommand):
                     "branch": branch,
                     "team": team,
                     "run_params": " ".join(sys.argv[1:]),
-                    "run_last": last,
+                    "run_last": coverage == 0.0,
                 },
             ).json()
             if sync or output or report:
@@ -187,7 +185,7 @@ class ScanCommand(BaseCommand):
             res = client.get(f"/scan/{scan_id}/reports").json()
             if res["rows"]:
                 for row in res["rows"]:
-                    wait(row["id"], output, report)
+                    wait(row["id"], output)
                     if report:
                         ReportCommand.print_report_asrt(row["id"], kwargs["json"])
                 break
