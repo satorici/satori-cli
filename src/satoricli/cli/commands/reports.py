@@ -51,7 +51,7 @@ class ReportsCommand(BaseCommand):
         search_parser.add_argument(
             "--playbook-type",
             choices=get_args(PLAYBOOK_TYPE),
-            default="public",
+            default=None,
             help="Filter by playbook type",
         )
         search_parser.add_argument(
@@ -81,7 +81,7 @@ class ReportsCommand(BaseCommand):
         filter: Optional[str] = None,
         public: bool = False,
         name: Optional[str] = None,
-        playbook_type: Literal[PLAYBOOK_TYPE] = "public",
+        playbook_type: Optional[PLAYBOOK_TYPE] = None,
         report_visibility: Optional[REPORT_VISIBILITY] = None,
         result: Optional[RESULTS] = None,
         # query: Optional[str] = None,
