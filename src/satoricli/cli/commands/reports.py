@@ -46,7 +46,7 @@ class ReportsCommand(BaseCommand):
         show_parser = subparser.add_parser("show")
         show_parser.add_argument("-f", "--filter")
 
-        search_parser = subparser.add_parser("search")
+        search_parser = subparser.add_parser("search", aliases=["delete"])
         search_parser.add_argument("-n", "--name", help="Export folder name")
         search_parser.add_argument(
             "--playbook-type",
@@ -72,6 +72,7 @@ class ReportsCommand(BaseCommand):
             "--download", action="store_true", help="Download reports outputs to files"
         )
         search_parser.add_argument("--playbook", type=str, help="Filter by playbook")
+        search_parser.add_argument("--force", action="store_true", help="Force delete")
 
     def __call__(
         self,
@@ -88,8 +89,24 @@ class ReportsCommand(BaseCommand):
         monitor: Optional[str] = None,
         download: bool = False,
         playbook: Optional[str] = None,
+        force: bool = False,
         **kwargs,
     ):
+        if action in ("delete", "search"):
+            params = {
+                "playbook_type": capitalize(playbook_type),
+                "report_visibility": capitalize(report_visibility),
+                "result": capitalize(result),
+                # "query": query,
+                "limit": 10,
+                "page": 1,
+                "monitor": monitor,
+                "playbook": playbook,
+            }
+
+            # Remove None values
+            params = {k: v for k, v in params.items() if v is not None}
+
         if action in ("show", None):
             url = "/reports/public" if public else "/reports"
             res = client.get(
@@ -108,20 +125,6 @@ class ReportsCommand(BaseCommand):
             else:
                 autoformat(res["rows"], jsonfmt=kwargs["json"])
         elif action == "search":
-            params = {
-                "playbook_type": capitalize(playbook_type),
-                "report_visibility": capitalize(report_visibility),
-                "result": capitalize(result),
-                # "query": query,
-                "limit": 10,
-                "page": 1,
-                "monitor": monitor,
-                "playbook": playbook,
-            }
-
-            # Remove None values
-            params = {k: v for k, v in params.items() if v is not None}
-
             if not download:
                 params["limit"] = limit
                 params["page"] = page
@@ -186,6 +189,31 @@ class ReportsCommand(BaseCommand):
                             tar.extractall(path=output_folder, filter="data")
                         os.remove(item_path)
                     time.sleep(1)
+        elif action == "delete":
+            del params["page"]
+            del params["limit"]
+            if not force:
+                console.print(
+                    "[warning]This action will delete all reports that match the criteria[/]"
+                )
+                params["limit"] = 1
+                res = client.get("/reports/search", params=params).json()
+                console.print(f"Total reports found: {res['total']}")
+                answer = console.input("Do you want to delete these reports? (y/N): ")
+                if answer.lower() != "y":
+                    console.print("Action cancelled")
+                    return 0
+
+            # res = client.delete("/reports/search", params=params).json()
+            # console.print(res)
+            console.print("Deleting reports...")
+            res = client.delete("/reports", params=params)
+            if res.is_success:
+                console.print("Reports deleted successfully")
+                return 0
+            else:
+                console.print("Failed to delete reports")
+                return 1
 
     @staticmethod
     def print_table(reports: list) -> None:
