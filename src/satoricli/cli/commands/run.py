@@ -17,6 +17,7 @@ from satorici.validator import validate_settings
 
 from satoricli.api import client
 from satoricli.bundler import make_bundle
+from satoricli.cli.commands.scan import ScanCommand
 from satoricli.validations import get_parameters, validate_parameters
 
 from ..utils import (
@@ -184,7 +185,7 @@ class RunCommand(BaseCommand):
     name = "run"
 
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("path", metavar="PATH")
+        parser.add_argument("path", metavar="PATH", default=".", nargs="?")
         parser.add_argument(
             "-d", "--data", type=load_cli_params, action="append", default=[]
         )
@@ -275,6 +276,29 @@ class RunCommand(BaseCommand):
 
         cli_settings = get_cli_settings(kwargs)
         is_monitor = bool(cli_settings.get("rate") or cli_settings.get("cron"))
+
+        if path == "." and "REPO" in parsed_data:
+            params = {
+                "url": parsed_data["REPO"],
+                "data": json.dumps(parsed_data),
+                "playbook": playbook,
+                "branch": "main",
+                "team": team,
+                "run_params": " ".join(sys.argv[1:]),
+                "run_last": True,
+            }            
+            info = client.post("/scan", json=params).json()
+            if sync or output or report:
+                return ScanCommand.scan_sync(info["id"], kwargs, output, report)
+            else:
+                while True:
+                    res = client.get(f"/scan/{info['id']}/reports").json()
+                    if res["rows"]:
+                        report_id = res["rows"][0]["id"]
+                        console.print("Report ID:", report_id)
+                        console.print(f"Report: https://satori.ci/report/{report_id}")
+                        return
+                    time.sleep(1)
 
         if playbook and "://" not in playbook and not os.path.isfile(playbook):
             error_console.print("ERROR: Invalid playbook arg.")
