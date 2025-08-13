@@ -25,6 +25,9 @@ from .base import BaseCommand
 REPORT_VISIBILITY = Literal["public", "unlisted", "private"]
 RESULTS = Literal["pass", "fail", "unknown"]
 PLAYBOOK_TYPE = Literal["public", "private"]
+STATUS_FILTERS = Literal[
+    "provisioning", "pending", "running", "completed", "stopped", "timeout"
+]
 
 
 def capitalize(s: Optional[str]) -> Optional[str]:
@@ -73,6 +76,12 @@ class ReportsCommand(BaseCommand):
         )
         search_parser.add_argument("--playbook", type=str, help="Filter by playbook")
         search_parser.add_argument("--force", action="store_true", help="Force delete")
+        search_parser.add_argument(
+            "--status",
+            choices=get_args(STATUS_FILTERS),
+            help="Filter by status",
+            default="completed",
+        )
 
     def __call__(
         self,
@@ -90,6 +99,7 @@ class ReportsCommand(BaseCommand):
         download: bool = False,
         playbook: Optional[str] = None,
         force: bool = False,
+        status: STATUS_FILTERS = "completed",
         **kwargs,
     ):
         if action in ("delete", "search"):
@@ -102,6 +112,7 @@ class ReportsCommand(BaseCommand):
                 "page": 1,
                 "monitor": monitor,
                 "playbook": playbook,
+                "status": capitalize(status),
             }
 
             # Remove None values
