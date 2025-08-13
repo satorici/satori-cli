@@ -1,3 +1,4 @@
+import re
 from argparse import ArgumentParser
 from typing import Literal, Optional
 
@@ -6,6 +7,8 @@ from satoricli.cli.utils import VISIBILITY_VALUES, autoformat, error_console
 from satoricli.playbooks import display_public_playbooks
 
 from .base import BaseCommand
+
+SATORI_URI_REGEX = re.compile(r"^satori:\/(\/[\\w\\.-]+)+\\.ya?ml$")
 
 
 class PlaybookCommand(BaseCommand):
@@ -45,6 +48,9 @@ class PlaybookCommand(BaseCommand):
         **kwargs,
     ):
         if id.startswith("satori://"):
+            if not SATORI_URI_REGEX.match(id):
+                raise Exception("ERROR: URI not valid")
+
             display_public_playbooks(id, original)
             return
 
