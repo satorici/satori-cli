@@ -8,7 +8,7 @@ from satoricli.playbooks import display_public_playbooks
 
 from .base import BaseCommand
 
-SATORI_URI_REGEX = re.compile(r"^satori:\/(\/[\\w\\.-]+)+\\.ya?ml$")
+SATORI_URI_REGEX = re.compile(r"^satori:\/\/\w[\w\/-]+.ya?ml$")
 
 
 class PlaybookCommand(BaseCommand):
