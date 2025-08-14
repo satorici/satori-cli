@@ -4,6 +4,8 @@ from typing import Optional
 import yaml
 from rich.markdown import Markdown
 from rich.panel import Panel
+from satorici.validator import validate_playbook
+from satorici.validator.exceptions import PlaybookVariableError
 
 from .cli.utils import autosyntax, autotable, console, remove_yaml_prop
 from .validations import get_parameters
@@ -65,6 +67,7 @@ def file_finder() -> list[dict]:
 
     return playbooks
 
+
 def get_playbook_name(filename: Path):
     try:
         config = yaml.safe_load(filename.read_text())
@@ -92,6 +95,12 @@ def display_public_playbooks(
                 print(text)
                 return
             loaded_yaml = yaml.safe_load(text)
+
+            try:
+                validate_playbook(loaded_yaml)
+            except PlaybookVariableError:
+                pass
+
             settings = loaded_yaml.get("settings", {})
             if description := settings.get("description"):
                 if name := settings.get("name"):
