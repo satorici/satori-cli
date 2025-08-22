@@ -79,8 +79,7 @@ class ReportsCommand(BaseCommand):
         search_parser.add_argument(
             "--status",
             choices=get_args(STATUS_FILTERS),
-            help="Filter by status",
-            default="completed",
+            help="Filter by status"
         )
 
     def __call__(
@@ -99,7 +98,7 @@ class ReportsCommand(BaseCommand):
         download: bool = False,
         playbook: Optional[str] = None,
         force: bool = False,
-        status: STATUS_FILTERS = "completed",
+        status: Optional[STATUS_FILTERS] = None,
         **kwargs,
     ):
         if action in ("delete", "search"):
