@@ -17,6 +17,7 @@ from satoricli.cli.utils import (
     execution_time,
     get_command_params,
     print_output,
+    wait,
 )
 
 from .base import BaseCommand
@@ -80,7 +81,12 @@ class ReportCommand(BaseCommand):
             else:
                 ReportCommand.print_report_single(res)
         elif action == "output":
-            print_output(id, kwargs["json"], filter_tests, text_format)
+            status = client.get(f"/reports/{id}/status").text
+
+            if status == "Running":
+                wait(id, True)
+            else:
+                print_output(id, kwargs["json"], filter_tests, text_format)
         elif action == "files":
             download_files(id)
         elif action == "stop":
