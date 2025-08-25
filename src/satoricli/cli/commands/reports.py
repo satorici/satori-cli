@@ -22,7 +22,7 @@ from satoricli.cli.utils import (
 
 from .base import BaseCommand
 
-REPORT_VISIBILITY = Literal["public", "unlisted", "private"]
+REPORT_VISIBILITY = Literal["public-global", "public", "unlisted", "private"]
 RESULTS = Literal["pass", "fail", "unknown"]
 PLAYBOOK_TYPE = Literal["public", "private"]
 STATUS_FILTERS = Literal[
@@ -67,9 +67,11 @@ class ReportsCommand(BaseCommand):
             choices=get_args(RESULTS),
             help="Filter by report result",
         )
-        # export_parser.add_argument(
-        #     "--query", type=str, help="Filter by output string (support regex)"
-        # )
+        search_parser.add_argument(
+            "--query",
+            type=str,
+            help="Filter by output string (support regex)",
+        )
         search_parser.add_argument("--monitor", type=str, help="Filter by monitor ID")
         search_parser.add_argument(
             "--download", action="store_true", help="Download reports outputs to files"
@@ -77,9 +79,7 @@ class ReportsCommand(BaseCommand):
         search_parser.add_argument("--playbook", type=str, help="Filter by playbook")
         search_parser.add_argument("--force", action="store_true", help="Force delete")
         search_parser.add_argument(
-            "--status",
-            choices=get_args(STATUS_FILTERS),
-            help="Filter by status"
+            "--status", choices=get_args(STATUS_FILTERS), help="Filter by status"
         )
 
     def __call__(
@@ -93,7 +93,7 @@ class ReportsCommand(BaseCommand):
         playbook_type: Optional[PLAYBOOK_TYPE] = None,
         report_visibility: Optional[REPORT_VISIBILITY] = None,
         result: Optional[RESULTS] = None,
-        # query: Optional[str] = None,
+        query: Optional[str] = None,
         monitor: Optional[str] = None,
         download: bool = False,
         playbook: Optional[str] = None,
@@ -104,9 +104,11 @@ class ReportsCommand(BaseCommand):
         if action in ("delete", "search"):
             params = {
                 "playbook_type": capitalize(playbook_type),
-                "report_visibility": capitalize(report_visibility),
+                "report_visibility": "Public-Global"
+                if report_visibility == "public-global"
+                else capitalize(report_visibility),
                 "result": capitalize(result),
-                # "query": query,
+                "query": query,
                 "limit": 10,
                 "page": 1,
                 "monitor": monitor,
@@ -224,6 +226,7 @@ class ReportsCommand(BaseCommand):
             else:
                 console.print("Failed to delete reports")
                 return 1
+        return 0
 
     @staticmethod
     def print_table(reports: list) -> None:
