@@ -210,14 +210,15 @@ class ReportsCommand(BaseCommand):
                 )
                 params["limit"] = 1
                 res = client.get("/reports/search", params=params).json()
+                if not res["total"]:
+                    console.print("No reports found, nothing to delete")
+                    return 0
                 console.print(f"Total reports found: {res['total']}")
                 answer = console.input("Do you want to delete these reports? (y/N): ")
                 if answer.lower() != "y":
                     console.print("Action cancelled")
                     return 0
 
-            # res = client.delete("/reports/search", params=params).json()
-            # console.print(res)
             console.print("Deleting reports...")
             res = client.delete("/reports", params=params)
             if res.is_success:
