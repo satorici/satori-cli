@@ -40,10 +40,14 @@ def configure_client(
     client.headers.update(
         {
             "Authorization": f"Bearer {token}",
-            "Satori-Team": team or default_team or "Private",
             "user-agent": f"satori-cli/{VERSION}",
-        }
+        },
     )
+
+    # If both team and default_team are provided, prefer the CLI argument
+    selected_team = team or default_team
+    if selected_team:
+        client.headers["Satori-Team"] = selected_team
 
     if host:
         client.base_url = host
