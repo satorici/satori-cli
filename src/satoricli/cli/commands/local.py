@@ -104,6 +104,15 @@ def execute_functions(original: str, function: str, param: str) -> str:
         return original
 
 
+def timeout_type(arg: str):
+    timeout = int(arg)
+
+    if timeout < 1:
+        raise ValueError("Timeout must be greater than 0")
+
+    return timeout
+
+
 class LocalCommand(BaseCommand):
     name = "local"
 
@@ -120,6 +129,7 @@ class LocalCommand(BaseCommand):
         parser.add_argument("--report", action="store_true")
         parser.add_argument("--output", action="store_true")
         parser.add_argument("-s", "--sync", action="store_true", help="Summary")
+        parser.add_argument("--timeout", type=timeout_type)
         parser.add_argument("--name", type=str)
         parser.add_argument("--save-report", type=str, default=None)
         parser.add_argument("--save-output", type=str, default=None)
@@ -153,6 +163,7 @@ class LocalCommand(BaseCommand):
         report: bool,
         output: bool,
         sync: bool,
+        timeout: Optional[int],
         name: str,
         team: str,
         save_report: Union[str, bool, None],
@@ -246,14 +257,27 @@ class LocalCommand(BaseCommand):
             os.chdir(workdir)
             task = progress.add_task("Starting execution")
             start_time = time.monotonic()
+            deadline = start_time + timeout if timeout is not None else None
 
             headers = {"Authorization": "Bearer " + local_run["token"]}
 
             for line in s.iter_lines():
+                if deadline and time.monotonic() > deadline:
+                    break
+
                 message: dict = json.loads(line)
                 progress.update(task, description="Running [b]" + message["path"])
                 args = replace_variables(message["value"], message["testcase"])
-                out = run(args, message.get("settings", {}).get("setCommandTimeout"))
+                command_timeout = message.get("settings", {}).get("setCommandTimeout")
+
+                if deadline:
+                    command_timeout = (
+                        min(deadline - time.monotonic(), command_timeout)
+                        if command_timeout is not None
+                        else deadline - time.monotonic()
+                    )
+
+                out = run(args, command_timeout)
                 output_dict = asdict(out)
                 output_dict["stdout"] = output_to_string(out.stdout)
                 output_dict["stderr"] = output_to_string(out.stderr)
