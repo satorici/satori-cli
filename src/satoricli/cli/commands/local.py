@@ -40,6 +40,27 @@ FUNCTIONS_RE = re.compile(r"(read|trim|strip)\((.+)\)")
 FUNCTIONS_SUB_RE = re.compile(r"(.+)\${{(.+)}}(.+)?")
 
 
+def rebuild_arguments() -> str:
+    """Rebuild original console arguments.
+
+    Returns:
+        str: The rebuilt arguments.
+
+    """
+    args = sys.argv[1:]
+    new_args = []
+    input_data_regex = re.compile(r"\S+\=.+")
+    data_regex = re.compile(r"(--data(-file)?\=?)([^\-]+)")
+    for arg in args:
+        if input_data_regex.match(arg):
+            new_args.append(f'"{arg}"')
+        elif data_regex.match(arg):
+            new_args.append(data_regex.sub("\\1'\\3'", arg))
+        else:
+            new_args.append(arg)
+    return " ".join(new_args)
+
+
 def new_local_run(
     team: str,
     bundle=None,
@@ -48,11 +69,12 @@ def new_local_run(
     name: Optional[str] = None,
     visibility: Optional[VISIBILITY_VALUES] = None,
 ) -> dict:
-    """
-    Create a new local run.
+    """Create a new local run.
 
     Returns:
-        dict: The response from the API. {"report_id":"<id>","recipe":"<url>","token":"Bearer <token>"}
+        dict: The response from the API.
+        {"report_id":"<id>","recipe":"<url>","token":"Bearer <token>"}
+
     """
     return client.post(
         "/runs/local",
@@ -61,7 +83,7 @@ def new_local_run(
             "playbook_uri": playbook_uri,
             "name": name,
             "team": team,
-            "run_params": " ".join(sys.argv[1:]),
+            "run_params": rebuild_arguments(),
             "visibility": visibility.capitalize() if visibility else None,
         },
         files={"bundle": bundle} if bundle else {"": ""},
@@ -98,8 +120,10 @@ def execute_functions(original: str, function: str, param: str) -> str:
         safe_param = shlex.quote(param)
         original = re.sub(r"do\s*\n", "do ", original)
         original = re.sub(r"\n\s*", ";", original)
-        original = original.replace("'", "\"")
-        return FUNCTIONS_SUB_RE.sub(f"cat {safe_param} | xargs -IX bash -c '\\1X\\3'", original)
+        original = original.replace("'", '"')
+        return FUNCTIONS_SUB_RE.sub(
+            f"cat {safe_param} | xargs -IX bash -c '\\1X\\3'", original
+        )
     else:
         return original
 

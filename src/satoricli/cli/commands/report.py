@@ -1,6 +1,6 @@
 import re
 from argparse import ArgumentParser
-from typing import Literal
+from typing import Literal, get_args
 
 from rich.syntax import Syntax
 from rich.table import Table
@@ -23,6 +23,16 @@ from satoricli.cli.utils import (
 from .base import BaseCommand
 
 VISIBILITY_VALUES = ("public", "private", "unlisted")
+ACTIONS = Literal[
+    "show",
+    "output",
+    "stop",
+    "files",
+    "delete",
+    "status",
+    "set-team",
+    "visibility",
+]
 
 
 class ReportCommand(BaseCommand):
@@ -33,16 +43,7 @@ class ReportCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=(
-                "show",
-                "output",
-                "stop",
-                "files",
-                "delete",
-                "status",
-                "set-team",
-                "visibility",
-            ),
+            choices=get_args(ACTIONS),
             nargs="?",
             default="show",
             help="action to perform",
@@ -66,9 +67,7 @@ class ReportCommand(BaseCommand):
     def __call__(
         self,
         id: str,
-        action: Literal[
-            "show", "output", "stop", "files", "delete", "set-team", "visibility"
-        ],
+        action: ACTIONS,
         action2: str,
         filter_tests: list,
         text_format: Literal["plain", "md"],
@@ -113,15 +112,17 @@ class ReportCommand(BaseCommand):
                 f"/reports/{id}/team", params={"team_name": action2}
             ).json()
             autoformat(res)
+        return 0
 
     @staticmethod
-    def print_report_list(report_list: list):
-        """Print reports list as a table
+    def print_report_list(report_list: list) -> None:
+        """Print reports list as a table.
 
         Parameters
         ----------
         report_list : list
             Reports list
+
         """
         for report in report_list:
             table = Table(
@@ -184,7 +185,7 @@ class ReportCommand(BaseCommand):
 
     @staticmethod
     def print_report_single(report: dict):
-        """Print a single report as a table
+        """Print a single report as a table.
 
         Parameters
         ----------
