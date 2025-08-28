@@ -265,7 +265,7 @@ class ReportCommand(BaseCommand):
 
     @staticmethod
     def print_report_summary(report_data: list, table: Table):
-        """Print the json content of a report
+        """Print the json content of a report.
 
         Parameters
         ----------
@@ -314,7 +314,7 @@ class ReportCommand(BaseCommand):
 
     @staticmethod
     def print_report_asrt(report_id: str, json_out: bool):
-        """Fetch the report and print the report summary
+        """Fetch the report and print the report summary.
 
         Parameters
         ----------
@@ -337,6 +337,12 @@ class ReportCommand(BaseCommand):
                     [["Result", report_data["result"]]],
                     table,
                 )
+
+                # Add the parameters if they exist
+                params = get_command_params(report_data["run_params"])
+                if params:
+                    add_table_row([["Parameters", params]], table)
+
                 ReportCommand.print_report_summary(report_data["report"], table)
                 console.print(table)
         elif report_data["status"] == "Timeout":
