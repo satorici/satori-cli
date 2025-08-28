@@ -398,7 +398,6 @@ def format_outputs(
     outputs: list,
     text_format: Literal["plain", "md"] = "plain",
 ) -> None:
-    
     # If there is only one output and the output has only one element, print it directly
     if len(outputs) == 1 and len(outputs[0]["output"]) == 1:
         res = outputs[0]["output"]
@@ -768,10 +767,29 @@ def execution_time(seconds: Optional[float]) -> str:
 
 
 def get_command_params(command: Optional[str]) -> Optional[str]:
+    """Get the parameters from the command.
+
+    Args:
+        command: Optional[str]
+            The command to parse.
+
+    Returns:
+        The parameters from the command.
+
+    """
     if command is None:
         return None
-    regex = re.compile(r"(-d|--data\=?)\s*[\"']?(\S+\=(?!\[REDACTED\])([^\"']+))")
-    res = regex.findall(command)
+    # Find all parameters in the command, ignore REDACTED
+    # match with: satori -d REPO=satori-ci/test-repo
+    non_quoted_regex = re.compile(
+        r"(-d|--data\=?)\s*(?![\"'])((\S+\=(?!\[REDACTED\])(\S+)))",
+    )
+    # match with: satori -d "REPO=satori-ci/test-repo"
+    quoted_regex = re.compile(
+        r"(-d|--data\=?)\s*[\"']((\S+\=(?!\[REDACTED\])([^\"']+)))",
+    )
+    res = non_quoted_regex.findall(command)
+    res += quoted_regex.findall(command)
     params = [x[1] for x in res]
     return " ".join(params)
 
