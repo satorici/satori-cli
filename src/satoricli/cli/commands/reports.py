@@ -158,9 +158,10 @@ class ReportsCommand(BaseCommand):
                 params["limit"] = limit
                 params["page"] = page
                 res = client.get("/reports/search", params=params).json()
-                for report in res["rows"]:
-                    console.rule(f"Report: {report['id']}")
-                    console.print(report["output"])
+                self.print_table(res["rows"])
+                console.print(
+                    f"Page {page} of {ceil(res['total'] / limit)} | Total: {res['total']}"
+                )
                 return 0
 
             # Save response
@@ -254,13 +255,17 @@ class ReportsCommand(BaseCommand):
                     "id": report["id"],
                     # "team": report.get("team"),
                     "params": get_command_params(report.get("run_params")),
-                    "playbook_path": report.get("playbook_path"),
+                    "playbook_path": report.get(
+                        "playbook_path", report.get("playbook_uri")
+                    ),
                     "playbook_name": report.get("playbook_name"),
                     "execution": report.get("execution"),
                     "status": report.get("status"),
                     "result": report.get("result"),
                     # "visibility": report.get("visibility"),
-                    "runtime": execution_time(report.get("execution_time")),
+                    "runtime": execution_time(
+                        report.get("execution_time", report.get("run_time"))
+                    ),
                     # "user": report.get("user"),
                     "date": date_formatter(report.get("date")),
                 }
