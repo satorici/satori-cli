@@ -1,3 +1,4 @@
+import datetime
 import io
 import itertools
 import os
@@ -81,6 +82,18 @@ class ReportsCommand(BaseCommand):
         search_parser.add_argument(
             "--status", choices=get_args(STATUS_FILTERS), help="Filter by status"
         )
+        search_parser.add_argument(
+            "--from",
+            type=datetime.datetime.fromisoformat,
+            help="Filter by from date",
+            dest="from_date",
+        )
+        search_parser.add_argument(
+            "--to",
+            type=datetime.datetime.fromisoformat,
+            help="Filter by to date",
+            dest="to_date",
+        )
 
     def __call__(
         self,
@@ -99,6 +112,8 @@ class ReportsCommand(BaseCommand):
         playbook: Optional[str] = None,
         force: bool = False,
         status: Optional[STATUS_FILTERS] = None,
+        from_date: Optional[datetime.datetime] = None,
+        to_date: Optional[datetime.datetime] = None,
         **kwargs,
     ):
         if action in ("delete", "search"):
@@ -114,6 +129,8 @@ class ReportsCommand(BaseCommand):
                 "monitor": monitor,
                 "playbook": playbook,
                 "status": capitalize(status),
+                "from_date": from_date,
+                "to_date": to_date,
             }
 
             # Remove None values
