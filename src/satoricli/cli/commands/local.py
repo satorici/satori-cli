@@ -285,8 +285,11 @@ class LocalCommand(BaseCommand):
 
             headers = {"Authorization": "Bearer " + local_run["token"]}
 
+            timed_out = False
+
             for line in s.iter_lines():
                 if deadline and time.monotonic() > deadline:
+                    timed_out = True
                     break
 
                 message: dict = json.loads(line)
@@ -319,10 +322,11 @@ class LocalCommand(BaseCommand):
                     "run_time": time.monotonic() - start_time,
                     "save_report": save_report,
                     "save_output": save_output,
+                    "timed_out": timed_out,
                 },
                 headers=headers,
             )
-            progress.update(task, description="Completed")
+            progress.update(task, description="Timeout" if timed_out else "Completed")
 
         if sync:
             print_summary(report_id, kwargs["json"])
