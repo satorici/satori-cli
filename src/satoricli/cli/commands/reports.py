@@ -94,6 +94,11 @@ class ReportsCommand(BaseCommand):
             help="Filter by to date",
             dest="to_date",
         )
+        search_parser.add_argument(
+            "--severity",
+            type=int,
+            help="Filter by output severity",
+        )
 
     def __call__(
         self,
@@ -114,6 +119,7 @@ class ReportsCommand(BaseCommand):
         status: Optional[STATUS_FILTERS] = None,
         from_date: Optional[datetime.datetime] = None,
         to_date: Optional[datetime.datetime] = None,
+        severity: Optional[int] = None,
         **kwargs,
     ):
         if action in ("delete", "search"):
@@ -131,6 +137,7 @@ class ReportsCommand(BaseCommand):
                 "status": capitalize(status),
                 "from_date": from_date,
                 "to_date": to_date,
+                "severity": severity,
             }
 
             # Remove None values

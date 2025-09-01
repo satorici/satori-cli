@@ -286,7 +286,7 @@ class RunCommand(BaseCommand):
                 "team": team,
                 "run_params": " ".join(sys.argv[1:]),
                 "run_last": True,
-            }            
+            }
             info = client.post("/scan", json=params).json()
             if sync or output or report:
                 return ScanCommand.scan_sync(info["id"], kwargs, output, report)

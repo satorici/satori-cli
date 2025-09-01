@@ -93,15 +93,15 @@ class ReportCommand(BaseCommand):
             autoformat(res, jsonfmt=kwargs["json"])
         elif action == "delete":
             client.delete(f"/reports/{id}")
-            print("Report deleted")
+            console.print("Report deleted")
         elif action == "visibility":
             if not action2 or action2 not in VISIBILITY_VALUES:
                 error_console.print(
-                    f"Allowed values for visibility: {VISIBILITY_VALUES}"
+                    f"Allowed values for visibility: {VISIBILITY_VALUES}",
                 )
                 return 1
             res = client.patch(
-                f"/reports/{id}", json={"visibility": action2.capitalize()}
+                f"/reports/{id}", json={"visibility": action2.capitalize()},
             ).json()
             autoformat(res)
         elif action == "status":
@@ -109,7 +109,7 @@ class ReportCommand(BaseCommand):
             autoformat(res)
         elif action == "set-team":
             res = client.patch(
-                f"/reports/{id}/team", params={"team_name": action2}
+                f"/reports/{id}/team", params={"team_name": action2},
             ).json()
             autoformat(res)
         return 0
