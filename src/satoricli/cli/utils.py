@@ -15,6 +15,7 @@ from typing import Any, Iterable, Literal, Optional, Union
 
 import httpx
 import yaml
+from httpx import HTTPError
 from rich import print_json
 from rich.console import Console
 from rich.highlighter import RegexHighlighter
@@ -32,7 +33,7 @@ from satorici.validator.exceptions import (
 )
 from satorici.validator.warnings import MissingAssertionsWarning
 
-from satoricli.api import client, disable_error_raise
+from satoricli.api import client
 from satoricli.bundler import get_local_files
 from satoricli.validations import get_parameters, has_executions
 
@@ -512,26 +513,37 @@ def wait(
         printed = []
 
         while status not in ("Completed", "Stopped", "Timeout"):
-            with disable_error_raise() as c:
-                res = c.get(f"/reports/{report_id}/status")
-                if live:
-                    out = c.get(f"/outputs/{report_id}").json()
-                    for o in out:
-                        out_id = o["path"] + "|" + o["original"]
-                        outputs = (
-                            run_test_filter(filter_tests, [o]) if filter_tests else [o]
-                        )
-                        if out_id not in printed and outputs:
-                            console.print()
-                            format_outputs(outputs, text_format)
-                            printed.append(out_id)
-
-            if res.is_success:
+            try:
+                res = client.get(f"/reports/{report_id}/status")
                 status = res.text
-            elif res.is_client_error:
-                status = "Unknown"
-            else:
-                return
+            except httpx.TransportError:
+                progress.update(task, description="Reconnecting")
+                continue
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    progress.update(task, description="Not found")
+                    return
+
+                continue
+
+            if live:
+                output = None
+
+                while output is None:
+                    try:
+                        output = client.get(f"/outputs/{report_id}").json()
+                    except HTTPError:
+                        continue
+
+                for o in output:
+                    out_id = o["path"] + "|" + o["original"]
+                    outputs = (
+                        run_test_filter(filter_tests, [o]) if filter_tests else [o]
+                    )
+                    if out_id not in printed and outputs:
+                        console.print()
+                        format_outputs(outputs, text_format)
+                        printed.append(out_id)
 
             progress.update(task, description=status)
             time.sleep(1)
