@@ -50,7 +50,12 @@ class ReportsCommand(BaseCommand):
         show_parser = subparser.add_parser("show")
         show_parser.add_argument("-f", "--filter")
 
-        search_parser = subparser.add_parser("search", aliases=["delete"])
+        search_parser = subparser.add_parser(
+            "search",
+            parents=[parser],
+            aliases=["delete"],
+            add_help=False,
+        )
         search_parser.add_argument("-n", "--name", help="Export folder name")
         search_parser.add_argument(
             "--playbook-type",
