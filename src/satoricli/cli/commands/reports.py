@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 from math import ceil
 from typing import Literal, Optional, get_args
 
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn
 
 from satoricli.api import client, disable_error_raise
 from satoricli.cli.utils import (
@@ -181,30 +181,37 @@ class ReportsCommand(BaseCommand):
             else:
                 console.print(
                     f"[warning]Directory already exists: [b]{extract_dir}[/]"
-                    "\nRemove it manually to avoid conflicts"
+                    "\nRemove it manually to avoid conflicts",
                 )
+
+            res = client.get("/reports/search", params=params).json()
+            if not res["total"]:
+                console.print("No reports found, nothing to export")
+                return 0
+
+            console.print(
+                f"[bold cyan]Downloading {res['total']} reports...[/bold cyan]"
+            )
 
             with Progress(
                 SpinnerColumn("dots12"),
-                TextColumn(
-                    "[progress.description]Outputs downloaded: {task.description}"
-                ),
+                BarColumn(),
+                TaskProgressColumn(),
                 console=error_console,
             ) as progress:
-                task = progress.add_task(" - ")
+                task = progress.add_task("Fetching reports...", total=res["total"])
 
                 for i in itertools.count(start=1):
-                    progress.update(task, description=f"{(i - 1) * 10}")
+                    progress.update(task, advance=(i - 1) * 10)
                     params["page"] = i
                     with disable_error_raise() as c:
                         res = c.get("/outputs/export", params=params)
 
                     if res.is_error:
                         progress.stop()
-                        # List all extracted files
-                        for root, _, files in os.walk(extract_dir):
-                            for file in files:
-                                console.print(os.path.join(root, file))
+                        console.print(
+                            "[bold cyan]Reports downloaded successfully[/bold cyan]",
+                        )
                         return 0
 
                     # Use io.BytesIO to treat the bytes as a file-like object
