@@ -27,7 +27,12 @@ REPORT_VISIBILITY = Literal["public-global", "public", "unlisted", "private"]
 RESULTS = Literal["pass", "fail", "unknown"]
 PLAYBOOK_TYPE = Literal["public", "private"]
 STATUS_FILTERS = Literal[
-    "provisioning", "pending", "running", "completed", "stopped", "timeout"
+    "provisioning",
+    "pending",
+    "running",
+    "completed",
+    "stopped",
+    "timeout",
 ]
 
 
@@ -65,7 +70,7 @@ class ReportsCommand(BaseCommand):
             help="Filter by playbook type",
         )
         search_parser.add_argument(
-            "--report-visibility",
+            "--visibility",
             choices=get_args(REPORT_VISIBILITY),
             help="Filter by report visibility",
         )
