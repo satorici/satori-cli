@@ -35,12 +35,16 @@ def capitalize(s: Optional[str]) -> Optional[str]:
     return s.capitalize() if s else s
 
 
+def add_pagination_args(parser: ArgumentParser) -> None:
+    """Add common pagination arguments to a parser."""
+    parser.add_argument("-p", "--page", type=int, default=1)
+    parser.add_argument("-l", "--limit", type=int, default=20)
+
+
 class ReportsCommand(BaseCommand):
     name = "reports"
 
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("-p", "--page", type=int, default=1)
-        parser.add_argument("-l", "--limit", type=int, default=20)
         parser.add_argument(
             "--public", action="store_true", help="Fetch public reports"
         )
@@ -48,14 +52,11 @@ class ReportsCommand(BaseCommand):
         subparser = parser.add_subparsers(dest="action")
 
         show_parser = subparser.add_parser("show")
+        add_pagination_args(show_parser)
         show_parser.add_argument("-f", "--filter")
 
-        search_parser = subparser.add_parser(
-            "search",
-            parents=[parser],
-            aliases=["delete"],
-            add_help=False,
-        )
+        search_parser = subparser.add_parser("search", aliases=["delete"])
+        add_pagination_args(search_parser)
         search_parser.add_argument("-n", "--name", help="Export folder name")
         search_parser.add_argument(
             "--playbook-type",
