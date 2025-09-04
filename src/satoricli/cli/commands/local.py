@@ -12,6 +12,7 @@ from typing import Literal, Optional, Union, get_args
 
 import httpx
 import yaml
+from flatdict import FlatDict
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from satori_runner import run
 
@@ -296,6 +297,9 @@ class LocalCommand(BaseCommand):
                 progress.update(task, description="Running [b]" + message["path"])
                 args = replace_variables(message["value"], message["testcase"])
                 command_timeout = message.get("settings", {}).get("setCommandTimeout")
+                flat_config = FlatDict(config)
+                parent_path = ":".join(message["path"].split(":")[:-1])
+                severity: Optional[int] = flat_config.get(f"{parent_path}:setSeverity")
 
                 if deadline:
                     command_timeout = (
@@ -309,6 +313,7 @@ class LocalCommand(BaseCommand):
                 output_dict["stdout"] = output_to_string(out.stdout)
                 output_dict["stderr"] = output_to_string(out.stderr)
                 output_dict["os_error"] = output_to_string(out.os_error)
+                output_dict["severity"] = severity
                 result = {
                     "path": message.pop("path"),
                     **output_dict,
