@@ -120,7 +120,7 @@ class ReportsCommand(BaseCommand):
         public: bool = False,
         name: Optional[str] = None,
         playbook_type: Optional[PLAYBOOK_TYPE] = None,
-        report_visibility: Optional[REPORT_VISIBILITY] = None,
+        visibility: Optional[REPORT_VISIBILITY] = None,
         result: Optional[RESULTS] = None,
         query: Optional[str] = None,
         monitor: Optional[str] = None,
@@ -137,8 +137,8 @@ class ReportsCommand(BaseCommand):
             params = {
                 "playbook_type": capitalize(playbook_type),
                 "report_visibility": "Public-Global"
-                if report_visibility == "public-global"
-                else capitalize(report_visibility),
+                if visibility == "public-global"
+                else capitalize(visibility),
                 "result": capitalize(result),
                 "query": query,
                 "limit": 10,
