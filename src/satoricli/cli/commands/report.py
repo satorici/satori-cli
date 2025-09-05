@@ -101,7 +101,8 @@ class ReportCommand(BaseCommand):
                 )
                 return 1
             res = client.patch(
-                f"/reports/{id}", json={"visibility": action2.capitalize()},
+                f"/reports/{id}",
+                json={"visibility": action2.capitalize()},
             ).json()
             autoformat(res)
         elif action == "status":
@@ -109,7 +110,8 @@ class ReportCommand(BaseCommand):
             autoformat(res)
         elif action == "set-team":
             res = client.patch(
-                f"/reports/{id}/team", params={"team_name": action2},
+                f"/reports/{id}/team",
+                params={"team_name": action2},
             ).json()
             autoformat(res)
         return 0
@@ -217,6 +219,11 @@ class ReportCommand(BaseCommand):
             ],
             table,
         )
+        if report["run_params"]:
+            add_table_row(
+                [["Command", "[green1]satori " + report["run_params"]]],
+                table,
+            )
 
         if report.get("repo"):
             # Add the repo data in another row if exist
