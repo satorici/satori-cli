@@ -297,7 +297,7 @@ class LocalCommand(BaseCommand):
                 progress.update(task, description="Running [b]" + message["path"])
                 args = replace_variables(message["value"], message["testcase"])
                 command_timeout = message.get("settings", {}).get("setCommandTimeout")
-                flat_config = FlatDict(config)
+                flat_config = FlatDict(config).as_dict()
                 parent_path = ":".join(message["path"].split(":")[:-1])
                 severity: Optional[int] = flat_config.get(f"{parent_path}:setSeverity")
 
