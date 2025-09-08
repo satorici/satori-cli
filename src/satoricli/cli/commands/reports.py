@@ -203,6 +203,8 @@ class ReportsCommand(BaseCommand):
             console.print(
                 f"[bold cyan]Downloading {res['total']} reports...[/bold cyan]"
             )
+            pages = ceil(res["total"] / limit)
+            advance = 100 / pages
 
             with Progress(
                 SpinnerColumn("dots12"),
@@ -212,9 +214,9 @@ class ReportsCommand(BaseCommand):
             ) as progress:
                 task = progress.add_task("Fetching reports...", total=res["total"])
 
-                for i in itertools.count(start=1):
-                    progress.update(task, advance=(i - 1) * 10)
-                    params["page"] = i
+                for page_number in itertools.count(start=1):
+                    progress.update(task, advance=advance)
+                    params["page"] = page_number
                     with disable_error_raise() as c:
                         res = c.get("/outputs/export", params=params)
 
