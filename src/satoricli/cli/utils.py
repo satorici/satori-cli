@@ -654,7 +654,7 @@ def validate_config(playbook: Path, params: set):
             validate_playbook(config)
 
         for warning in w:
-            if warning.category == MissingAssertionsWarning:
+            if warning.category == MissingAssertionsWarning and "import" not in config:
                 error_console.print("[warning]WARNING:[/] No asserts were defined")
     except TypeError:
         error_console.print("Error: playbook must be a mapping type")
