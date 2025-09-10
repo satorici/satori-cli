@@ -104,7 +104,7 @@ test:
       - satori reports search | tail
 
     download:
-      - satori reports search --download
+      - satori reports search --visibility public --download
 
     # list the pending reports
     filter:

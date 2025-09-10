@@ -331,6 +331,7 @@ class LocalCommand(BaseCommand):
                 },
                 headers=headers,
             )
+            client.patch("/reports/severities", headers=headers)
             progress.update(task, description="Timeout" if timed_out else "Completed")
 
         if sync:

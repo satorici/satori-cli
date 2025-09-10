@@ -107,6 +107,8 @@ class ReportsCommand(BaseCommand):
         )
         search_parser.add_argument(
             "--severity",
+            action="append",
+            default=None,
             type=int,
             help="Filter by output severity",
         )
@@ -130,7 +132,7 @@ class ReportsCommand(BaseCommand):
         status: Optional[STATUS_FILTERS] = None,
         from_date: Optional[datetime.datetime] = None,
         to_date: Optional[datetime.datetime] = None,
-        severity: Optional[int] = None,
+        severity: Optional[list[int]] = None,
         **kwargs,
     ):
         if action in ("delete", "search"):
