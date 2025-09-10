@@ -109,7 +109,7 @@ class ReportsCommand(BaseCommand):
             "--severity",
             action="append",
             default=None,
-            type=int,
+            type=str,
             help="Filter by output severity",
         )
 
