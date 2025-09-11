@@ -288,12 +288,20 @@ class LocalCommand(BaseCommand):
 
             timed_out = False
 
+            # convert "test.echo" to "test:echo"
+            tests = [x.replace(".", ":") for x in filter_tests]
+
             for line in s.iter_lines():
                 if deadline and time.monotonic() > deadline:
                     timed_out = True
                     break
 
                 message: dict = json.loads(line)
+
+                # If filter_tests is provided, skip the test if it doesn't match the filter
+                if tests and message["path"] not in tests:
+                    continue
+
                 progress.update(task, description="Running [b]" + message["path"])
                 args = replace_variables(message["value"], message["testcase"])
                 command_timeout = message.get("settings", {}).get("setCommandTimeout")
