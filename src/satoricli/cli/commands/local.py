@@ -69,6 +69,7 @@ def new_local_run(
     secrets: Optional[dict] = None,
     name: Optional[str] = None,
     visibility: Optional[VISIBILITY_VALUES] = None,
+    redacted: list[str] = [],
 ) -> dict:
     """Create a new local run.
 
@@ -86,6 +87,7 @@ def new_local_run(
             "team": team,
             "run_params": rebuild_arguments(),
             "visibility": visibility.capitalize() if visibility else None,
+            "redacted": redacted,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -178,6 +180,13 @@ class LocalCommand(BaseCommand):
             default="plain",
             choices=("plain", "md"),
         )
+        parser.add_argument(
+            "--redacted",
+            dest="redacted",
+            help="Redacted parameters",
+            action="append",
+            default=[],
+        )
 
     def __call__(
         self,
@@ -196,6 +205,7 @@ class LocalCommand(BaseCommand):
         visibility: Optional[VISIBILITY_VALUES],
         filter_tests: list,
         text_format: Literal["plain", "md"],
+        redacted: list[str],
         **kwargs,
     ):
         for file in data_file:
@@ -246,6 +256,7 @@ class LocalCommand(BaseCommand):
             name=name,
             visibility=visibility,
             playbook_uri=playbook or target,
+            redacted=redacted,
         )
 
         save_output_setting = True

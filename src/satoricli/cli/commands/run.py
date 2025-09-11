@@ -70,6 +70,7 @@ def new_run(
     params: Union[str, None] = None,
     visibility: Optional[VISIBILITY_VALUES] = None,
     clone: Optional[str] = None,
+    redacted: list[str] = [],
 ) -> list[str]:
     data = client.post(
         "/runs",
@@ -85,6 +86,7 @@ def new_run(
             "run_params": " ".join(sys.argv[1:]),
             "visibility": visibility.capitalize() if visibility else None,
             "clone": clone,
+            "redacted": redacted,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -239,6 +241,13 @@ class RunCommand(BaseCommand):
             default="plain",
             choices=("plain", "md"),
         )
+        parser.add_argument(
+            "--redacted",
+            dest="redacted",
+            help="Redacted parameters",
+            action="append",
+            default=[],
+        )
 
     def __call__(
         self,
@@ -258,6 +267,7 @@ class RunCommand(BaseCommand):
         text_format: Literal["plain", "md"],
         visibility: Optional[VISIBILITY_VALUES] = None,
         clone: Optional[str] = None,
+        redacted: list[str] = [],
         **kwargs,
     ):
         for file in data_file:
@@ -277,7 +287,7 @@ class RunCommand(BaseCommand):
         cli_settings = get_cli_settings(kwargs)
         is_monitor = bool(cli_settings.get("rate") or cli_settings.get("cron"))
 
-        if path == "." and "REPO" in parsed_data:
+        if path == "." and parsed_data and "REPO" in parsed_data:
             params = {
                 "url": parsed_data["REPO"],
                 "data": json.dumps(parsed_data),
@@ -318,6 +328,7 @@ class RunCommand(BaseCommand):
                 visibility=visibility,
                 clone=clone,
                 packet=include_files(include_list),
+                redacted=redacted,
             )
 
             is_monitor = False
@@ -358,6 +369,7 @@ class RunCommand(BaseCommand):
                     visibility=visibility,
                     clone=clone,
                     packet=include_files(include_list),
+                    redacted=redacted,
                 )
         elif (base := Path(path)).is_dir():
             settings = {}
@@ -427,6 +439,7 @@ class RunCommand(BaseCommand):
                     save_output=save_output,
                     visibility=visibility,
                     clone=clone,
+                    redacted=redacted,
                 )
         else:
             error_console.print("ERROR: Invalid PATH")
