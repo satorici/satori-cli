@@ -63,6 +63,9 @@ class ReportCommand(BaseCommand):
             default="plain",
             choices=("plain", "md"),
         )
+        parser.add_argument(
+            "--unredacted", action="store_true", help="Unredacted output"
+        )
 
     def __call__(
         self,
@@ -71,10 +74,11 @@ class ReportCommand(BaseCommand):
         action2: str,
         filter_tests: list,
         text_format: Literal["plain", "md"],
+        unredacted: bool,
         **kwargs,
     ):
         if action == "show":
-            res = client.get(f"/reports/{id}").json()
+            res = client.get(f"/reports/{id}", params={"unredacted": unredacted}).json()
             if kwargs["json"]:
                 autoformat(res, jsonfmt=kwargs["json"])
             else:
@@ -85,7 +89,7 @@ class ReportCommand(BaseCommand):
             if status == "Running":
                 wait(id, True)
             else:
-                print_output(id, kwargs["json"], filter_tests, text_format)
+                print_output(id, kwargs["json"], filter_tests, text_format, unredacted)
         elif action == "files":
             download_files(id)
         elif action == "stop":

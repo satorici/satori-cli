@@ -568,8 +568,9 @@ def print_output(
     print_json: bool = False,
     filter_tests: Optional[list] = None,
     text_format: Literal["plain", "md"] = "plain",
+    unredacted: bool = False,
 ) -> None:
-    res = client.get(f"/outputs/{report_id}").json()
+    res = client.get(f"/outputs/{report_id}", params={"unredacted": unredacted}).json()
     if filter_tests:  # Display only selected tests
         res = run_test_filter(filter_tests, res)
     if print_json:
