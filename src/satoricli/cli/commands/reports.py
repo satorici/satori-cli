@@ -51,13 +51,15 @@ class ReportsCommand(BaseCommand):
 
     def register_args(self, parser: ArgumentParser):
         parser.add_argument(
-            "--public", action="store_true", help="Fetch public reports"
+            "--public",
+            action="store_true",
+            help="Fetch public reports",
         )
+        add_pagination_args(parser)
 
         subparser = parser.add_subparsers(dest="action")
 
         show_parser = subparser.add_parser("show")
-        add_pagination_args(show_parser)
         show_parser.add_argument("-f", "--filter")
 
         search_parser = subparser.add_parser("search", aliases=["delete"])
@@ -135,6 +137,7 @@ class ReportsCommand(BaseCommand):
         severity: Optional[list[int]] = None,
         **kwargs,
     ):
+        params = {}
         if action in ("delete", "search"):
             params = {
                 "playbook_type": capitalize(playbook_type),
