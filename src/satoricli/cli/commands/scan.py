@@ -4,12 +4,11 @@ import time
 from argparse import ArgumentParser
 from datetime import date
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal, Optional, get_args
 
 from satoricli.api import client
 from satoricli.cli.commands.report import ReportCommand
 from satoricli.cli.utils import (
-    VISIBILITY_VALUES,
     BootstrapTable,
     autoformat,
     autotable,
@@ -24,6 +23,7 @@ from ..arguments import date_args
 from .base import BaseCommand
 
 SCANID_REGEX = re.compile(r"s\w{15}")
+VISIBILITY_VALUES = Literal["public", "private", "unlisted"]
 
 
 class ScanCommand(BaseCommand):
@@ -65,6 +65,11 @@ class ScanCommand(BaseCommand):
         parser.add_argument("--playbook", help="Playbook url or file")
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
+        parser.add_argument(
+            "--visibility",
+            choices=get_args(VISIBILITY_VALUES),
+            default="private",
+        )
 
     def __call__(
         self,
@@ -94,6 +99,7 @@ class ScanCommand(BaseCommand):
         team: str,
         output: bool,
         report: bool,
+        visibility: VISIBILITY_VALUES = "private",
         **kwargs,
     ):
         if SCANID_REGEX.match(repository) and action == "new":
@@ -123,6 +129,7 @@ class ScanCommand(BaseCommand):
                     "team": team,
                     "run_params": " ".join(sys.argv[1:]),
                     "run_last": coverage == 0.0,
+                    "visibility": visibility.capitalize(),
                 },
             ).json()
             if sync or output or report:
@@ -176,6 +183,7 @@ class ScanCommand(BaseCommand):
                 f"/scan/{repository}", json={"visibility": action2.capitalize()}
             ).json()
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
+        return 0
 
     @staticmethod
     def scan_sync(
