@@ -299,7 +299,14 @@ class RunCommand(BaseCommand):
             }
             info = client.post("/scan", json=params).json()
             if sync or output or report:
-                return ScanCommand.scan_sync(info["id"], kwargs, output, report)
+                return ScanCommand.scan_sync(
+                    info["id"],
+                    kwargs,
+                    output,
+                    report,
+                    filter_tests,
+                    text_format,
+                )
             else:
                 while True:
                     res = client.get(f"/scan/{info['id']}/reports").json()

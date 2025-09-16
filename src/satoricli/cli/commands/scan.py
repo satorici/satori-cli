@@ -179,13 +179,18 @@ class ScanCommand(BaseCommand):
 
     @staticmethod
     def scan_sync(
-        scan_id: str, kwargs: dict, output: bool = False, report: bool = False
+        scan_id: str,
+        kwargs: dict,
+        output: bool = False,
+        report: bool = False,
+        filter_tests: Optional[list] = None,
+        text_format: Literal["plain", "md"] = "plain",
     ) -> None:
         while True:
             res = client.get(f"/scan/{scan_id}/reports").json()
             if res["rows"]:
                 for row in res["rows"]:
-                    wait(row["id"], output)
+                    wait(row["id"], output, filter_tests, text_format)
                     if report:
                         ReportCommand.print_report_asrt(row["id"], kwargs["json"])
                 break
