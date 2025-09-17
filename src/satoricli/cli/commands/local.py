@@ -12,13 +12,13 @@ from typing import Literal, Optional, Union, get_args
 
 import httpx
 import yaml
-from flatdict import FlatDict
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from satori_runner import run
 
 from satoricli.api import client
 from satoricli.bundler import make_bundle
 from satoricli.cli.commands.report import ReportCommand
+from satoricli.exceptions import SatoriRequestError
 from satoricli.validations import validate_parameters
 
 from ..utils import (
@@ -336,16 +336,26 @@ class LocalCommand(BaseCommand):
                 }
                 client.post("outputs/upload", json=result, headers=headers)
 
-            client.put(
-                "/runs/local/upload",
-                params={
-                    "run_time": time.monotonic() - start_time,
-                    "save_report": save_report,
-                    "save_output": save_output,
-                    "timed_out": timed_out,
-                },
-                headers=headers,
-            )
+            status_code = 409
+            while status_code == 409:
+                time.sleep(1)
+                try:
+                    res = client.put(
+                        "/runs/local/upload",
+                        params={
+                            "run_time": time.monotonic() - start_time,
+                            "save_report": save_report,
+                            "save_output": save_output,
+                            "timed_out": timed_out,
+                        },
+                        headers=headers,
+                        timeout=10,
+                    )
+                    status_code = res.status_code
+                except httpx.HTTPStatusError as e:
+                    status_code = e.response.status_code
+                except SatoriRequestError as e:
+                    status_code = e.status_code
             client.patch("/reports/severities", headers=headers)
             progress.update(task, description="Timeout" if timed_out else "Completed")
 
