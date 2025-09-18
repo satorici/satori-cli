@@ -349,7 +349,6 @@ class LocalCommand(BaseCommand):
                             "timed_out": timed_out,
                         },
                         headers=headers,
-                        timeout=10,
                     )
                     status_code = res.status_code
                 except httpx.HTTPStatusError as e:

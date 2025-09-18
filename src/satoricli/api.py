@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from importlib import metadata
 from typing import Optional
 
-from httpx import Client, Response
+from httpx import Client, Response, Timeout
 
 from .exceptions import SatoriRequestError
 
@@ -22,11 +22,12 @@ def raise_on_error(res: Response):
         raise SatoriRequestError(message, status_code=res.status_code)
 
 
+timeout = Timeout(60.0, connect=10.0)
 client = Client(
     base_url=HOST,
     follow_redirects=True,
     event_hooks={"response": [raise_on_error]},
-    timeout=60,
+    timeout=timeout,
 )
 
 
