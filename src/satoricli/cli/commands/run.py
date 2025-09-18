@@ -299,6 +299,14 @@ class RunCommand(BaseCommand):
                 "visibility": visibility.capitalize() if visibility else "Private",
             }
             info = client.post("/scan", json=params).json()
+            while True:
+                res = client.get(f"/scan/{info['id']}/reports").json()
+                if res["rows"]:
+                    report_id = res["rows"][0]["id"]
+                    console.print("Report ID:", report_id)
+                    console.print(f"Report: https://satori.ci/report/{report_id}")
+                    break
+                time.sleep(1)
             if sync or output or report:
                 return ScanCommand.scan_sync(
                     info["id"],
