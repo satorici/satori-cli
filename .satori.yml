@@ -34,6 +34,14 @@ test:
     set_team:
       - satori config default_team SatoriCI
 
+    # test setting width via config command
+    set_width:
+    - satori config width 160
+
+    # test that width was set correctly
+    check_width_set:
+    - satori width
+
   import_output:
     check_token:
       setOutput: test.token_saved.set_token

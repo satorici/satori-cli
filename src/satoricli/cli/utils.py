@@ -110,6 +110,50 @@ error_console = Console(
     highlighter=SatoriHighlighter(), theme=satori_theme, log_path=False, stderr=True
 )
 
+
+def configure_console_width(width: Optional[int] = None):
+    """Configure the width for both console instances.
+
+    Args:
+        width: Optional console width. If None, uses default behavior.
+    """
+    import sys
+    global console, error_console
+
+    if width is not None:
+        # Check if we're running in a non-interactive environment (CI, subprocess, etc.)
+        is_interactive = sys.stdout.isatty() and sys.stderr.isatty()
+
+        if is_interactive:
+            # In interactive mode, validate against actual terminal width
+            temp_console = Console()
+            actual_width = temp_console.width
+
+            if width > actual_width:
+                error_console.print(
+                    f"[warning]WARNING:[/] Configured width ({width}) is larger than terminal width ({actual_width})."
+                )
+                error_console.print(
+                    f"[warning]WARNING:[/] Using terminal width ({actual_width}) instead."
+                )
+                width = actual_width
+        # In non-interactive mode (CI/subprocess), use configured width without validation
+
+        console = Console(
+            highlighter=SatoriHighlighter(),
+            theme=satori_theme,
+            log_path=False,
+            record=True,
+            width=width
+        )
+        error_console = Console(
+            highlighter=SatoriHighlighter(),
+            theme=satori_theme,
+            log_path=False,
+            stderr=True,
+            width=width
+        )
+
 logging.basicConfig(
     level="CRITICAL",
     format="%(message)s",
@@ -407,7 +451,7 @@ def format_outputs(
             text = Markdown(text)
             console.print(text)
         else:
-            console.out(text, highlight=False)
+            console.print(text, highlight=False)
         return
 
     current_path = ""
@@ -442,12 +486,12 @@ def format_outputs(
                 text = Markdown(text)
                 console.print(text)
             else:
-                console.out(text, highlight=False)
+                console.print(text, highlight=False)
         if "stderr" in output_dict and output_dict["stderr"] is not None:
             console.print("[blue]Stderr:[/blue]")
-            console.out(output_dict["stderr"], highlight=False)
+            console.print(output_dict["stderr"], highlight=False)
         if "os_error" in output_dict and output_dict["os_error"] is not None:
-            console.out(output_dict["os_error"])
+            console.print(output_dict["os_error"], highlight=False)
         if "time" in output_dict:
             console.print("[blue]Runtime:[/blue]", execution_time(output_dict["time"]))
 
@@ -574,7 +618,7 @@ def print_output(
     if filter_tests:  # Display only selected tests
         res = run_test_filter(filter_tests, res)
     if print_json:
-        console.out(res, highlight=False)
+        console.print(res, highlight=False)
     else:
         format_outputs(res, text_format)
 

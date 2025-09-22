@@ -28,6 +28,7 @@ from .team import TeamCommand
 from .teams import TeamsCommand
 from .update import UpdateCommand
 from .shards import ShardsCommand
+from .width import WidthCommand
 
 VERSION = metadata.version("satori-ci")
 
@@ -54,7 +55,8 @@ class RootCommand(BaseCommand):
         LocalCommand,
         ScansCommand,
         ShardsCommand,
-        InstallCommand
+        InstallCommand,
+        WidthCommand
     )
     name = "satori"
     global_options = (profile_arg, json_arg, debug_arg, export_arg, team_arg, config_arg)

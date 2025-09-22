@@ -14,7 +14,7 @@ class ConfigCommand(BaseCommand):
         parser.add_argument(
             "key",
             metavar="KEY",
-            choices=("token", "host", "timeout", "default_team"),
+            choices=("token", "host", "timeout", "default_team", "width"),
             nargs="?",
         )
         parser.add_argument("value", metavar="VALUE", nargs="?")
@@ -28,8 +28,13 @@ class ConfigCommand(BaseCommand):
         config = load_config()
 
         if delete and key:
-            del config[kwargs["profile"]][key]
-            save_config(config)
+            profile_config = config.get(kwargs["profile"], {})
+            if key in profile_config:
+                del config[kwargs["profile"]][key]
+                save_config(config)
+                console.print(f"{key} deleted from profile {kwargs['profile']}")
+            else:
+                console.print(f"{key} not found in profile {kwargs['profile']}")
             return
         elif delete and key is None:
             console.print("Must provide a key to delete")
@@ -48,6 +53,20 @@ class ConfigCommand(BaseCommand):
                 )
             return 1
 
-        config.setdefault(kwargs["profile"], {})[key] = value
-        console.print(f"{key} updated for profile {kwargs['profile']}")
+        # Special validation for width
+        if key == "width":
+            try:
+                width_int = int(value)
+                if width_int <= 0:
+                    console.print("Error: width must be a positive integer")
+                    return 1
+                config.setdefault(kwargs["profile"], {})[key] = width_int
+                console.print(f"{key} updated to {width_int} for profile {kwargs['profile']}")
+            except ValueError:
+                console.print("Error: width must be a valid integer")
+                return 1
+        else:
+            config.setdefault(kwargs["profile"], {})[key] = value
+            console.print(f"{key} updated for profile {kwargs['profile']}")
+
         save_config(config)

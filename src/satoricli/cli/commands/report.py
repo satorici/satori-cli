@@ -132,7 +132,7 @@ class ReportCommand(BaseCommand):
         """
         for report in report_list:
             table = Table(
-                show_header=False, show_lines=True, highlight=True, expand=True
+                show_header=False, show_lines=True, highlight=True, expand=False
             )
             add_table_row(
                 [
@@ -198,7 +198,7 @@ class ReportCommand(BaseCommand):
         report : dict
             Report data
         """
-        table = Table(show_header=False, show_lines=True, highlight=True, expand=True)
+        table = Table(show_header=False, show_lines=True, highlight=True, expand=False)
         # Create a row with the basic info
         add_table_row(
             [
@@ -342,7 +342,7 @@ class ReportCommand(BaseCommand):
                 console.print_json(data=json_data)
             else:
                 table = Table(
-                    show_header=False, show_lines=True, highlight=True, expand=True
+                    show_header=False, show_lines=True, highlight=True, expand=False
                 )
                 add_table_row(
                     [["Result", report_data["result"]]],

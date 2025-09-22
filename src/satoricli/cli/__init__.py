@@ -14,7 +14,7 @@ from .commands.config import ConfigCommand
 from .commands.playbooks import PlaybooksCommand
 from .commands.root import RootCommand
 from .commands.shards import ShardsCommand
-from .utils import console, error_console, log, logging
+from .utils import configure_console_width, console, error_console, log, logging
 
 VERSION = metadata.version("satori-ci")
 
@@ -59,7 +59,12 @@ def main():
             sys.exit(1)
 
     try:
-        config = load_config(args.get("config")).get(args["profile"])
+        full_config = load_config(args.get("config"))
+        config = full_config.get(args["profile"])
+
+        # Configure console width if specified in profile config
+        if config and "width" in config:
+            configure_console_width(config["width"])
     except Exception as e:
         if not isinstance(args["func"], ConfigCommand) and not isinstance(args["func"], ShardsCommand):
             error_console.print(
@@ -71,7 +76,9 @@ def main():
 
     if config:
         try:
-            configure_client(**config)
+            # Filter out width before passing to configure_client
+            client_config = {k: v for k, v in config.items() if k != "width"}
+            configure_client(**client_config)
         except Exception as e:
             error_console.print(
                 f"[error]ERROR:[/] Cannot find your profile in your .satori_credentials.yml file. Is it corrupted?"
@@ -92,13 +99,14 @@ def main():
             error_console.print(
                 "\nGet your token at https://satori.ci/user-settings and configure it with:\n[b]satori config token TOKEN[/b]"
             )
-
         sys.exit(1)
 
     if config:
         config["team"] = args["team"]
         try:
-            configure_client(**config)
+            # Filter out width before passing to configure_client
+            client_config = {k: v for k, v in config.items() if k != "width"}
+            configure_client(**client_config)
         except Exception as e:
             error_console.print(
                 f"[error]ERROR:[/] Cannot find your profile in your .satori_credentials.yml file. Is it corrupted?"
