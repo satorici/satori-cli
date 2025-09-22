@@ -81,12 +81,18 @@ def main():
         # allow playbooks --public
         args["public"] and isinstance(args["func"], PlaybooksCommand)) and not isinstance(args["func"], ShardsCommand):
         # Allow config cmd only if profile not found
-        error_console.print(
-            f"[error]ERROR:[/] Profile {args['profile']} not found.",
-            "These are the profiles available:",
-        )
-        for key in load_config(args.get("config")):
-            error_console.print(key)
+        error_console.print(f"[error]ERROR:[/] Profile {args['profile']} not found.")
+
+        if config := load_config(args.get("config")):
+            error_console.print("These are the profiles available:")
+
+            for key in config:
+                error_console.print(key)
+        else:
+            error_console.print(
+                "Get a token at https://satori.ci/user-settings and configure it with [b]satori config token TOKEN[/b]"
+            )
+
         sys.exit(1)
 
     if config:
