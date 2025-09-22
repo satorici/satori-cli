@@ -31,15 +31,15 @@ class ConfigCommand(BaseCommand):
             del config[kwargs["profile"]][key]
             save_config(config)
             return
-        elif delete and not key:
+        elif delete and key is None:
             console.print("Must provide a key to delete")
             return 1
 
-        if not key:
+        if key is None:
             console.print(config[kwargs["profile"]])
             return
 
-        if not value:
+        if value is None:
             console.print(config[kwargs["profile"]][key])
             return
 
