@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Optional
 
-from satoricli.cli.utils import console
+from satoricli.cli.utils import console, error_console
 from satoricli.utils import load_config, save_config
 
 from .base import BaseCommand
@@ -40,8 +40,13 @@ class ConfigCommand(BaseCommand):
             return
 
         if value is None:
-            console.print(config[kwargs["profile"]][key])
-            return
+            try:
+                console.print(config[kwargs["profile"]][key])
+            except KeyError:
+                error_console.print(
+                    f"ERROR: {key} missing in profile {kwargs['profile']}"
+                )
+            return 1
 
         config.setdefault(kwargs["profile"], {})[key] = value
         console.print(f"{key} updated for profile {kwargs['profile']}")
