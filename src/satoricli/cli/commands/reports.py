@@ -140,7 +140,6 @@ class ReportsCommand(BaseCommand):
         severity: Optional[list[int]] = None,
         **kwargs,
     ):
-        print(action)
         params = {}
         if action in ("delete", "search", "download"):
             params = {
