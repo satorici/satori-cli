@@ -61,7 +61,7 @@ class ScanCommand(BaseCommand):
         parser.add_argument("-r", "--report", action="store_true")
         parser.add_argument("-d", "--data", help="Secrets", default="")
         parser.add_argument("-b", "--branch", default="main", help="Repo branch")
-        parser.add_argument("--filter", help="Filter names")
+        #parser.add_argument("--filter", help="Filter names")
         parser.add_argument("--playbook", help="Playbook url or file")
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
