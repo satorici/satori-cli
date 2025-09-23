@@ -61,12 +61,19 @@ class ConfigCommand(BaseCommand):
                     console.print("Error: width must be a positive integer")
                     return 1
                 config.setdefault(kwargs["profile"], {})[key] = width_int
-                console.print(f"{key} updated to {width_int} for profile {kwargs['profile']}")
+                console.print(
+                    f"{key} updated to {width_int} for profile {kwargs['profile']}"
+                )
             except ValueError:
-                console.print("Error: width must be a valid integer")
-                return 1
+                if value == "auto":
+                    config.setdefault(kwargs["profile"], {})[key] = None
+                    console.print(f"{key} updated to auto for profile {kwargs['profile']}")
+                else:
+                    console.print("Error: width must be a valid integer")
+                    return 1
         else:
             config.setdefault(kwargs["profile"], {})[key] = value
             console.print(f"{key} updated for profile {kwargs['profile']}")
 
         save_config(config)
+        return 0
