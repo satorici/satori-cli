@@ -46,6 +46,56 @@ def add_pagination_args(parser: ArgumentParser) -> None:
     parser.add_argument("-l", "--limit", type=int, default=20)
 
 
+def add_search_args(parser: ArgumentParser) -> None:
+    parser.add_argument("-n", "--name", help="Export folder name")
+    parser.add_argument(
+        "--playbook-type",
+        choices=get_args(PLAYBOOK_TYPE),
+        default=None,
+        help="Filter by playbook type",
+    )
+    parser.add_argument(
+        "--visibility",
+        choices=get_args(REPORT_VISIBILITY),
+        help="Filter by report visibility",
+    )
+    parser.add_argument(
+        "--result",
+        choices=get_args(RESULTS),
+        help="Filter by report result",
+    )
+    parser.add_argument(
+        "--query",
+        type=str,
+        help="Filter by output string (support regex)",
+    )
+    parser.add_argument("--monitor", type=str, help="Filter by monitor ID")
+    parser.add_argument("--playbook", type=str, help="Filter by playbook")
+    parser.add_argument("--force", action="store_true", help="Force delete")
+    parser.add_argument(
+        "--status", choices=get_args(STATUS_FILTERS), help="Filter by status"
+    )
+    parser.add_argument(
+        "--from",
+        type=datetime.datetime.fromisoformat,
+        help="Filter by from date",
+        dest="from_date",
+    )
+    parser.add_argument(
+        "--to",
+        type=datetime.datetime.fromisoformat,
+        help="Filter by to date",
+        dest="to_date",
+    )
+    parser.add_argument(
+        "--severity",
+        action="append",
+        default=None,
+        type=str,
+        help="Filter by output severity",
+    )
+
+
 class ReportsCommand(BaseCommand):
     name = "reports"
 
@@ -64,56 +114,10 @@ class ReportsCommand(BaseCommand):
 
         search_parser = subparser.add_parser("search", aliases=["delete"])
         add_pagination_args(search_parser)
-        search_parser.add_argument("-n", "--name", help="Export folder name")
-        search_parser.add_argument(
-            "--playbook-type",
-            choices=get_args(PLAYBOOK_TYPE),
-            default=None,
-            help="Filter by playbook type",
-        )
-        search_parser.add_argument(
-            "--visibility",
-            choices=get_args(REPORT_VISIBILITY),
-            help="Filter by report visibility",
-        )
-        search_parser.add_argument(
-            "--result",
-            choices=get_args(RESULTS),
-            help="Filter by report result",
-        )
-        search_parser.add_argument(
-            "--query",
-            type=str,
-            help="Filter by output string (support regex)",
-        )
-        search_parser.add_argument("--monitor", type=str, help="Filter by monitor ID")
-        search_parser.add_argument(
-            "--download", action="store_true", help="Download reports outputs to files"
-        )
-        search_parser.add_argument("--playbook", type=str, help="Filter by playbook")
-        search_parser.add_argument("--force", action="store_true", help="Force delete")
-        search_parser.add_argument(
-            "--status", choices=get_args(STATUS_FILTERS), help="Filter by status"
-        )
-        search_parser.add_argument(
-            "--from",
-            type=datetime.datetime.fromisoformat,
-            help="Filter by from date",
-            dest="from_date",
-        )
-        search_parser.add_argument(
-            "--to",
-            type=datetime.datetime.fromisoformat,
-            help="Filter by to date",
-            dest="to_date",
-        )
-        search_parser.add_argument(
-            "--severity",
-            action="append",
-            default=None,
-            type=str,
-            help="Filter by output severity",
-        )
+        add_search_args(search_parser)
+
+        download_parser = subparser.add_parser("download")
+        add_search_args(download_parser)
 
     def __call__(
         self,
@@ -128,7 +132,6 @@ class ReportsCommand(BaseCommand):
         result: Optional[RESULTS] = None,
         query: Optional[str] = None,
         monitor: Optional[str] = None,
-        download: bool = False,
         playbook: Optional[str] = None,
         force: bool = False,
         status: Optional[STATUS_FILTERS] = None,
@@ -137,8 +140,9 @@ class ReportsCommand(BaseCommand):
         severity: Optional[list[int]] = None,
         **kwargs,
     ):
+        print(action)
         params = {}
-        if action in ("delete", "search"):
+        if action in ("delete", "search", "download"):
             params = {
                 "playbook_type": capitalize(playbook_type),
                 "report_visibility": "Public-Global"
@@ -177,16 +181,15 @@ class ReportsCommand(BaseCommand):
             else:
                 autoformat(res["rows"], jsonfmt=kwargs["json"])
         elif action == "search":
-            if not download:
-                params["limit"] = limit
-                params["page"] = page
-                res = client.get("/reports/search", params=params).json()
-                self.print_table(res["rows"])
-                console.print(
-                    f"Page {page} of {ceil(res['total'] / limit)} | Total: {res['total']}"
-                )
-                return 0
-
+            params["limit"] = limit
+            params["page"] = page
+            res = client.get("/reports/search", params=params).json()
+            self.print_table(res["rows"])
+            console.print(
+                f"Page {page} of {ceil(res['total'] / limit)} | Total: {res['total']}"
+            )
+            return 0
+        elif action == "download":
             # Save response
             extract_dir = name if name else "export"
 
