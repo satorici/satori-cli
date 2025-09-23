@@ -14,7 +14,6 @@ from .install import InstallCommand
 from .local import LocalCommand
 from .monitor import MonitorCommand
 from .monitors import MonitorsCommand
-from .outputs import OutputsCommand
 from .playbook import PlaybookCommand
 from .playbooks import PlaybooksCommand
 from .repo import RepoCommand
@@ -41,7 +40,6 @@ class RootCommand(BaseCommand):
         ReportsCommand,
         MonitorCommand,
         MonitorsCommand,
-        OutputsCommand,
         RepoCommand,
         ReposCommand,
         ScanCommand,
