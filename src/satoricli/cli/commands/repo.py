@@ -55,7 +55,7 @@ class RepoCommand(BaseCommand):
         parser.add_argument("--delete-commits", action="store_true")
         parser.add_argument("-d", "--data", help="Secrets")
         parser.add_argument("-b", "--branch", default="main", help="Repo branch")
-        parser.add_argument("--filter", help="Filter names")
+        #parser.add_argument("--filter", help="Filter names")
         parser.add_argument("-a", "--all", action="store_true")
         parser.add_argument("-l", "--limit", type=int, default=100, help="Limit number")
         parser.add_argument("--fail", action="store_true")
