@@ -114,13 +114,9 @@ test:
     download:
       - satori reports search --visibility public --download
 
-    # list the pending reports
+    # search the reports running
     filter:
-      - satori reports show --filter="status=Completed"
-
-    # search
-    # search:
-    #   - satori reports search
+      - satori reports search --status=running
 
     parallel:
       setParallel: true
