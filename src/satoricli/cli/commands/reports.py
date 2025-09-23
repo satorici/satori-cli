@@ -109,8 +109,8 @@ class ReportsCommand(BaseCommand):
 
         subparser = parser.add_subparsers(dest="action")
 
-        show_parser = subparser.add_parser("show")
-        show_parser.add_argument("-f", "--filter")
+        #show_parser = subparser.add_parser("show")
+        #show_parser.add_argument("-f", "--filter")
 
         search_parser = subparser.add_parser("search", aliases=["delete"])
         add_pagination_args(search_parser)
