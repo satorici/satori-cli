@@ -109,15 +109,15 @@ class ReportsCommand(BaseCommand):
 
         subparser = parser.add_subparsers(dest="action")
 
-        #show_parser = subparser.add_parser("show")
-        #show_parser.add_argument("-f", "--filter")
-
         search_parser = subparser.add_parser("search", aliases=["delete"])
         add_pagination_args(search_parser)
         add_search_args(search_parser)
 
         download_parser = subparser.add_parser("download")
         add_search_args(download_parser)
+
+        stop_parser = subparser.add_parser("stop")
+        add_search_args(stop_parser)
 
     def __call__(
         self,
@@ -141,7 +141,7 @@ class ReportsCommand(BaseCommand):
         **kwargs,
     ):
         params = {}
-        if action in ("delete", "search", "download"):
+        if action in ("delete", "search", "download", "stop"):
             params = {
                 "playbook_type": capitalize(playbook_type),
                 "report_visibility": "Public-Global"
@@ -275,9 +275,33 @@ class ReportsCommand(BaseCommand):
             if res.is_success:
                 console.print("Reports deleted successfully")
                 return 0
-            else:
-                console.print("Failed to delete reports")
-                return 1
+            console.print("Failed to delete reports")
+            return 1
+        elif action == "stop":
+            del params["page"]
+            del params["limit"]
+            if not force:
+                console.print(
+                    "[warning]This action will stop all reports that match the criteria[/]"
+                )
+                params["limit"] = 1
+                res = client.get("/reports/search", params=params).json()
+                if not res["total"]:
+                    console.print("No reports found, nothing to stop")
+                    return 0
+                console.print(f"Total reports found: {res['total']}")
+                answer = console.input("Do you want to stop these reports? (y/N): ")
+                if answer.lower() != "y":
+                    console.print("Action cancelled")
+                    return 0
+
+            console.print("Stopping reports...")
+            res = client.delete("/reports", params=params)
+            if res.is_success:
+                console.print("Reports stopped successfully")
+                return 0
+            console.print("Failed to stop reports")
+            return 1
         return 0
 
     @staticmethod
