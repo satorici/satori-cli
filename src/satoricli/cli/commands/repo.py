@@ -89,7 +89,7 @@ class RepoCommand(BaseCommand):
         output: bool,
         report: bool,
         data: Optional[str],
-        filter: Optional[str],
+        #filter: Optional[str],
         all: bool,
         limit: int,
         fail: bool,
@@ -102,7 +102,7 @@ class RepoCommand(BaseCommand):
             info = client.get(
                 f"/repos/{repository}/tests",
                 params={
-                    "filter": filter,
+                    #"filter": filter,
                     "all": all,
                     "limit": limit,
                     "fail": fail,
@@ -226,6 +226,7 @@ class RepoCommand(BaseCommand):
                 )
                 info = {"message": f"Secret {playbook_uri} deleted"}
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
+        return 0
 
     @staticmethod
     def sync_reports_list(report_list: list[dict]):
