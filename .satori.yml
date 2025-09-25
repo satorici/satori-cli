@@ -93,8 +93,12 @@ test:
       - satori run satori://web/parth.yml --data HOST=https://satori.ci --output
 
     # define inputs on your playbook and execute it with different combination of parameters
-    input:
+    input_embedded:
       - satori run .satori/input.yml --report --output
+
+    # define inputs on your playbook and parametrize it
+    input_parametrized:
+      - satori run .satori/ --playbook satori://test.yml -d INPUT=Whatever
 
   report:
     # run synchronously a local playbook
@@ -112,7 +116,7 @@ test:
       - satori reports search | tail
 
     download:
-      - satori reports search --visibility public --download
+      - satori reports download --visibility public
 
     # search the reports running
     filter:
