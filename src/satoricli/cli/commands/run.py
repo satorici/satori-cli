@@ -431,15 +431,13 @@ class RunCommand(BaseCommand):
 
                 bundle = make_bundle(dir_playbook, dir_playbook.parent)
 
-                secrets = env_vars | (parsed_data or {})
-
             if is_monitor:
                 monitor_id = new_monitor(
                     bundle,
                     settings,
                     team,
                     packet=packet,
-                    secrets=secrets,
+                    secrets=secrets or parsed_data,
                     visibility=visibility,
                 )
             else:
@@ -448,7 +446,7 @@ class RunCommand(BaseCommand):
                     team=team,
                     modes=modes,
                     bundle=bundle,
-                    secrets=secrets,
+                    secrets=secrets or parsed_data,
                     packet=packet,
                     settings=settings,
                     save_report=save_report,
