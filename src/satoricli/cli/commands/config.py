@@ -53,6 +53,10 @@ class ConfigCommand(BaseCommand):
                 )
             return 1
 
+        if value == "":
+            error_console.print("ERROR: Empty value")
+            return 1
+
         # Special validation for width
         if key == "width":
             try:
@@ -67,7 +71,9 @@ class ConfigCommand(BaseCommand):
             except ValueError:
                 if value == "auto":
                     config.setdefault(kwargs["profile"], {})[key] = None
-                    console.print(f"{key} updated to auto for profile {kwargs['profile']}")
+                    console.print(
+                        f"{key} updated to auto for profile {kwargs['profile']}"
+                    )
                 else:
                     console.print("Error: width must be a valid integer")
                     return 1
