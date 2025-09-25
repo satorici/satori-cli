@@ -174,6 +174,13 @@ class LocalCommand(BaseCommand):
             default=[],
         )
         parser.add_argument(
+            "--run",
+            dest="run_tests",
+            help="Run specific tests",
+            action="append",
+            default=[],
+        )
+        parser.add_argument(
             "--format",
             dest="text_format",
             help="Format text output (Plain or Markdown text)",
@@ -204,6 +211,7 @@ class LocalCommand(BaseCommand):
         save_output: Union[str, bool, None],
         visibility: Optional[VISIBILITY_VALUES],
         filter_tests: list,
+        run_tests: list,
         text_format: Literal["plain", "md"],
         redacted: list[str],
         **kwargs,
@@ -300,7 +308,7 @@ class LocalCommand(BaseCommand):
             timed_out = False
 
             # convert "test.echo" to "test:echo"
-            tests = [x.replace(".", ":") for x in filter_tests]
+            run_tests = [x.replace(".", ":") for x in run_tests]
 
             for line in s.iter_lines():
                 if deadline and time.monotonic() > deadline:
@@ -309,8 +317,8 @@ class LocalCommand(BaseCommand):
 
                 message: dict = json.loads(line)
 
-                # If filter_tests is provided, skip the test if it doesn't match the filter
-                if tests and message["path"] not in tests:
+                # If run param is provided, skip the test if it doesn't match the filter
+                if run_tests and message["path"] not in run_tests:
                     continue
 
                 progress.update(task, description="Running [b]" + message["path"])
