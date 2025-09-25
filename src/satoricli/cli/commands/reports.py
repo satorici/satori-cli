@@ -254,7 +254,6 @@ class ReportsCommand(BaseCommand):
                     time.sleep(1)
         elif action == "delete":
             del params["page"]
-            del params["limit"]
             if not force:
                 console.print(
                     "[warning]This action will delete all reports that match the criteria[/]"
@@ -270,6 +269,7 @@ class ReportsCommand(BaseCommand):
                     console.print("Action cancelled")
                     return 0
 
+            del params["limit"]
             console.print("Deleting reports...")
             res = client.delete("/reports", params=params)
             if res.is_success:
@@ -279,7 +279,8 @@ class ReportsCommand(BaseCommand):
             return 1
         elif action == "stop":
             del params["page"]
-            del params["limit"]
+            if "status" not in params:
+                params["status"] = "Running"
             if not force:
                 console.print(
                     "[warning]This action will stop all reports that match the criteria[/]"
@@ -295,6 +296,7 @@ class ReportsCommand(BaseCommand):
                     console.print("Action cancelled")
                     return 0
 
+            del params["limit"]
             console.print("Stopping reports...")
             res = client.delete("/reports", params=params)
             if res.is_success:
