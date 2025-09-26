@@ -18,7 +18,6 @@ from satori_runner import run
 from satoricli.api import client
 from satoricli.bundler import make_bundle
 from satoricli.cli.commands.report import ReportCommand
-from satoricli.exceptions import SatoriRequestError
 from satoricli.validations import validate_parameters
 
 from ..utils import (
@@ -248,7 +247,7 @@ class LocalCommand(BaseCommand):
 
             bundle = make_bundle(playbook_path, playbook_path.parent)
 
-            if missing_ymls(config, workdir):
+            if missing_ymls(config, str(workdir)):
                 error_console.print(
                     "[warning]WARNING:[/] There are some .satori.yml outside the root "
                     "folder that have not been imported."
@@ -344,25 +343,17 @@ class LocalCommand(BaseCommand):
                 }
                 client.post("outputs/upload", json=result, headers=headers)
 
-            status_code = 409
-            while status_code == 409:
-                time.sleep(1)
-                try:
-                    res = client.put(
-                        "/runs/local/upload",
-                        params={
-                            "run_time": time.monotonic() - start_time,
-                            "save_report": save_report,
-                            "save_output": save_output,
-                            "timed_out": timed_out,
-                        },
-                        headers=headers,
-                    )
-                    status_code = res.status_code
-                except httpx.HTTPStatusError as e:
-                    status_code = e.response.status_code
-                except SatoriRequestError as e:
-                    status_code = e.status_code
+            client.put(
+                "/runs/local/upload",
+                params={
+                    "run_time": time.monotonic() - start_time,
+                    "save_report": save_report,
+                    "save_output": save_output,
+                    "timed_out": timed_out,
+                },
+                headers=headers,
+            )
+
             client.patch("/reports/severities", headers=headers)
             progress.update(task, description="Timeout" if timed_out else "Completed")
 
