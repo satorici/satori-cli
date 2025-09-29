@@ -298,7 +298,7 @@ class ReportsCommand(BaseCommand):
 
             del params["limit"]
             console.print("Stopping reports...")
-            res = client.delete("/reports", params=params)
+            res = client.patch("/reports/stop", json=params)
             if res.is_success:
                 console.print("Reports stopped successfully")
                 return 0
