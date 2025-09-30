@@ -286,6 +286,7 @@ class ReportsCommand(BaseCommand):
                     "[warning]This action will stop all reports that match the criteria[/]"
                 )
                 params["limit"] = 1
+                params["user_reports"] = True
                 res = client.get("/reports/search", params=params).json()
                 if not res["total"]:
                     console.print("No reports found, nothing to stop")
