@@ -286,8 +286,11 @@ class RunCommand(BaseCommand):
 
         cli_settings = get_cli_settings(kwargs)
         is_monitor = bool(cli_settings.get("rate") or cli_settings.get("cron"))
-
         if path == "." and parsed_data and "REPO" in parsed_data:
+            # Check if playbook is a file (not a uri) and read it
+            if playbook and "://" not in playbook and os.path.isfile(playbook):
+                playbook = Path(playbook).read_text()
+
             params = {
                 "url": parsed_data["REPO"],
                 "data": json.dumps(parsed_data),
