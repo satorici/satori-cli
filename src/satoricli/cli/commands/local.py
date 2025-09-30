@@ -69,6 +69,7 @@ def new_local_run(
     name: Optional[str] = None,
     visibility: Optional[VISIBILITY_VALUES] = None,
     redacted: list[str] = [],
+    run_tests: list[str] = [],
 ) -> dict:
     """Create a new local run.
 
@@ -87,6 +88,7 @@ def new_local_run(
             "run_params": rebuild_arguments(),
             "visibility": visibility.capitalize() if visibility else None,
             "redacted": redacted,
+            "run_tests": run_tests,
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -264,6 +266,7 @@ class LocalCommand(BaseCommand):
             visibility=visibility,
             playbook_uri=playbook or target,
             redacted=redacted,
+            run_tests=run_tests,
         )
 
         save_output_setting = True
@@ -306,19 +309,12 @@ class LocalCommand(BaseCommand):
 
             timed_out = False
 
-            # convert "test.echo" to "test:echo"
-            run_tests = [x.replace(".", ":") for x in run_tests]
-
             for line in s.iter_lines():
                 if deadline and time.monotonic() > deadline:
                     timed_out = True
                     break
 
                 message: dict = json.loads(line)
-
-                # If run param is provided, skip the test if it doesn't match the filter
-                if run_tests and message["path"] not in run_tests:
-                    continue
 
                 progress.update(task, description="Running [b]" + message["path"])
                 args = replace_variables(message["value"], message["testcase"])
