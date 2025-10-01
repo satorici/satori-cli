@@ -486,12 +486,16 @@ def format_outputs(
                 text = Markdown(text)
                 console.print(text)
             else:
-                console.print(text, highlight=False)
+                # Print the text without highlighting line by line
+                for line in text.split("\n"):
+                    console.print(line, highlight=False)
         if "stderr" in output_dict and output_dict["stderr"] is not None:
             console.print("[blue]Stderr:[/blue]")
-            console.print(output_dict["stderr"], highlight=False)
+            for line in output_dict["stderr"].split("\n"):
+                console.print(line, highlight=False)
         if "os_error" in output_dict and output_dict["os_error"] is not None:
-            console.print(output_dict["os_error"], highlight=False)
+            for line in output_dict["os_error"].split("\n"):
+                console.print(line, highlight=False)
         if "time" in output_dict:
             console.print("[blue]Runtime:[/blue]", execution_time(output_dict["time"]))
 
