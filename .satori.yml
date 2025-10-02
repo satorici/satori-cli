@@ -6,6 +6,7 @@ settings:
   timeout: 1800
   redacted:
     - TOKEN
+  example: satori run ./ -d TOKEN=$SATORI_TOKEN --output --report
 
 import:
   - "satori://secrets/semgrep.yml"
@@ -14,12 +15,8 @@ test:
   assertReturnCode: 0
   assertStderrNotContains: Traceback
   install:
-    updates:
-      - apt update
-    tools:
-      - apt install -y --no-install-recommends git jq
-    satori:
-      - pip install .
+      - apt update >/dev/null && apt install -qy --no-install-recommends git jq >/dev/null
+      - pip install . --disable-pip-version-check --root-user-action=ignore
 
   # the -P or --profile parameters allows you to use different Satori CI API Tokens
   token_saved:
@@ -64,9 +61,9 @@ test:
     import_sync:
       - satori local .satori/import --sync
 
-    # execute a public Satori CI playbook locally and pass parameters
+    # execute a public Satori CI playbook locally
     url_output:
-      - satori local ./ -p satori://web/parth.yml --data HOST=https://satori.ci --output
+      - satori local ./ -p satori://secrets/semgrep.yml --output
 
     # define inputs on your playbook and execute it with different combination of parameters
     input:
