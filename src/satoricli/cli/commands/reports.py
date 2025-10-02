@@ -34,6 +34,7 @@ STATUS_FILTERS = Literal[
     "stopped",
     "timeout",
 ]
+EXECUTION_FILTERS = Literal["local", "run", "ci", "scan", "monitor"]
 
 
 def capitalize(s: Optional[str]) -> Optional[str]:
@@ -94,6 +95,13 @@ def add_search_args(parser: ArgumentParser) -> None:
         type=str,
         help="Filter by output severity",
     )
+    parser.add_argument(
+        "--execution",
+        choices=get_args(EXECUTION_FILTERS),
+        default=None,
+        type=str,
+        help="Filter by execution ID",
+    )
 
 
 class ReportsCommand(BaseCommand):
@@ -138,6 +146,7 @@ class ReportsCommand(BaseCommand):
         from_date: Optional[datetime.datetime] = None,
         to_date: Optional[datetime.datetime] = None,
         severity: Optional[list[int]] = None,
+        execution: Optional[EXECUTION_FILTERS] = None,
         **kwargs,
     ):
         params = {}
@@ -157,6 +166,7 @@ class ReportsCommand(BaseCommand):
                 "from_date": from_date,
                 "to_date": to_date,
                 "severity": severity,
+                "execution": execution,
             }
 
             # Remove None values
