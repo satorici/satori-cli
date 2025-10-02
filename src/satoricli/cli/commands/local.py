@@ -363,4 +363,9 @@ class LocalCommand(BaseCommand):
             print_output(report_id, kwargs["json"], filter_tests, text_format)
 
         report_data = client.get(f"/reports/{report_id}").json()
+
+        if run_tests:
+            # clean report data if --run is used
+            client.delete(f"/reports/{report_id}")
+
         return 0 if report_data["fails"] == 0 else 1
