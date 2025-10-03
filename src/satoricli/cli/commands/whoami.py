@@ -31,5 +31,7 @@ class WhoamiCommand(BaseCommand):
             console.print("Email:", info["email"])
             console.print("Role:", info["role"].capitalize())
             console.print("Team:", info["team_name"])
-
+            accounts = client.get("/users/accounts").json()
+            for account in accounts:
+                console.print(account.capitalize() + ":", accounts[account]["username"])
         return
