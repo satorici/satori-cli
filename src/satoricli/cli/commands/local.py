@@ -145,7 +145,7 @@ class LocalCommand(BaseCommand):
     name = "local"
 
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("target", metavar="TARGET")
+        parser.add_argument("target", metavar="TARGET", default=".", nargs="?")
         parser.add_argument(
             "-p",
             "--playbook",
