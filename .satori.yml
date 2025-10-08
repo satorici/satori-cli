@@ -1,7 +1,7 @@
 settings:
   name: "Satori CLI Tests"
   log: slack
-  image: public.ecr.aws/docker/library/python:3.10-slim-bullseye
+  #image: public.ecr.aws/docker/library/python:3.10-slim-bullseye
   #report: pdf
   timeout: 1800
   redacted:
