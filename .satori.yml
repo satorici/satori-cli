@@ -10,7 +10,6 @@ settings:
 
 import:
   - satori://secrets/semgrep.yml
-  - satori://code/github/sisakulint.yml
 
 test:
   assertReturnCode: 0
