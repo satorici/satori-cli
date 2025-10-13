@@ -271,7 +271,9 @@ class RunCommand(BaseCommand):
         **kwargs,
     ):
         for file in data_file:
-            data.append((file[0], f"read({file[1]})"))
+            read_path = Path(file[1])
+            read_name = read_path.name
+            data.append((file[0], f"read({read_name})"))
             include_list.append(file[1])
         if save_report:
             temp_report = detect_boolean(save_report)
