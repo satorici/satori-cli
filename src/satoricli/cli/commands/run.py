@@ -320,6 +320,7 @@ class RunCommand(BaseCommand):
                     report,
                     filter_tests,
                     text_format,
+                    report_id_printed=True,
                 )
             else:
                 while True:

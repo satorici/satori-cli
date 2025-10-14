@@ -61,7 +61,7 @@ class ScanCommand(BaseCommand):
         parser.add_argument("-r", "--report", action="store_true")
         parser.add_argument("-d", "--data", help="Secrets", default="")
         parser.add_argument("-b", "--branch", default="main", help="Repo branch")
-        #parser.add_argument("--filter", help="Filter names")
+        # parser.add_argument("--filter", help="Filter names")
         parser.add_argument("--playbook", help="Playbook url or file")
         parser.add_argument("-p", "--page", type=int, default=1)
         parser.add_argument("-l", "--limit", type=int, default=20)
@@ -193,9 +193,18 @@ class ScanCommand(BaseCommand):
         report: bool = False,
         filter_tests: Optional[list] = None,
         text_format: Literal["plain", "md"] = "plain",
+        report_id_printed: bool = False,
     ) -> None:
         while True:
             res = client.get(f"/scan/{scan_id}/reports").json()
+
+            if res["total"] == 1 and not report_id_printed:
+                # Print the report id only once
+                report_id_printed = True
+                report_id = res["rows"][0]["id"]
+                console.print("Report ID:", report_id)
+                console.print(f"Report: https://satori.ci/report/{report_id}")
+
             if res["rows"]:
                 for row in res["rows"]:
                     wait(row["id"], output, filter_tests, text_format)
