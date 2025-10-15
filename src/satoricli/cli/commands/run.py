@@ -205,6 +205,7 @@ class RunCommand(BaseCommand):
         parser.add_argument(
             "-i", "--include", dest="include_list", action="append", default=[]
         )
+        parser.add_argument("--repo", type=str, default=None, help="Repository to run")
 
         settings = parser.add_argument_group("run settings")
         monitor = settings.add_mutually_exclusive_group()
@@ -256,6 +257,7 @@ class RunCommand(BaseCommand):
         data: list[tuple[str, str]],
         data_file: list[tuple[str, str]],
         include_list: list,
+        repo: Optional[str],
         save_report: Union[str, bool, None],
         save_output: Union[str, bool, None],
         playbook: Optional[str],
@@ -288,6 +290,15 @@ class RunCommand(BaseCommand):
 
         cli_settings = get_cli_settings(kwargs)
         is_monitor = bool(cli_settings.get("rate") or cli_settings.get("cron"))
+
+        if repo:
+            if not parsed_data:
+                parsed_data = {}
+            parsed_data["REPO"] = repo
+            if path != "." and not playbook:
+                playbook = path
+                path = "."
+
         if path == "." and parsed_data and "REPO" in parsed_data:
             # Check if playbook is a file (not a uri) and read it
             if playbook and "://" not in playbook and os.path.isfile(playbook):
