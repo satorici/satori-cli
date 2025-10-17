@@ -118,6 +118,7 @@ def configure_console_width(width: Optional[int] = None):
         width: Optional console width. If None, uses default behavior.
     """
     import sys
+
     global console, error_console
 
     if width is not None:
@@ -144,15 +145,16 @@ def configure_console_width(width: Optional[int] = None):
             theme=satori_theme,
             log_path=False,
             record=True,
-            width=width
+            width=width,
         )
         error_console = Console(
             highlighter=SatoriHighlighter(),
             theme=satori_theme,
             log_path=False,
             stderr=True,
-            width=width
+            width=width,
         )
+
 
 logging.basicConfig(
     level="CRITICAL",
@@ -849,8 +851,12 @@ def get_command_params(command: Optional[str]) -> Optional[str]:
     quoted_regex = re.compile(
         r"(-d|--data\=?)\s*[\"']((\S+\=(?!\[REDACTED\])([^\"']+)))",
     )
+    # match with: satori --repo "satori-ci/test-repo"
+    repo_regex = re.compile(r"(--repo\=?\s*(\S+))")
+
     res = non_quoted_regex.findall(command)
     res += quoted_regex.findall(command)
+    res += repo_regex.findall(command)
     params = [x[1] for x in res]
     return " ".join(params)
 
