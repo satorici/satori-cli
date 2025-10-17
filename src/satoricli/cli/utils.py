@@ -852,7 +852,7 @@ def get_command_params(command: Optional[str]) -> Optional[str]:
         r"(-d|--data\=?)\s*[\"']((\S+\=(?!\[REDACTED\])([^\"']+)))",
     )
     # match with: satori --repo "satori-ci/test-repo"
-    repo_regex = re.compile(r"(--repo\=?\s*(\S+))")
+    repo_regex = re.compile(r"--repo(=|\s)\s*(\S+)")
 
     res = non_quoted_regex.findall(command)
     res += quoted_regex.findall(command)
