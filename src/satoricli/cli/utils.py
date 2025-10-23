@@ -585,7 +585,10 @@ def wait(
                     except HTTPError:
                         continue
 
-                for o in output:
+                last_printed_index = 0
+                for i, o in enumerate(output):
+                    if i < last_printed_index:
+                        continue
                     out_id = o["path"] + "|" + o["original"]
                     outputs = (
                         run_test_filter(filter_tests, [o]) if filter_tests else [o]
@@ -594,6 +597,7 @@ def wait(
                         console.print()
                         format_outputs(outputs, text_format)
                         printed.append(out_id)
+                        last_printed_index += 1
 
             progress.update(task, description=status)
             time.sleep(1)
