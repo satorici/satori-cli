@@ -15,6 +15,7 @@ from satoricli.cli.utils import (
     console,
     error_console,
     execution_time,
+    print_output,
     remove_keys_list_dict,
     wait,
 )
@@ -193,11 +194,20 @@ class ScanCommand(BaseCommand):
         report: bool = False,
         filter_tests: Optional[list] = None,
         text_format: Literal["plain", "md"] = "plain",
-        report_id_printed: bool = False,
+        total_commits: Optional[int] = None,
     ) -> None:
+        live_output = True
+        if total_commits and total_commits > 1:
+            live_output = False
+            console.print(f"Scan ID: {scan_id}")
+            console.print(f"Scan: https://satori.ci/scan/{scan_id}")
+        report_id_printed = False
         while True:
-            res = client.get(f"/scan/{scan_id}/reports").json()
-
+            res = client.get(f"/scan/{scan_id}/reports", params={"limit": 120}).json()
+            if total_commits != res["total"]:
+                # If not all commits are processed, wait for 1 second and continue
+                time.sleep(1)
+                continue
             if res["total"] == 1 and not report_id_printed:
                 # Print the report id only once
                 report_id_printed = True
@@ -207,9 +217,17 @@ class ScanCommand(BaseCommand):
 
             if res["rows"]:
                 for row in res["rows"]:
-                    wait(row["id"], output, filter_tests, text_format)
+                    console.print(f"[b gold3]Repository:[/] [b]{row['repo']}[/]")
+                    wait(row["id"], live_output, filter_tests, text_format)
                     if report:
                         ReportCommand.print_report_asrt(row["id"], kwargs["json"])
+                    if output and not live_output:
+                        print_output(
+                            row["id"],
+                            kwargs["json"],
+                            filter_tests,
+                            text_format,
+                        )
                 break
             time.sleep(1)
 
