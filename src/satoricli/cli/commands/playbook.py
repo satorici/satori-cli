@@ -76,3 +76,4 @@ class PlaybookCommand(BaseCommand):
         autoformat(
             data, jsonfmt=kwargs["json"], list_separator=list_separator, table=True
         )
+        return 0

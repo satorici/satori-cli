@@ -1,3 +1,4 @@
+import contextlib
 from pathlib import Path
 from typing import Optional
 
@@ -6,6 +7,8 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from satorici.validator import validate_playbook
 from satorici.validator.exceptions import PlaybookVariableError
+
+from satoricli.api import client
 
 from .cli.utils import autosyntax, autotable, console, remove_yaml_prop
 from .validations import get_parameters
@@ -77,7 +80,8 @@ def get_playbook_name(filename: Path):
 
 
 def display_public_playbooks(
-    playbook_id: Optional[str] = None, original: bool = False
+    playbook_id: Optional[str] = None,
+    original: bool = False,
 ) -> None:
     if not sync():
         return
@@ -87,19 +91,22 @@ def display_public_playbooks(
         playbooks.sort(key=lambda x: x["uri"])
         autotable(playbooks)
     else:  # satori playbook satori://x
-        path = PLAYBOOKS_DIR / playbook_id.removeprefix("satori://")
+        data = client.get(
+            "/playbooks/public/single",
+            params={"uri": playbook_id},
+        ).json()
+        if data["referrers"] is not None:
+            console.print("[green]Playbook referrals:[/]", data["referrers"])
 
-        if path.is_file():
-            text = path.read_text()
+        if data["playbook"]:
+            text = data["playbook"]
             if original:
                 print(text)
                 return
             loaded_yaml = yaml.safe_load(text)
 
-            try:
+            with contextlib.suppress(PlaybookVariableError):
                 validate_playbook(loaded_yaml)
-            except PlaybookVariableError:
-                pass
 
             settings = loaded_yaml.get("settings", {})
             if description := settings.get("description"):
