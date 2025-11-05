@@ -166,9 +166,9 @@ class RepoCommand(BaseCommand):
                     {
                         "ID": report["id"],
                         "Commit hash": (
-                            report["hash"][:7] if report["hash"] else report["hash"]
+                            report["hash"][:7] if "hash" in report else "Unknown"
                         ),
-                        "Commit author": report["commit_author"],
+                        "Commit author": report.get("commit_author", "Unknown"),
                         "Runtime": execution_time(report["execution_time"]),
                         "Result": report["result"],
                         "Status": report["status"],
