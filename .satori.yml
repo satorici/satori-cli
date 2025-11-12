@@ -33,7 +33,7 @@ test:
 
     # test setting width via config command
     set_width:
-    - satori config width 160
+    - satori config width 145
 
     # test that width was set correctly
     check_width_set:
