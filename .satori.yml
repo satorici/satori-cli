@@ -85,10 +85,6 @@ test:
     import_sync:
       - satori run .satori/import --sync
 
-    # execute a public Satori CI playbook and pass parameters
-    url_output:
-      - satori run satori://web/parth.yml --data HOST=https://satori.ci --output
-
     # define inputs on your playbook and execute it with different combination of parameters
     input_embedded:
       - satori run .satori/input.yml --report --output
