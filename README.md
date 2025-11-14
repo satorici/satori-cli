@@ -59,9 +59,9 @@ How can you test aumatically that that piece of software behaves according to sp
 ```console
 foo@bar:~$ cat .satori.yml
 test:
-    assertStdoutEqual: "Hello World\n"
-    python:
-    - [ python hello_world.py ]
+  assertStdoutEqual: "Hello World\n"
+  python:
+    - python hello_world.py
 ```
 
 Lets test the code with the playbook
@@ -145,12 +145,12 @@ For example:
 
 ```yml
 settings:
-    logOnFail: slack
+  logOnFail: slack
 
 test:
-    assertStdoutEqual: Hello World
-    python:
-    - [ python hello_world.py ]
+  assertStdoutEqual: Hello World
+  python:
+    - python hello_world.py
 ```
 
 and put it on a file named .satori.yml inside your repository.
