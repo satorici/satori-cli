@@ -250,10 +250,6 @@ test:
       single_del:
         - satori repo satoridev01/Hello_C_World playbook del satori://test
 
-    # TODO: get the forks of a certain repo (required for fork-scan)
-    #check_forks:
-    #  - [satori repo satoridev01/hello_world check-forks]
-
   monitor:
     # run a new monitor
     new:
