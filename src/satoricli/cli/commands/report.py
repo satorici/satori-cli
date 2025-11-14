@@ -93,7 +93,7 @@ class ReportCommand(BaseCommand):
         elif action == "files":
             download_files(id)
         elif action == "stop":
-            res = client.get(f"/reports/{id}/stop").json()
+            res = client.patch(f"/reports/{id}/stop").json()
             autoformat(res, jsonfmt=kwargs["json"])
         elif action == "delete":
             client.delete(f"/reports/{id}")
