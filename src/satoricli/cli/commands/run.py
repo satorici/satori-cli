@@ -474,14 +474,14 @@ class RunCommand(BaseCommand):
             return
 
         if sync or report or output or files:
-            wait(ids[0], output, filter_tests, text_format)
+            wait(ids[0], not report, filter_tests, text_format)
 
         ret = print_summary(ids[0], kwargs["json"]) if sync else 0
 
         if report:
             ReportCommand.print_report_asrt(ids[0], kwargs["json"])
 
-        if output and kwargs["json"]:
+        if (output and kwargs["json"]) or (report and output):
             print_output(ids[0], kwargs["json"])
 
         if files:
