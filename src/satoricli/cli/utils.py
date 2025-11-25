@@ -490,14 +490,14 @@ def format_outputs(
             else:
                 # Print the text without highlighting line by line
                 for line in text.split("\n"):
-                    console.print(line, highlight=False)
+                    print(line)  # noqa: T201
         if "stderr" in output_dict and output_dict["stderr"] is not None:
             console.print("[blue]Stderr:[/blue]")
             for line in output_dict["stderr"].split("\n"):
-                console.print(line, highlight=False)
+                print(line)  # noqa: T201
         if "os_error" in output_dict and output_dict["os_error"] is not None:
             for line in output_dict["os_error"].split("\n"):
-                console.print(line, highlight=False)
+                print(line)  # noqa: T201
         if "time" in output_dict:
             console.print("[blue]Runtime:[/blue]", execution_time(output_dict["time"]))
 
