@@ -196,7 +196,7 @@ class ScanCommand(BaseCommand):
         text_format: Literal["plain", "md"] = "plain",
         total_commits: Optional[int] = None,
     ) -> None:
-        live_output = True
+        live_output = not report
         if total_commits and total_commits > 1:
             live_output = False
             console.print(f"Scan ID: {scan_id}")
