@@ -490,14 +490,14 @@ def format_outputs(
             else:
                 # Print the text without highlighting line by line
                 for line in text.split("\n"):
-                    print(line)  # noqa: T201
+                    console.print(line, highlight=False, markup=False)
         if "stderr" in output_dict and output_dict["stderr"] is not None:
             console.print("[blue]Stderr:[/blue]")
             for line in output_dict["stderr"].split("\n"):
-                print(line)  # noqa: T201
+                console.print(line, highlight=False, markup=False)
         if "os_error" in output_dict and output_dict["os_error"] is not None:
             for line in output_dict["os_error"].split("\n"):
-                print(line)  # noqa: T201
+                console.print(line, highlight=False, markup=False)
         if "time" in output_dict:
             console.print("[blue]Runtime:[/blue]", execution_time(output_dict["time"]))
 
@@ -628,7 +628,7 @@ def print_output(
     if filter_tests:  # Display only selected tests
         res = run_test_filter(filter_tests, res)
     if print_json:
-        console.print(res, highlight=False)
+        console.print(res, highlight=False, markup=False)
     else:
         format_outputs(res, text_format)
 
