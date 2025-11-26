@@ -231,6 +231,7 @@ class ReportsCommand(BaseCommand):
                 task = progress.add_task("Fetching reports...", total=total)
 
                 for page_number in itertools.count(start=1):
+                    params["limit"] = 5
                     progress.update(task, advance=params["limit"])
                     params["page"] = page_number
                     with disable_error_raise() as c:
