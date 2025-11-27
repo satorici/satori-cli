@@ -5,6 +5,7 @@ import logging
 import math
 import random
 import re
+import sys
 import time
 import warnings
 from dataclasses import dataclass
@@ -881,3 +882,11 @@ def output_to_string(text: Union[bytes, str, None]) -> Union[str, None]:
         if isinstance(text, (bytes, memoryview, bytearray))
         else text
     )
+
+
+def get_report_output_cmd_index() -> tuple[int, int]:
+    """Get the index of the --report and --output arguments."""
+    args: list[str] = sys.argv
+    report_index: int = args.index("-r") if "-r" in args else args.index("--report")
+    output_index: int = args.index("-o") if "-o" in args else args.index("--output")
+    return report_index, output_index

@@ -15,6 +15,7 @@ from satoricli.cli.utils import (
     console,
     error_console,
     execution_time,
+    get_report_output_cmd_index,
     print_output,
     remove_keys_list_dict,
     wait,
@@ -197,6 +198,7 @@ class ScanCommand(BaseCommand):
         total_commits: Optional[int] = None,
     ) -> None:
         live_output = not report
+        report_index, output_index = get_report_output_cmd_index()
         if total_commits and total_commits > 1:
             live_output = False
             console.print(f"Scan ID: {scan_id}")
@@ -219,15 +221,18 @@ class ScanCommand(BaseCommand):
                 for row in res["rows"]:
                     console.print(f"[b gold3]Repository:[/] [b]{row['repo']}[/]")
                     wait(row["id"], live_output, filter_tests, text_format)
-                    if report:
-                        ReportCommand.print_report_asrt(row["id"], kwargs["json"])
-                    if output and not live_output:
-                        print_output(
-                            row["id"],
-                            kwargs["json"],
-                            filter_tests,
-                            text_format,
-                        )
+                    should_print_output = output and not live_output
+                    print_args: tuple[str, bool] = (row["id"], kwargs["json"])
+                    if report_index < output_index:
+                        if report:
+                            ReportCommand.print_report_asrt(*print_args)
+                        if should_print_output:
+                            print_output(*print_args, filter_tests, text_format)
+                    else:
+                        if should_print_output:
+                            print_output(*print_args, filter_tests, text_format)
+                        if report:
+                            ReportCommand.print_report_asrt(*print_args)
                 break
             time.sleep(1)
 

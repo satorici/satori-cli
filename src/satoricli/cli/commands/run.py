@@ -25,6 +25,7 @@ from ..utils import (
     detect_boolean,
     download_files,
     error_console,
+    get_report_output_cmd_index,
     load_cli_params,
     missing_ymls,
     print_output,
@@ -291,6 +292,9 @@ class RunCommand(BaseCommand):
         cli_settings = get_cli_settings(kwargs)
         is_monitor = bool(cli_settings.get("rate") or cli_settings.get("cron"))
 
+        ids = []
+        monitor_id = None
+
         if repo:
             if not parsed_data:
                 parsed_data = {}
@@ -348,7 +352,6 @@ class RunCommand(BaseCommand):
             )
 
             is_monitor = False
-            monitor_id = None
         elif (file_path := Path(path)).is_file():
             # HOOK HERE
             provided_var_names = set(parsed_data.keys()) if parsed_data else set()
@@ -360,7 +363,7 @@ class RunCommand(BaseCommand):
             bundle = make_bundle(file_path, file_path.parent)
             config = yaml.safe_load(file_path.read_bytes())
 
-            settings: dict = config.get("settings", {})
+            settings: dict[str, Any] = config.get("settings", {})
             is_monitor = is_monitor or settings.get("cron") or settings.get("rate")
             settings.update(cli_settings)
 
@@ -478,11 +481,19 @@ class RunCommand(BaseCommand):
 
         ret = print_summary(ids[0], kwargs["json"]) if sync else 0
 
-        if report:
-            ReportCommand.print_report_asrt(ids[0], kwargs["json"])
-
-        if (output and kwargs["json"]) or (report and output):
-            print_output(ids[0], kwargs["json"])
+        report_index, output_index = get_report_output_cmd_index()
+        should_print_output = (output and bool(kwargs["json"])) or (report and output)
+        print_args: tuple[str, bool] = (ids[0], kwargs["json"])
+        if output_index < report_index:
+            if should_print_output:
+                print_output(*print_args)
+            if report:
+                ReportCommand.print_report_asrt(*print_args)
+        else:
+            if report:
+                ReportCommand.print_report_asrt(*print_args)
+            if should_print_output:
+                print_output(*print_args)
 
         if files:
             download_files(ids[0])
