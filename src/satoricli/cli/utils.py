@@ -887,6 +887,18 @@ def output_to_string(text: Union[bytes, str, None]) -> Union[str, None]:
 def get_report_output_cmd_index() -> tuple[int, int]:
     """Get the index of the --report and --output arguments."""
     args: list[str] = sys.argv
-    report_index: int = args.index("-r") if "-r" in args else args.index("--report")
-    output_index: int = args.index("-o") if "-o" in args else args.index("--output")
+    report_index: int = (
+        args.index("-r")
+        if "-r" in args
+        else args.index("--report")
+        if "--report" in args
+        else -1
+    )
+    output_index: int = (
+        args.index("-o")
+        if "-o" in args
+        else args.index("--output")
+        if "--output" in args
+        else -1
+    )
     return report_index, output_index
