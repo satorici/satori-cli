@@ -49,7 +49,12 @@ class SettingsCommand(BaseCommand):
                 case "9":
                     break
                 case "0":
-                    console.print("[bold red]Not implemented[/bold red]")
+                    self.update_settings(
+                        "default_notification",
+                        "Please select a default notification method",
+                        ["datadog", "discord", "email", "slack", "telegram", "none"],
+                    )
+                    console.print("Default notification method updated\n")
                 case "1":
                     console.print(
                         "To set up Datadog, you need to get an API key from your Datadog account.\n\n"
@@ -130,9 +135,9 @@ class SettingsCommand(BaseCommand):
                     pass
 
     def get_settings(self, key: VALID_KEYS):
-        if key == "default":
-            return "not set"
         get_config = []
+        if key == "default":
+            get_config = ["default_notification"]
         if key == "datadog":
             get_config = ["datadog_api_key", "datadog_site"]
         if key == "discord":
