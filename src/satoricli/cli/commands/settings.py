@@ -51,8 +51,21 @@ class SettingsCommand(BaseCommand):
                 case "0":
                     console.print("[bold red]Not implemented[/bold red]")
                 case "1":
-                    self.update_settings("datadog_api_key", "Datadog API key")
+                    console.print(
+                        "To set up Datadog, you need to get an API key from your Datadog account.\n\n"
+                        + "You can find your API key in the Datadog API keys page(create a new API key if needed): \n"
+                        + "[cyan b]https://app.datadoghq.com/organization-settings/api-keys[/]"
+                    )
+                    self.update_settings(
+                        "datadog_api_key", "Enter your Datadog API key"
+                    )
                     console.print("Datadog API key updated")
+                    self.update_settings(
+                        "datadog_site",
+                        "Enter your Datadog region",
+                        ["us1", "us3", "us5", "eu1", "ap1", "ap2", "us1-fed"],
+                    )
+                    console.print("Datadog site updated\n")
                 case "2":
                     console.print(
                         "To set up Discord, you need to add the bot to your server and get the channel ID.\n\n"
@@ -69,7 +82,7 @@ class SettingsCommand(BaseCommand):
                     self.update_settings(
                         "discord_channel", "Copy and paste the Discord channel ID here"
                     )
-                    console.print("Discord channel updated")
+                    console.print("Discord channel updated\n")
                 case "3":
                     self.update_settings(
                         "notification_email", "Notification emails (comma separated)"
@@ -96,10 +109,23 @@ class SettingsCommand(BaseCommand):
                     self.update_settings(
                         "slack_channel", "Enter your Slack channel ID(e.g. #general)"
                     )
-                    console.print("Slack channel updated")
+                    console.print("Slack channel updated\n")
                 case "5":
-                    self.update_settings("telegram_channel", "Telegram channel")
-                    console.print("Telegram channel updated")
+                    console.print(
+                        "To set up Telegram, you need to add the bot to your channel.\n\n"
+                        + "Invite @satori_ci_bot as a new member to your channel."
+                    )
+                    _ = input(
+                        "After inviting the bot to your channel, press any key to continue..."
+                    )
+                    console.print(
+                        "Obtain the Channel ID: access your channel via the web at Telegram Web."
+                        + "The Channel ID is the number that appears after the # in the URL"
+                    )
+                    self.update_settings(
+                        "telegram_channel", "Insert the Channel ID(e.g. -15050500050)"
+                    )
+                    console.print("Telegram channel updated\n")
                 case _:
                     pass
 
@@ -108,7 +134,7 @@ class SettingsCommand(BaseCommand):
             return "not set"
         get_config = []
         if key == "datadog":
-            get_config = ["datadog_api_key"]
+            get_config = ["datadog_api_key", "datadog_site"]
         if key == "discord":
             get_config = ["discord_channel"]
         if key == "email":
@@ -123,11 +149,13 @@ class SettingsCommand(BaseCommand):
             values.append(val or "not set")
         return " | ".join(values)
 
-    def update_settings(self, key: str, prompt: str) -> None:
+    def update_settings(
+        self, key: str, prompt: str, choices: list[str] | None = None
+    ) -> None:
         _ = client.put(
             f"/teams/{self.team}/config",
             json={
                 "name": key,
-                "value": Prompt.ask(prompt),
+                "value": Prompt.ask(prompt, choices=choices),
             },
         )
