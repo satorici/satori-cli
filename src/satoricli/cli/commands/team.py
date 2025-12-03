@@ -33,6 +33,7 @@ ACTIONS = Literal[
     "settings",
     "playbooks",
     "visibility",
+    "logs",
 ]
 
 
@@ -118,7 +119,9 @@ class TeamCommand(BaseCommand):
             info = client.put(f"/teams/{id}/token").json()
         elif action == "del":
             if email:
-                client.request("DELETE", f"/teams/{id}/members", params={"email": email})
+                client.request(
+                    "DELETE", f"/teams/{id}/members", params={"email": email}
+                )
                 console.print("Team member deleted")
             elif repo:
                 client.request("DELETE", f"/teams/{id}/repos", json={"repo": repo})
@@ -168,5 +171,7 @@ class TeamCommand(BaseCommand):
                     f"Allowed values for visibility: {VISIBILITY_VALUES}"
                 )
                 return 1
+        elif action == "logs":
+            info = client.get(f"/teams/{id}/logs").json()
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48, table=True)

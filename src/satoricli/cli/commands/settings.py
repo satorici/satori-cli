@@ -49,11 +49,20 @@ class SettingsCommand(BaseCommand):
                 case "9":
                     break
                 case "0":
-                    self.update_settings(
-                        "default_notification",
+                    default_dict: dict[str, bool] = {
+                        "slack": False,
+                        "discord": False,
+                        "datadog": False,
+                        "email": False,
+                        "telegram": False,
+                    }
+                    user_input: str = Prompt.ask(
                         "Please select a default notification method",
-                        ["datadog", "discord", "email", "slack", "telegram", "none"],
+                        choices=[k for k in default_dict.keys()] + ["none"],
                     )
+                    if user_input != "none":
+                        default_dict[user_input] = True
+                    _ = client.put(f"/teams/{self.team}/logs", json=default_dict)
                     console.print("Default notification method updated\n")
                 case "1":
                     console.print(
@@ -137,7 +146,9 @@ class SettingsCommand(BaseCommand):
     def get_settings(self, key: VALID_KEYS):
         get_config = []
         if key == "default":
-            get_config = ["default_notification"]
+            logs: dict[str, bool] = client.get(f"/teams/{self.team}/logs").json()
+            filtered = list(filter(lambda x: logs[x] is True, logs))
+            return " | ".join(filtered) if filtered else "not set"
         if key == "datadog":
             get_config = ["datadog_api_key", "datadog_site"]
         if key == "discord":
