@@ -389,6 +389,22 @@ test:
 
   shards:
     - satori shards --shard 1/10 --input 0.0.0.0/24 --exclude 192.168.0.0/16
+  
+  settings:
+    get:
+      setParallel: true
+      default:
+        - satori settings default
+      datadog:
+        - satori settings datadog
+      discord:
+        - satori settings discord
+      email:
+        - satori settings email
+      slack:
+        - satori settings slack
+      telegram:
+        - satori settings telegram
 
 negative_test:
   assertReturnCodeNot: 0
