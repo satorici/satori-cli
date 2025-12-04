@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+import email
 from typing import Literal, TypeAlias, get_args
 
 from satoricli.api import client
@@ -7,12 +8,22 @@ from rich.prompt import Prompt
 
 from .base import BaseCommand
 
-VALID_KEYS: TypeAlias = Literal[
+OPTIONS: TypeAlias = Literal[
     "default",
     "datadog",
     "discord",
     "email",
     "slack",
+    "telegram",
+]
+KEYS: TypeAlias = Literal[
+    "default",
+    "datadog_api_key",
+    "datadog_site",
+    "discord",
+    "email",
+    "slack_workspace",
+    "slack_channel",
     "telegram",
 ]
 
@@ -24,77 +35,44 @@ class SettingsCommand(BaseCommand):
         _ = parser.add_argument(
             "key",
             metavar="KEY",
-            choices=get_args(VALID_KEYS),
+            choices=get_args(KEYS),
             nargs="?",
         )
         _ = parser.add_argument("value", metavar="VALUE", nargs="?")
 
     def __call__(
-        self, key: VALID_KEYS | None = None, value: str | None = None, **kwargs
+        self, key: KEYS | None = None, value: str | None = None, **kwargs
     ) -> None:
-        self.team: str = kwargs.get("team") or "Private"
-        if key:
-            match key:
-                case "default":
-                    if value:
-                        self.set_default(value)
-                    else:
-                        logs: dict[str, bool] = client.get(
-                            f"/teams/{self.team}/logs"
-                        ).json()
-                        filtered = list(filter(lambda x: logs[x] is True, logs))
-                        console.print(
-                            "Default notification method: " + " | ".join(filtered)
-                        )
-                case "datadog":
-                    if value:
-                        if "|" not in value:
-                            console.print(
-                                "Datadog API key and site must be separated by a pipe (|)"
-                                + "\nExample: <api_key>|<site>"
-                            )
-                            return
-                        api_key, site = value.split("|")
-                        self.set_setting("datadog_api_key", api_key.strip())
-                        self.set_setting("datadog_site", site.strip())
-                        console.print("Datadog API key updated")
-                    else:
-                        console.print(self.get_setting("datadog"))
-                case "discord":
-                    if value:
-                        self.set_setting("discord_channel", value)
-                        console.print("Discord channel updated")
-                    else:
-                        console.print(self.get_setting("discord"))
-                case "email":
-                    if value:
-                        self.set_setting("notification_email", value)
-                        console.print("Notification email updated")
-                    else:
-                        console.print(self.get_setting("email"))
-                case "slack":
-                    if value:
-                        if "|" not in value:
-                            console.print(
-                                "Slack channel and webhook URL must be separated by a pipe (|)"
-                                + "\nExample: <workspace>|<channel>"
-                            )
-                            return
-                        workspace, channel = value.split("|")
-                        self.set_setting("slack_workspace", workspace.strip())
-                        self.set_setting("slack_channel", channel.strip())
-                        console.print("Slack channel updated")
-                    else:
-                        console.print(self.get_setting("slack"))
-                case "telegram":
-                    if value:
-                        self.set_setting("telegram_channel", value)
-                        console.print("Telegram channel updated")
-                    else:
-                        console.print(self.get_setting("telegram"))
+        self.run_settings(key, value, kwargs.get("team") or "Private")
+
+    def run_settings(
+        self, key: KEYS | None = None, value: str | None = None, team: str = "Private"
+    ) -> None:
+        self.team: str = team
+        if key == "default":
+            if value:
+                self.set_default(value)
+            else:
+                logs: dict[str, bool] = client.get(f"/teams/{self.team}/logs").json()
+                filtered = list(filter(lambda x: logs[x] is True, logs))
+                console.print("Default notification method: " + " | ".join(filtered))
+            return
+        if key is not None:
+            if value:
+                self.set_setting(key, value)
+                console.print(f"{key} updated")
+            else:
+                option = key
+                if key == "email":
+                    option = "notification_email"
+                if key == "discord":
+                    option = "discord_channel"
+                if key == "telegram":
+                    option = "telegram_channel"
+                console.print(self.get_by_key(option))
             return
         while True:
-            display_options: tuple[VALID_KEYS] = get_args(VALID_KEYS)
+            display_options: tuple[OPTIONS] = get_args(OPTIONS)
             for i, option in enumerate(display_options, 0):
                 val = self.get_setting(option)
                 console.print(f"{i}. {option}: {val}")
@@ -185,7 +163,11 @@ class SettingsCommand(BaseCommand):
                 case _:
                     pass
 
-    def get_setting(self, key: VALID_KEYS):
+    def get_by_key(self, key: str):
+        val = client.get(f"/teams/{self.team}/config/{key}").text
+        return val
+
+    def get_setting(self, key: OPTIONS):
         get_config = []
         if key == "default":
             logs: dict[str, bool] = client.get(f"/teams/{self.team}/logs").json()

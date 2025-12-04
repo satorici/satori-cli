@@ -15,6 +15,7 @@ from satoricli.cli.utils import (
 from .base import BaseCommand
 from .dashboard import DashboardCommand
 from .report import ReportCommand
+from .settings import SettingsCommand
 
 ACTIONS = Literal[
     "show",
@@ -147,7 +148,8 @@ class TeamCommand(BaseCommand):
             info = client.get(f"/teams/{id}/reports").json()
             return ReportCommand.print_report_list(info["rows"])
         elif action == "settings":
-            info = client.get(f"/teams/{id}/config").json()
+            SettingsCommand().run_settings(team=id)
+            return
         elif action == "playbooks":
             info = client.get(f"/teams/{id}/playbooks").json()
             if not kwargs["json"]:
