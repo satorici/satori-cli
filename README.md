@@ -1,3 +1,11 @@
+<div align="center">
+
+[![Discord](https://img.shields.io/badge/Discord-Join%20our%20community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/NJHQ4MwYtt)
+
+</div>
+
+---
+
 # What is Satori CI?
 
 Satori allows you to assert how systems and software behave. Automatize software and system testing using three different approaches:
