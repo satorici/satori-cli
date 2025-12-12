@@ -1,10 +1,10 @@
 from argparse import ArgumentParser
-import email
 from typing import Literal, TypeAlias, get_args
+
+from rich.prompt import Prompt
 
 from satoricli.api import client
 from satoricli.cli.utils import console
-from rich.prompt import Prompt
 
 from .base import BaseCommand
 
@@ -38,17 +38,13 @@ class SettingsCommand(BaseCommand):
             choices=get_args(OPTIONS),
             nargs="?",
         )
-        _ = parser.add_argument("value", metavar="VALUE", nargs="?")
 
-    def __call__(
-        self, key: OPTIONS | None = None, value: str | None = None, **kwargs
-    ) -> None:
-        self.run_settings(key, value, kwargs.get("team") or "Private")
+    def __call__(self, key: OPTIONS | None = None, **kwargs) -> None:
+        self.run_settings(key, kwargs.get("team") or "Private")
 
     def run_settings(
         self,
         key: OPTIONS | None = None,
-        value: str | None = None,
         team: str = "Private",
     ) -> None:
         self.team: str = team
