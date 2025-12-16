@@ -54,7 +54,7 @@ test:
   local:
     setParallel: true
     # execute a Satori CI playbook locally and show the report once its done
-    pass_report:
+    local_report:
       - satori local ./ -p .satori/import/pass.yml --report
 
     # execute a Satori CI playbook locally on a directory with a .satori.yml playbook
@@ -62,7 +62,7 @@ test:
       - satori local .satori/import --sync
 
     # execute a public Satori CI playbook locally
-    url_output:
+    public_output:
       - satori local ./ -p satori://secrets/semgrep.yml --output
 
     # define inputs on your playbook and execute it with different combination of parameters
