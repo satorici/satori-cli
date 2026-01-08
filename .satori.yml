@@ -389,6 +389,10 @@ test:
 
   shards:
     - satori shards --shard 1/10 --input 0.0.0.0/24 --exclude 192.168.0.0/16
+
+  template:
+    list:
+      - satori templates
   
   # Interactive settings (blocking)
   # settings:

@@ -28,6 +28,8 @@ from .teams import TeamsCommand
 from .update import UpdateCommand
 from .shards import ShardsCommand
 from .settings import SettingsCommand
+from .template import TemplateCommand
+from .templates import TemplatesCommand
 from .width import WidthCommand
 from .whoami import WhoamiCommand
 
@@ -59,6 +61,8 @@ class RootCommand(BaseCommand):
         WidthCommand,
         WhoamiCommand,
         SettingsCommand,
+        TemplateCommand,
+        TemplatesCommand,
     )
     name = "satori"
     global_options = (profile_arg, json_arg, debug_arg, export_arg, team_arg, config_arg)
