@@ -32,6 +32,7 @@ ACTIONS = Literal[
     "status",
     "set-team",
     "visibility",
+    "issue",
 ]
 
 
@@ -66,6 +67,7 @@ class ReportCommand(BaseCommand):
         parser.add_argument(
             "--unredacted", action="store_true", help="Unredacted output"
         )
+        parser.add_argument("--query", help="Search query for issue template")
 
     def __call__(
         self,
@@ -75,6 +77,7 @@ class ReportCommand(BaseCommand):
         filter_tests: list,
         text_format: Literal["plain", "md"],
         unredacted: bool,
+        query: str,
         **kwargs,
     ):
         if action == "show":
@@ -118,6 +121,12 @@ class ReportCommand(BaseCommand):
                 params={"team_name": action2},
             ).json()
             autoformat(res)
+        elif action == "issue":
+            if not action2:
+                error_console.print("Please specify an issue template ID")
+                return 1
+            res = client.get(f"/reports/{id}/issue/{action2}", params={"q": query}).text
+            console.print(res)
         return 0
 
     @staticmethod
