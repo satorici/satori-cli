@@ -2,6 +2,7 @@ import re
 from argparse import ArgumentParser
 from typing import Literal, get_args
 
+from rich.markdown import Markdown
 from rich.syntax import Syntax
 from rich.table import Table
 
@@ -125,8 +126,14 @@ class ReportCommand(BaseCommand):
             if not action2:
                 error_console.print("Please specify an issue template ID")
                 return 1
-            res = client.get(f"/reports/{id}/issue/{action2}", params={"q": query}).text
-            console.print(res)
+            res = client.get(
+                f"/reports/{id}/issue/{action2}", params={"q": query}
+            ).json()
+            if kwargs["json"]:
+                autoformat(res, jsonfmt=kwargs["json"])
+            else:
+                md = Markdown("# " + res["title"] + "\n\n" + res["body"])
+                console.print(md)
         return 0
 
     @staticmethod
