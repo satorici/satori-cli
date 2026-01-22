@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from typing import Literal, get_args
 
 from rich.markdown import Markdown
+from rich.prompt import Prompt
 from rich.syntax import Syntax
 from rich.table import Table
 
@@ -127,13 +128,24 @@ class ReportCommand(BaseCommand):
                 error_console.print("Please specify an issue template ID")
                 return 1
             res = client.get(
-                f"/reports/{id}/issue/{action2}", params={"q": query}
+                f"/reports/{id}/issue/{action2}",
+                params={"q": query},
             ).json()
             if kwargs["json"]:
                 autoformat(res, jsonfmt=kwargs["json"])
             else:
                 md = Markdown("# " + res["title"] + "\n\n" + res["body"])
                 console.print(md)
+            p = Prompt.ask(
+                f"Do you want to publish this issue on [b]{res['repository']}[/]?",
+                choices=["y", "n"],
+            )
+            if p == "y":
+                _ = client.post(
+                    f"/reports/{id}/issue/{action2}",
+                    params={"repository": res["repository"]},
+                )
+                console.print("Issue published")
         return 0
 
     @staticmethod
