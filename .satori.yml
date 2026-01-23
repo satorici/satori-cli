@@ -96,10 +96,10 @@ test:
   report:
     # run synchronously a local playbook
     new_sync:
-      - satori run .satori/import/pass.yml -s | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
+      - satori run .satori/import/pass.yml -s 2>&1 | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
 
     dont_save:
-      - satori run .satori/import/pass.yml --save-report 'False' --save-output 'False' --report --output | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
+      - satori run .satori/import/pass.yml --save-report 'False' --save-output 'False' --report --output 2>&1 | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
 
     # list the reports generated
     list:
@@ -156,7 +156,7 @@ test:
 
     # run asynchronously a local playbook
     new_async: # new report for stop is needed because the first one is already stopped
-      - satori run .satori/import/pass.yml | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
+      - satori run .satori/import/pass.yml 2>&1 | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
 
     # stop a running report
     stop: # wait until start
