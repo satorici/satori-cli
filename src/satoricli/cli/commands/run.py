@@ -464,8 +464,8 @@ class RunCommand(BaseCommand):
 
         if not is_monitor and not kwargs["json"]:
             for report_id in ids:
-                console.print("Report ID:", report_id)
-                console.print(f"Report: https://satori.ci/report/{report_id}")
+                error_console.print("Report ID:", report_id)
+                error_console.print(f"Report: https://satori.ci/report/{report_id}")
         elif not is_monitor and kwargs["json"]:
             console.print_json(data={"ids": ids})
         elif is_monitor and not kwargs["json"]:

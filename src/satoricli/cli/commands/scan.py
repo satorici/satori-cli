@@ -201,8 +201,8 @@ class ScanCommand(BaseCommand):
         report_index, output_index = get_report_output_cmd_index()
         if total_commits and total_commits > 1:
             live_output = False
-            console.print(f"Scan ID: {scan_id}")
-            console.print(f"Scan: https://satori.ci/scan/{scan_id}")
+            error_console.print(f"Scan ID: {scan_id}")
+            error_console.print(f"Scan: https://satori.ci/scan/{scan_id}")
         report_id_printed = False
         while True:
             res = client.get(f"/scan/{scan_id}/reports", params={"limit": 120}).json()
@@ -214,8 +214,8 @@ class ScanCommand(BaseCommand):
                 # Print the report id only once
                 report_id_printed = True
                 report_id = res["rows"][0]["id"]
-                console.print("Report ID:", report_id)
-                console.print(f"Report: https://satori.ci/report/{report_id}")
+                error_console.print("Report ID:", report_id)
+                error_console.print(f"Report: https://satori.ci/report/{report_id}")
 
             if res["rows"]:
                 for row in res["rows"]:
