@@ -1,6 +1,6 @@
 import re
 from argparse import ArgumentParser
-from typing import Literal, get_args
+from typing import Any, Literal, get_args
 
 from rich.markdown import Markdown
 from rich.prompt import Prompt
@@ -70,16 +70,18 @@ class ReportCommand(BaseCommand):
             "--unredacted", action="store_true", help="Unredacted output"
         )
         parser.add_argument("--query", help="Search query for issue template")
+        parser.add_argument("--title", help="Title for the issue")
 
     def __call__(
         self,
         id: str,
         action: ACTIONS,
         action2: str,
-        filter_tests: list,
+        filter_tests: list[str],
         text_format: Literal["plain", "md"],
         unredacted: bool,
         query: str,
+        title: str,
         **kwargs,
     ):
         if action == "show":
@@ -134,7 +136,8 @@ class ReportCommand(BaseCommand):
             if kwargs["json"]:
                 autoformat(res, jsonfmt=kwargs["json"])
             else:
-                md = Markdown("# " + res["title"] + "\n\n" + res["body"])
+                display_title = title or res["title"]
+                md = Markdown(f"# {display_title}\n\n{res['body']}")
                 console.print(md)
             p = Prompt.ask(
                 f"Do you want to publish this issue on [b]{res['repository']}[/]?",
@@ -143,13 +146,13 @@ class ReportCommand(BaseCommand):
             if p == "y":
                 _ = client.post(
                     f"/reports/{id}/issue/{action2}",
-                    params={"repository": res["repository"]},
+                    params={"repository": res["repository"], "title": title},
                 )
                 console.print("Issue published")
         return 0
 
     @staticmethod
-    def print_report_list(report_list: list) -> None:
+    def print_report_list(report_list: list[dict[str, Any]]) -> None:
         """Print reports list as a table.
 
         Parameters
