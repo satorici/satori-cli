@@ -3,6 +3,7 @@ from importlib import metadata
 from typing import Optional
 
 from httpx import Client, Response, Timeout
+from httpx_retries import Retry, RetryTransport
 
 from .exceptions import SatoriRequestError
 
@@ -23,11 +24,14 @@ def raise_on_error(res: Response):
 
 
 timeout = Timeout(60.0, connect=10.0)
+retry = Retry(total=3, backoff_factor=10)
+transport = RetryTransport(retry=retry)
 client = Client(
     base_url=HOST,
     follow_redirects=True,
     event_hooks={"response": [raise_on_error]},
     timeout=timeout,
+    transport=transport,
 )
 
 

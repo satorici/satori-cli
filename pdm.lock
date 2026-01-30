@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:5109e014c9aa171f16b7b718f3620b2adf3640de3c69c68c650b4fa9d501e38b"
+content_hash = "sha256:5305635d7dc486af0ab504994229b0b1335912060d5c4c95fcd5d8e9610827de"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -141,6 +141,19 @@ dependencies = [
 files = [
     {file = "httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad"},
     {file = "httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc"},
+]
+
+[[package]]
+name = "httpx-retries"
+version = "0.4.5"
+requires_python = ">=3.9"
+summary = "A retry layer for HTTPX."
+dependencies = [
+    "httpx>=0.20.0",
+]
+files = [
+    {file = "httpx_retries-0.4.5-py3-none-any.whl", hash = "sha256:ae22d6ef197a2da49242246a01d721474cbd6516b1fef155f6da694ee410bb37"},
+    {file = "httpx_retries-0.4.5.tar.gz", hash = "sha256:acee306d7384eefad71ac12fefe8b13d7b41c19595c538e68d9bd7e40e59539d"},
 ]
 
 [[package]]
