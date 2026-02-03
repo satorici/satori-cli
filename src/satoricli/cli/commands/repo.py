@@ -1,7 +1,7 @@
 import time
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal, Optional, get_args
 
 import httpx
 
@@ -22,6 +22,19 @@ from ..utils import (
 from .base import BaseCommand
 from .report import ReportCommand
 
+ACTIONS = Literal[
+    "show",
+    "commits",
+    "run",
+    "pending",
+    "tests",
+    "playbook",
+    "visibility",
+    "params",
+    "add",
+    "del",
+]
+
 
 class RepoCommand(BaseCommand):
     name = "repo"
@@ -31,16 +44,7 @@ class RepoCommand(BaseCommand):
         parser.add_argument(
             "action",
             metavar="ACTION",
-            choices=(
-                "show",
-                "commits",
-                "run",
-                "pending",
-                "tests",
-                "playbook",
-                "visibility",
-                "params",
-            ),
+            choices=get_args(ACTIONS),
             nargs="?",
             default="show",
             help="action to perform",
@@ -55,7 +59,7 @@ class RepoCommand(BaseCommand):
         parser.add_argument("--delete-commits", action="store_true")
         parser.add_argument("-d", "--data", help="Secrets")
         parser.add_argument("-b", "--branch", default="main", help="Repo branch")
-        #parser.add_argument("--filter", help="Filter names")
+        # parser.add_argument("--filter", help="Filter names")
         parser.add_argument("-a", "--all", action="store_true")
         parser.add_argument("-l", "--limit", type=int, default=100, help="Limit number")
         parser.add_argument("--fail", action="store_true")
@@ -73,23 +77,14 @@ class RepoCommand(BaseCommand):
     def __call__(
         self,
         repository: str,
-        action: Literal[
-            "show",
-            "commits",
-            "run",
-            "pending",
-            "tests",
-            "playbook",
-            "params",
-            "visibility",
-        ],
+        action: ACTIONS,
         action2: Literal["list", "add", "del", "Public", "Private", "Unlisted"],
         playbook_uri: Optional[str],
         sync: bool,
         output: bool,
         report: bool,
         data: Optional[str],
-        #filter: Optional[str],
+        # filter: Optional[str],
         all: bool,
         limit: int,
         fail: bool,
@@ -97,16 +92,12 @@ class RepoCommand(BaseCommand):
         pending: bool,
         visibility: Literal["public", "private", "unlisted"],
         **kwargs,
-    ):
+    ) -> int:
+        info = None
         if action == "tests":
             info = client.get(
                 f"/repos/{repository}/tests",
-                params={
-                    #"filter": filter,
-                    "all": all,
-                    "limit": limit,
-                    "fail": fail,
-                },
+                params={"all": all, "limit": limit, "fail": fail},
             ).json()
         elif action == "run":
             if playbook and not playbook.startswith("satori://"):
@@ -131,7 +122,7 @@ class RepoCommand(BaseCommand):
 
             self.repo_run(info, sync, output, report, kwargs)
 
-            return
+            return 0
         elif action == "pending":
             info = client.get(f"/repos/{repository}/pending").json()
         elif action == "show":
@@ -178,7 +169,7 @@ class RepoCommand(BaseCommand):
                     for report in reports["rows"]
                 ]
                 autotable(reports_cols)
-            return
+            return 0
         elif action == "commits":
             info = client.get(f"/repos/{repository}/commits").json()
             for row in info:
@@ -187,17 +178,17 @@ class RepoCommand(BaseCommand):
                 console.print_json(data=info)
             else:
                 autotable(info)
-            return
+            return 0
         elif action == "playbook":
             if action2 == "list":
                 info = client.get(f"/repos/{repository}/playbooks").json()
                 if not kwargs["json"]:
                     autotable(BootstrapTable(**info))
-                    return
+                    return 0
             elif action2 == "add":
                 if not playbook_uri:
                     error_console.print("Please insert a playbook name")
-                    raise
+                    return 1
                 info = client.post(
                     f"/repos/{repository}/playbooks", params={"playbook": playbook_uri}
                 ).json()
@@ -215,7 +206,7 @@ class RepoCommand(BaseCommand):
                 info = client.get(f"/repos/{repository}/secrets").json()
                 if not kwargs["json"]:
                     autotable(BootstrapTable(**info), numerate=True)
-                    return
+                    return 0
             elif action2 == "add":
                 info = client.post(
                     f"/repos/{repository}/secrets", params={"secret": playbook_uri}
@@ -225,7 +216,16 @@ class RepoCommand(BaseCommand):
                     f"/repos/{repository}/secrets", params={"key": playbook_uri}
                 )
                 info = {"message": f"Secret {playbook_uri} deleted"}
-        autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
+        elif action == "add":
+            team = kwargs.get("team") or "Private"
+            info = client.post(f"/teams/{team}/repos", json={"repo": repository}).json()
+        elif action == "del":
+            team = kwargs.get("team") or "Private"
+            client.request("DELETE", f"/teams/{team}/repos", json={"repo": repository})
+            console.print(f"Repo deleted for team [bold]{team}[/bold]")
+            return 0
+
+        _ = autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
         return 0
 
     @staticmethod
