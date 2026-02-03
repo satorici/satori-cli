@@ -135,7 +135,13 @@ class ScanCommand(BaseCommand):
                 },
             ).json()
             if sync or output or report:
-                return self.scan_sync(info["id"], kwargs, output, report)
+                return self.scan_sync(
+                    info["id"],
+                    kwargs,
+                    output,
+                    report,
+                    total_commits=1,
+                )
         elif action == "clean":
             client.delete(
                 f"scan/{repository}/reports", params={"delete_commits": delete_commits}
