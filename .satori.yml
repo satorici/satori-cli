@@ -321,6 +321,9 @@ test:
     #delete:
     #  - satori scan ${{test.scan.run.stdout}} delete
 
+    hccpf:
+      - satori scan satoridev01/hccpf --output
+
   teams:
     # list teams and repos without teams
     list:
