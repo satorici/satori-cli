@@ -18,6 +18,7 @@ from satorici.validator import validate_settings
 from satoricli.api import client
 from satoricli.bundler import make_bundle
 from satoricli.cli.commands.scan import ScanCommand
+from satoricli.cli.utils import log
 from satoricli.validations import get_parameters, validate_parameters
 
 from ..utils import (
@@ -175,7 +176,7 @@ def warn_settings(settings: dict):
         validate_settings(settings)
 
         for w in ws:
-            error_console.print("[warning]WARNING:[/]", w.message)
+            log.warning(w.message)
 
 
 def get_parameters_from_env(playbook_path: str):
@@ -427,8 +428,8 @@ class RunCommand(BaseCommand):
                     return 1
 
                 if missing_ymls(config, path):
-                    error_console.print(
-                        "[warning]WARNING:[/] There are some .satori.yml outside the root "
+                    log.warning(
+                        "There are some .satori.yml outside the root "
                         "folder that have not been imported."
                     )
 

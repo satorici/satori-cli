@@ -33,4 +33,11 @@ team_arg = ArgumentParser(add_help=False)
 team_arg.add_argument("-T", "--team", type=str, help="Run request as specific team")
 
 config_arg = ArgumentParser(add_help=False)
-config_arg.add_argument("--config", type=str, help="Path to credentials file", metavar="PATH")
+config_arg.add_argument(
+    "--config", type=str, help="Path to credentials file", metavar="PATH"
+)
+
+verbose_arg = ArgumentParser(add_help=False)
+verbose_arg.add_argument(
+    "-v", "--verbose", action="store_true", help="Display verbose info"
+)

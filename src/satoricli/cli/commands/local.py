@@ -18,6 +18,7 @@ from satori_runner import run
 from satoricli.api import client
 from satoricli.bundler import make_bundle
 from satoricli.cli.commands.report import ReportCommand
+from satoricli.cli.utils import log
 from satoricli.validations import validate_parameters
 
 from ..utils import (
@@ -250,8 +251,8 @@ class LocalCommand(BaseCommand):
             bundle = make_bundle(playbook_path, playbook_path.parent)
 
             if missing_ymls(config, str(workdir)):
-                error_console.print(
-                    "[warning]WARNING:[/] There are some .satori.yml outside the root "
+                log.warning(
+                    "There are some .satori.yml outside the root "
                     "folder that have not been imported."
                 )
         else:

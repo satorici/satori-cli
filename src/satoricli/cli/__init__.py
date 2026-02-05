@@ -26,16 +26,13 @@ def check_for_update():
         response = httpx.get("https://pypi.org/pypi/satori-ci/json")
         response.raise_for_status()
     except Exception:
-        error_console.print("[warning]WARNING:[/] Unable to get latest version.")
+        log.warning("Unable to get latest version.")
         return
 
     latest = response.json()["info"]["version"]
 
     if version.parse(latest) > version.parse(VERSION):
-        error_console.print(
-            f"[warning]WARNING:[/] Newer version available v{latest}, update with:",
-            "satori update",
-        )
+        log.warning("Newer version available v%s, update with: satori update", latest)
 
 
 def main():
@@ -43,12 +40,17 @@ def main():
     error_console.print(
         f"[dim]Satori CI {VERSION} - Automated Testing - Started on [b bright_magenta]{timestamp}"
     )
+    root = RootCommand()
+    args = root.parse_args()
+
+    # Set debug/verbose mode
+    if args["debug"]:
+        log.setLevel(logging.DEBUG)
+    elif args["verbose"]:
+        log.setLevel(logging.WARNING)
 
     if environ.get("SATORI_CLI_NO_UPDATE_CHECK") != "1":
         check_for_update()
-
-    root = RootCommand()
-    args = root.parse_args()
 
     if len(sys.argv) > 1 and sys.argv[1] == "update":
         try:
@@ -66,7 +68,9 @@ def main():
         if config and "width" in config:
             configure_console_width(config["width"])
     except Exception as e:
-        if not isinstance(args["func"], ConfigCommand) and not isinstance(args["func"], ShardsCommand):
+        if not isinstance(args["func"], ConfigCommand) and not isinstance(
+            args["func"], ShardsCommand
+        ):
             error_console.print(
                 f"[error]ERROR:[/] Your .satori_credentials.yml file is corrupted or not found."
             )
@@ -84,9 +88,14 @@ def main():
                 f"[error]ERROR:[/] Cannot find your profile in your .satori_credentials.yml file. Is it corrupted?"
             )
             sys.exit(1)
-    elif not isinstance(args["func"], ConfigCommand) and not (
-        # allow playbooks --public
-        args["public"] and isinstance(args["func"], PlaybooksCommand)) and not isinstance(args["func"], ShardsCommand):
+    elif (
+        not isinstance(args["func"], ConfigCommand)
+        and not (
+            # allow playbooks --public
+            args["public"] and isinstance(args["func"], PlaybooksCommand)
+        )
+        and not isinstance(args["func"], ShardsCommand)
+    ):
         # Allow config cmd only if profile not found
         error_console.print(f"[error]ERROR:[/] Profile {args['profile']} not found.")
 
@@ -112,10 +121,6 @@ def main():
                 f"[error]ERROR:[/] Cannot find your profile in your .satori_credentials.yml file. Is it corrupted?"
             )
             sys.exit(1)
-
-    # Set debug mode
-    if args["debug"]:
-        log.setLevel(logging.DEBUG)
 
     try:
         exit_code = root.run(args)

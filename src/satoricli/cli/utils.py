@@ -132,12 +132,12 @@ def configure_console_width(width: Optional[int] = None):
             actual_width = temp_console.width
 
             if width > actual_width:
-                error_console.print(
-                    f"[warning]WARNING:[/] Configured width ({width}) is larger than terminal width ({actual_width})."
+                log.warning(
+                    "Configured width (%s) is larger than terminal width (%s).",
+                    width,
+                    actual_width,
                 )
-                error_console.print(
-                    f"[warning]WARNING:[/] Using terminal width ({actual_width}) instead."
-                )
+                log.warning("Using terminal width (%s) instead.", actual_width)
                 width = actual_width
         # In non-interactive mode (CI/subprocess), use configured width without validation
 
@@ -711,7 +711,7 @@ def validate_config(playbook: Path, params: set):
 
         for warning in w:
             if warning.category == MissingAssertionsWarning and "import" not in config:
-                error_console.print("[warning]WARNING:[/] No asserts were defined")
+                log.warning("No asserts were defined")
     except TypeError:
         error_console.print("Error: playbook must be a mapping type")
         return False

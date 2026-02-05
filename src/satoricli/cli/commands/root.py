@@ -5,7 +5,15 @@ from importlib import metadata
 from rich.console import Group
 from rich.table import Column, Table
 
-from ..arguments import debug_arg, export_arg, json_arg, profile_arg, team_arg, config_arg
+from ..arguments import (
+    debug_arg,
+    export_arg,
+    json_arg,
+    profile_arg,
+    team_arg,
+    config_arg,
+    verbose_arg,
+)
 from .base import BaseCommand
 from .config import ConfigCommand
 from .dashboard import DashboardCommand
@@ -65,12 +73,20 @@ class RootCommand(BaseCommand):
         TemplatesCommand,
     )
     name = "satori"
-    global_options = (profile_arg, json_arg, debug_arg, export_arg, team_arg, config_arg)
+    global_options = (
+        profile_arg,
+        json_arg,
+        debug_arg,
+        export_arg,
+        team_arg,
+        config_arg,
+        verbose_arg,
+    )
     default_subcommand = DashboardCommand
 
     def register_args(self, parser: ArgumentParser):
         parser.add_argument(
-            "-v", "--version", action="version", version=f"%(prog)s {VERSION}"
+            "--version", action="version", version=f"%(prog)s {VERSION}"
         )
         parser.add_argument(
             "--pending", action="store_true", help="Show pending actions"
@@ -309,11 +325,23 @@ class RootCommand(BaseCommand):
 
         tables.append(shards := HelpTable(*cols(), title="Shards"))
         rows = [
-            ("satori shards --shard X/Y --input INPUT", "Divide massive datasets into smaller chunks for distributed processing"),
+            (
+                "satori shards --shard X/Y --input INPUT",
+                "Divide massive datasets into smaller chunks for distributed processing",
+            ),
             ("--shard X/Y", "Shard index X out of Y total shards (required)"),
-            ("--input INPUT", "Input file path or direct IP/CIDR/range/domain/URL (required)"),
-            ("--exclude PATH or ENTRY", "Exclusion file path or direct IP/CIDR/range/domain/URL to exclude"),
-            ("--seed N", "Seed for deterministic pseudorandom distribution (default: 1)"),
+            (
+                "--input INPUT",
+                "Input file path or direct IP/CIDR/range/domain/URL (required)",
+            ),
+            (
+                "--exclude PATH or ENTRY",
+                "Exclusion file path or direct IP/CIDR/range/domain/URL to exclude",
+            ),
+            (
+                "--seed N",
+                "Seed for deterministic pseudorandom distribution (default: 1)",
+            ),
             ("--results PATH", "Output file path (writes to stdout if omitted)"),
         ]
         add_rows(shards, rows)
