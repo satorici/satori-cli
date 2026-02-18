@@ -167,7 +167,7 @@ class RootCommand(BaseCommand):
             ("satori playbooks", "List your private playbooks"),
             ("satori playbooks --public", "List the public playbooks"),
             ("satori playbook ID", "Show a certain playbook"),
-            ("satori playbook ID public", "Toggles the playbook's visibility"),
+            ("satori playbook ID visibility public", "Toggles the playbook's visibility"),
             ("satori playbook ID delete", "Delete the playbook"),
         ]
         add_rows(playbooks, rows)
@@ -193,7 +193,7 @@ class RootCommand(BaseCommand):
                 "satori report ID files",
                 "Download the files created (if Files was set to True in settings)",
             ),
-            ("satori report ID public", "Toggles the report's visibility"),
+            ("satori report ID visibility public", "Toggles the report's visibility"),
             ("satori report ID stop", "Stop the current report execution"),
             ("satori report ID delete", "Delete the report ID"),
         ]
@@ -232,7 +232,7 @@ class RootCommand(BaseCommand):
                 "Delete the reports associated to the monitor ID",
             ),
             ("satori monitor ID delete", "Delete the monitor ID"),
-            ("satori monitor ID public", "Toggles the monitor's visibility"),
+            ("satori monitor ID visibility public", "Toggles the monitor's visibility"),
         ]
         add_rows(monitors, rows)
 
@@ -269,7 +269,7 @@ class RootCommand(BaseCommand):
                 "Delete the reports associated to the scan",
             ),
             ("satori scan ID delete", "Delete the scan"),
-            ("satori scan ID public", "Toggle the scan's visibility"),
+            ("satori scan ID visibility public", "Toggle the scan's visibility"),
         ]
         add_rows(scans, rows)
 
