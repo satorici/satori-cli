@@ -8,7 +8,9 @@ from argparse import ArgumentParser
 from math import ceil
 from typing import Literal, Optional, get_args
 
+from rich.live import Live
 from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn
+from rich.table import Table
 
 from satoricli.api import client, disable_error_raise
 from satoricli.cli.utils import (
@@ -44,7 +46,7 @@ def capitalize(s: Optional[str]) -> Optional[str]:
 def add_pagination_args(parser: ArgumentParser) -> None:
     """Add common pagination arguments to a parser."""
     parser.add_argument("-p", "--page", type=int, default=1)
-    parser.add_argument("-l", "--limit", type=int, default=20)
+    parser.add_argument("-l", "--limit", type=int, default=10)
 
 
 def add_search_args(parser: ArgumentParser) -> None:
@@ -131,7 +133,7 @@ class ReportsCommand(BaseCommand):
         self,
         action: Optional[str],
         page: int = 1,
-        limit: int = 20,
+        limit: int = 10,
         filter: Optional[str] = None,
         public: bool = False,
         name: Optional[str] = None,
@@ -190,13 +192,40 @@ class ReportsCommand(BaseCommand):
             else:
                 autoformat(res["rows"], jsonfmt=kwargs["json"])
         elif action == "search":
-            params["limit"] = limit
-            params["page"] = page
-            res = client.get("/reports/search", params=params).json()
-            self.print_table(res["rows"])
-            console.print(
-                f"Page {page} of {ceil(res['total'] / limit)} | Total: {res['total']}"
-            )
+            params["limit"] = 1
+            params["from_report"] = None
+            table = Table(expand=True)
+            table.add_column("ID")
+            table.add_column("Params")
+            table.add_column("Playbook Path")
+            table.add_column("Playbook Name")
+            table.add_column("Execution")
+            table.add_column("Status")
+            table.add_column("Result")
+            table.add_column("Runtime")
+            table.add_column("Date")
+
+            with Live(table, refresh_per_second=1):
+                for _ in range(limit):
+                    res = client.get("/reports/search", params=params).json()
+                    if res["rows"]:
+                        params["from_report"] = res["rows"][-1]["id"]
+                        for report in res["rows"]:
+                            table.add_row(
+                                report["id"],
+                                get_command_params(report.get("run_params")),
+                                report.get("playbook_path", report.get("playbook_uri")),
+                                report.get("playbook_name"),
+                                report.get("execution"),
+                                report.get("status"),
+                                report.get("result"),
+                                execution_time(
+                                    report.get("execution_time", report.get("run_time"))
+                                ),
+                                date_formatter(report.get("date")),
+                            )
+                    else:
+                        return 0
             return 0
         elif action == "download":
             # Save response
