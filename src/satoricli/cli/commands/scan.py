@@ -54,7 +54,7 @@ class ScanCommand(BaseCommand):
         )
         parser.add_argument("action2", nargs="?", default=None)
         parser.add_argument(
-            "-c", "--coverage", type=float, default=0.0, help="coverage"
+            "-c", "--coverage", type=float, default=1, help="coverage"
         )
         parser.add_argument("--skip-check", action="store_true")
         parser.add_argument("--delete-commits", action="store_true")
