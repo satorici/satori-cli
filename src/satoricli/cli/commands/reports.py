@@ -104,6 +104,11 @@ def add_search_args(parser: ArgumentParser) -> None:
         type=str,
         help="Filter by execution ID",
     )
+    parser.add_argument(
+        "--from-report",
+        type=str,
+        help="Report ID to start search from",
+    )
 
 
 class ReportsCommand(BaseCommand):
@@ -149,6 +154,7 @@ class ReportsCommand(BaseCommand):
         to_date: Optional[datetime.datetime] = None,
         severity: Optional[list[int]] = None,
         execution: Optional[EXECUTION_FILTERS] = None,
+        from_report: Optional[str] = None,
         **kwargs,
     ):
         params = {}
@@ -193,7 +199,7 @@ class ReportsCommand(BaseCommand):
                 autoformat(res["rows"], jsonfmt=kwargs["json"])
         elif action == "search":
             params["limit"] = 1
-            params["from_report"] = None
+            params["from_report"] = from_report
             table = Table(expand=True)
             table.add_column("ID")
             table.add_column("Params")
