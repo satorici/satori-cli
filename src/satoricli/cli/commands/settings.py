@@ -11,20 +11,17 @@ from .base import BaseCommand
 OPTIONS: TypeAlias = Literal[
     "default",
     "datadog",
-    "discord",
-    "email",
-    "slack",
-    "telegram",
-]
-KEYS: TypeAlias = Literal[
-    "default",
     "datadog_api_key",
     "datadog_site",
     "discord",
+    "discord_channel",
     "email",
+    "notification_email",
+    "slack",
     "slack_workspace",
     "slack_channel",
     "telegram",
+    "telegram_channel",
 ]
 
 
@@ -38,36 +35,50 @@ class SettingsCommand(BaseCommand):
             choices=get_args(OPTIONS),
             nargs="?",
         )
+        _ = parser.add_argument("value", metavar="VALUE", nargs="?")
 
-    def __call__(self, key: OPTIONS | None = None, **kwargs) -> None:
-        self.run_settings(key, kwargs.get("team") or "Private")
+    def __call__(
+        self, key: OPTIONS | None = None, value: str | None = None, **kwargs
+    ) -> int:
+        return self.run_settings(key, value, kwargs.get("team") or "Private")
 
     def run_settings(
         self,
         key: OPTIONS | None = None,
+        value: str | None = None,
         team: str = "Private",
-    ) -> None:
+    ) -> int:
         self.team: str = team
         if key == "default":
+            if value is not None:
+                return self.ask_default(value)
             logs: dict[str, bool] = client.get(f"/teams/{self.team}/logs").json()
             filtered = list(filter(lambda x: logs[x] is True, logs))
             console.print("Default notification method: " + " | ".join(filtered))
-            self.ask_default()
-            return
+            return self.ask_default()
         if key is not None:
-            val = self.get_setting(key)
-            console.print(f"[green]Current value: {val}")
-            if key == "datadog":
+            current_value = self.get_setting(key)
+            console.print(f"[green]Current value: {current_value}[/green]")
+            if value is not None:
+                if key == "email":
+                    key = "notification_email"
+                elif key == "telegram":
+                    key = "telegram_channel"
+                self.set_setting(key, value)
+                console.print(f"[green]Value updated to: {value}[/green]")
+                return 0
+            # If value is None, ask the user for the new value
+            if key in ("datadog", "datadog_api_key", "datadog_site"):
                 self.ask_datadog()
             elif key == "discord":
                 self.ask_discord()
             elif key == "email":
                 self.ask_email()
-            elif key == "slack":
+            elif key in ("slack", "slack_workspace", "slack_channel"):
                 self.ask_slack()
-            elif key == "telegram":
+            elif key in ("telegram", "telegram_channel"):
                 self.ask_telegram()
-            return
+            return 0
         while True:
             display_options: tuple[OPTIONS] = get_args(OPTIONS)
             for i, option in enumerate(display_options, 0):
@@ -97,6 +108,7 @@ class SettingsCommand(BaseCommand):
                     self.ask_telegram()
                 case _:
                     pass
+        return 0
 
     def get_by_key(self, key: str):
         val = client.get(f"/teams/{self.team}/config/{key}").text
@@ -108,16 +120,26 @@ class SettingsCommand(BaseCommand):
             logs: dict[str, bool] = client.get(f"/teams/{self.team}/logs").json()
             filtered = list(filter(lambda x: logs[x] is True, logs))
             return " | ".join(filtered) if filtered else "not set"
-        if key == "datadog":
+        if key in (
+            "datadog_api_key",
+            "datadog_site",
+            "discord_channel",
+            "notification_email",
+            "slack_workspace",
+            "slack_channel",
+            "telegram_channel",
+        ):
+            get_config = [key]
+        elif key == "datadog":
             get_config = ["datadog_api_key", "datadog_site"]
-        if key == "discord":
+        elif key == "discord":
             get_config = ["discord_channel"]
-        if key == "email":
+        elif key == "email":
             get_config = ["notification_email"]
-        if key == "slack":
-            get_config = ["slack_workspace", "slack_channel"]
-        if key == "telegram":
+        elif key == "telegram":
             get_config = ["telegram_channel"]
+        elif key == "slack":
+            get_config = ["slack_workspace", "slack_channel"]
         values = []
         for config in get_config:
             val = client.get(f"/teams/{self.team}/config/{config}").text
@@ -132,7 +154,7 @@ class SettingsCommand(BaseCommand):
     ) -> None:
         self.set_setting(key, Prompt.ask(prompt, choices=choices))
 
-    def ask_default(self, value: str | None = None) -> None:
+    def ask_default(self, value: str | None = None) -> int:
         default_dict: dict[str, bool] = {
             "slack": False,
             "discord": False,
@@ -140,6 +162,9 @@ class SettingsCommand(BaseCommand):
             "email": False,
             "telegram": False,
         }
+        if value and value not in default_dict:
+            console.print("[error]Invalid default notification method[/error]")
+            return 1
         user_input: str = value or Prompt.ask(
             "Please select a default notification method",
             choices=[k for k in default_dict.keys()] + ["none"],
@@ -148,6 +173,7 @@ class SettingsCommand(BaseCommand):
             default_dict[user_input] = True
         _ = client.put(f"/teams/{self.team}/logs", json=default_dict)
         console.print("Default notification method updated\n")
+        return 0
 
     def ask_datadog(self) -> None:
         console.print(
