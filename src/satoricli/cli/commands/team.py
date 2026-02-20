@@ -73,7 +73,7 @@ class TeamCommand(BaseCommand):
         page: int,
         limit: int,
         **kwargs,
-    ):
+    ) -> int | None:
         if action == "show":
             info = client.get(f"/teams/{id}").json()
             return DashboardCommand.generate_dashboard(info)
@@ -106,7 +106,7 @@ class TeamCommand(BaseCommand):
             autotable(
                 BootstrapTable(**info), "b blue", False, (20, 20, None), page, limit
             )
-            return
+            return 0
         elif action == "get_config":
             info = client.get(f"/teams/{id}/config/{config_name}").text
         elif action == "set_config":
@@ -132,8 +132,11 @@ class TeamCommand(BaseCommand):
                     "DELETE", f"/teams/{id}/members", params={"github": github}
                 )
                 console.print("Team member deleted")
+            elif monitor:
+                client.request("DELETE", f"/teams/{id}/monitors", params={"id": monitor})
+                console.print("Team monitor deleted")
             else:
-                raise Exception("Use --github, --email or --repo")
+                raise Exception("Use --github, --email, --repo or --monitor")
             return
         elif action == "delete":
             client.delete(f"/teams/{id}")
@@ -177,3 +180,4 @@ class TeamCommand(BaseCommand):
             info = client.get(f"/teams/{id}/logs").json()
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48, table=True)
+        return 0
