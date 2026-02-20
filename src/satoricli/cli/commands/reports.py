@@ -109,6 +109,11 @@ def add_search_args(parser: ArgumentParser) -> None:
         type=str,
         help="Report ID to start search from",
     )
+    parser.add_argument(
+        "--repo",
+        type=str,
+        help="Repository name",
+    )
 
 
 class ReportsCommand(BaseCommand):
@@ -155,6 +160,7 @@ class ReportsCommand(BaseCommand):
         severity: Optional[list[int]] = None,
         execution: Optional[EXECUTION_FILTERS] = None,
         from_report: Optional[str] = None,
+        repo: Optional[str] = None,
         **kwargs,
     ):
         params = {}
@@ -175,6 +181,7 @@ class ReportsCommand(BaseCommand):
                 "to_date": to_date,
                 "severity": severity,
                 "execution": execution,
+                "repo": repo,
             }
 
             # Remove None values
