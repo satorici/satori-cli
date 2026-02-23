@@ -14,14 +14,19 @@ OPTIONS: TypeAlias = Literal[
     "datadog_api_key",
     "datadog_site",
     "discord",
-    "discord_channel",
     "email",
-    "notification_email",
     "slack",
     "slack_workspace",
     "slack_channel",
     "telegram",
-    "telegram_channel",
+]
+DISPLAY_OPTIONS: TypeAlias = Literal[
+    "default",
+    "datadog",
+    "discord",
+    "email",
+    "slack",
+    "telegram",
 ]
 
 
@@ -60,11 +65,14 @@ class SettingsCommand(BaseCommand):
             current_value = self.get_setting(key)
             console.print(f"[green]Current value: {current_value}[/green]")
             if value is not None:
+                final_key = key
                 if key == "email":
-                    key = "notification_email"
+                    final_key = "notification_email"
                 elif key == "telegram":
-                    key = "telegram_channel"
-                self.set_setting(key, value)
+                    final_key = "telegram_channel"
+                elif key == "discord":
+                    final_key = "discord_channel"
+                self.set_setting(final_key, value)
                 console.print(f"[green]Value updated to: {value}[/green]")
                 return 0
             # If value is None, ask the user for the new value
@@ -76,11 +84,11 @@ class SettingsCommand(BaseCommand):
                 self.ask_email()
             elif key in ("slack", "slack_workspace", "slack_channel"):
                 self.ask_slack()
-            elif key in ("telegram", "telegram_channel"):
+            elif key == "telegram":
                 self.ask_telegram()
             return 0
         while True:
-            display_options: tuple[OPTIONS] = get_args(OPTIONS)
+            display_options = get_args(DISPLAY_OPTIONS)
             for i, option in enumerate(display_options, 0):
                 val = self.get_setting(option)
                 console.print(f"{i}. {option}: {val}")
