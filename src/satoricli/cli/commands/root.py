@@ -168,7 +168,6 @@ class RootCommand(BaseCommand):
             ("satori playbooks --public", "List the public playbooks"),
             ("satori playbook ID", "Show a certain playbook"),
             ("satori playbook ID visibility public", "Toggles the playbook's visibility"),
-            ("satori playbook ID delete", "Delete the playbook"),
         ]
         add_rows(playbooks, rows)
 
