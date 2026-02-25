@@ -26,8 +26,6 @@ ACTIONS = Literal[
     "reports",
     "get_config",
     "set_config",
-    "get_token",
-    "refresh_token",
     "del",
     "delete",
     "add",
@@ -114,10 +112,6 @@ class TeamCommand(BaseCommand):
                 f"/teams/{id}/config",
                 json={"name": config_name, "value": config_value},
             ).json()
-        elif action == "get_token":
-            info = client.get(f"/teams/{id}/token").json()
-        elif action == "refresh_token":
-            info = client.put(f"/teams/{id}/token").json()
         elif action == "del":
             if email:
                 client.request(
