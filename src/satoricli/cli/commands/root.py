@@ -261,10 +261,6 @@ class RootCommand(BaseCommand):
             ),
             ("satori scan ID stop", "Stop the scan on the repo"),
             (
-                "satori scan ID start",
-                "Start a previously stopped scan",
-            ),
-            (
                 "satori scan ID clean",
                 "Delete the reports associated to the scan",
             ),
