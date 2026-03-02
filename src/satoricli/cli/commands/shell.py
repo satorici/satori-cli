@@ -27,7 +27,13 @@ def get_terminal_size():
 def interactive_shell(host: str, token: str):
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
-    ssh_client.connect(hostname=host, username="root", password=token)
+    ssh_client.connect(
+        hostname=host,
+        username="root",
+        password=token,
+        look_for_keys=False,
+        allow_agent=False,
+    )
 
     cols, rows = get_terminal_size()
     channel = ssh_client.invoke_shell(term="xterm-256color", width=cols, height=rows)
