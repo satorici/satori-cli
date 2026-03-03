@@ -9,11 +9,13 @@ import time
 import tty
 from argparse import ArgumentParser
 from typing import Mapping
-from satoricli.api import client as v1_client
 
 import httpx
 import paramiko
+from paramiko.ssh_exception import NoValidConnectionsError
 from rich.progress import Progress
+
+from satoricli.api import client as v1_client
 
 from .base import BaseCommand
 
@@ -40,7 +42,7 @@ def interactive_shell(host: str, token: str):
                 allow_agent=False,
             )
             break
-        except paramiko.SSHException:
+        except NoValidConnectionsError:
             time.sleep(1)
             tries += 1
 
