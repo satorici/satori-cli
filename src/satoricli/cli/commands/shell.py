@@ -48,6 +48,9 @@ def interactive_shell(host: str, token: str):
         print("Can't connect to host")
         sys.exit(1)
 
+    if transport := ssh_client.get_transport():
+        transport.set_keepalive(30)
+
     cols, rows = get_terminal_size()
     channel = ssh_client.invoke_shell(term="xterm-256color", width=cols, height=rows)
 
