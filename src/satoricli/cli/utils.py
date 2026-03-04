@@ -45,11 +45,14 @@ VISIBILITY_VALUES = ("public", "private", "unlisted")
 
 @dataclass
 class BootstrapTable:
-    """Based on https://bootstrap-table.com/docs/api/table-options/#url"""
+    """Based on https://bootstrap-table.com/docs/api/table-options/#url."""
 
     total: int
-    totalNotFiltered: int
+    totalNotFiltered: int  # noqa: N815
     rows: list[dict]
+    last_id: str | None = None
+    last_timestamp: str | None = None
+    finished: bool = False
 
 
 # Set rich theme and console

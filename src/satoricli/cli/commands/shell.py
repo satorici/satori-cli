@@ -104,8 +104,9 @@ class ShellCommand(BaseCommand):
         parser.add_argument("--memory", type=int)
         parser.add_argument("--cpu", type=int)
         parser.add_argument("--region", action="append", default=[])
+        parser.add_argument("--timeout", type=int)
 
-    def __call__(self, cpu, memory, image, region, **kwargs):
+    def __call__(self, cpu, memory, image, region, timeout, **kwargs):
         client = httpx.Client(
             base_url="https://api-v2.satori.ci",
             headers=v1_client.headers,
@@ -120,6 +121,7 @@ class ShellCommand(BaseCommand):
             json={
                 "regions": list(region),
                 "container_settings": container_settings,
+                "timeout": timeout,
             },
         )
         res.raise_for_status()
