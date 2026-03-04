@@ -83,8 +83,14 @@ class ReportCommand(BaseCommand):
         query: str,
         title: str,
         **kwargs,
-    ):
+    ) -> int:
         if action == "show":
+            if kwargs["team"]:
+                # Set team for the report
+                client.patch(
+                    f"/reports/{id}/team",
+                    params={"team_name": kwargs["team"]},
+                ).json()
             res = client.get(f"/reports/{id}", params={"unredacted": unredacted}).json()
             if kwargs["json"]:
                 autoformat(res, jsonfmt=kwargs["json"])

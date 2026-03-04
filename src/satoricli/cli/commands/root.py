@@ -40,6 +40,7 @@ from .template import TemplateCommand
 from .templates import TemplatesCommand
 from .width import WidthCommand
 from .whoami import WhoamiCommand
+from .shell import ShellCommand
 
 VERSION = metadata.version("satori-ci")
 
@@ -71,6 +72,7 @@ class RootCommand(BaseCommand):
         SettingsCommand,
         TemplateCommand,
         TemplatesCommand,
+        ShellCommand,
     )
     name = "satori"
     global_options = (
@@ -167,7 +169,10 @@ class RootCommand(BaseCommand):
             ("satori playbooks", "List your private playbooks"),
             ("satori playbooks --public", "List the public playbooks"),
             ("satori playbook ID", "Show a certain playbook"),
-            ("satori playbook ID visibility public", "Toggles the playbook's visibility"),
+            (
+                "satori playbook ID visibility public",
+                "Toggles the playbook's visibility",
+            ),
         ]
         add_rows(playbooks, rows)
 

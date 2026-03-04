@@ -287,10 +287,11 @@ test:
       - satori monitor ${{test.monitor.new.stdout}} delete
 
   scan:
-    # # To be developed: list the current scans
+    # list the scans
     list:
       - satori scans
 
+    # list the public scans
     list_public:
       - satori scans --public
 
