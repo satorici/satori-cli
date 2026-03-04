@@ -428,6 +428,14 @@ negative_test:
   parallel:
     setParallel: true
 
+    xss:
+      assertStdoutNotContains: "XSS_TRIGGERED"
+      setSeverity: 1
+      test:
+        - apt-get install -qy --no-install-recommends chromium chromium-driver >/dev/null
+        - pip install selenium -q --disable-pip-version-check --root-user-action=ignore
+        - export TOKEN='${{TOKEN}}' && export URL='https://satori.ci/report/riMaEJVGb8kCQF9p/' && python3 xss.py
+
     repos_playbook_del:
       - satori repos playbook del
 
