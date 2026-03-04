@@ -32,7 +32,9 @@ def check_for_update():
     latest = response.json()["info"]["version"]
 
     if version.parse(latest) > version.parse(VERSION):
-        log.warning("Newer version available v%s, update with: satori update", latest)
+        error_console.print(
+            f"[bold yellow]Newer version available v{latest}, update with: satori update[/]"
+        )
 
 
 def main():
