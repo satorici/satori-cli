@@ -7,10 +7,12 @@ from ..utils import error_console
 from .base import BaseCommand
 
 PROMPT = (
-    "Check if all the github repositories from satorici are downloaded: "
+    "Check if the following Github repositories from satorici are downloaded: "
     "playbooks, playbook-validator, satori-cli, satori-docs. "
     "If they are not downloaded do it. "
     "Help Satori's user to build a playbook. "
+    "Do not include a placeholder for gallery. "
+    "If nothing is being asserted, dont include asserts. "
 )
 
 
