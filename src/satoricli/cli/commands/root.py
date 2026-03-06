@@ -14,6 +14,7 @@ from ..arguments import (
     config_arg,
     verbose_arg,
 )
+from .ai import AiCommand
 from .base import BaseCommand
 from .config import ConfigCommand
 from .dashboard import DashboardCommand
@@ -73,6 +74,7 @@ class RootCommand(BaseCommand):
         TemplateCommand,
         TemplatesCommand,
         ShellCommand,
+        AiCommand,
     )
     name = "satori"
     global_options = (
