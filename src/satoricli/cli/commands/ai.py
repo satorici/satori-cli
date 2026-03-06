@@ -13,6 +13,7 @@ PROMPT = (
     "Help Satori's user to build a playbook. "
     "Do not include a placeholder for gallery. "
     "If nothing is being asserted, dont include asserts. "
+    "Create the playbook on the current working directory so the examples are `satori run example.yaml`... "
 )
 
 
