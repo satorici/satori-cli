@@ -1,6 +1,7 @@
 import io
+import stat
 from pathlib import Path
-from zipfile import ZipFile
+from zipfile import ZipFile, ZipInfo
 
 import yaml
 from satorici.validator import is_import_group, is_input_group, is_test
@@ -53,11 +54,13 @@ def make_bundle(playbook: Path, base_dir: Path):
 def make_script_bundle(script_path: Path, image: str = "debian") -> io.BytesIO:
     playbook = yaml.dump({
         "settings": {"image": image},
-        "execute": [f"chmod +x {script_path.name} && ./{script_path.name}"],
+        "execute": [f"./{script_path.name}"],
     })
     obj = io.BytesIO()
     with ZipFile(obj, "x") as zf:
         zf.writestr(".satori.yml", playbook)
-        zf.write(script_path, script_path.name)
+        info = ZipInfo(script_path.name)
+        info.external_attr = (stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH) << 16
+        zf.writestr(info, script_path.read_bytes())
     obj.seek(0)
     return obj
