@@ -50,23 +50,10 @@ def make_bundle(playbook: Path, base_dir: Path):
     return obj
 
 
-SCRIPT_INTERPRETERS = {
-    ".sh": "bash",
-    ".py": "python3",
-    ".rb": "ruby",
-    ".pl": "perl",
-    ".js": "node",
-    ".ps1": "powershell -File",
-    ".bat": "cmd /c",
-    ".cmd": "cmd /c",
-}
-
-
 def make_script_bundle(script_path: Path, image: str = "debian") -> io.BytesIO:
-    interpreter = SCRIPT_INTERPRETERS.get(script_path.suffix, "bash")
     playbook = yaml.dump({
         "settings": {"image": image},
-        "execute": [f"{interpreter} {script_path.name}"],
+        "execute": [f"chmod +x {script_path.name} && ./{script_path.name}"],
     })
     obj = io.BytesIO()
     with ZipFile(obj, "x") as zf:
