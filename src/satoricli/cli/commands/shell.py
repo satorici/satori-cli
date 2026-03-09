@@ -99,12 +99,17 @@ def remove_none_values(d: Mapping):
 class ShellCommand(BaseCommand):
     name = "shell"
 
+    def help(self) -> str:
+        return "Launch an interactive remote shell container"
+
     def register_args(self, parser: ArgumentParser):
-        parser.add_argument("--image")
-        parser.add_argument("--memory", type=int)
-        parser.add_argument("--cpu", type=int)
-        parser.add_argument("--region", action="append", default=[])
-        parser.add_argument("--timeout", type=int)
+        parser.add_argument("--image", help="Docker image for the container")
+        parser.add_argument("--memory", type=int, help="Memory allocation (AWS Fargate)")
+        parser.add_argument("--cpu", type=int, help="CPU allocation (AWS Fargate)")
+        parser.add_argument(
+            "--region", action="append", default=[], help="AWS region (repeatable)"
+        )
+        parser.add_argument("--timeout", type=int, help="Session duration limit in seconds")
 
     def __call__(self, cpu, memory, image, region, timeout, **kwargs):
         client = httpx.Client(
