@@ -48,3 +48,29 @@ def make_bundle(playbook: Path, base_dir: Path):
 
     obj.seek(0)
     return obj
+
+
+SCRIPT_INTERPRETERS = {
+    ".sh": "bash",
+    ".py": "python3",
+    ".rb": "ruby",
+    ".pl": "perl",
+    ".js": "node",
+    ".ps1": "powershell -File",
+    ".bat": "cmd /c",
+    ".cmd": "cmd /c",
+}
+
+
+def make_script_bundle(script_path: Path, image: str = "debian") -> io.BytesIO:
+    interpreter = SCRIPT_INTERPRETERS.get(script_path.suffix, "bash")
+    playbook = yaml.dump({
+        "settings": {"image": image},
+        "execute": [f"{interpreter} {script_path.name}"],
+    })
+    obj = io.BytesIO()
+    with ZipFile(obj, "x") as zf:
+        zf.writestr(".satori.yml", playbook)
+        zf.write(script_path, script_path.name)
+    obj.seek(0)
+    return obj

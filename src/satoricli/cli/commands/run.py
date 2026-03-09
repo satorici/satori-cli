@@ -16,7 +16,7 @@ from rich.progress import open as progress_open
 from satorici.validator import validate_settings
 
 from satoricli.api import client
-from satoricli.bundler import make_bundle
+from satoricli.bundler import make_bundle, make_script_bundle
 from satoricli.cli.commands.scan import ScanCommand
 from satoricli.cli.utils import log
 from satoricli.validations import get_parameters, validate_parameters
@@ -39,6 +39,7 @@ from .base import BaseCommand
 from .report import ReportCommand
 
 VISIBILITY_VALUES = Literal["public", "private", "unlisted"]
+YAML_EXTENSIONS = {".yml", ".yaml"}
 
 
 def include_files(include: list[str]) -> Optional[str]:
@@ -227,6 +228,11 @@ class RunCommand(BaseCommand):
         sync.add_argument("-o", "--output", action="store_true")
         sync.add_argument("-r", "--report", action="store_true")
         sync.add_argument("-f", "--files", action="store_true")
+        sync.add_argument(
+            "--stdout",
+            action="store_true",
+            help="Wait and print only raw stdout",
+        )
         parser.add_argument(
             "--visibility", choices=get_args(VISIBILITY_VALUES), default=None
         )
@@ -266,6 +272,7 @@ class RunCommand(BaseCommand):
         output: bool,
         report: bool,
         files: bool,
+        stdout: bool,
         team: str,
         filter_tests: list,
         text_format: Literal["plain", "md"],
@@ -354,36 +361,17 @@ class RunCommand(BaseCommand):
 
             is_monitor = False
         elif (file_path := Path(path)).is_file():
-            # HOOK HERE
-            provided_var_names = set(parsed_data.keys()) if parsed_data else set()
-            env_vars = get_parameters_from_env(file_path)
-
-            if not validate_config(file_path, set(env_vars) | provided_var_names):
-                return 1
-
-            bundle = make_bundle(file_path, file_path.parent)
-            config = yaml.safe_load(file_path.read_bytes())
-
-            settings: dict[str, Any] = config.get("settings", {})
-            is_monitor = is_monitor or settings.get("cron") or settings.get("rate")
-            settings.update(cli_settings)
-
-            warn_settings(settings)
-
-            secrets = env_vars | (parsed_data or {})
-
-            if is_monitor:
-                monitor_id = new_monitor(
-                    bundle, settings, team, secrets=secrets, visibility=visibility
-                )
-            else:
+            if file_path.suffix not in YAML_EXTENSIONS:
+                image = cli_settings.pop("image", "debian")
+                bundle = make_script_bundle(file_path, image=image)
+                warn_settings(cli_settings)
                 ids = new_run(
                     path=path,
                     team=team,
                     modes=modes,
                     bundle=bundle,
-                    secrets=secrets,
-                    settings=settings,
+                    secrets=parsed_data,
+                    settings=cli_settings,
                     save_report=save_report,
                     save_output=save_output,
                     visibility=visibility,
@@ -391,6 +379,44 @@ class RunCommand(BaseCommand):
                     packet=include_files(include_list),
                     redacted=redacted,
                 )
+            else:
+                # HOOK HERE
+                provided_var_names = set(parsed_data.keys()) if parsed_data else set()
+                env_vars = get_parameters_from_env(file_path)
+
+                if not validate_config(file_path, set(env_vars) | provided_var_names):
+                    return 1
+
+                bundle = make_bundle(file_path, file_path.parent)
+                config = yaml.safe_load(file_path.read_bytes())
+
+                settings: dict[str, Any] = config.get("settings", {})
+                is_monitor = is_monitor or settings.get("cron") or settings.get("rate")
+                settings.update(cli_settings)
+
+                warn_settings(settings)
+
+                secrets = env_vars | (parsed_data or {})
+
+                if is_monitor:
+                    monitor_id = new_monitor(
+                        bundle, settings, team, secrets=secrets, visibility=visibility
+                    )
+                else:
+                    ids = new_run(
+                        path=path,
+                        team=team,
+                        modes=modes,
+                        bundle=bundle,
+                        secrets=secrets,
+                        settings=settings,
+                        save_report=save_report,
+                        save_output=save_output,
+                        visibility=visibility,
+                        clone=clone,
+                        packet=include_files(include_list),
+                        redacted=redacted,
+                    )
         elif (base := Path(path)).is_dir():
             settings = {}
             packet = make_packet(base)
@@ -476,6 +502,15 @@ class RunCommand(BaseCommand):
         elif is_monitor and kwargs["json"]:
             console.print_json(data={"monitor_id": monitor_id})
             return
+
+        if stdout:
+            wait(ids[0], True, filter_tests, text_format)
+            res = client.get(f"/outputs/{ids[0]}").json()
+            for entry in res:
+                text = entry.get("output", {}).get("stdout")
+                if text:
+                    sys.stdout.write(text)
+            return 0
 
         if sync or report or output or files:
             wait(ids[0], not report, filter_tests, text_format)
