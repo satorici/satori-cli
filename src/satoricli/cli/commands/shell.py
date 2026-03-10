@@ -16,6 +16,7 @@ from paramiko.ssh_exception import NoValidConnectionsError
 from rich.progress import Progress
 
 from satoricli.api import client as v1_client
+from satoricli.cli.utils import console
 
 from .base import BaseCommand
 
@@ -104,12 +105,16 @@ class ShellCommand(BaseCommand):
 
     def register_args(self, parser: ArgumentParser):
         parser.add_argument("--image", help="Docker image for the container")
-        parser.add_argument("--memory", type=int, help="Memory allocation (AWS Fargate)")
+        parser.add_argument(
+            "--memory", type=int, help="Memory allocation (AWS Fargate)"
+        )
         parser.add_argument("--cpu", type=int, help="CPU allocation (AWS Fargate)")
         parser.add_argument(
             "--region", action="append", default=[], help="AWS region (repeatable)"
         )
-        parser.add_argument("--timeout", type=int, help="Session duration limit in seconds")
+        parser.add_argument(
+            "--timeout", type=int, help="Session duration limit in seconds"
+        )
 
     def __call__(self, cpu, memory, image, region, timeout, **kwargs):
         client = httpx.Client(
@@ -132,6 +137,8 @@ class ShellCommand(BaseCommand):
         res.raise_for_status()
         id = res.json()["id"]
 
+        console.print("SSH session id:", id)
+
         with Progress(transient=True) as progress:
             progress.add_task("Waiting for host", total=None)
 
@@ -143,5 +150,7 @@ class ShellCommand(BaseCommand):
                     break
                 except Exception:
                     time.sleep(2)
+
+        console.print(f"Connecting to {session_data['host']}")
 
         interactive_shell(session_data["host"], session_data["token"])
