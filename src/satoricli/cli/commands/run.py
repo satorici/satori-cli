@@ -17,6 +17,7 @@ from satorici.validator import validate_settings
 
 from satoricli.api import client
 from satoricli.bundler import make_bundle
+from satoricli.cli.commands.run_script import run_script
 from satoricli.cli.commands.scan import ScanCommand
 from satoricli.cli.utils import log
 from satoricli.validations import get_parameters, validate_parameters
@@ -227,6 +228,7 @@ class RunCommand(BaseCommand):
         sync.add_argument("-o", "--output", action="store_true")
         sync.add_argument("-r", "--report", action="store_true")
         sync.add_argument("-f", "--files", action="store_true")
+        sync.add_argument("--stdout", action="store_true")
         parser.add_argument(
             "--visibility", choices=get_args(VISIBILITY_VALUES), default=None
         )
@@ -266,6 +268,7 @@ class RunCommand(BaseCommand):
         output: bool,
         report: bool,
         files: bool,
+        stdout: bool,
         team: str,
         filter_tests: list,
         text_format: Literal["plain", "md"],
@@ -274,6 +277,12 @@ class RunCommand(BaseCommand):
         redacted: list[str] = [],
         **kwargs,
     ):
+        cli_settings = get_cli_settings(kwargs)
+
+        if path.endswith(".sh"):
+            run_script(path, team, visibility, stdout, cli_settings)
+            return
+
         for file in data_file:
             read_path = Path(file[1])
             read_name = read_path.name
@@ -290,7 +299,6 @@ class RunCommand(BaseCommand):
         if parsed_data and not validate_parameters(parsed_data):
             raise ValueError("Malformed parameters")
 
-        cli_settings = get_cli_settings(kwargs)
         is_monitor = bool(cli_settings.get("rate") or cli_settings.get("cron"))
 
         ids = []
