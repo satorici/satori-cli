@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import shutil
@@ -23,7 +24,6 @@ from satoricli.validations import get_parameters, validate_parameters
 
 from ..utils import (
     console,
-    detect_boolean,
     download_files,
     error_console,
     get_report_output_cmd_index,
@@ -67,11 +67,11 @@ def new_run(
     packet: Optional[Path] = None,
     secrets: Optional[dict] = None,
     settings: Optional[dict] = None,
-    save_report: Union[str, bool, None] = None,
-    save_output: Union[str, bool, None] = None,
+    save_report: bool,
+    save_output: bool,
     params: Union[str, None] = None,
     visibility: Optional[VISIBILITY_VALUES] = None,
-    clone: Optional[str] = None,
+    clone: bool,
     redacted: list[str] = [],
 ) -> list[str]:
     data = client.post(
@@ -198,9 +198,15 @@ class RunCommand(BaseCommand):
             "--playbook",
             help="if PATH is a directory this playbook will be used",
         )
-        parser.add_argument("--save-report", type=str, default=None)
-        parser.add_argument("--save-output", type=str, default=None)
-        parser.add_argument("--clone", type=str, default=None)
+        parser.add_argument(
+            "--save-report", action=argparse.BooleanOptionalAction, default=True
+        )
+        parser.add_argument(
+            "--save-output", action=argparse.BooleanOptionalAction, default=True
+        )
+        parser.add_argument(
+            "--clone", action=argparse.BooleanOptionalAction, default=True
+        )
         parser.add_argument(
             "-df", "--data-file", type=load_cli_params, action="append", default=[]
         )
@@ -260,8 +266,8 @@ class RunCommand(BaseCommand):
         data_file: list[tuple[str, str]],
         include_list: list,
         repo: Optional[str],
-        save_report: Union[str, bool, None],
-        save_output: Union[str, bool, None],
+        save_report: bool,
+        save_output: bool,
         playbook: Optional[str],
         output: bool,
         report: bool,
@@ -269,8 +275,8 @@ class RunCommand(BaseCommand):
         team: str,
         filter_tests: list,
         text_format: Literal["plain", "md"],
+        clone: bool,
         visibility: Optional[VISIBILITY_VALUES] = None,
-        clone: Optional[str] = None,
         redacted: list[str] = [],
         **kwargs,
     ):
@@ -279,11 +285,7 @@ class RunCommand(BaseCommand):
             read_name = read_path.name
             data.append((file[0], f"read({read_name})"))
             include_list.append(file[1])
-        if save_report:
-            temp_report = detect_boolean(save_report)
-            save_report = save_report if temp_report is None else temp_report
-        if save_output:
-            save_output = detect_boolean(save_output)
+
         modes = {"sync": sync, "output": output, "report": report}
 
         parsed_data = tuple_to_dict(data) if data else None
