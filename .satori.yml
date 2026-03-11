@@ -99,7 +99,7 @@ test:
       - satori run .satori/import/pass.yml -s 2>&1 | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
 
     dont_save:
-      - satori run .satori/import/pass.yml --no-save-report --no-save-output --report --output 2>&1 | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
+      - satori run .satori/import/pass.yml --save-report 'False' --save-output 'False' --report --output 2>&1 | grep 'Report ID' | grep -E 'r[a-zA-Z0-9]{15}' -o | tr -d '\n'
 
     # list the reports generated
     list:
@@ -397,7 +397,7 @@ test:
   template:
     list:
       - satori templates
-
+  
   # Interactive settings (blocking)
   # settings:
   #   get:
