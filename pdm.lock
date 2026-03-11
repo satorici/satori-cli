@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:a0d3c37e8d4a88bc8a1e301d6f01cc5332114be9d9507561c31a3f7a6041ad07"
+content_hash = "sha256:90c34e31597afaad7d051cdaba085838baabda8b6fbe4d84781f193d7e49ad48"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -283,10 +283,12 @@ files = [
 
 [[package]]
 name = "flatdict"
-version = "4.0.1"
+version = "4.1.0"
+requires_python = ">=3.10"
 summary = "Python module for interacting with nested dicts as a single level dict with delimited keys."
 files = [
-    {file = "flatdict-4.0.1.tar.gz", hash = "sha256:cd32f08fd31ed21eb09ebc76f06b6bd12046a24f77beb1fd0281917e47f26742"},
+    {file = "flatdict-4.1.0-py3-none-any.whl", hash = "sha256:24c3ff816733e472f91071031bd286c3826ecf2d646d5020af49fe10b20a5677"},
+    {file = "flatdict-4.1.0.tar.gz", hash = "sha256:63bcd906a0859d91d0aace44b327178706c7fcf85a88c7ccf0825628376ad66b"},
 ]
 
 [[package]]
