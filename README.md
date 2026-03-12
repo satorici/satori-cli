@@ -1,5 +1,7 @@
 <div align="center">
 
+![satori test](https://satori.ci/repo/satorici/satori-cli/result.svg)
+
 [![Discord](https://img.shields.io/badge/Discord-Join%20our%20community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/NJHQ4MwYtt)
 
 </div>
