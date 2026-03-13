@@ -41,7 +41,7 @@ from .template import TemplateCommand
 from .templates import TemplatesCommand
 from .width import WidthCommand
 from .whoami import WhoamiCommand
-from .shell import ShellCommand
+from .shell import ShellCommand, ShellsCommand
 
 VERSION = metadata.version("satori-ci")
 
@@ -74,6 +74,7 @@ class RootCommand(BaseCommand):
         TemplateCommand,
         TemplatesCommand,
         ShellCommand,
+        ShellsCommand,
         AiCommand,
     )
     name = "satori"

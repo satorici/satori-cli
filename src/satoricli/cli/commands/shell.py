@@ -1,4 +1,5 @@
 import fcntl
+from math import ceil
 import os
 import select
 import signal
@@ -16,7 +17,7 @@ from paramiko.ssh_exception import NoValidConnectionsError
 from rich.progress import Progress
 
 from satoricli.api import client as v1_client
-from satoricli.cli.utils import console
+from satoricli.cli.utils import autotable, console
 
 from .base import BaseCommand
 
@@ -154,3 +155,38 @@ class ShellCommand(BaseCommand):
         console.print(f"Connecting to {session_data['host']}")
 
         interactive_shell(session_data["host"], session_data["token"])
+
+
+class ShellsCommand(BaseCommand):
+    name = "shells"
+
+    def register_args(self, parser: ArgumentParser):
+        parser.add_argument("-q", "--quantity", type=int, default=10)
+        parser.add_argument("-p", "--page", type=int, default=1)
+
+    def __call__(self, page: int, quantity: int, **kwargs):
+        client = httpx.Client(
+            base_url="https://api-v2.satori.ci",
+            headers=v1_client.headers,
+        )
+
+        res = client.get("/ssh_sessions", params={"page": page, "quantity": quantity})
+        res.raise_for_status()
+
+        data = res.json()
+
+        def clean_result(session: dict):
+            session.pop("container_settings")
+            session["regions"] = ", ".join(session["regions"])
+            session["created_at"] = session["created_at"].split(".")[0]
+
+            if session["finished_at"]:
+                session["finished_at"] = session["finished_at"].split(".")[0]
+
+            return session
+
+        autotable([clean_result(s) for s in data["items"]])
+
+        console.print(
+            f"Page {page} of {ceil(data['total'] / quantity)} | Total: {data['total']}"
+        )
