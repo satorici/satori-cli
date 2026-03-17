@@ -219,10 +219,14 @@ class ReportsCommand(BaseCommand):
             table.add_column("Date")
 
             with Live(table, refresh_per_second=1):
-                for _ in range(limit):
+                finished = False
+                report_count = 0
+                while not finished and report_count < limit:
                     res = client.get("/reports/search", params=params).json()
+                    finished = res.get("finished", False)
+                    params["from_report"] = res.get("last_id")
                     if res["rows"]:
-                        params["from_report"] = res["rows"][-1]["id"]
+                        report_count += len(res["rows"])
                         for report in res["rows"]:
                             table.add_row(
                                 report["id"],
@@ -237,8 +241,6 @@ class ReportsCommand(BaseCommand):
                                 ),
                                 date_formatter(report.get("date")),
                             )
-                    else:
-                        return 0
             return 0
         elif action == "download":
             # Save response
