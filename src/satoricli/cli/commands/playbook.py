@@ -58,6 +58,9 @@ class PlaybookCommand(BaseCommand):
 
         if action == "show":
             data = client.get(f"/playbooks/{id}").json()
+            if original:
+                print(data["playbook"])
+                return 0
             list_separator = None
         # elif action == "delete":
         #     data = client.delete(f"/playbooks/{id}")
