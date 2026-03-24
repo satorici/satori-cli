@@ -284,6 +284,9 @@ class LocalCommand(BaseCommand):
             detect_boolean(save_report) if save_report else save_report_setting
         )
 
+        if timeout is None and config:
+            timeout = config.get("settings", {}).get("timeout")
+
         report_id = local_run["report_id"]
 
         if not kwargs["json"]:
