@@ -3,8 +3,11 @@ import os
 import platform
 import re
 import shlex
+import shutil
 import sys
+import tempfile
 import time
+import uuid
 from argparse import ArgumentParser
 from dataclasses import asdict
 from pathlib import Path
@@ -39,6 +42,18 @@ IS_LINUX = platform.system() == "Linux"
 VISIBILITY_VALUES = Literal["public", "private", "unlisted"]
 FUNCTIONS_RE = re.compile(r"(read|trim|strip)\((.+)\)")
 FUNCTIONS_SUB_RE = re.compile(r"(.+)\${{(.+)}}(.+)?")
+REPO_SHORTHAND_RE = re.compile(r"^[\w.-]+/[\w.-]+$")
+
+
+def resolve_repo_url(repo: str) -> str:
+    """Convert owner/name shorthand to a full GitHub URL, or validate a URL."""
+    if REPO_SHORTHAND_RE.match(repo):
+        return f"https://github.com/{repo}.git"
+    if repo.startswith(("https://", "git@")):
+        return repo
+    raise ValueError(
+        f"Invalid repo format: {repo!r}. Use 'owner/name' or a full URL."
+    )
 
 
 def rebuild_arguments() -> str:
@@ -196,6 +211,12 @@ class LocalCommand(BaseCommand):
             action="append",
             default=[],
         )
+        parser.add_argument(
+            "--repo",
+            type=str,
+            default=None,
+            help="GitHub repo (owner/name or URL) to shallow clone and test locally",
+        )
 
     def __call__(
         self,
@@ -216,6 +237,7 @@ class LocalCommand(BaseCommand):
         run_tests: list,
         text_format: Literal["plain", "md"],
         redacted: list[str],
+        repo: Optional[str] = None,
         **kwargs,
     ):
         for file in data_file:
@@ -224,152 +246,174 @@ class LocalCommand(BaseCommand):
         if parsed_data and not validate_parameters(parsed_data):
             raise ValueError("Malformed parameters")
 
-        workdir = Path(target) if os.path.isdir(target) else Path()
-        config = None
+        original_cwd = os.getcwd()
+        temp_clone_dir = None
 
-        if (playbook and "://" in playbook) or "://" in target:
-            bundle = None
-        elif (playbook and os.path.isfile(playbook)) or os.path.isfile(target):
-            path = Path(playbook or target)
-            config = yaml.safe_load(path.read_bytes())
+        try:
+            if repo:
+                import git
 
-            if not validate_config(
-                path, set(parsed_data.keys()) if parsed_data else set()
-            ):
-                return 1
+                repo_url = resolve_repo_url(repo)
+                temp_clone_dir = Path(tempfile.gettempdir(), str(uuid.uuid4()))
+                error_console.print(f"Cloning {repo_url} temporarily into {temp_clone_dir}")
+                try:
+                    git.Repo.clone_from(repo_url, temp_clone_dir, depth=1)
+                except git.GitCommandError as e:
+                    error_console.print(f"ERROR: Failed to clone repo: {e}")
+                    return 1
+                workdir = temp_clone_dir
+            else:
+                workdir = Path(target) if os.path.isdir(target) else Path()
 
-            bundle = make_bundle(path, path.parent)
-        elif os.path.isdir(target):
-            playbook_path = workdir / ".satori.yml"
-            config = yaml.safe_load(playbook_path.read_bytes())
+            config = None
 
-            if not validate_config(
-                playbook_path, set(parsed_data.keys()) if parsed_data else set()
-            ):
-                return 1
+            if (playbook and "://" in playbook) or "://" in target:
+                bundle = None
+            elif (playbook and os.path.isfile(playbook)) or os.path.isfile(target):
+                path = Path(playbook or target)
+                config = yaml.safe_load(path.read_bytes())
 
-            bundle = make_bundle(playbook_path, playbook_path.parent)
+                if not validate_config(
+                    path, set(parsed_data.keys()) if parsed_data else set()
+                ):
+                    return 1
 
-            if missing_ymls(config, str(workdir)):
-                log.warning(
-                    "There are some .satori.yml outside the root "
-                    "folder that have not been imported."
-                )
-        else:
-            error_console.print("ERROR: Invalid args")
-            return 1
+                bundle = make_bundle(path, path.parent)
+            elif os.path.isdir(target):
+                playbook_path = workdir / ".satori.yml"
+                config = yaml.safe_load(playbook_path.read_bytes())
 
-        local_run = new_local_run(
-            team,
-            bundle,
-            secrets=parsed_data,
-            name=name,
-            visibility=visibility,
-            playbook_uri=playbook or target,
-            redacted=redacted,
-            run_tests=run_tests,
-        )
+                if not validate_config(
+                    playbook_path, set(parsed_data.keys()) if parsed_data else set()
+                ):
+                    return 1
 
-        save_output_setting = True
-        save_report_setting = True
-        if config and config.get("settings"):
-            if config["settings"].get("saveOutput") is not None:
-                save_output_setting = config["settings"]["saveOutput"]
-            if config["settings"].get("saveReport") is not None:
-                save_report_setting = config["settings"]["saveReport"]
-        save_output = (
-            detect_boolean(save_output) if save_output else save_output_setting
-        )
-        save_report = (
-            detect_boolean(save_report) if save_report else save_report_setting
-        )
+                bundle = make_bundle(playbook_path, playbook_path.parent)
 
-        if timeout is None and config:
-            timeout = config.get("settings", {}).get("timeout")
-
-        report_id = local_run["report_id"]
-
-        if not kwargs["json"]:
-            error_console.print("Report ID:", report_id)
-            error_console.print(f"Report: https://satori.ci/report/{report_id}")
-        elif kwargs["json"]:
-            console.print_json(data={"report_id": report_id})
-
-        with (
-            httpx.stream("GET", local_run["recipe"]) as s,
-            Progress(
-                SpinnerColumn("dots2"),
-                TextColumn("[progress.description]Status: {task.description}"),
-                TimeElapsedColumn(),
-                console=error_console,
-            ) as progress,
-        ):
-            os.chdir(workdir)
-            task = progress.add_task("Starting execution")
-            start_time = time.monotonic()
-            deadline = start_time + timeout if timeout is not None else None
-
-            headers = {"Authorization": "Bearer " + local_run["token"]}
-
-            timed_out = False
-
-            for line in s.iter_lines():
-                if deadline and time.monotonic() > deadline:
-                    timed_out = True
-                    break
-
-                message: dict = json.loads(line)
-
-                progress.update(task, description="Running [b]" + message["path"])
-                args = replace_variables(message["value"], message["testcase"])
-                command_timeout = message.get("settings", {}).get("setCommandTimeout")
-
-                if deadline:
-                    command_timeout = (
-                        min(deadline - time.monotonic(), command_timeout)
-                        if command_timeout is not None
-                        else deadline - time.monotonic()
+                if missing_ymls(config, str(workdir)):
+                    log.warning(
+                        "There are some .satori.yml outside the root "
+                        "folder that have not been imported."
                     )
+            else:
+                error_console.print("ERROR: Invalid args")
+                return 1
 
-                out = run(args, command_timeout)
-                output_dict = asdict(out)
-                output_dict["stdout"] = output_to_string(out.stdout)
-                output_dict["stderr"] = output_to_string(out.stderr)
-                output_dict["os_error"] = output_to_string(out.os_error)
-                result = {
-                    "path": message.pop("path"),
-                    **output_dict,
-                    "command": message,
-                }
-                client.post("outputs/upload", json=result, headers=headers)
-
-            client.put(
-                "/runs/local/upload",
-                params={
-                    "run_time": time.monotonic() - start_time,
-                    "save_report": save_report,
-                    "save_output": save_output,
-                    "timed_out": timed_out,
-                },
-                headers=headers,
+            local_run = new_local_run(
+                team,
+                bundle,
+                secrets=parsed_data,
+                name=name,
+                visibility=visibility,
+                playbook_uri=playbook or target,
+                redacted=redacted,
+                run_tests=run_tests,
             )
 
-            client.patch("/reports/severities", headers=headers)
-            progress.update(task, description="Timeout" if timed_out else "Completed")
+            save_output_setting = True
+            save_report_setting = True
+            if config and config.get("settings"):
+                if config["settings"].get("saveOutput") is not None:
+                    save_output_setting = config["settings"]["saveOutput"]
+                if config["settings"].get("saveReport") is not None:
+                    save_report_setting = config["settings"]["saveReport"]
+            save_output = (
+                detect_boolean(save_output) if save_output else save_output_setting
+            )
+            save_report = (
+                detect_boolean(save_report) if save_report else save_report_setting
+            )
 
-        if sync:
-            print_summary(report_id, kwargs["json"])
+            if timeout is None and config:
+                timeout = config.get("settings", {}).get("timeout")
 
-        if report:
-            ReportCommand.print_report_asrt(report_id, kwargs["json"])
+            report_id = local_run["report_id"]
 
-        if output:
-            print_output(report_id, kwargs["json"], filter_tests, text_format)
+            if not kwargs["json"]:
+                error_console.print("Report ID:", report_id)
+                error_console.print(f"Report: https://satori.ci/report/{report_id}")
+            elif kwargs["json"]:
+                console.print_json(data={"report_id": report_id})
 
-        report_data = client.get(f"/reports/{report_id}").json()
+            with (
+                httpx.stream("GET", local_run["recipe"]) as s,
+                Progress(
+                    SpinnerColumn("dots2"),
+                    TextColumn("[progress.description]Status: {task.description}"),
+                    TimeElapsedColumn(),
+                    console=error_console,
+                ) as progress,
+            ):
+                os.chdir(workdir)
+                task = progress.add_task("Starting execution")
+                start_time = time.monotonic()
+                deadline = start_time + timeout if timeout is not None else None
 
-        if run_tests:
-            # clean report data if --run is used
-            client.delete(f"/reports/{report_id}")
+                headers = {"Authorization": "Bearer " + local_run["token"]}
 
-        return 0 if report_data["fails"] == 0 else 1
+                timed_out = False
+
+                for line in s.iter_lines():
+                    if deadline and time.monotonic() > deadline:
+                        timed_out = True
+                        break
+
+                    message: dict = json.loads(line)
+
+                    progress.update(task, description="Running [b]" + message["path"])
+                    args = replace_variables(message["value"], message["testcase"])
+                    command_timeout = message.get("settings", {}).get("setCommandTimeout")
+
+                    if deadline:
+                        command_timeout = (
+                            min(deadline - time.monotonic(), command_timeout)
+                            if command_timeout is not None
+                            else deadline - time.monotonic()
+                        )
+
+                    out = run(args, command_timeout)
+                    output_dict = asdict(out)
+                    output_dict["stdout"] = output_to_string(out.stdout)
+                    output_dict["stderr"] = output_to_string(out.stderr)
+                    output_dict["os_error"] = output_to_string(out.os_error)
+                    result = {
+                        "path": message.pop("path"),
+                        **output_dict,
+                        "command": message,
+                    }
+                    client.post("outputs/upload", json=result, headers=headers)
+
+                client.put(
+                    "/runs/local/upload",
+                    params={
+                        "run_time": time.monotonic() - start_time,
+                        "save_report": save_report,
+                        "save_output": save_output,
+                        "timed_out": timed_out,
+                    },
+                    headers=headers,
+                )
+
+                client.patch("/reports/severities", headers=headers)
+                progress.update(task, description="Timeout" if timed_out else "Completed")
+
+            if sync:
+                print_summary(report_id, kwargs["json"])
+
+            if report:
+                ReportCommand.print_report_asrt(report_id, kwargs["json"])
+
+            if output:
+                print_output(report_id, kwargs["json"], filter_tests, text_format)
+
+            report_data = client.get(f"/reports/{report_id}").json()
+
+            if run_tests:
+                # clean report data if --run is used
+                client.delete(f"/reports/{report_id}")
+
+            return 0 if report_data["fails"] == 0 else 1
+        finally:
+            os.chdir(original_cwd)
+            if temp_clone_dir and temp_clone_dir.exists():
+                shutil.rmtree(temp_clone_dir, ignore_errors=True)
