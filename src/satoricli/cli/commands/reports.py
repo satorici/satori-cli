@@ -225,22 +225,23 @@ class ReportsCommand(BaseCommand):
                     res = client.get("/reports/search", params=params).json()
                     finished = res.get("finished", False)
                     params["from_report"] = res.get("last_id")
-                    if res["rows"]:
-                        report_count += len(res["rows"])
-                        for report in res["rows"]:
-                            table.add_row(
-                                report["id"],
-                                get_command_params(report.get("run_params")),
-                                report.get("playbook_path", report.get("playbook_uri")),
-                                report.get("playbook_name"),
-                                report.get("execution"),
-                                report.get("status"),
-                                report.get("result"),
-                                execution_time(
-                                    report.get("execution_time", report.get("run_time"))
-                                ),
-                                date_formatter(report.get("date")),
-                            )
+                    if not res["rows"]:
+                        break
+                    report_count += len(res["rows"])
+                    for report in res["rows"]:
+                        table.add_row(
+                            report["id"],
+                            get_command_params(report.get("run_params")),
+                            report.get("playbook_path", report.get("playbook_uri")),
+                            report.get("playbook_name"),
+                            report.get("execution"),
+                            report.get("status"),
+                            report.get("result"),
+                            execution_time(
+                                report.get("execution_time", report.get("run_time"))
+                            ),
+                            date_formatter(report.get("date")),
+                        )
             return 0
         elif action == "download":
             # Save response
