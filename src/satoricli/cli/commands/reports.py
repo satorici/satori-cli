@@ -208,15 +208,19 @@ class ReportsCommand(BaseCommand):
             params["limit"] = 1
             params["from_report"] = from_report
             table = Table(expand=True)
-            table.add_column("ID")
-            table.add_column("Params")
-            table.add_column("Playbook Path")
-            table.add_column("Playbook Name")
-            table.add_column("Execution")
-            table.add_column("Status")
-            table.add_column("Result")
-            table.add_column("Runtime")
-            table.add_column("Date")
+            columns = [
+                "ID",
+                "Params",
+                "Playbook Path",
+                "Playbook Name",
+                "Execution",
+                "Status",
+                "Result",
+                "Runtime",
+                "Date",
+            ]
+            for column in columns:
+                table.add_column(column)
 
             with Live(table, refresh_per_second=1):
                 finished = False
@@ -225,8 +229,6 @@ class ReportsCommand(BaseCommand):
                     res = client.get("/reports/search", params=params).json()
                     finished = res.get("finished", False)
                     params["from_report"] = res.get("last_id")
-                    if not res["rows"]:
-                        break
                     report_count += len(res["rows"])
                     for report in res["rows"]:
                         table.add_row(
