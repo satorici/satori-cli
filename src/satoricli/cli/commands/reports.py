@@ -114,6 +114,12 @@ def add_search_args(parser: ArgumentParser) -> None:
         type=str,
         help="Repository name",
     )
+    parser.add_argument("--regex", action="store_true", help="Enable regex search")
+    parser.add_argument(
+        "--case-sensitive",
+        action="store_true",
+        help="Enable case-sensitive search",
+    )
 
 
 class ReportsCommand(BaseCommand):
@@ -161,6 +167,8 @@ class ReportsCommand(BaseCommand):
         execution: Optional[EXECUTION_FILTERS] = None,
         from_report: Optional[str] = None,
         repo: Optional[str] = None,
+        regex: bool = False,
+        case_sensitive: bool = False,
         **kwargs,
     ):
         params = {}
@@ -182,6 +190,8 @@ class ReportsCommand(BaseCommand):
                 "severity": severity,
                 "execution": execution,
                 "repo": repo,
+                "regexp": "1" if regex or case_sensitive else "0",
+                "case_sensitive": "1" if case_sensitive else "0",
             }
 
             # Remove None values
