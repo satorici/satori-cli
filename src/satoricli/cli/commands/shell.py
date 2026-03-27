@@ -183,6 +183,9 @@ class ShellsCommand(BaseCommand):
             if session["finished_at"]:
                 session["finished_at"] = session["finished_at"].split(".")[0]
 
+            del session["timeout"]
+            del session["regions"]
+
             return session
 
         autotable([clean_result(s) for s in data["items"]])
