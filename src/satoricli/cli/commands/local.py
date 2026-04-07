@@ -39,7 +39,7 @@ from ..utils import (
 from .base import BaseCommand
 
 IS_LINUX = platform.system() == "Linux"
-VISIBILITY_VALUES = Literal["public", "private", "unlisted"]
+VISIBILITY_VALUES = Literal["public", "private", "unlisted", "collaborators"]
 FUNCTIONS_RE = re.compile(r"(read|trim|strip)\((.+)\)")
 FUNCTIONS_SUB_RE = re.compile(r"(.+)\${{(.+)}}(.+)?")
 REPO_SHORTHAND_RE = re.compile(r"^[\w.-]+/[\w.-]+$")
@@ -102,7 +102,7 @@ def new_local_run(
             "name": name,
             "team": team,
             "run_params": rebuild_arguments(),
-            "visibility": visibility.capitalize() if visibility else None,
+            "visibility": visibility.upper() if visibility else None,
             "redacted": redacted,
             "run_tests": run_tests,
         },

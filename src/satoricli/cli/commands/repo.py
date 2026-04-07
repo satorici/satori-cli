@@ -115,7 +115,7 @@ class RepoCommand(BaseCommand):
                     "url": repository,
                     "data": data or "",
                     "playbook": playbook,
-                    "visibility": visibility.capitalize(),
+                    "visibility": visibility.upper(),
                 },
                 timeout=300,
             ).json()

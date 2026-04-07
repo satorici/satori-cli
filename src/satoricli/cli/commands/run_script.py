@@ -28,7 +28,7 @@ def run_script(
                 "save_report": True,
                 "save_output": True,
                 "team": team,
-                "visibility": visibility.capitalize() if visibility else None,
+                "visibility": visibility.upper() if visibility else None,
                 "settings": json.dumps(settings),
             },
             files={"bundle": bundle},

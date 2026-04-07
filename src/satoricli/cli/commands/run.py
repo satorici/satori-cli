@@ -39,7 +39,7 @@ from ..utils import (
 from .base import BaseCommand
 from .report import ReportCommand
 
-VISIBILITY_VALUES = Literal["public", "private", "unlisted"]
+VISIBILITY_VALUES = Literal["public", "private", "unlisted", "collaborators"]
 
 
 def include_files(include: list[str]) -> Optional[str]:
@@ -87,7 +87,7 @@ def new_run(
             "save_output": save_output,
             "team": team,
             "run_params": " ".join(sys.argv[1:]),
-            "visibility": visibility.capitalize() if visibility else None,
+            "visibility": visibility.upper() if visibility else None,
             "clone": clone,
             "redacted": redacted,
         },
@@ -130,7 +130,7 @@ def new_monitor(
             "settings": json.dumps(settings),
             "with_files": bool(packet),
             "team": team,
-            "visibility": visibility.capitalize() if visibility else "Private",
+            "visibility": visibility.upper() if visibility else "Private",
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -325,7 +325,7 @@ class RunCommand(BaseCommand):
                 "team": team,
                 "run_params": " ".join(sys.argv[1:]),
                 "run_last": True,
-                "visibility": visibility.capitalize() if visibility else "Private",
+                "visibility": visibility.upper() if visibility else "Private",
             }
             info = client.post("/scan", json=params).json()
             report = sync if sync else report

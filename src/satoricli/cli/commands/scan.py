@@ -131,7 +131,7 @@ class ScanCommand(BaseCommand):
                     "team": team,
                     "run_params": " ".join(sys.argv[1:]),
                     "run_last": coverage == 0.0,
-                    "visibility": visibility.capitalize(),
+                    "visibility": visibility.upper(),
                 },
             ).json()
             if sync or output or report:
