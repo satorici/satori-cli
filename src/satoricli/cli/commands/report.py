@@ -184,7 +184,7 @@ class ReportCommand(BaseCommand):
                 [
                     ["Execution type", report["execution"], "bright_magenta"],
                     ["Visibility", report["visibility"]],
-                    ["Runtime", execution_time(report.get("execution_time"))],
+                    ["Runtime", execution_time(report.get("execution_time"), report.get("date"))],
                     ["User", report["user"]],
                     ["Date", date_formatter(report["date"])],
                     ["Status", report["status"]],
@@ -252,7 +252,7 @@ class ReportCommand(BaseCommand):
                 ["Execution type", report["execution"], "bright_magenta"],
                 ["Visibility", report["visibility"]],
                 ["Source", report["source"]],
-                ["Runtime", execution_time(report.get("execution_time"))],
+                ["Runtime", execution_time(report.get("execution_time"), report.get("created"))],
                 ["Monitor", report["monitor_id"]],
                 ["Date", date_formatter(report["created"])],
                 ["Status", report["status"]],

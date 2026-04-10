@@ -820,8 +820,17 @@ def remove_yaml_prop(yaml_content: str, key_to_remove: str) -> str:
     return "\n".join(new_lines)
 
 
-def execution_time(seconds: Optional[float]) -> str:
+def execution_time(seconds: Optional[float], date: Optional[str] = None) -> str:
     if seconds is None:
+        if date:
+            from datetime import datetime, timezone
+
+            try:
+                created = datetime.fromisoformat(date).replace(tzinfo=timezone.utc)
+                elapsed = (datetime.now(timezone.utc) - created).total_seconds()
+                return execution_time(max(elapsed, 0))
+            except (ValueError, TypeError):
+                return "-"
         return "-"
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
