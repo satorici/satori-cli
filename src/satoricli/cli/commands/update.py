@@ -23,7 +23,7 @@ class UpdateCommand(BaseCommand):
         response = httpx.get("https://pypi.org/pypi/satori-ci/json")
         latest = response.json()["info"]["version"]
 
-        args = [sys.executable, "-m", "pip", "install", "-U", f"satori-ci=={latest}"]
+        args = [sys.executable, "-m", "pip", "install", "-U", f"satori-ci=={latest}", "--break-system-packages"]
 
         if platform.system() == "Windows":
             subprocess.Popen(args)
