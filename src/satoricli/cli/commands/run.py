@@ -325,7 +325,7 @@ class RunCommand(BaseCommand):
                 "team": team,
                 "run_params": " ".join(sys.argv[1:]),
                 "run_last": True,
-                "visibility": visibility.upper() if visibility else "Private",
+                "visibility": visibility.upper() if visibility else "PRIVATE",
             }
             info = client.post("/scan", json=params).json()
             report = sync if sync else report
