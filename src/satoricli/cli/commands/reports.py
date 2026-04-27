@@ -352,8 +352,8 @@ class ReportsCommand(BaseCommand):
             return 1
         elif action == "stop":
             del params["page"]
-            if "status" not in params:
-                params["status"] = "Running"
+            if not filters.get("status"):
+                filters["status"] = "Running"
             if not force:
                 console.print(
                     "[warning]This action will stop all reports that match the criteria[/]"
