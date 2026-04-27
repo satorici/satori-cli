@@ -1,12 +1,13 @@
 import datetime
 import io
 import itertools
+import json
 import os
 import tarfile
 import time
 from argparse import ArgumentParser
 from math import ceil
-from typing import Literal, Optional, get_args
+from typing import Any, Literal, Optional, get_args
 
 from rich.live import Live
 from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn
@@ -171,27 +172,30 @@ class ReportsCommand(BaseCommand):
         case_sensitive: bool = False,
         **kwargs,
     ):
-        params = {}
+        filters: dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if action in ("delete", "search", "download", "stop"):
-            params = {
+            filters = {
                 "playbook_type": capitalize(playbook_type),
                 "report_visibility": "Public-Global"
                 if visibility == "public-global"
                 else capitalize(visibility),
                 "result": capitalize(result),
                 "query": query,
-                "limit": 10,
-                "page": 1,
                 "monitor": monitor,
                 "playbook": playbook,
                 "status": capitalize(status),
-                "from_date": from_date,
-                "to_date": to_date,
                 "severity": severity,
                 "execution": execution,
                 "repo": repo,
                 "regexp": "1" if regex or case_sensitive else "0",
                 "case_sensitive": "1" if case_sensitive else "0",
+                "from_date": from_date,
+                "to_date": to_date,
+            }
+            params = {
+                "limit": 10,
+                "page": 1,
             }
 
             # Remove None values
@@ -236,6 +240,7 @@ class ReportsCommand(BaseCommand):
                 finished = False
                 report_count = 0
                 while not finished and report_count < limit:
+                    params["filters"] = json.dumps(filters)
                     res = client.get("/reports/search", params=params).json()
                     finished = res.get("finished", False)
                     params["from_report"] = res.get("last_id")
@@ -339,7 +344,7 @@ class ReportsCommand(BaseCommand):
 
             del params["limit"]
             console.print("Deleting reports...")
-            res = client.delete("/reports", params=params)
+            res = client.delete("/reports", params={"filters": json.dumps(filters)})
             if res.is_success:
                 console.print("Reports deleted successfully")
                 return 0
@@ -355,7 +360,10 @@ class ReportsCommand(BaseCommand):
                 )
                 params["limit"] = 1
                 params["user_reports"] = True
-                res = client.get("/reports/search", params=params).json()
+                res = client.get(
+                    "/reports/search",
+                    params=params | {"filters": json.dumps(filters)},
+                ).json()
                 if not res["total"]:
                     console.print("No reports found, nothing to stop")
                     return 0
@@ -367,7 +375,7 @@ class ReportsCommand(BaseCommand):
 
             del params["limit"]
             console.print("Stopping reports...")
-            res = client.patch("/reports/stop", json=params)
+            res = client.patch("/reports/stop", json=filters)
             if res.is_success:
                 console.print("Reports stopped successfully")
                 return 0
