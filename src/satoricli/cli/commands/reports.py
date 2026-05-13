@@ -220,7 +220,7 @@ class ReportsCommand(BaseCommand):
                 autoformat(res["rows"], jsonfmt=kwargs["json"])
         elif action == "search":
             params["limit"] = 1
-            params["from_report"] = from_report
+            params["cursor"] = from_report
             table = Table(expand=True)
             columns = [
                 "ID",
@@ -243,7 +243,7 @@ class ReportsCommand(BaseCommand):
                     params["filters"] = json.dumps(filters)
                     res = client.get("/reports/search", params=params).json()
                     finished = res.get("finished", False)
-                    params["from_report"] = res.get("last_id")
+                    params["cursor"] = res.get("last_id")
                     report_count += len(res["rows"])
                     for report in res["rows"]:
                         table.add_row(
