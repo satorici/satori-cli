@@ -14,6 +14,7 @@ import:
 test:
   assertReturnCode: 0
   assertStderrNotContains: Traceback
+  assertStdoutNotEqual: ""
   install:
       - apt update >/dev/null && apt install -qy --no-install-recommends git jq >/dev/null
       - pip install . --disable-pip-version-check --root-user-action=ignore
