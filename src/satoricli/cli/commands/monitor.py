@@ -7,6 +7,7 @@ from satoricli.cli.utils import (
     BootstrapTable,
     autoformat,
     autotable,
+    console,
     date_formatter,
     error_console,
     execution_time,
@@ -48,8 +49,8 @@ class MonitorCommand(BaseCommand):
     ):
         if action == "delete":
             client.delete(f"/monitors/{id}", params={"clean": clean})
-            print("Monitor deleted")
-            return
+            console.print("Monitor deleted")
+            return 0
         elif action == "show":
             info = client.get(
                 f"/monitors/{id}", params={"page": page, "limit": limit}
@@ -67,23 +68,25 @@ class MonitorCommand(BaseCommand):
                 reports["rows"] = rows
                 autoformat(info)
                 autotable(BootstrapTable(**reports), page=page, limit=limit)
-                return
+                return 0
         elif action == "visibility":
             if not action2 or action2 not in VISIBILITY_VALUES:
                 error_console.print(
-                    f"Allowed values for visibility: {VISIBILITY_VALUES}"
+                    f"Allowed values for visibility: {VISIBILITY_VALUES}",
                 )
                 return 1
             info = client.patch(
-                f"/monitors/{id}", json={"visibility": action2.capitalize()}
+                f"/monitors/{id}",
+                json={"visibility": action2.upper()},
             ).json()
         elif action in ("start", "stop"):
             client.patch(f"/monitors/{id}/{action}")
-            print(f"Monitor {'stopped' if action == 'stop' else 'started'}")
-            return
+            console.print(f"Monitor {'stopped' if action == 'stop' else 'started'}")
+            return 0
         elif action == "clean":
             client.delete(f"/monitors/{id}/reports")
-            print("Monitor reports cleaned")
-            return
+            console.print("Monitor reports cleaned")
+            return 0
 
         autoformat(info, jsonfmt=kwargs["json"], list_separator="*" * 48)
+        return 0
