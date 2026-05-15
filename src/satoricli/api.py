@@ -1,7 +1,9 @@
+import ssl
 from contextlib import contextmanager
 from importlib import metadata
 from typing import Optional
 
+import certifi
 from httpx import Client, Response, Timeout
 from httpx_retries import Retry, RetryTransport
 
@@ -10,6 +12,10 @@ from .exceptions import SatoriRequestError
 HOST = "https://api.satori.ci"
 WS_HOST = "wss://api.satori.ci"
 VERSION = metadata.version("satori-ci")
+
+# Use certifi's CA bundle for SSL verification with websockets
+ca_bundle = certifi.where()
+ssl_ctx = ssl.create_default_context(cafile=ca_bundle)
 
 
 def raise_on_error(res: Response):
