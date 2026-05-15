@@ -1,3 +1,4 @@
+from satoricli.api import ssl_ctx
 import argparse
 import codecs
 import json
@@ -33,8 +34,9 @@ from satorici.validator.exceptions import (
     PlaybookVariableError,
 )
 from satorici.validator.warnings import MissingAssertionsWarning
+from websockets.sync.client import connect
 
-from satoricli.api import client
+from satoricli.api import WS_HOST, client
 from satoricli.bundler import get_local_files
 from satoricli.validations import get_parameters, has_executions
 
@@ -564,7 +566,6 @@ def wait(
     ) as progress:
         task = progress.add_task("Fetching data")
         status = "Unknown"
-        printed = []
 
         while status not in ("Completed", "Stopped", "Timeout"):
             try:
@@ -581,27 +582,23 @@ def wait(
                 continue
 
             if live:
-                output = None
-
-                while output is None:
-                    try:
-                        output = client.get(f"/outputs/{report_id}").json()
-                    except HTTPError:
-                        continue
-
-                last_printed_index = 0
-                for i, o in enumerate(output):
-                    if i < last_printed_index:
-                        continue
-                    out_id = o["path"] + "|" + o["original"]
-                    outputs = (
-                        run_test_filter(filter_tests, [o]) if filter_tests else [o]
-                    )
-                    if out_id not in printed and outputs:
-                        console.print()
-                        format_outputs(outputs, text_format)
-                        printed.append(out_id)
-                        last_printed_index += 1
+                with connect(
+                    f"{WS_HOST}/outputs/download/ws",
+                    additional_headers={
+                        "Authorization": client.headers["Authorization"],
+                        "Satori-Report-Id": report_id,
+                    },
+                ) as websocket:
+                    for message in websocket:
+                        output = json.loads(message)
+                        outputs = (
+                            run_test_filter(filter_tests, [output])
+                            if filter_tests
+                            else [output]
+                        )
+                        if outputs:
+                            console.print()
+                            format_outputs(outputs, text_format)
 
             progress.update(task, description=status)
             time.sleep(1)
