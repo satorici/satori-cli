@@ -8,13 +8,16 @@ import time
 from argparse import ArgumentParser
 from math import ceil
 from typing import Any, Literal, Optional, get_args
+from urllib.parse import urlencode
 
 from rich.live import Live
 from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn
 from rich.table import Table
+from websockets.sync.client import connect
 
 from satoricli.api import client, disable_error_raise
 from satoricli.cli.utils import (
+    WS_HOST,
     autoformat,
     autotable,
     console,
@@ -22,6 +25,7 @@ from satoricli.cli.utils import (
     error_console,
     execution_time,
     get_command_params,
+    ssl_ctx,
 )
 
 from .base import BaseCommand
@@ -327,29 +331,45 @@ class ReportsCommand(BaseCommand):
                     time.sleep(1)
         elif action == "delete":
             del params["page"]
-            if not force:
-                console.print(
-                    "[warning]This action will delete all reports that match the criteria[/]"
-                )
-                params["limit"] = 1
-                res = client.get("/reports/search", params=params).json()
-                if not res["total"]:
+            console.print(
+                "[warning]This action will delete all reports that match the criteria[/]"
+            )
+            params["limit"] = 1
+            console.print("Searching for reports...")
+            filters_encoded = urlencode({"filters": json.dumps(filters)})
+            with connect(
+                f"{WS_HOST}/reports/delete/ws?{filters_encoded}",
+                ssl=ssl_ctx if WS_HOST.startswith("wss://") else None,
+                additional_headers={
+                    "Authorization": client.headers["Authorization"],
+                },
+            ) as websocket:
+                res: str | bytes = websocket.recv()
+
+                message = json.loads(res)
+                if "error" in message:
+                    console.print(message["error"])
+                    return 1
+                if not message.get("total"):
                     console.print("No reports found, nothing to delete")
                     return 0
-                console.print(f"Total reports found: {res['total']}")
-                answer = console.input("Do you want to delete these reports? (y/N): ")
-                if answer.lower() != "y":
-                    console.print("Action cancelled")
-                    return 0
-
-            del params["limit"]
-            console.print("Deleting reports...")
-            res = client.delete("/reports", params={"filters": json.dumps(filters)})
-            if res.is_success:
-                console.print("Reports deleted successfully")
-                return 0
-            console.print("Failed to delete reports")
-            return 1
+                console.print(message["message"])
+                if not force:
+                    answer = console.input(
+                        "Do you want to delete these reports? (y/N): "
+                    )
+                    if answer.lower() != "y":
+                        console.print("Action cancelled")
+                        return 0
+                console.print("Deleting reports...")
+                websocket.send("delete")
+                res1 = websocket.recv()
+                res_decode = json.loads(res1)
+                if "error" in res_decode:
+                    console.print(res_decode["error"])
+                    return 1
+                console.print(res_decode["message"])
+            return 0
         elif action == "stop":
             del params["page"]
             if not filters.get("status"):
