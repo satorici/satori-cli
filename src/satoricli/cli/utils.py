@@ -1,4 +1,3 @@
-from satoricli.api import ssl_ctx
 import argparse
 import codecs
 import json
@@ -17,7 +16,6 @@ from typing import Any, Iterable, Literal, Optional, Union
 
 import httpx
 import yaml
-from httpx import HTTPError
 from rich import print_json
 from rich.console import Console
 from rich.highlighter import RegexHighlighter
@@ -36,7 +34,7 @@ from satorici.validator.exceptions import (
 from satorici.validator.warnings import MissingAssertionsWarning
 from websockets.sync.client import connect
 
-from satoricli.api import WS_HOST, client
+from satoricli.api import WS_HOST, client, ssl_ctx
 from satoricli.bundler import get_local_files
 from satoricli.validations import get_parameters, has_executions
 
@@ -584,6 +582,7 @@ def wait(
             if live:
                 with connect(
                     f"{WS_HOST}/outputs/download/ws",
+                    ssl=ssl_ctx if WS_HOST.startswith("wss://") else None,
                     additional_headers={
                         "Authorization": client.headers["Authorization"],
                         "Satori-Report-Id": report_id,
