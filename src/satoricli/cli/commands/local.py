@@ -17,8 +17,9 @@ import httpx
 import yaml
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from satori_runner import run
+from websockets.sync.client import connect
 
-from satoricli.api import client
+from satoricli.api import WS_HOST, client, ssl_ctx
 from satoricli.bundler import make_bundle
 from satoricli.cli.commands.report import ReportCommand
 from satoricli.cli.utils import log
@@ -51,9 +52,7 @@ def resolve_repo_url(repo: str) -> str:
         return f"https://github.com/{repo}.git"
     if repo.startswith(("https://", "git@")):
         return repo
-    raise ValueError(
-        f"Invalid repo format: {repo!r}. Use 'owner/name' or a full URL."
-    )
+    raise ValueError(f"Invalid repo format: {repo!r}. Use 'owner/name' or a full URL.")
 
 
 def rebuild_arguments() -> str:
@@ -255,7 +254,9 @@ class LocalCommand(BaseCommand):
 
                 repo_url = resolve_repo_url(repo)
                 temp_clone_dir = Path(tempfile.gettempdir(), str(uuid.uuid4()))
-                error_console.print(f"Cloning {repo_url} temporarily into {temp_clone_dir}")
+                error_console.print(
+                    f"Cloning {repo_url} temporarily into {temp_clone_dir}"
+                )
                 try:
                     git.Repo.clone_from(repo_url, temp_clone_dir, depth=1)
                 except git.GitCommandError as e:
@@ -335,6 +336,8 @@ class LocalCommand(BaseCommand):
             elif kwargs["json"]:
                 console.print_json(data={"report_id": report_id})
 
+            headers = {"Authorization": "Bearer " + local_run["token"]}
+
             with (
                 httpx.stream("GET", local_run["recipe"]) as s,
                 Progress(
@@ -343,13 +346,16 @@ class LocalCommand(BaseCommand):
                     TimeElapsedColumn(),
                     console=error_console,
                 ) as progress,
+                connect(
+                    f"{WS_HOST}/outputs/upload/ws",
+                    ssl=ssl_ctx if WS_HOST.startswith("wss://") else None,
+                    additional_headers=headers,
+                ) as websocket,
             ):
                 os.chdir(workdir)
                 task = progress.add_task("Starting execution")
                 start_time = time.monotonic()
                 deadline = start_time + timeout if timeout is not None else None
-
-                headers = {"Authorization": "Bearer " + local_run["token"]}
 
                 timed_out = False
 
@@ -362,7 +368,9 @@ class LocalCommand(BaseCommand):
 
                     progress.update(task, description="Running [b]" + message["path"])
                     args = replace_variables(message["value"], message["testcase"])
-                    command_timeout = message.get("settings", {}).get("setCommandTimeout")
+                    command_timeout = message.get("settings", {}).get(
+                        "setCommandTimeout",
+                    )
 
                     if deadline:
                         command_timeout = (
@@ -381,7 +389,7 @@ class LocalCommand(BaseCommand):
                         **output_dict,
                         "command": message,
                     }
-                    client.post("outputs/upload", json=result, headers=headers)
+                    websocket.send(json.dumps(result))
 
                 client.put(
                     "/runs/local/upload",
@@ -395,7 +403,9 @@ class LocalCommand(BaseCommand):
                 )
 
                 client.patch("/reports/severities", headers=headers)
-                progress.update(task, description="Timeout" if timed_out else "Completed")
+                progress.update(
+                    task, description="Timeout" if timed_out else "Completed"
+                )
 
             if sync:
                 print_summary(report_id, kwargs["json"])
