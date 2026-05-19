@@ -17,7 +17,7 @@ class InstallCommand(BaseCommand):
 
     def __call__(self, **kwargs):
         # Open browser to get token
-        url = "https://satori.ci/user-settings/#user-api-token"
+        url = "https://satori.ci/settings/#user-api-token"
         webbrowser.open(url)
         console.print(
             "Log in to Satori CI and get your token from the 'User API Token' page at: [b blue]{url}[/]"
