@@ -15,6 +15,7 @@ from typing import Literal, Optional, Union, get_args
 
 import httpx
 import yaml
+from msgspec import msgpack
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from satori_runner import run
 from websockets.sync.client import connect
@@ -389,8 +390,9 @@ class LocalCommand(BaseCommand):
                         **output_dict,
                         "command": message,
                     }
-                    websocket.send(json.dumps(result))
+                    websocket.send(msgpack.encode(result))
 
+                time.sleep(1)
                 client.put(
                     "/runs/local/upload",
                     params={
