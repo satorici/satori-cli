@@ -54,6 +54,24 @@ def add_pagination_args(parser: ArgumentParser) -> None:
     parser.add_argument("-l", "--limit", type=int, default=10)
 
 
+def advance_search_cursor(
+    params: dict[str, Any],
+    filters: dict[str, Any],
+    *,
+    pages_to_skip: int,
+    page_size: int,
+) -> bool:
+    """Advance cursor-based search by skipping full pages. Returns False if results end early."""
+    for _ in range(pages_to_skip):
+        params["limit"] = page_size
+        params["filters"] = json.dumps(filters)
+        res = client.get("/reports/search", params=params).json()
+        if res.get("finished") or not res.get("rows"):
+            return False
+        params["cursor"] = res.get("last_id")
+    return True
+
+
 def add_search_args(parser: ArgumentParser) -> None:
     parser.add_argument("-n", "--name", help="Export folder name")
     parser.add_argument(
@@ -223,8 +241,14 @@ class ReportsCommand(BaseCommand):
             else:
                 autoformat(res["rows"], jsonfmt=kwargs["json"])
         elif action == "search":
-            params["limit"] = 1
+            del params["page"]
+            params["limit"] = limit
             params["cursor"] = from_report
+            if page > 1 and not advance_search_cursor(
+                params, filters, pages_to_skip=page - 1, page_size=limit
+            ):
+                console.print("No reports found")
+                return 1
             table = Table(expand=True)
             columns = [
                 "ID",
@@ -241,28 +265,26 @@ class ReportsCommand(BaseCommand):
                 table.add_column(column)
 
             with Live(table, refresh_per_second=1):
-                finished = False
-                report_count = 0
-                while not finished and report_count < limit:
-                    params["filters"] = json.dumps(filters)
-                    res = client.get("/reports/search", params=params).json()
-                    finished = res.get("finished", False)
-                    params["cursor"] = res.get("last_id")
-                    report_count += len(res["rows"])
-                    for report in res["rows"]:
-                        table.add_row(
-                            report["id"],
-                            get_command_params(report.get("run_params")),
-                            report.get("playbook_path", report.get("playbook_uri")),
-                            report.get("playbook_name"),
-                            report.get("execution"),
-                            report.get("status"),
-                            report.get("result"),
-                            execution_time(
-                                report.get("execution_time", report.get("run_time"))
-                            ),
-                            date_formatter(report.get("date")),
-                        )
+                params["filters"] = json.dumps(filters)
+                res = client.get("/reports/search", params=params).json()
+                for report in res["rows"]:
+                    table.add_row(
+                        report["id"],
+                        get_command_params(report.get("run_params")),
+                        report.get("playbook_path", report.get("playbook_uri")),
+                        report.get("playbook_name"),
+                        report.get("execution"),
+                        report.get("status"),
+                        report.get("result"),
+                        execution_time(
+                            report.get("execution_time", report.get("run_time"))
+                        ),
+                        date_formatter(report.get("date")),
+                    )
+            if not res["rows"]:
+                console.print("No reports found")
+                return 1
+            console.print(f"Page {page}")
             return 0
         elif action == "download":
             # Save response
