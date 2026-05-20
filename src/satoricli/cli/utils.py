@@ -445,6 +445,60 @@ def capitalize_list(items: list[str]) -> list[str]:
     return list(new_list)
 
 
+def print_output_entry(
+    output: dict,
+    text_format: Literal["plain", "md"] = "plain",
+    current_path: str = "",
+) -> str:
+    """Print a single output entry in the multi-element format.
+
+    Returns the entry's path so the caller can skip re-printing the rule when
+    consecutive entries share the same path.
+    """
+    if current_path != output["path"]:
+        console.rule(f"[b]{output['path']}[/b]")
+        current_path = output["path"]
+
+    if output.get("original"):
+        console.print(f"[b][green]Command:[/green] {output['original']}[/b]")
+
+    if output.get("testcase"):
+        testcase = Table(show_header=False, show_edge=False)
+
+        testcase.add_column(style="b")
+        testcase.add_column()
+
+        for key, value in output["testcase"].items():
+            testcase.add_row(key, value)
+
+        console.print("[blue]Testcase:[/blue]")
+        console.print(testcase)
+
+    output_dict = output["output"]
+    if output_dict.get("return_code") is not None:
+        console.print("[blue]Return code:[/blue]", output_dict["return_code"])
+    if "stdout" in output_dict and output_dict["stdout"] is not None:
+        console.print("[blue]Stdout:[/blue]")
+        text = output_dict["stdout"]
+        if text_format == "md":
+            text = Markdown(text)
+            console.print(text)
+        else:
+            for line in text.split("\n"):
+                console.print(line, highlight=False, markup=False)
+    if "stderr" in output_dict and output_dict["stderr"] is not None:
+        console.print("[blue]Stderr:[/blue]")
+        for line in output_dict["stderr"].split("\n"):
+            console.print(line, highlight=False, markup=False)
+    if "os_error" in output_dict and output_dict["os_error"] is not None:
+        for line in output_dict["os_error"].split("\n"):
+            console.print(line, highlight=False, markup=False)
+    if "time" in output_dict:
+        console.print("[blue]Runtime:[/blue]", execution_time(output_dict["time"]))
+
+    return current_path
+
+
 def format_outputs(
     outputs: list,
     text_format: Literal["plain", "md"] = "plain",
@@ -463,47 +517,7 @@ def format_outputs(
     current_path = ""
 
     for output in outputs:
-        if current_path != output["path"]:
-            console.rule(f"[b]{output['path']}[/b]")
-            current_path = output["path"]
-
-        if output.get("original"):
-            console.print(f"[b][green]Command:[/green] {output['original']}[/b]")
-
-        if output.get("testcase"):
-            testcase = Table(show_header=False, show_edge=False)
-
-            testcase.add_column(style="b")
-            testcase.add_column()
-
-            for key, value in output["testcase"].items():
-                testcase.add_row(key, value)
-
-            console.print("[blue]Testcase:[/blue]")
-            console.print(testcase)
-
-        output_dict = output["output"]
-        if output_dict.get("return_code") is not None:
-            console.print("[blue]Return code:[/blue]", output_dict["return_code"])
-        if "stdout" in output_dict and output_dict["stdout"] is not None:
-            console.print("[blue]Stdout:[/blue]")
-            text = output_dict["stdout"]
-            if text_format == "md":
-                text = Markdown(text)
-                console.print(text)
-            else:
-                # Print the text without highlighting line by line
-                for line in text.split("\n"):
-                    console.print(line, highlight=False, markup=False)
-        if "stderr" in output_dict and output_dict["stderr"] is not None:
-            console.print("[blue]Stderr:[/blue]")
-            for line in output_dict["stderr"].split("\n"):
-                console.print(line, highlight=False, markup=False)
-        if "os_error" in output_dict and output_dict["os_error"] is not None:
-            for line in output_dict["os_error"].split("\n"):
-                console.print(line, highlight=False, markup=False)
-        if "time" in output_dict:
-            console.print("[blue]Runtime:[/blue]", execution_time(output_dict["time"]))
+        current_path = print_output_entry(output, text_format, current_path)
 
 
 def group_table(

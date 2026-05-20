@@ -9,6 +9,7 @@ import tempfile
 import time
 import uuid
 from argparse import ArgumentParser
+from contextlib import ExitStack
 from dataclasses import asdict
 from pathlib import Path
 from typing import Literal, Optional, Union, get_args
@@ -34,7 +35,9 @@ from ..utils import (
     missing_ymls,
     output_to_string,
     print_output,
+    print_output_entry,
     print_summary,
+    run_test_filter,
     tuple_to_dict,
     validate_config,
 )
@@ -339,26 +342,53 @@ class LocalCommand(BaseCommand):
 
             headers = {"Authorization": "Bearer " + local_run["token"]}
 
-            with (
-                httpx.stream("GET", local_run["recipe"]) as s,
-                Progress(
-                    SpinnerColumn("dots2"),
-                    TextColumn("[progress.description]Status: {task.description}"),
-                    TimeElapsedColumn(),
-                    console=error_console,
-                ) as progress,
-                connect(
-                    f"{WS_HOST}/outputs/upload/ws",
-                    ssl=ssl_ctx if WS_HOST.startswith("wss://") else None,
-                    additional_headers=headers,
-                ) as websocket,
-            ):
+            stream_output = output and not kwargs["json"]
+            redacted_values: list[str] = []
+            if stream_output and parsed_data and redacted:
+                for name in redacted:
+                    value = parsed_data.get(name)
+                    if value:
+                        redacted_values.append(value)
+
+            def _redact(text):
+                if not text or not redacted_values:
+                    return text
+                for v in redacted_values:
+                    text = text.replace(v, "*" * len(v))
+                return text
+
+            with ExitStack() as stack:
+                s = stack.enter_context(httpx.stream("GET", local_run["recipe"]))
+                if stream_output:
+                    progress = None
+                    task = None
+                    error_console.print("Status: Starting execution")
+                else:
+                    progress = stack.enter_context(
+                        Progress(
+                            SpinnerColumn("dots2"),
+                            TextColumn(
+                                "[progress.description]Status: {task.description}"
+                            ),
+                            TimeElapsedColumn(),
+                            console=error_console,
+                        )
+                    )
+                    task = progress.add_task("Starting execution")
+                websocket = stack.enter_context(
+                    connect(
+                        f"{WS_HOST}/outputs/upload/ws",
+                        ssl=ssl_ctx if WS_HOST.startswith("wss://") else None,
+                        additional_headers=headers,
+                    )
+                )
+
                 os.chdir(workdir)
-                task = progress.add_task("Starting execution")
                 start_time = time.monotonic()
                 deadline = start_time + timeout if timeout is not None else None
 
                 timed_out = False
+                stream_current_path = ""
 
                 for line in s.iter_lines():
                     if deadline and time.monotonic() > deadline:
@@ -367,7 +397,10 @@ class LocalCommand(BaseCommand):
 
                     message: dict = json.loads(line)
 
-                    progress.update(task, description="Running [b]" + message["path"])
+                    if progress is not None:
+                        progress.update(
+                            task, description="Running [b]" + message["path"]
+                        )
                     args = replace_variables(message["value"], message["testcase"])
                     command_timeout = message.get("settings", {}).get(
                         "setCommandTimeout",
@@ -380,17 +413,46 @@ class LocalCommand(BaseCommand):
                             else deadline - time.monotonic()
                         )
 
+                    path = message.pop("path")
                     out = run(args, command_timeout)
                     output_dict = asdict(out)
                     output_dict["stdout"] = output_to_string(out.stdout)
                     output_dict["stderr"] = output_to_string(out.stderr)
                     output_dict["os_error"] = output_to_string(out.os_error)
                     result = {
-                        "path": message.pop("path"),
+                        "path": path,
                         **output_dict,
                         "command": message,
                     }
                     websocket.send(msgpack.encode(result))
+
+                    if stream_output:
+                        original = message.get("value")
+                        if isinstance(original, list):
+                            original = " ".join(original)
+                        entry = {
+                            "path": path,
+                            "original": original,
+                            "testcase": {
+                                k: _redact(v)
+                                for k, v in (message.get("testcase") or {}).items()
+                            },
+                            "output": {
+                                "return_code": output_dict["return_code"],
+                                "stdout": _redact(output_dict["stdout"]),
+                                "stderr": _redact(output_dict["stderr"]),
+                                "os_error": _redact(output_dict["os_error"]),
+                                "time": output_dict["time"],
+                            },
+                        }
+                        if filter_tests:
+                            filtered = run_test_filter(filter_tests, [entry])
+                            if not filtered:
+                                continue
+                            entry = filtered[0]
+                        stream_current_path = print_output_entry(
+                            entry, text_format, stream_current_path
+                        )
 
                 time.sleep(1)
                 client.put(
@@ -405,9 +467,11 @@ class LocalCommand(BaseCommand):
                 )
 
                 client.patch("/reports/severities", headers=headers)
-                progress.update(
-                    task, description="Timeout" if timed_out else "Completed"
-                )
+                final_status = "Timeout" if timed_out else "Completed"
+                if progress is not None:
+                    progress.update(task, description=final_status)
+                else:
+                    error_console.print(f"Status: {final_status}")
 
             if sync:
                 print_summary(report_id, kwargs["json"])
@@ -415,7 +479,7 @@ class LocalCommand(BaseCommand):
             if report:
                 ReportCommand.print_report_asrt(report_id, kwargs["json"])
 
-            if output:
+            if output and not stream_output:
                 print_output(report_id, kwargs["json"], filter_tests, text_format)
 
             report_data = client.get(f"/reports/{report_id}").json()
