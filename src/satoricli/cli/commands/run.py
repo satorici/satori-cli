@@ -491,7 +491,13 @@ class RunCommand(BaseCommand):
         ret = print_summary(ids[0], kwargs["json"]) if sync else 0
 
         report_index, output_index = get_report_output_cmd_index()
-        should_print_output = (output and bool(kwargs["json"])) or (report and output)
+        live_streamed = bool(output or (sync and not report))
+        # When we already streamed output live via the WS, skip the final
+        # /outputs fetch to avoid duplicating what the user just saw. JSON mode
+        # is the exception: it expects a structured dump at the end.
+        should_print_output = (output and bool(kwargs["json"])) or (
+            report and output and not live_streamed
+        )
         print_args: tuple[str, bool] = (ids[0], kwargs["json"])
         if output_index < report_index:
             if should_print_output:

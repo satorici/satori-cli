@@ -3,6 +3,7 @@ import codecs
 import json
 import logging
 import math
+import os
 import random
 import re
 import sys
@@ -32,6 +33,7 @@ from satorici.validator.exceptions import (
     PlaybookVariableError,
 )
 from satorici.validator.warnings import MissingAssertionsWarning
+from websockets.exceptions import ConnectionClosed
 from websockets.sync.client import connect
 
 from satoricli.api import WS_HOST, client, ssl_ctx
@@ -570,6 +572,42 @@ def wait(
     filter_tests: Optional[list] = None,
     text_format: Literal["plain", "md"] = "plain",
 ) -> None:
+    METADATA_ONLY_TIMEOUT = 8.0  # seconds to wait for a rich update before flushing
+
+    def _step_id(entry: dict) -> tuple:
+        return (
+            entry.get("path"),
+            entry.get("original"),
+            json.dumps(entry.get("testcase") or {}, sort_keys=True),
+        )
+
+    def _is_metadata_only(entry: dict) -> bool:
+        out = entry.get("output") or {}
+        return (
+            not (out.get("stdout") or "")
+            and not (out.get("stderr") or "")
+            and not (out.get("os_error") or "")
+        )
+
+    def _emit(entry: dict) -> None:
+        outputs = (
+            run_test_filter(filter_tests, [entry]) if filter_tests else [entry]
+        )
+        if outputs:
+            console.print()
+            format_outputs(outputs, text_format)
+
+    printed_steps: set[tuple] = set()
+    pending_steps: dict[tuple, tuple[dict, float]] = {}
+
+    def _flush_pending_older_than(threshold: float) -> None:
+        now = time.monotonic()
+        stale = [sid for sid, (_, ts) in pending_steps.items() if now - ts >= threshold]
+        for sid in stale:
+            entry, _ = pending_steps.pop(sid)
+            _emit(entry)
+            printed_steps.add(sid)
+
     with Progress(
         SpinnerColumn("dots2"),
         TextColumn("[progress.description]Status: {task.description}"),
@@ -593,6 +631,8 @@ def wait(
 
                 continue
 
+            progress.update(task, description=status)
+
             if live:
                 with connect(
                     f"{WS_HOST}/outputs/download/ws",
@@ -602,19 +642,65 @@ def wait(
                         "Satori-Report-Id": report_id,
                     },
                 ) as websocket:
-                    for message in websocket:
-                        output = json.loads(message)
-                        outputs = (
-                            run_test_filter(filter_tests, [output])
-                            if filter_tests
-                            else [output]
-                        )
-                        if outputs:
-                            console.print()
-                            format_outputs(outputs, text_format)
+                    while True:
+                        try:
+                            message = websocket.recv(timeout=2)
+                        except TimeoutError:
+                            try:
+                                status = client.get(
+                                    f"/reports/{report_id}/status"
+                                ).text
+                                progress.update(task, description=status)
+                            except (httpx.TransportError, httpx.HTTPStatusError):
+                                pass
+                            _flush_pending_older_than(METADATA_ONLY_TIMEOUT)
+                            if status in ("Completed", "Stopped", "Timeout"):
+                                break
+                            continue
+                        except ConnectionClosed:
+                            break
+
+                        if ws_dump_path := os.environ.get("SATORI_WS_DUMP"):
+                            with open(ws_dump_path, "ab") as _dump:
+                                payload = (
+                                    message.encode()
+                                    if isinstance(message, str)
+                                    else message
+                                )
+                                _dump.write(
+                                    f"{time.time():.3f}\t".encode() + payload + b"\n"
+                                )
+
+                        entry = json.loads(message)
+                        sid = _step_id(entry)
+
+                        if sid in printed_steps:
+                            continue  # server replay after reconnect
+
+                        if _is_metadata_only(entry):
+                            pending_steps[sid] = (entry, time.monotonic())
+                        else:
+                            _emit(entry)
+                            printed_steps.add(sid)
+                            pending_steps.pop(sid, None)
 
             progress.update(task, description=status)
             time.sleep(1)
+
+        if pending_steps:
+            outputs_by_sid: dict[tuple, dict] = {}
+            try:
+                res_json = client.get(f"/outputs/{report_id}").json()
+                if isinstance(res_json, list):
+                    outputs_by_sid = {_step_id(e): e for e in res_json}
+            except (httpx.TransportError, httpx.HTTPStatusError):
+                pass
+
+            for sid in list(pending_steps.keys()):
+                placeholder, _ = pending_steps.pop(sid)
+                rich = outputs_by_sid.get(sid)
+                _emit(rich if rich else placeholder)
+                printed_steps.add(sid)
 
 
 def download_files(report_id: str):
