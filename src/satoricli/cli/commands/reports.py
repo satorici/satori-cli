@@ -65,7 +65,7 @@ def advance_search_cursor(
     for _ in range(pages_to_skip):
         params["filters"] = json.dumps(filters)
         res = client.get("/reports/search", params=params).json()
-        if res.get("finished") or not res.get("rows"):
+        if not res["last_id"]:
             return False
         params["cursor"] = res.get("last_id")
     return True
