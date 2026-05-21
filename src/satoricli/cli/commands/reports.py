@@ -63,7 +63,6 @@ def advance_search_cursor(
 ) -> bool:
     """Advance cursor-based search by skipping full pages. Returns False if results end early."""
     for _ in range(pages_to_skip):
-        params["limit"] = page_size
         params["filters"] = json.dumps(filters)
         res = client.get("/reports/search", params=params).json()
         if res.get("finished") or not res.get("rows"):
@@ -216,8 +215,7 @@ class ReportsCommand(BaseCommand):
                 "to_date": to_date,
             }
             params = {
-                "limit": 10,
-                "page": 1,
+                "limit": limit,
             }
 
             # Remove None values
@@ -241,8 +239,6 @@ class ReportsCommand(BaseCommand):
             else:
                 autoformat(res["rows"], jsonfmt=kwargs["json"])
         elif action == "search":
-            del params["page"]
-            params["limit"] = limit
             params["cursor"] = from_report
             if page > 1 and not advance_search_cursor(
                 params, filters, pages_to_skip=page - 1, page_size=limit
