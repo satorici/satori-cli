@@ -301,36 +301,32 @@ class ReportsCommand(BaseCommand):
                 console.print("No reports found, nothing to export")
                 return 0
 
-            console.print(
-                f"[bold cyan]Downloading {res['total']} reports...[/bold cyan]"
-            )
-
-            total = res["total"]
-            with Progress(
-                SpinnerColumn("dots12"),
-                BarColumn(),
-                TaskProgressColumn(),
-                console=error_console,
+            with console.status(
+                "Searching and downloading reports...", spinner="dots12"
             ) as progress:
-                task = progress.add_task("Fetching reports...", total=total)
-
-                for page_number in itertools.count(start=1):
+                cursor_position = "true"
+                count = 0
+                while cursor_position:
                     params["limit"] = 5
-                    progress.update(task, advance=params["limit"])
-                    params["page"] = page_number
                     with disable_error_raise() as c:
-                        res = c.get("/outputs/export", params=params)
+                        export_response = c.get("/outputs/export", params=params)
 
-                    if res.is_error:
+                    cursor_position = export_response.headers.get("satori-cursor")
+                    if export_response.is_error or not cursor_position:
                         progress.stop()
                         console.print(
                             "[bold cyan]Reports downloaded successfully[/bold cyan]",
                         )
                         return 0
 
+                    params["cursor"] = cursor_position
+                    count += int(export_response.headers.get("satori-reports-count"))
+
+                    progress.update(f"Downloaded {count} reports")
+
                     # Use io.BytesIO to treat the bytes as a file-like object
                     with (
-                        io.BytesIO(res.content) as tar_buffer,
+                        io.BytesIO(export_response.content) as tar_buffer,
                         tarfile.open(fileobj=tar_buffer, mode="r:*") as tar,
                     ):
                         tar.extractall(path=extract_dir, filter="data")
@@ -338,15 +334,15 @@ class ReportsCommand(BaseCommand):
                     # Extract files
                     for item in os.listdir(extract_dir):
                         item_path = os.path.join(extract_dir, item)
-                    if os.path.isfile(item_path) and item.endswith(".tar.gz"):
-                        base_name = item[:-7]  # Remove the ".tar.gz" extension
-                        output_folder = os.path.join(extract_dir, base_name)
-                        # Create the output folder if it doesn't exist
-                        os.makedirs(output_folder, exist_ok=True)
-                        with tarfile.open(item_path, "r:gz") as tar:
-                            tar.extractall(path=output_folder, filter="data")
-                        os.remove(item_path)
-                    time.sleep(1)
+                        if os.path.isfile(item_path) and item.endswith(".tar.gz"):
+                            base_name = item[:-7]  # Remove the ".tar.gz" extension
+                            output_folder = os.path.join(extract_dir, base_name)
+                            # Create the output folder if it doesn't exist
+                            os.makedirs(output_folder, exist_ok=True)
+                            with tarfile.open(item_path, "r:gz") as tar:
+                                tar.extractall(path=output_folder, filter="data")
+                            os.remove(item_path)
+                    time.sleep(0.5)
         elif action == "delete":
             del params["page"]
             console.print(
