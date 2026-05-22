@@ -306,12 +306,10 @@ class ReportsCommand(BaseCommand):
             ) as progress:
                 cursor_position = "true"
                 count = 0
+                params["filters"] = json.dumps(filters)
                 while cursor_position:
                     with disable_error_raise() as c:
-                        export_response = c.get(
-                            "/outputs/export",
-                            params={"filters": json.dumps(filters)},
-                        )
+                        export_response = c.get("/outputs/export", params=params)
 
                     cursor_position = export_response.headers.get("satori-cursor")
                     if export_response.is_error or not cursor_position:
