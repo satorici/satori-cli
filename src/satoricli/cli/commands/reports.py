@@ -307,9 +307,11 @@ class ReportsCommand(BaseCommand):
                 cursor_position = "true"
                 count = 0
                 while cursor_position:
-                    params["limit"] = 5
                     with disable_error_raise() as c:
-                        export_response = c.get("/outputs/export", params=params)
+                        export_response = c.get(
+                            "/outputs/export",
+                            params={"filters": json.dumps(filters)},
+                        )
 
                     cursor_position = export_response.headers.get("satori-cursor")
                     if export_response.is_error or not cursor_position:
