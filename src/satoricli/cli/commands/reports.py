@@ -1,6 +1,5 @@
 import datetime
 import io
-import itertools
 import json
 import os
 import tarfile
@@ -11,7 +10,6 @@ from typing import Any, Literal, Optional, get_args
 from urllib.parse import urlencode
 
 from rich.live import Live
-from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn
 from rich.table import Table
 from websockets.sync.client import connect
 
@@ -22,7 +20,6 @@ from satoricli.cli.utils import (
     autotable,
     console,
     date_formatter,
-    error_console,
     execution_time,
     get_command_params,
     ssl_ctx,
@@ -376,12 +373,12 @@ class ReportsCommand(BaseCommand):
                         return 0
                 console.print("Deleting reports...")
                 websocket.send("delete")
-                res1 = websocket.recv()
-                res_decode = json.loads(res1)
-                if "error" in res_decode:
-                    console.print(res_decode["error"])
-                    return 1
-                console.print(res_decode["message"])
+                for msg in websocket:
+                    res_decode = json.loads(msg)
+                    if "error" in res_decode:
+                        console.print(res_decode["error"])
+                        return 1
+                    console.print(res_decode["message"])
             return 0
         elif action == "stop":
             del params["page"]
