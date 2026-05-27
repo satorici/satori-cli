@@ -344,7 +344,6 @@ class ReportsCommand(BaseCommand):
                             os.remove(item_path)
                     time.sleep(0.5)
         elif action == "delete":
-            del params["page"]
             console.print(
                 "[warning]This action will delete all reports that match the criteria[/]"
             )
