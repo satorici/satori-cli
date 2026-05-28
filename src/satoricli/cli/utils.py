@@ -3,7 +3,6 @@ import codecs
 import json
 import logging
 import math
-import os
 import random
 import re
 import sys
@@ -33,10 +32,8 @@ from satorici.validator.exceptions import (
     PlaybookVariableError,
 )
 from satorici.validator.warnings import MissingAssertionsWarning
-from websockets.exceptions import ConnectionClosed
-from websockets.sync.client import connect
 
-from satoricli.api import WS_HOST, client, ssl_ctx
+from satoricli.api import client
 from satoricli.bundler import get_local_files
 from satoricli.validations import get_parameters, has_executions
 
@@ -572,8 +569,6 @@ def wait(
     filter_tests: Optional[list] = None,
     text_format: Literal["plain", "md"] = "plain",
 ) -> None:
-    METADATA_ONLY_TIMEOUT = 8.0  # seconds to wait for a rich update before flushing
-
     def _step_id(entry: dict) -> tuple:
         return (
             entry.get("path"),
@@ -597,16 +592,50 @@ def wait(
             console.print()
             format_outputs(outputs, text_format)
 
-    printed_steps: set[tuple] = set()
-    pending_steps: dict[tuple, tuple[dict, float]] = {}
+    # /outputs is the only source that returns every step in canonical
+    # (playbook execution) order. The websocket dedups by `path`, so for a
+    # multi-command step like `install` it only ever streams the first command
+    # and drops the rest, scrambling order — so we poll /outputs instead.
+    order: list[tuple] = []  # sids in canonical order, as first seen
+    seen: dict[tuple, dict] = {}  # sid -> richest entry seen so far
+    emitted: set[tuple] = set()
+    emit_idx = 0
 
-    def _flush_pending_older_than(threshold: float) -> None:
-        now = time.monotonic()
-        stale = [sid for sid, (_, ts) in pending_steps.items() if now - ts >= threshold]
-        for sid in stale:
-            entry, _ = pending_steps.pop(sid)
+    def _record(entry: dict) -> None:
+        sid = _step_id(entry)
+        if sid in emitted:
+            return  # already printed
+        if sid not in seen:
+            order.append(sid)
+            seen[sid] = entry
+        elif not _is_metadata_only(entry) and _is_metadata_only(seen[sid]):
+            seen[sid] = entry  # fill a step whose content wasn't indexed yet
+
+    def _fetch_outputs() -> None:
+        try:
+            res_json = client.get(f"/outputs/{report_id}").json()
+        except (httpx.TransportError, httpx.HTTPStatusError):
+            return
+        if isinstance(res_json, list):
+            for e in res_json:
+                _record(e)
+
+    def _drain(final: bool = False) -> None:
+        """Emit steps strictly in canonical order (head-of-line on empties).
+
+        A step is only printed once it has real content, so a later step never
+        jumps ahead of an earlier one whose stdout/stderr is still being indexed
+        in OpenSearch. At `final` we emit whatever we have, so genuinely
+        output-less steps (e.g. commands redirected to /dev/null) still show.
+        """
+        nonlocal emit_idx
+        while emit_idx < len(order):
+            entry = seen[order[emit_idx]]
+            if not (final or not _is_metadata_only(entry)):
+                break  # wait for this step's content before moving on
             _emit(entry)
-            printed_steps.add(sid)
+            emitted.add(order[emit_idx])
+            emit_idx += 1
 
     with Progress(
         SpinnerColumn("dots2"),
@@ -634,73 +663,14 @@ def wait(
             progress.update(task, description=status)
 
             if live:
-                with connect(
-                    f"{WS_HOST}/outputs/download/ws",
-                    ssl=ssl_ctx if WS_HOST.startswith("wss://") else None,
-                    additional_headers={
-                        "Authorization": client.headers["Authorization"],
-                        "Satori-Report-Id": report_id,
-                    },
-                ) as websocket:
-                    while True:
-                        try:
-                            message = websocket.recv(timeout=2)
-                        except TimeoutError:
-                            try:
-                                status = client.get(
-                                    f"/reports/{report_id}/status"
-                                ).text
-                                progress.update(task, description=status)
-                            except (httpx.TransportError, httpx.HTTPStatusError):
-                                pass
-                            _flush_pending_older_than(METADATA_ONLY_TIMEOUT)
-                            if status in ("Completed", "Stopped", "Timeout"):
-                                break
-                            continue
-                        except ConnectionClosed:
-                            break
-
-                        if ws_dump_path := os.environ.get("SATORI_WS_DUMP"):
-                            with open(ws_dump_path, "ab") as _dump:
-                                payload = (
-                                    message.encode()
-                                    if isinstance(message, str)
-                                    else message
-                                )
-                                _dump.write(
-                                    f"{time.time():.3f}\t".encode() + payload + b"\n"
-                                )
-
-                        entry = json.loads(message)
-                        sid = _step_id(entry)
-
-                        if sid in printed_steps:
-                            continue  # server replay after reconnect
-
-                        if _is_metadata_only(entry):
-                            pending_steps[sid] = (entry, time.monotonic())
-                        else:
-                            _emit(entry)
-                            printed_steps.add(sid)
-                            pending_steps.pop(sid, None)
+                _fetch_outputs()
+                _drain()
 
             progress.update(task, description=status)
             time.sleep(1)
 
-        if pending_steps:
-            outputs_by_sid: dict[tuple, dict] = {}
-            try:
-                res_json = client.get(f"/outputs/{report_id}").json()
-                if isinstance(res_json, list):
-                    outputs_by_sid = {_step_id(e): e for e in res_json}
-            except (httpx.TransportError, httpx.HTTPStatusError):
-                pass
-
-            for sid in list(pending_steps.keys()):
-                placeholder, _ = pending_steps.pop(sid)
-                rich = outputs_by_sid.get(sid)
-                _emit(rich if rich else placeholder)
-                printed_steps.add(sid)
+        _fetch_outputs()
+        _drain(final=True)
 
 
 def download_files(report_id: str):

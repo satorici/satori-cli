@@ -13,16 +13,14 @@ from rich.live import Live
 from rich.table import Table
 from websockets.sync.client import connect
 
-from satoricli.api import client, disable_error_raise
+from satoricli.api import WS_HOST, client, disable_error_raise, ssl_ctx
 from satoricli.cli.utils import (
-    WS_HOST,
     autoformat,
     autotable,
     console,
     date_formatter,
     execution_time,
     get_command_params,
-    ssl_ctx,
 )
 
 from .base import BaseCommand
