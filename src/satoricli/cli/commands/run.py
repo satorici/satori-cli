@@ -1,7 +1,9 @@
+import fnmatch
 import json
 import os
 import shutil
 import sys
+import tarfile
 import tempfile
 import time
 import uuid
@@ -53,9 +55,63 @@ def include_files(include: list[str]) -> Optional[str]:
     return f"{temp_dir}.tar.gz"
 
 
-def make_packet(path: str):
+def read_gitignore_patterns(root: Path) -> list[str]:
+    """Read the gitignore patterns from the root directory."""
+    gitignore = root / ".gitignore"
+    if not gitignore.exists():
+        return []
+    patterns = []
+    for raw in gitignore.read_text(errors="replace").splitlines():
+        line = raw.strip()
+        if line and not line.startswith("#"):
+            patterns.append(line)
+    return patterns
+
+
+def is_gitignored(rel_path: str, patterns: list[str]) -> bool:
+    """Return True if rel_path is ignored, using last-match-wins semantics."""
+    rel = Path(rel_path)
+    name = rel.name
+    # Normalise to forward slashes for pattern matching
+    rel_str = rel_path.replace("\\", "/")
+
+    result = False
+    for pattern in patterns:
+        neg = pattern.startswith("!")
+        pat = pattern.lstrip("!").rstrip("/")
+        stripped = pat.lstrip("/")
+        if "/" in stripped:
+            matched = fnmatch.fnmatch(rel_str, stripped)
+        else:
+            matched = fnmatch.fnmatch(name, pat) or any(
+                fnmatch.fnmatch(part, pat) for part in rel.parts[:-1]
+            )
+
+        if matched:
+            result = not neg
+
+    return result
+
+
+def make_packet(path: str, gitignore: bool):
     temp_file = Path(tempfile.gettempdir(), str(uuid.uuid4()))
-    shutil.make_archive(str(temp_file), "gztar", path)
+    base = Path(path)
+
+    if not gitignore:
+        shutil.make_archive(str(temp_file), "gztar", path)
+        return f"{temp_file}.tar.gz"
+
+    patterns = read_gitignore_patterns(base)
+
+    with tarfile.open(f"{temp_file}.tar.gz", "w:gz") as tar:
+        for item in sorted(base.rglob("*")):
+            rel = item.relative_to(base)
+            # Always skip the .git directory
+            if ".git" in rel.parts:
+                continue
+            if not is_gitignored(str(rel), patterns):
+                tar.add(item, arcname=str(rel), recursive=False)
+
     return f"{temp_file}.tar.gz"
 
 
@@ -229,6 +285,7 @@ class RunCommand(BaseCommand):
         sync.add_argument("-r", "--report", action="store_true")
         sync.add_argument("-f", "--files", action="store_true")
         sync.add_argument("--stdout", action="store_true")
+        sync.add_argument("--gitignore", action="store_true")
         parser.add_argument(
             "--visibility", choices=get_args(VISIBILITY_VALUES), default=None
         )
@@ -269,6 +326,7 @@ class RunCommand(BaseCommand):
         report: bool,
         files: bool,
         stdout: bool,
+        gitignore: bool,
         team: str,
         filter_tests: list,
         text_format: Literal["plain", "md"],
@@ -401,7 +459,7 @@ class RunCommand(BaseCommand):
                 )
         elif (base := Path(path)).is_dir():
             settings = {}
-            packet = make_packet(base)
+            packet = make_packet(base, gitignore)
             bundle = None
             secrets = None
 
