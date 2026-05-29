@@ -321,6 +321,7 @@ class ReportsCommand(BaseCommand):
                     additional_headers={
                         "Authorization": client.headers["Authorization"],
                     },
+                    max_size=1024 * 1024 * 16,  # 16MB
                 ) as websocket,
             ):
                 # Get message from websocket, every message is a report encode with msgpack
