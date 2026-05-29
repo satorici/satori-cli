@@ -39,8 +39,8 @@ STATUS_FILTERS = Literal[
 EXECUTION_FILTERS = Literal["local", "run", "ci", "scan", "monitor"]
 
 
-def capitalize(s: Optional[str]) -> Optional[str]:
-    return s.capitalize() if s else s
+def _uppercase(s: Optional[str]) -> Optional[str]:
+    return s.upper() if s else s
 
 
 def add_pagination_args(parser: ArgumentParser) -> None:
@@ -195,15 +195,15 @@ class ReportsCommand(BaseCommand):
             visibility = "public-global"
         if action in ("delete", "search", "download", "stop"):
             filters = {
-                "playbook_type": capitalize(playbook_type),
+                "playbook_type": _uppercase(playbook_type),
                 "report_visibility": "Public-Global"
                 if visibility == "public-global"
-                else capitalize(visibility),
-                "result": capitalize(result),
+                else _uppercase(visibility),
+                "result": _uppercase(result),
                 "query": query,
                 "monitor": monitor,
                 "playbook": playbook,
-                "status": capitalize(status),
+                "status": _uppercase(status),
                 "severity": severity,
                 "execution": execution,
                 "repo": repo,

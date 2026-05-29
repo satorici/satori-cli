@@ -53,9 +53,7 @@ class ScanCommand(BaseCommand):
             help="action to perform",
         )
         parser.add_argument("action2", nargs="?", default=None)
-        parser.add_argument(
-            "-c", "--coverage", type=float, default=1, help="coverage"
-        )
+        parser.add_argument("-c", "--coverage", type=float, default=1, help="coverage")
         parser.add_argument("--skip-check", action="store_true")
         parser.add_argument("--delete-commits", action="store_true")
         parser.add_argument("-s", "--sync", action="store_true")
@@ -182,13 +180,14 @@ class ScanCommand(BaseCommand):
             if sync:
                 return self.scan_sync(repository, kwargs)
         elif action == "visibility":
-            if not action2 or action2 not in VISIBILITY_VALUES:
+            if not action2 or action2 not in get_args(VISIBILITY_VALUES):
                 error_console.print(
-                    f"Allowed values for visibility: {VISIBILITY_VALUES}"
+                    f"Allowed values for visibility: {VISIBILITY_VALUES}",
                 )
                 return 1
             info = client.patch(
-                f"/scan/{repository}", json={"visibility": action2.capitalize()}
+                f"/scan/{repository}",
+                json={"visibility": action2.upper()},
             ).json()
         autoformat(info, jsonfmt=kwargs["json"], list_separator="-" * 48)
         return 0

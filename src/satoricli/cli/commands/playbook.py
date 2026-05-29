@@ -73,7 +73,7 @@ class PlaybookCommand(BaseCommand):
                 )
                 return 1
             data = client.patch(
-                f"/playbooks/{id}", json={"visibility": action2.capitalize()}
+                f"/playbooks/{id}", json={"visibility": action2.upper()}
             ).json()
 
         autoformat(

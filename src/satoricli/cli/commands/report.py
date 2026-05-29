@@ -119,7 +119,7 @@ class ReportCommand(BaseCommand):
                 return 1
             res = client.patch(
                 f"/reports/{id}",
-                json={"visibility": action2.capitalize()},
+                json={"visibility": action2.upper()},
             ).json()
             autoformat(res)
         elif action == "status":

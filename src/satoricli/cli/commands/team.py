@@ -75,7 +75,7 @@ class TeamCommand(BaseCommand):
         if action == "show":
             info = client.get(f"/teams/{id}").json()
             return DashboardCommand.generate_dashboard(info)
-        elif action == "create":
+        if action == "create":
             info = client.post(f"/teams/{id}").json()
         elif action == "members":
             info = client.get(f"/teams/{id}/members").json()
@@ -131,27 +131,27 @@ class TeamCommand(BaseCommand):
                 console.print("Team monitor deleted")
             else:
                 raise Exception("Use --github, --email, --repo or --monitor")
-            return
+            return 0
         elif action == "delete":
             client.delete(f"/teams/{id}")
             console.print("Team deleted")
-            return
+            return 0
         elif action == "monitors":
             info = client.get(f"/teams/{id}/monitors").json()
             if not kwargs["json"]:
                 autotable(info["rows"], "b blue", widths=(20, 20, None))
-                return
+                return 0
         elif action == "reports":
             info = client.get(f"/teams/{id}/reports").json()
             return ReportCommand.print_report_list(info["rows"])
         elif action == "settings":
             SettingsCommand().run_settings(team=id)
-            return
+            return 0
         elif action == "playbooks":
             info = client.get(f"/teams/{id}/playbooks").json()
             if not kwargs["json"]:
                 autotable(info, "b blue")
-                return
+                return 0
         elif action == "visibility":
             if not config_name:
                 current = client.get(f"/teams/{id}/visibility").text
@@ -160,14 +160,14 @@ class TeamCommand(BaseCommand):
             if config_name in VISIBILITY_VALUES:
                 info = client.patch(
                     f"/teams/{id}/visibility",
-                    json={"visibility": config_name.capitalize()},
+                    json={"visibility": config_name.upper()},
                 ).json()
                 console.print(
-                    f"The visibility has been set to [b]{config_name.capitalize()}"
+                    f"The visibility has been set to [b]{config_name}",
                 )
             else:
                 error_console.print(
-                    f"Allowed values for visibility: {VISIBILITY_VALUES}"
+                    f"Allowed values for visibility: {VISIBILITY_VALUES}",
                 )
                 return 1
         elif action == "logs":

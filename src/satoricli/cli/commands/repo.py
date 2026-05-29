@@ -199,7 +199,7 @@ class RepoCommand(BaseCommand):
                 info = {"message": "Repo playbook deleted"}
         elif action == "visibility":
             info = client.patch(
-                f"/repos/{repository}", json={"visibility": action2.capitalize()}
+                f"/repos/{repository}", json={"visibility": action2.upper()}
             ).json()
         elif action == "params":
             if action2 == "list":
