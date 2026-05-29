@@ -190,6 +190,9 @@ class ReportsCommand(BaseCommand):
     ):
         filters: dict[str, Any] = {}
         params: dict[str, Any] = {}
+        if public:
+            action = "search"
+            visibility = "public-global"
         if action in ("delete", "search", "download", "stop"):
             filters = {
                 "playbook_type": capitalize(playbook_type),
@@ -217,9 +220,8 @@ class ReportsCommand(BaseCommand):
             params = {k: v for k, v in params.items() if v is not None}
 
         if action in ("show", None):
-            url = "/reports/public" if public else "/reports"
             res = client.get(
-                url, params={"page": page, "limit": limit, "filters": filter}
+                "/reports", params={"page": page, "limit": limit, "filters": filter}
             ).json()
 
             if not kwargs["json"]:
