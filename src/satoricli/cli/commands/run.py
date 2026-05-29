@@ -186,7 +186,7 @@ def new_monitor(
             "settings": json.dumps(settings),
             "with_files": bool(packet),
             "team": team,
-            "visibility": visibility.upper() if visibility else "Private",
+            "visibility": visibility.upper() if visibility else "PRIVATE",
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
