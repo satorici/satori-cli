@@ -454,6 +454,18 @@ def print_output_entry(
     Returns the entry's path so the caller can skip re-printing the rule when
     consecutive entries share the same path.
     """
+    # A specific result was requested (e.g. test.run.stdout): print only the
+    # raw value, no rule/Command/Testcase/header and no reflow, so it can be
+    # piped (e.g. into jq).
+    if result := output.get("filtered_result"):
+        value = output["output"].get(result)
+        if value is not None:
+            if text_format == "md":
+                console.print(Markdown(value))
+            else:
+                console.print(value, highlight=False, markup=False, soft_wrap=True)
+        return current_path
+
     if current_path != output["path"]:
         console.rule(f"[b]{output['path']}[/b]")
         current_path = output["path"]
@@ -510,7 +522,7 @@ def format_outputs(
             text = Markdown(text)
             console.print(text)
         else:
-            console.print(text, highlight=False)
+            console.print(text, highlight=False, soft_wrap=True)
         return
 
     current_path = ""
@@ -718,6 +730,8 @@ def run_test_filter(filter_tests: list, tests: list) -> list:
                 if result := m.group("result"):
                     # Display only selected result
                     test["output"] = {result: test["output"][result]}
+                    # Mark so the printer emits the raw value without decoration
+                    test["filtered_result"] = result
                 new_res.append(test)
     return new_res
 
