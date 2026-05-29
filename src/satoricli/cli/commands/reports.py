@@ -1,19 +1,20 @@
+"""Download, search and delete reports from the server."""
+
 import datetime
-import io
 import json
-import os
 import tarfile
-import time
 from argparse import ArgumentParser
 from math import ceil
+from pathlib import Path
 from typing import Any, Literal, Optional, get_args
 from urllib.parse import urlencode
 
+from msgspec import Struct, msgpack
 from rich.live import Live
 from rich.table import Table
 from websockets.sync.client import connect
 
-from satoricli.api import WS_HOST, client, disable_error_raise, ssl_ctx
+from satoricli.api import WS_HOST, client, ssl_ctx
 from satoricli.cli.utils import (
     autoformat,
     autotable,
@@ -37,6 +38,13 @@ STATUS_FILTERS = Literal[
     "timeout",
 ]
 EXECUTION_FILTERS = Literal["local", "run", "ci", "scan", "monitor"]
+
+
+class ReportOutputDownloadData(Struct):
+    report_id: str
+    output: str
+    report: bytes
+    files: bytes | None
 
 
 def _uppercase(s: Optional[str]) -> Optional[str]:
@@ -282,64 +290,64 @@ class ReportsCommand(BaseCommand):
         elif action == "download":
             # Save response
             extract_dir = name if name else "export"
+            extract_root = Path(extract_dir)
 
             # Create directory if dont exit
-            if not os.path.exists(extract_dir):
-                os.makedirs(extract_dir)
+            if not extract_root.exists():
+                extract_root.mkdir(parents=True)
                 console.print(f"Created directory: {extract_dir}")
             else:
                 console.print(
                     f"[warning]Directory already exists: [b]{extract_dir}[/]"
                     "\nRemove it manually to avoid conflicts",
                 )
+            for subdir in ("outputs", "reports", "files"):
+                (extract_root / subdir).mkdir(parents=True, exist_ok=True)
 
-            res = client.get("/reports/search", params=params).json()
-            if not res["total"]:
-                console.print("No reports found, nothing to export")
-                return 0
-
-            with console.status(
-                "Searching and downloading reports...", spinner="dots12"
-            ) as progress:
-                cursor_position = "true"
-                count = 0
-                params["filters"] = json.dumps(filters)
-                while cursor_position:
-                    with disable_error_raise() as c:
-                        export_response = c.get("/outputs/export", params=params)
-
-                    cursor_position = export_response.headers.get("satori-cursor")
-                    if export_response.is_error or not cursor_position:
-                        progress.stop()
-                        console.print(
-                            "[bold cyan]Reports downloaded successfully[/bold cyan]",
+            filters_encoded = urlencode({"filters": json.dumps(filters)})
+            with (
+                console.status(
+                    "Searching and downloading reports...",
+                    spinner="dots12",
+                ) as progress,
+                connect(
+                    f"{WS_HOST}/reports/download/ws?{filters_encoded}",
+                    ssl=ssl_ctx if WS_HOST.startswith("wss://") else None,
+                    additional_headers={
+                        "Authorization": client.headers["Authorization"],
+                    },
+                ) as websocket,
+            ):
+                # Get message from websocket, every message is a report encode with msgpack
+                for msg in websocket:
+                    report = msgpack.decode(msg, type=ReportOutputDownloadData)  # type: ignore
+                    progress.update(f"Downloading report {report.report_id}")
+                    output_path = extract_root / "outputs" / f"{report.report_id}.txt"
+                    with Path(output_path).open("w") as f:
+                        f.write(report.output)
+                    report_path = extract_root / "reports" / f"{report.report_id}.txt"
+                    with Path(report_path).open("wb") as f:
+                        f.write(report.report)
+                    if report.files:
+                        files_path = (
+                            extract_root / "files" / f"{report.report_id}.tar.gz"
                         )
-                        return 0
+                        with Path(files_path).open("wb") as f:
+                            f.write(report.files)
 
-                    params["cursor"] = cursor_position
-                    count += int(export_response.headers.get("satori-reports-count"))
-
-                    progress.update(f"Downloaded {count} reports")
-
-                    # Use io.BytesIO to treat the bytes as a file-like object
-                    with (
-                        io.BytesIO(export_response.content) as tar_buffer,
-                        tarfile.open(fileobj=tar_buffer, mode="r:*") as tar,
-                    ):
-                        tar.extractall(path=extract_dir, filter="data")
-
-                    # Extract files
-                    for item in os.listdir(extract_dir):
-                        item_path = os.path.join(extract_dir, item)
-                        if os.path.isfile(item_path) and item.endswith(".tar.gz"):
-                            base_name = item[:-7]  # Remove the ".tar.gz" extension
-                            output_folder = os.path.join(extract_dir, base_name)
-                            # Create the output folder if it doesn't exist
-                            os.makedirs(output_folder, exist_ok=True)
-                            with tarfile.open(item_path, "r:gz") as tar:
-                                tar.extractall(path=output_folder, filter="data")
-                            os.remove(item_path)
-                    time.sleep(0.5)
+                progress.update("Extracting files...")
+                # Extract files
+                for item_path in extract_root.iterdir():
+                    if item_path.is_file() and item_path.name.endswith(".tar.gz"):
+                        base_name = item_path.name[
+                            :-7
+                        ]  # Remove the ".tar.gz" extension
+                        output_folder = extract_root / base_name
+                        output_folder.mkdir(parents=True, exist_ok=True)
+                        with tarfile.open(item_path, "r:gz") as tar:
+                            tar.extractall(path=output_folder, filter="data")
+                        item_path.unlink()
+                console.print("Reports downloaded successfully")
         elif action == "delete":
             console.print(
                 "[warning]This action will delete all reports that match the criteria[/]"
