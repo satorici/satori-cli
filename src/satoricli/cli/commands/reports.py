@@ -47,6 +47,11 @@ class ReportOutputDownloadData(Struct):
     files: bytes | None
 
 
+class ReportDownloadListData(Struct):
+    total: int
+    reports: list[ReportOutputDownloadData]
+
+
 def _uppercase(s: Optional[str]) -> Optional[str]:
     return s.upper() if s else s
 
@@ -319,21 +324,33 @@ class ReportsCommand(BaseCommand):
                 ) as websocket,
             ):
                 # Get message from websocket, every message is a report encode with msgpack
+                total_reports = 0
                 for msg in websocket:
-                    report = msgpack.decode(msg, type=ReportOutputDownloadData)  # type: ignore
-                    progress.update(f"Downloading report {report.report_id}")
-                    output_path = extract_root / "outputs" / f"{report.report_id}.txt"
-                    with Path(output_path).open("w") as f:
-                        f.write(report.output)
-                    report_path = extract_root / "reports" / f"{report.report_id}.txt"
-                    with Path(report_path).open("wb") as f:
-                        f.write(report.report)
-                    if report.files:
-                        files_path = (
-                            extract_root / "files" / f"{report.report_id}.tar.gz"
+                    report: ReportDownloadListData = msgpack.decode(  # type: ignore
+                        msg,  # type: ignore
+                        type=ReportDownloadListData,
+                    )
+                    total_reports += len(report.reports)
+                    for report_data in report.reports:
+                        output_path = (
+                            extract_root / "outputs" / f"{report_data.report_id}.txt"
                         )
-                        with Path(files_path).open("wb") as f:
-                            f.write(report.files)
+                        with Path(output_path).open("w") as f:
+                            f.write(report_data.output)
+                        report_path = (
+                            extract_root / "reports" / f"{report_data.report_id}.txt"
+                        )
+                        with Path(report_path).open("wb") as f:
+                            f.write(report_data.report)
+                        if report_data.files:
+                            files_path = (
+                                extract_root
+                                / "files"
+                                / f"{report_data.report_id}.tar.gz"
+                            )
+                            with Path(files_path).open("wb") as f:
+                                f.write(report_data.files)
+                    progress.update(f"Downloaded {total_reports} reports")
 
                 progress.update("Extracting files...")
                 # Extract files
