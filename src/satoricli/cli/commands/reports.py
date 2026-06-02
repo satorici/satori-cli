@@ -90,6 +90,7 @@ def add_search_args(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--visibility",
         choices=get_args(REPORT_VISIBILITY),
+        type=str.lower,
         help="Filter by report visibility",
     )
     parser.add_argument(

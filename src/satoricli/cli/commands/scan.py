@@ -68,6 +68,7 @@ class ScanCommand(BaseCommand):
         parser.add_argument(
             "--visibility",
             choices=get_args(VISIBILITY_VALUES),
+            type=str.lower,
             default="private",
         )
 

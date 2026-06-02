@@ -71,7 +71,7 @@ class RepoCommand(BaseCommand):
         parser.add_argument("-o", "--output", action="store_true")
         parser.add_argument("-r", "--report", action="store_true")
         parser.add_argument(
-            "--visibility", choices=("public", "private", "unlisted"), default="private"
+            "--visibility", choices=("public", "private", "unlisted"), type=str.lower, default="private"
         )
 
     def __call__(

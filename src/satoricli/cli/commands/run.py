@@ -287,7 +287,7 @@ class RunCommand(BaseCommand):
         sync.add_argument("--stdout", action="store_true")
         sync.add_argument("--gitignore", action="store_true")
         parser.add_argument(
-            "--visibility", choices=get_args(VISIBILITY_VALUES), default=None
+            "--visibility", choices=get_args(VISIBILITY_VALUES), type=str.lower, default=None
         )
         parser.add_argument(
             "--test",

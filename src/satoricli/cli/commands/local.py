@@ -181,7 +181,7 @@ class LocalCommand(BaseCommand):
         parser.add_argument("--save-report", type=str, default=None)
         parser.add_argument("--save-output", type=str, default=None)
         parser.add_argument(
-            "--visibility", choices=get_args(VISIBILITY_VALUES), default=None
+            "--visibility", choices=get_args(VISIBILITY_VALUES), type=str.lower, default=None
         )
         parser.add_argument(
             "-df", "--data-file", type=load_cli_params, action="append", default=[]
