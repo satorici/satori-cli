@@ -10,7 +10,7 @@ from satorici.validator.exceptions import PlaybookVariableError
 
 from satoricli.api import client
 
-from .cli.utils import autosyntax, autotable, console, remove_yaml_prop
+from .cli.utils import autosyntax, autotable, console, error_console, remove_yaml_prop
 from .validations import get_parameters
 
 PLAYBOOKS_DIR = Path.home() / ".satori/playbooks"
@@ -96,7 +96,7 @@ def display_public_playbooks(
             params={"uri": playbook_id},
         ).json()
         if data["referrers"] is not None:
-            console.print("[green]Playbook referrals:[/]", data["referrers"])
+            error_console.print("[green]Playbook referrals:[/]", data["referrers"])
 
         if data["playbook"]:
             text = data["playbook"]
