@@ -51,10 +51,12 @@ def main():
     elif args["verbose"]:
         log.setLevel(logging.WARNING)
 
-    if environ.get("SATORI_CLI_NO_UPDATE_CHECK") != "1":
+    is_update = len(sys.argv) > 1 and sys.argv[1] == "update"
+
+    if not is_update and environ.get("SATORI_CLI_NO_UPDATE_CHECK") != "1":
         check_for_update()
 
-    if len(sys.argv) > 1 and sys.argv[1] == "update":
+    if is_update:
         try:
             exit_code = root.run(args)
             sys.exit(exit_code)
