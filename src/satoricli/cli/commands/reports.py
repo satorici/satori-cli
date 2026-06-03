@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Literal, Optional, get_args
 from urllib.parse import urlencode
 
+import httpx
 from msgspec import Struct, msgpack
 from rich.live import Live
 from rich.table import Table
@@ -44,7 +45,7 @@ class ReportOutputDownloadData(Struct):
     report_id: str
     output: str
     report: bytes
-    files: bytes | None
+    files_url: str | None
 
 
 class ReportDownloadListData(Struct):
@@ -325,42 +326,49 @@ class ReportsCommand(BaseCommand):
                     max_size=1024 * 1024 * 16,  # 16MB
                 ) as websocket,
             ):
-                # Get message from websocket, every message is a report encode with msgpack
                 total_reports = 0
                 for msg in websocket:
-                    report: ReportDownloadListData = msgpack.decode(  # type: ignore
+                    frame: ReportDownloadListData = msgpack.decode(  # type: ignore
                         msg,  # type: ignore
                         type=ReportDownloadListData,
                     )
-                    total_reports += len(report.reports)
-                    for report_data in report.reports:
+                    for report_data in frame.reports:
                         output_path = (
                             extract_root / "outputs" / f"{report_data.report_id}.txt"
                         )
-                        with Path(output_path).open("w") as f:
+                        with output_path.open("w") as f:
                             f.write(report_data.output)
                         report_path = (
                             extract_root / "reports" / f"{report_data.report_id}.txt"
                         )
-                        with Path(report_path).open("wb") as f:
+                        with report_path.open("wb") as f:
                             f.write(report_data.report)
-                        if report_data.files:
+                        if report_data.files_url:
                             files_path = (
                                 extract_root
                                 / "files"
                                 / f"{report_data.report_id}.tar.gz"
                             )
-                            with Path(files_path).open("wb") as f:
-                                f.write(report_data.files)
+                            with httpx.stream(
+                                "GET", report_data.files_url
+                            ) as response:
+                                response.raise_for_status()
+                                with files_path.open("wb") as f:
+                                    for chunk in response.iter_bytes():
+                                        f.write(chunk)
+                    total_reports += len(frame.reports)
                     progress.update(f"Downloaded {total_reports} reports")
 
+                close_reason = websocket.close_reason or ""
+                if close_reason == "No reports found":
+                    console.print("No reports found")
+                    return 0
+
                 progress.update("Extracting files...")
-                # Extract files
-                for item_path in extract_root.iterdir():
+                files_dir = extract_root / "files"
+                for item_path in files_dir.iterdir():
                     if item_path.is_file() and item_path.name.endswith(".tar.gz"):
-                        base_name = item_path.name[
-                            :-7
-                        ]  # Remove the ".tar.gz" extension
+                        base_name = item_path.name.removesuffix(".tar.gz")
                         output_folder = extract_root / base_name
                         output_folder.mkdir(parents=True, exist_ok=True)
                         with tarfile.open(item_path, "r:gz") as tar:
