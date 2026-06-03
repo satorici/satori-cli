@@ -724,6 +724,9 @@ def run_test_filter(filter_tests: list, tests: list) -> list:
     for test in tests:
         current_path = test["path"].replace(":", ".")
         for filter_test in filter_tests:
+            # Accept ':' as an alternative separator to '.' (matches the path's
+            # native form), so both `a.b.stdout` and `a:b:stdout` work.
+            filter_test = filter_test.replace(":", ".")
             # Check if every filter matches the current test
             m = output_regex.match(filter_test)
             if m and current_path == m.group("path"):
