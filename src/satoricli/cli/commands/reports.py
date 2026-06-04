@@ -3,16 +3,20 @@
 import datetime
 import json
 import tarfile
+import time
 from argparse import ArgumentParser
+from collections.abc import Callable
 from math import ceil
 from pathlib import Path
 from typing import Any, Literal, Optional, get_args
 from urllib.parse import urlencode
 
 import httpx
+import msgspec
 from msgspec import Struct, msgpack
 from rich.live import Live
 from rich.table import Table
+from websockets.exceptions import InvalidStatus
 from websockets.sync.client import connect
 
 from satoricli.api import WS_HOST, client, ssl_ctx
@@ -53,6 +57,15 @@ class ReportDownloadListData(Struct):
     reports: list[ReportOutputDownloadData]
 
 
+class ReportDownloadDoneData(Struct):
+    done: bool
+    failed_count: int
+    error: str | None
+
+
+DOWNLOAD_RECONNECT_ATTEMPTS = 5
+
+
 def _uppercase(s: Optional[str]) -> Optional[str]:
     return s.upper() if s else s
 
@@ -61,6 +74,169 @@ def add_pagination_args(parser: ArgumentParser) -> None:
     """Add common pagination arguments to a parser."""
     parser.add_argument("-p", "--page", type=int, default=1)
     parser.add_argument("-l", "--limit", type=int, default=10)
+
+
+def _download_ws_headers() -> dict[str, str]:
+    headers = {"Authorization": client.headers["Authorization"]}
+    if team := client.headers.get("Satori-Team"):
+        headers["Satori-Team"] = team
+    return headers
+
+
+def _download_ws_query(filters_json: str, after_id: str | None = None) -> str:
+    params: dict[str, str] = {"filters": filters_json}
+    if after_id:
+        params["after_id"] = after_id
+    return urlencode(params)
+
+
+def _decode_download_frame(
+    msg: bytes | str,
+) -> ReportDownloadListData | ReportDownloadDoneData:
+    if isinstance(msg, str):
+        msg = msg.encode()
+    payload = msgpack.decode(msg)
+    if not isinstance(payload, dict):
+        raise ValueError(f"Unexpected download frame type: {type(payload)!r}")
+    if "reports" in payload:
+        return msgspec.convert(payload, ReportDownloadListData)
+    if "done" in payload:
+        return msgspec.convert(payload, ReportDownloadDoneData)
+    raise ValueError(f"Unknown download frame keys: {sorted(payload)}")
+
+
+def _existing_report_ids(extract_root: Path) -> set[str]:
+    outputs_dir = extract_root / "outputs"
+    if not outputs_dir.is_dir():
+        return set()
+    return {path.stem for path in outputs_dir.glob("*.txt")}
+
+
+def _save_report(
+    report_data: ReportOutputDownloadData,
+    extract_root: Path,
+) -> None:
+    output_path = extract_root / "outputs" / f"{report_data.report_id}.txt"
+    with output_path.open("w") as f:
+        f.write(report_data.output)
+    report_path = extract_root / "reports" / f"{report_data.report_id}.txt"
+    with report_path.open("wb") as f:
+        f.write(report_data.report)
+    if report_data.files_url:
+        files_path = extract_root / "files" / f"{report_data.report_id}.tar.gz"
+        with httpx.stream("GET", report_data.files_url) as response:
+            response.raise_for_status()
+            with files_path.open("wb") as f:
+                for chunk in response.iter_bytes():
+                    f.write(chunk)
+
+
+def _extract_downloaded_files(extract_root: Path) -> None:
+    files_dir = extract_root / "files"
+    for item_path in files_dir.iterdir():
+        if item_path.is_file() and item_path.name.endswith(".tar.gz"):
+            base_name = item_path.name.removesuffix(".tar.gz")
+            output_folder = extract_root / base_name
+            output_folder.mkdir(parents=True, exist_ok=True)
+            with tarfile.open(item_path, "r:gz") as tar:
+                tar.extractall(path=output_folder, filter="data")
+            item_path.unlink()
+
+
+def _run_report_download(
+    extract_root: Path,
+    filters: dict[str, Any],
+    *,
+    on_progress: Callable[[str], None] | None = None,
+) -> int:
+    def update_status(message: str) -> None:
+        if on_progress is not None:
+            on_progress(message)
+
+    filters_json = json.dumps(filters)
+    saved_ids = _existing_report_ids(extract_root)
+    last_received_report_id: str | None = None
+    session_downloaded = 0
+    done_frame: ReportDownloadDoneData | None = None
+    ws_ssl = ssl_ctx if WS_HOST.startswith("wss://") else None
+    headers = _download_ws_headers()
+
+    for attempt in range(DOWNLOAD_RECONNECT_ATTEMPTS):
+        query = _download_ws_query(
+            filters_json,
+            after_id=last_received_report_id,
+        )
+        try:
+            with connect(
+                f"{WS_HOST}/reports/download/ws?{query}",
+                ssl=ws_ssl,
+                additional_headers=headers,
+                max_size=1024 * 1024 * 16,  # 16MB
+            ) as websocket:
+                for msg in websocket:
+                    frame = _decode_download_frame(msg)
+                    if isinstance(frame, ReportDownloadDoneData):
+                        done_frame = frame
+                        break
+                    for report_data in frame.reports:
+                        last_received_report_id = report_data.report_id
+                        if report_data.report_id in saved_ids:
+                            continue
+                        _save_report(report_data, extract_root)
+                        saved_ids.add(report_data.report_id)
+                        session_downloaded += 1
+                    update_status(f"Downloaded {len(saved_ids)} reports")
+        except InvalidStatus as exc:
+            if exc.response.status_code == 404:
+                console.print(
+                    "[error]Report not found (invalid after_id for resume)[/]"
+                )
+                return 1
+            raise
+
+        if done_frame is not None:
+            break
+
+        if attempt < DOWNLOAD_RECONNECT_ATTEMPTS - 1:
+            delay = 2**attempt
+            update_status(
+                f"Connection lost, resuming in {delay}s "
+                f"(attempt {attempt + 2}/{DOWNLOAD_RECONNECT_ATTEMPTS})"
+            )
+            time.sleep(delay)
+    else:
+        console.print(
+            "[error]Download interrupted: connection closed before export completed[/]"
+        )
+        return 1
+
+    if not done_frame.done:
+        message = done_frame.error or "Export failed"
+        console.print(f"[error]{message}[/]")
+        if done_frame.failed_count:
+            console.print(
+                f"[error]{done_frame.failed_count} report(s) could not be downloaded[/]"
+            )
+        return 1
+
+    if done_frame.failed_count:
+        console.print(
+            f"[warning]Export finished but {done_frame.failed_count} report(s) "
+            "could not be downloaded[/]"
+        )
+
+    if not saved_ids:
+        console.print("No reports found")
+        return 0
+
+    update_status("Extracting files...")
+    _extract_downloaded_files(extract_root)
+    if session_downloaded:
+        console.print(
+            f"Downloaded {session_downloaded} new report(s) ({len(saved_ids)} total)"
+        )
+    console.print("Reports downloaded successfully")
+    return 0
 
 
 def advance_search_cursor(
@@ -311,70 +487,15 @@ class ReportsCommand(BaseCommand):
             for subdir in ("outputs", "reports", "files"):
                 (extract_root / subdir).mkdir(parents=True, exist_ok=True)
 
-            filters_encoded = urlencode({"filters": json.dumps(filters)})
-            with (
-                console.status(
-                    "Searching and downloading reports...",
-                    spinner="dots12",
-                ) as progress,
-                connect(
-                    f"{WS_HOST}/reports/download/ws?{filters_encoded}",
-                    ssl=ssl_ctx if WS_HOST.startswith("wss://") else None,
-                    additional_headers={
-                        "Authorization": client.headers["Authorization"],
-                    },
-                    max_size=1024 * 1024 * 16,  # 16MB
-                ) as websocket,
-            ):
-                total_reports = 0
-                for msg in websocket:
-                    frame: ReportDownloadListData = msgpack.decode(  # type: ignore
-                        msg,  # type: ignore
-                        type=ReportDownloadListData,
-                    )
-                    for report_data in frame.reports:
-                        output_path = (
-                            extract_root / "outputs" / f"{report_data.report_id}.txt"
-                        )
-                        with output_path.open("w") as f:
-                            f.write(report_data.output)
-                        report_path = (
-                            extract_root / "reports" / f"{report_data.report_id}.txt"
-                        )
-                        with report_path.open("wb") as f:
-                            f.write(report_data.report)
-                        if report_data.files_url:
-                            files_path = (
-                                extract_root
-                                / "files"
-                                / f"{report_data.report_id}.tar.gz"
-                            )
-                            with httpx.stream(
-                                "GET", report_data.files_url
-                            ) as response:
-                                response.raise_for_status()
-                                with files_path.open("wb") as f:
-                                    for chunk in response.iter_bytes():
-                                        f.write(chunk)
-                    total_reports += len(frame.reports)
-                    progress.update(f"Downloaded {total_reports} reports")
-
-                close_reason = websocket.close_reason or ""
-                if close_reason == "No reports found":
-                    console.print("No reports found")
-                    return 0
-
-                progress.update("Extracting files...")
-                files_dir = extract_root / "files"
-                for item_path in files_dir.iterdir():
-                    if item_path.is_file() and item_path.name.endswith(".tar.gz"):
-                        base_name = item_path.name.removesuffix(".tar.gz")
-                        output_folder = extract_root / base_name
-                        output_folder.mkdir(parents=True, exist_ok=True)
-                        with tarfile.open(item_path, "r:gz") as tar:
-                            tar.extractall(path=output_folder, filter="data")
-                        item_path.unlink()
-                console.print("Reports downloaded successfully")
+            with console.status(
+                "Searching and downloading reports...",
+                spinner="dots12",
+            ) as progress:
+                return _run_report_download(
+                    extract_root,
+                    filters,
+                    on_progress=progress.update,
+                )
         elif action == "delete":
             console.print(
                 "[warning]This action will delete all reports that match the criteria[/]"
