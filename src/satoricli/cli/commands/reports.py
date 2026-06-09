@@ -16,7 +16,7 @@ import msgspec
 from msgspec import Struct, msgpack
 from rich.live import Live
 from rich.table import Table
-from websockets.exceptions import InvalidStatus
+from websockets.exceptions import ConnectionClosed, InvalidStatus
 from websockets.sync.client import connect
 
 from satoricli.api import WS_HOST, client, ssl_ctx
@@ -166,6 +166,7 @@ def _run_report_download(
             filters_json,
             after_id=last_received_report_id,
         )
+        disconnect_reason: str | None = None
         try:
             with connect(
                 f"{WS_HOST}/reports/download/ws?{query}",
@@ -193,16 +194,31 @@ def _run_report_download(
                 )
                 return 1
             raise
+        except ConnectionClosed as exc:
+            disconnect_reason = f"{exc.code} {exc.reason or 'no reason'}"
+            update_status(
+                f"Connection closed ({disconnect_reason}), "
+                "will resume from last report"
+            )
+        except OSError:
+            disconnect_reason = "network error"
+            update_status("Network error, will resume from last report")
 
         if done_frame is not None:
             break
 
         if attempt < DOWNLOAD_RECONNECT_ATTEMPTS - 1:
             delay = 2**attempt
-            update_status(
-                f"Connection lost, resuming in {delay}s "
-                f"(attempt {attempt + 2}/{DOWNLOAD_RECONNECT_ATTEMPTS})"
-            )
+            if disconnect_reason:
+                update_status(
+                    f"Connection lost ({disconnect_reason}), resuming in {delay}s "
+                    f"(attempt {attempt + 2}/{DOWNLOAD_RECONNECT_ATTEMPTS})"
+                )
+            else:
+                update_status(
+                    f"Connection lost, resuming in {delay}s "
+                    f"(attempt {attempt + 2}/{DOWNLOAD_RECONNECT_ATTEMPTS})"
+                )
             time.sleep(delay)
     else:
         console.print(
