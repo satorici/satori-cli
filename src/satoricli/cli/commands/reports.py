@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 from collections.abc import Callable
 from math import ceil
 from pathlib import Path
-from typing import Any, Literal, Optional, get_args
+from typing import Any, Literal, Optional, Union, get_args
 from urllib.parse import urlencode
 
 import httpx
@@ -17,7 +17,7 @@ from msgspec import Struct, msgpack
 from rich.live import Live
 from rich.table import Table
 from websockets.exceptions import ConnectionClosed, InvalidStatus
-from websockets.sync.client import connect
+from websockets.sync.client import ClientConnection, connect
 
 from satoricli.api import WS_HOST, client, ssl_ctx
 from satoricli.cli.utils import (
@@ -63,7 +63,58 @@ class ReportDownloadDoneData(Struct):
     error: str | None
 
 
+class UserExportInfo(Struct):
+    key: str
+    created: int
+    size: int
+
+
+class ReportExportStatusData(Struct):
+    status: Literal["in_progress", "ready", "none", "error"]
+    export: UserExportInfo | None = None
+    error: str | None = None
+    progress: int | None = None
+    total: int | None = None
+    processed: int | None = None
+    failed_count: int | None = None
+
+
+class ReportExportDownloadData(Struct):
+    url: str
+    created: int
+    size: int
+
+
+class ReportExportCreateData(Struct):
+    status: Literal["started", "in_progress"]
+
+
+class ReportExportAction(Struct):
+    action: Literal["download", "create", "status"]
+
+
+class ReportExportErrorData(Struct):
+    error: str
+
+
+ExportFrame = Union[
+    ReportExportStatusData,
+    ReportExportDownloadData,
+    ReportExportCreateData,
+    ReportExportErrorData,
+]
+
+ExportMessageKind = Literal["initial", "status", "create", "download"]
+
+
+class ReportExportError(Exception):
+    """Raised when the export websocket returns an error frame."""
+
+
 DOWNLOAD_RECONNECT_ATTEMPTS = 5
+DEFAULT_EXPORT_ARCHIVE = "reports-export.tar.gz"
+DEFAULT_EXPORT_DIR = "export"
+EXPORT_POLL_INTERVAL_SECONDS = 3.0
 
 
 def _uppercase(s: Optional[str]) -> Optional[str]:
@@ -197,8 +248,7 @@ def _run_report_download(
         except ConnectionClosed as exc:
             disconnect_reason = f"{exc.code} {exc.reason or 'no reason'}"
             update_status(
-                f"Connection closed ({disconnect_reason}), "
-                "will resume from last report"
+                f"Connection closed ({disconnect_reason}), will resume from last report"
             )
         except OSError:
             disconnect_reason = "network error"
@@ -252,6 +302,373 @@ def _run_report_download(
             f"Downloaded {session_downloaded} new report(s) ({len(saved_ids)} total)"
         )
     console.print("Reports downloaded successfully")
+    return 0
+
+
+def _format_file_size(size: int) -> str:
+    if size < 1024:
+        return f"{size} B"
+    units = ("KB", "MB", "GB", "TB")
+    value = float(size)
+    for unit in units:
+        value /= 1024
+        if value < 1024 or unit == units[-1]:
+            if unit == "KB":
+                return f"{value:.0f} {unit}"
+            return f"{value:.1f} {unit}"
+    return f"{size} B"
+
+
+def _format_export_timestamp(created: int) -> str:
+    return datetime.datetime.fromtimestamp(
+        created,
+        tz=datetime.timezone.utc,
+    ).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+def _export_report_counts(
+    status: ReportExportStatusData,
+) -> tuple[int | None, int | None, int | None]:
+    processed = status.processed
+    total = status.total
+    remaining = None
+    if total is not None and processed is not None:
+        remaining = max(total - processed, 0)
+    return processed, total, remaining
+
+
+def _format_export_progress(status: ReportExportStatusData) -> str | None:
+    processed, total, remaining = _export_report_counts(status)
+    parts: list[str] = []
+    if processed is not None and total is not None:
+        parts.append(f"{processed}/{total} reports exported")
+        if remaining is not None:
+            parts.append(f"{remaining} remaining")
+    if status.progress is not None:
+        parts.append(f"{status.progress}%")
+    if not parts:
+        return None
+    return ", ".join(parts)
+
+
+def _decode_export_frame(
+    msg: bytes | str,
+    *,
+    expected: ExportMessageKind | None = None,
+) -> ExportFrame:
+    if isinstance(msg, str):
+        msg = msg.encode()
+    payload = msgpack.decode(msg)
+    if not isinstance(payload, dict):
+        raise ValueError(f"Unexpected export frame type: {type(payload)!r}")
+
+    if set(payload) == {"error"}:
+        return msgspec.convert(payload, ReportExportErrorData)
+
+    if "url" in payload:
+        return msgspec.convert(payload, ReportExportDownloadData)
+
+    status = payload.get("status")
+    if status in {"started", "in_progress"} and expected == "create":
+        return msgspec.convert(payload, ReportExportCreateData)
+
+    if status in {"in_progress", "ready", "none", "error"}:
+        return msgspec.convert(payload, ReportExportStatusData)
+
+    if status in {"started", "in_progress"}:
+        return msgspec.convert(payload, ReportExportCreateData)
+
+    raise ValueError(f"Unknown export frame keys: {sorted(payload)}")
+
+
+class ReportExportClient:
+    def __init__(
+        self,
+        poll_interval: float = EXPORT_POLL_INTERVAL_SECONDS,
+    ) -> None:
+        self.poll_interval = poll_interval
+        self._ws: ClientConnection | None = None
+
+    def connect(self) -> ReportExportStatusData:
+        if self._ws is not None:
+            raise RuntimeError("Report export websocket is already connected")
+
+        ws_ssl = ssl_ctx if WS_HOST.startswith("wss://") else None
+        try:
+            self._ws = connect(
+                f"{WS_HOST}/reports/export/ws",
+                ssl=ws_ssl,
+                additional_headers=_download_ws_headers(),
+            )
+        except InvalidStatus as exc:
+            if exc.response.status_code in (401, 403):
+                raise ReportExportError(
+                    "Authentication failed for report export websocket"
+                ) from exc
+            raise ReportExportError(
+                f"Failed to connect to report export websocket "
+                f"(HTTP {exc.response.status_code})"
+            ) from exc
+
+        status = self._recv(expected="initial")
+        if not isinstance(status, ReportExportStatusData):
+            raise ReportExportError("Unexpected initial export websocket frame")
+        if status.status == "error":
+            raise ReportExportError(status.error or "Export status error")
+        return status
+
+    def disconnect(self) -> None:
+        if self._ws is not None:
+            self._ws.close()
+            self._ws = None
+
+    def get_status(self) -> ReportExportStatusData:
+        self._send_action("status")
+        return self._expect_status(self._recv(expected="status"))
+
+    def create_export(self) -> ReportExportCreateData:
+        self._send_action("create")
+        frame = self._recv(expected="create")
+        if isinstance(frame, ReportExportErrorData):
+            raise ReportExportError(frame.error)
+        if isinstance(frame, ReportExportCreateData):
+            return frame
+        if isinstance(frame, ReportExportStatusData):
+            if frame.status in {"started", "in_progress"}:
+                return ReportExportCreateData(status=frame.status)  # type: ignore[arg-type]
+            if frame.status == "error":
+                raise ReportExportError(frame.error or "Failed to start export")
+        raise ReportExportError("Unexpected response while starting export")
+
+    def download_export(self) -> ReportExportDownloadData:
+        self._send_action("download")
+        frame = self._recv(expected="download")
+        if isinstance(frame, ReportExportErrorData):
+            raise ReportExportError(frame.error)
+        if isinstance(frame, ReportExportDownloadData):
+            return frame
+        raise ReportExportError("Unexpected response while downloading export")
+
+    def wait_until_ready(
+        self,
+        *,
+        on_poll: Callable[[ReportExportStatusData], None] | None = None,
+    ) -> ReportExportStatusData:
+        while True:
+            status = self.get_status()
+            if on_poll is not None:
+                on_poll(status)
+            if status.status == "ready":
+                return status
+            if status.status == "error":
+                raise ReportExportError(status.error or "Export failed")
+            if status.status == "none":
+                raise ReportExportError("Export is not available")
+            time.sleep(self.poll_interval)
+
+    def _send_action(self, action: Literal["download", "create", "status"]) -> None:
+        if self._ws is None:
+            raise RuntimeError("Report export websocket is not connected")
+        self._ws.send(msgpack.encode(ReportExportAction(action=action)))
+
+    def _recv(self, *, expected: ExportMessageKind) -> ExportFrame:
+        if self._ws is None:
+            raise RuntimeError("Report export websocket is not connected")
+        try:
+            msg = self._ws.recv()
+        except ConnectionClosed as exc:
+            raise ReportExportError(
+                f"Report export websocket closed ({exc.code} {exc.reason or ''})"
+            ) from exc
+        return _decode_export_frame(msg, expected=expected)
+
+    @staticmethod
+    def _expect_status(frame: ExportFrame) -> ReportExportStatusData:
+        if isinstance(frame, ReportExportErrorData):
+            raise ReportExportError(frame.error)
+        if isinstance(frame, ReportExportStatusData):
+            return frame
+        raise ReportExportError("Unexpected status response from export websocket")
+
+
+def _describe_export_status(status: ReportExportStatusData) -> str:
+    if status.status == "ready" and status.export is not None:
+        export = status.export
+        return (
+            f"Export ready ({_format_export_timestamp(export.created)}, "
+            f"{_format_file_size(export.size)})"
+        )
+    if status.status == "in_progress":
+        processed, total, remaining = _export_report_counts(status)
+        if processed is not None and total is not None:
+            message = f"Exporting reports {processed}/{total}"
+            if remaining is not None:
+                message = f"{message}, {remaining} left"
+        else:
+            message = "Export in progress"
+        if status.progress is not None:
+            message = f"{message} ({status.progress}%)"
+        if status.failed_count:
+            message = f"{message}, {status.failed_count} failed"
+        return message
+    if status.status == "none":
+        return "No export available"
+    if status.status == "error":
+        return status.error or "Export failed"
+    return f"Export status: {status.status}"
+
+
+def _download_export_archive(url: str, output_path: Path) -> None:
+    with httpx.stream("GET", url) as response:
+        response.raise_for_status()
+        with output_path.open("wb") as f:
+            for chunk in response.iter_bytes():
+                f.write(chunk)
+
+
+def _extract_export_archive(archive_path: Path, extract_root: Path) -> None:
+    extract_root.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(archive_path, "r:gz") as tar:
+        tar.extractall(path=extract_root, filter="data")
+    if (extract_root / "files").is_dir():
+        _extract_downloaded_files(extract_root)
+
+
+def _display_export_info(status: ReportExportStatusData) -> None:
+    if status.status == "ready" and status.export is not None:
+        export = status.export
+        console.print("[bold]reports-export.tar.gz[/]")
+        console.print(f"  Created: {_format_export_timestamp(export.created)}")
+        console.print(f"  Size:    {_format_file_size(export.size)}")
+        return
+
+    if status.status == "in_progress":
+        console.print("Export is currently in progress.")
+        processed, total, remaining = _export_report_counts(status)
+        if processed is not None and total is not None:
+            console.print(f"  Exported:  {processed}/{total} reports")
+            console.print(f"  Remaining: {remaining} reports")
+        elif progress := _format_export_progress(status):
+            console.print(f"  Progress:  {progress}")
+        elif status.progress is not None:
+            console.print(f"  Progress:  {status.progress}%")
+        if status.failed_count:
+            console.print(f"  Failed:    {status.failed_count}")
+        return
+
+    if status.status == "none":
+        console.print("No export available.")
+        return
+
+    if status.status == "error":
+        console.print(f"[error]{status.error or 'Export failed'}[/]")
+
+
+def _prompt_export_choice(
+    status: ReportExportStatusData,
+) -> Literal["download", "create", "wait", "cancel"]:
+    if status.status == "ready":
+        answer = (
+            console.input(
+                "Download this export or generate a new one? "
+                "(d)ownload/(g)enerate/(c)ancel: ",
+            )
+            .strip()
+            .lower()
+        )
+        if answer in {"d", "download", ""}:
+            return "download"
+        if answer in {"g", "generate", "new"}:
+            return "create"
+        return "cancel"
+
+    if status.status == "none":
+        answer = console.input("Generate a new export? (y/N): ").strip().lower()
+        return "create" if answer == "y" else "cancel"
+
+    if status.status == "in_progress":
+        answer = console.input("Wait for the export to finish? (Y/n): ").strip().lower()
+        return "wait" if answer in {"", "y", "yes"} else "cancel"
+
+    if status.status == "error":
+        answer = console.input("Generate a new export? (y/N): ").strip().lower()
+        return "create" if answer == "y" else "cancel"
+
+    return "cancel"
+
+
+def _run_report_export(output_path: Path) -> int:
+    extract_root = Path(DEFAULT_EXPORT_DIR)
+    export_client = ReportExportClient()
+    try:
+        with console.status(
+            "Connecting to report export service...",
+            spinner="dots12",
+        ):
+            status = export_client.connect()
+
+        while True:
+            console.print()
+            _display_export_info(status)
+            choice = _prompt_export_choice(status)
+            if choice == "cancel":
+                console.print("Action cancelled")
+                return 0
+
+            if choice == "wait":
+                with console.status(
+                    "Waiting for export...", spinner="dots12"
+                ) as progress:
+                    status = export_client.wait_until_ready(
+                        on_poll=lambda polled: progress.update(
+                            _describe_export_status(polled)
+                        ),
+                    )
+                continue
+
+            if choice == "create":
+                with console.status(
+                    "Generating export...", spinner="dots12"
+                ) as progress:
+                    progress.update("Starting export...")
+                    export_client.create_export()
+                    status = export_client.wait_until_ready(
+                        on_poll=lambda polled: progress.update(
+                            _describe_export_status(polled)
+                        ),
+                    )
+                continue
+
+            if status.status != "ready":
+                raise ReportExportError("No export available to download")
+
+            if extract_root.exists() and any(extract_root.iterdir()):
+                console.print(
+                    f"[warning]Directory already exists: [b]{DEFAULT_EXPORT_DIR}[/]"
+                    "\nExtracting may overwrite existing files",
+                )
+
+            with console.status("Downloading export...", spinner="dots12") as progress:
+                progress.update("Requesting download URL...")
+                download_data = export_client.download_export()
+                progress.update(
+                    f"Downloading {_format_file_size(download_data.size)} archive..."
+                )
+                _download_export_archive(download_data.url, output_path)
+                progress.update("Extracting archive...")
+                _extract_export_archive(output_path, extract_root)
+            break
+    except ReportExportError as exc:
+        console.print(f"[error]{exc}[/]")
+        return 1
+    except httpx.HTTPError as exc:
+        console.print(f"[error]Failed to download export archive: {exc}[/]")
+        return 1
+    finally:
+        export_client.disconnect()
+
+    console.print(f"Export saved to {output_path}")
+    console.print(f"Reports extracted to {extract_root}")
     return 0
 
 
@@ -368,6 +785,8 @@ class ReportsCommand(BaseCommand):
 
         stop_parser = subparser.add_parser("stop")
         add_search_args(stop_parser)
+
+        subparser.add_parser("export")
 
     def __call__(
         self,
@@ -512,6 +931,8 @@ class ReportsCommand(BaseCommand):
                     filters,
                     on_progress=progress.update,
                 )
+        elif action == "export":
+            return _run_report_export(Path(DEFAULT_EXPORT_ARCHIVE))
         elif action == "delete":
             console.print(
                 "[warning]This action will delete all reports that match the criteria[/]"
