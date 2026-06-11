@@ -142,7 +142,7 @@ We tested on demand. Now let's do it as part of your regular Github CI process.
 
 3. Select the repositories where you will be installing it or select all repositories
 
-By default you can get notifications via email and Github issues. If you want to get notified in slack, discord or telegram go to <https://satori.ci/user-settings/> to define their details.
+By default you can get notifications via email and Github issues. If you want to get notified in slack, discord or telegram go to <https://satori.ci/settings/> to define their details.
 
 If you want to detail in your playbook to be notified when the scans are ready, add the following to them:
 

@@ -110,7 +110,7 @@ def main():
                 error_console.print(key)
         else:
             error_console.print(
-                "\nGet your token at https://satori.ci/user-settings and configure it with:\n[b]satori config token TOKEN[/b]"
+                "\nGet your token at https://satori.ci/settings and configure it with:\n[b]satori config token TOKEN[/b]"
             )
         sys.exit(1)
 
