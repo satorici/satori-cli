@@ -6,7 +6,7 @@ from pathlib import Path
 from ..utils import error_console
 from .base import BaseCommand
 
-PROMPT_FILE = Path(__file__).parent / "satori_skill.md"
+PROMPT_FILE = Path(__file__).parent / "prompt.md"
 
 
 class AiCommand(BaseCommand):
