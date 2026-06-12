@@ -11,7 +11,7 @@ settings:
   name: "Playbook Name"
   description: "What it tests"
   image: debian  # Docker base image
-  # Optional: timeout, cpu, memory, cron, rate, os, storage
+  # If required: timeout, cpu, memory, os, storag, ecron, rate
   # Not required: gallery
 
 import:  # optional
@@ -57,6 +57,9 @@ Supports file-based inputs (`file: dict.txt, split: "\n"`) and mutations (`mutat
 - `satori run playbook.yml --output --report` — execute remotely (add `-d KEY=VAL` for params) and show the report and the output
 - `satori run playbook.yml --local` — execute locally
 - `satori run satori://code/semgrep.yml` — run a public playbook
+- `satori reports` - lists the executions
+- `satori report ID` - shows information about a report
+- `satori report ID stop` - stops an execution
 - `satori shell --image debian` — interactive dev shell
 - `satori monitor` — manage scheduled executions
 - `satori scan` — scan repos across commits
@@ -68,3 +71,6 @@ Supports file-based inputs (`file: dict.txt, split: "\n"`) and mutations (`mutat
 - Prefer clean and simple playbooks.
 - When the user describes what to test, produce a ready-to-run .yml file and provide the command to execute it.
 - Validate generated playbooks against the schemas in ~/.satori/playbook-validator
+
+# Troubleshooting
+If the command `satori` is not installed, install it with `pip install satori-ci` and help the user log in with `satori install`. If you have any feedback, share it with `satori feedback <your message>`
