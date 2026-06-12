@@ -6,18 +6,19 @@ from rich.console import Group
 from rich.table import Column, Table
 
 from ..arguments import (
+    config_arg,
     debug_arg,
     export_arg,
     json_arg,
     profile_arg,
     team_arg,
-    config_arg,
     verbose_arg,
 )
 from .ai import AiCommand
 from .base import BaseCommand
 from .config import ConfigCommand
 from .dashboard import DashboardCommand
+from .feedback import FeedbackCommand
 from .help import HelpCommand
 from .install import InstallCommand
 from .local import LocalCommand
@@ -32,16 +33,16 @@ from .repos import ReposCommand
 from .run import RunCommand
 from .scan import ScanCommand
 from .scans import ScansCommand
+from .settings import SettingsCommand
+from .shards import ShardsCommand
+from .shell import ShellCommand, ShellsCommand
 from .team import TeamCommand
 from .teams import TeamsCommand
-from .update import UpdateCommand
-from .shards import ShardsCommand
-from .settings import SettingsCommand
 from .template import TemplateCommand
 from .templates import TemplatesCommand
-from .width import WidthCommand
+from .update import UpdateCommand
 from .whoami import WhoamiCommand
-from .shell import ShellCommand, ShellsCommand
+from .width import WidthCommand
 
 VERSION = metadata.version("satori-ci")
 
@@ -76,6 +77,7 @@ class RootCommand(BaseCommand):
         ShellCommand,
         ShellsCommand,
         AiCommand,
+        FeedbackCommand,
     )
     name = "satori"
     global_options = (
