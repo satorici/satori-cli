@@ -73,4 +73,4 @@ Supports file-based inputs (`file: dict.txt, split: "\n"`) and mutations (`mutat
 - Validate generated playbooks against the schemas in ~/.satori/playbook-validator
 
 # Troubleshooting
-If the command `satori` is not installed, install it with `pip install satori-ci` and help the user log in with `satori install`. If you have any feedback, share it with `satori feedback <your message>`
+If the command `satori` is not installed, install it with `pip install satori-ci` and help the user log in with `satori install`. If you have any feedback, share it with `satori feedback <your message>`. If a newer version is present when running satori, update it with `satori update` and update this skill <site-packages>/satoricli/cli/commands/prompt.md has been updated.
