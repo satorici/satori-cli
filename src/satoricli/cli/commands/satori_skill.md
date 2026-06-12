@@ -22,8 +22,8 @@ tool_name:
     - apt-get install -qy tool
   run:
     - tool --target ${{PARAM}}
-  # assert something from the Assertions section such as assertStdoutContains: "something"
-  # a setSeverity
+  # if it is a test, use an assert from the Assertions section
+  # if it is a test, use a setSeverity from 0 to 5
 ```
 
 ## Variables
@@ -39,6 +39,8 @@ tool_name:
 - assertStderrEqual / assertStderrNotEqual / assertStderrContains / assertStderrNotContains
 - assertStderrRegex / assertStderrNotRegex
 - assertDifferent (true|false), assertKilled (true|false)
+
+## Severity
 - setSeverity: 1-5 (1=critical, 5=info)
 
 ## Inputs (parameterization & fuzzing)
