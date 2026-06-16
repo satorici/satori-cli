@@ -11,7 +11,7 @@ settings:
   name: "Playbook Name"
   description: "What it tests"
   image: debian  # Docker base image
-  # If required: timeout, cpu, memory, os, storag, ecron, rate
+  # If required: files, timeout, cpu, memory, os, storag, ecron, rate
   # Not required: gallery
 
 import:  # optional
