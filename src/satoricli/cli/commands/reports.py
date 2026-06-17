@@ -868,7 +868,11 @@ class ReportsCommand(BaseCommand):
             ):
                 console.print("No reports found")
                 return 1
-            table = Table(expand=True)
+            table = Table(
+                expand=True,
+                highlight=True,
+                row_styles=["on #222222", "on black"],
+            )
             columns = [
                 "ID",
                 "Params",
@@ -883,7 +887,7 @@ class ReportsCommand(BaseCommand):
             for column in columns:
                 table.add_column(column)
 
-            with Live(table, refresh_per_second=1):
+            with Live(table, console=console, refresh_per_second=1):
                 params["filters"] = json.dumps(filters)
                 res = client.get("/reports/search", params=params).json()
                 for report in res["rows"]:
