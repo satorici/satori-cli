@@ -900,7 +900,10 @@ class ReportsCommand(BaseCommand):
                         report.get("status"),
                         report.get("result"),
                         execution_time(
-                            report.get("execution_time", report.get("run_time"))
+                            report.get("execution_time", report.get("run_time")),
+                            report.get("date")
+                            if report.get("status") == "Running"
+                            else None,
                         ),
                         date_formatter(report.get("date")),
                     )
@@ -1027,7 +1030,10 @@ class ReportsCommand(BaseCommand):
                     "result": report.get("result"),
                     # "visibility": report.get("visibility"),
                     "runtime": execution_time(
-                        report.get("execution_time", report.get("run_time"))
+                        report.get("execution_time", report.get("run_time")),
+                        report.get("date")
+                        if report.get("status") == "Running"
+                        else None,
                     ),
                     # "user": report.get("user"),
                     "date": date_formatter(report.get("date")),
