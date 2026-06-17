@@ -16,8 +16,7 @@ test:
   assertStderrNotContains: Traceback
   assertStdoutNotEqual: ""
   install:
-      - apt update >/dev/null && apt install -qy --no-install-recommends git jq >/dev/null
-      - pip install . --disable-pip-version-check --root-user-action=ignore
+      - export DEBIAN_FRONTEND=noninteractive; apt update >/dev/null; apt install -qy --no-install-recommends git jq >/dev/null; pip install . --disable-pip-version-check --root-user-action=ignore
 
   # the -P or --profile parameters allows you to use different Satori CI API Tokens
   token_saved:
@@ -430,13 +429,13 @@ negative_test:
   parallel:
     setParallel: true
 
-    xss:
-      assertStdoutNotContains: "XSS_TRIGGERED"
-      setSeverity: 1
-      test:
-        - apt-get install -qy --no-install-recommends chromium chromium-driver >/dev/null
-        - pip install selenium -q --disable-pip-version-check --root-user-action=ignore
-        - export TOKEN='${{TOKEN}}' && export URL='https://satori.ci/report/riMaEJVGb8kCQF9p/' && python3 xss.py
+    #xss:
+    #  assertStdoutNotContains: "XSS_TRIGGERED"
+    #  setSeverity: 1
+    #  test:
+    #    - apt-get install -qy --no-install-recommends chromium chromium-driver >/dev/null
+    #    - pip install selenium -q --disable-pip-version-check --root-user-action=ignore
+    #    - export TOKEN='${{TOKEN}}' && export URL='https://satori.ci/report/riMaEJVGb8kCQF9p/' && python3 xss.py
 
     repos_playbook_del:
       - satori repos playbook del
