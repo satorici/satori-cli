@@ -544,12 +544,12 @@ class RunCommand(BaseCommand):
             return
 
         if sync or report or output or files:
-            wait(ids[0], output or (sync and not report), filter_tests, text_format)
+            wait(ids[0], output, filter_tests, text_format)
 
         ret = print_summary(ids[0], kwargs["json"]) if sync else 0
 
         report_index, output_index = get_report_output_cmd_index()
-        live_streamed = bool(output or (sync and not report))
+        live_streamed = bool(output)
         # When we already streamed output live via the WS, skip the final
         # /outputs fetch to avoid duplicating what the user just saw. JSON mode
         # is the exception: it expects a structured dump at the end.

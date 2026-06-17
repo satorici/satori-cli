@@ -681,8 +681,9 @@ def wait(
             progress.update(task, description=status)
             time.sleep(1)
 
-        _fetch_outputs()
-        _drain(final=True)
+        if live:
+            _fetch_outputs()
+            _drain(final=True)
 
 
 def download_files(report_id: str):
