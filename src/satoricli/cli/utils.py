@@ -612,6 +612,15 @@ def wait(
     seen: dict[tuple, dict] = {}  # sid -> richest entry seen so far
     emitted: set[tuple] = set()
     emit_idx = 0
+    # Every entry in /outputs is a finished command (the runner uploads only
+    # after the command returns), so it already carries a return_code. A step
+    # whose stdout/stderr isn't searchable in OpenSearch yet (refresh lag, ~1s)
+    # looks identical to a genuinely silent one. We hold an empty head-of-line
+    # step for a few polls to let OpenSearch catch up, then emit it anyway so
+    # silent steps (e.g. `pip install -q`, `curl -s`) don't block the stream
+    # until the report finishes.
+    empty_polls: dict[tuple, int] = {}
+    OUTPUT_GRACE_POLLS = 3
 
     def _record(entry: dict) -> None:
         sid = _step_id(entry)
@@ -635,18 +644,26 @@ def wait(
     def _drain(final: bool = False) -> None:
         """Emit steps strictly in canonical order (head-of-line on empties).
 
-        A step is only printed once it has real content, so a later step never
-        jumps ahead of an earlier one whose stdout/stderr is still being indexed
-        in OpenSearch. At `final` we emit whatever we have, so genuinely
-        output-less steps (e.g. commands redirected to /dev/null) still show.
+        A step is printed once it has real content OR once it has been seen empty
+        for OUTPUT_GRACE_POLLS polls, so a later step never jumps ahead of an
+        earlier one whose stdout/stderr is still being indexed in OpenSearch, but
+        a genuinely output-less step (e.g. `pip install -q`, a command redirected
+        to /dev/null) only delays the stream briefly instead of holding it until
+        the report finishes. At `final` we emit whatever we have.
         """
         nonlocal emit_idx
         while emit_idx < len(order):
-            entry = seen[order[emit_idx]]
-            if not (final or not _is_metadata_only(entry)):
-                break  # wait for this step's content before moving on
+            sid = order[emit_idx]
+            entry = seen[sid]
+            if _is_metadata_only(entry) and not final:
+                # Completed step (has a return_code) but no content yet. Wait a
+                # few polls for OpenSearch to refresh; if it stays empty it is
+                # genuinely silent, so emit it and unblock the steps behind it.
+                empty_polls[sid] = empty_polls.get(sid, 0) + 1
+                if empty_polls[sid] < OUTPUT_GRACE_POLLS:
+                    break  # give this step's content a chance to show up
             _emit(entry)
-            emitted.add(order[emit_idx])
+            emitted.add(sid)
             emit_idx += 1
 
     with Progress(
