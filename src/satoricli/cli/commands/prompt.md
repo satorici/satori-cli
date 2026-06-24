@@ -11,7 +11,7 @@ settings:
   name: "Playbook Name"
   description: "What it tests"
   image: debian  # Docker base image
-  example: satori run whatever.yml  --output [--report]
+  example: satori run whatever.yml -d PARAM=whatever --output [--report]
   # If required: files, timeout, cpu, memory, os, storag, ecron, rate
   # Not required: gallery
 
