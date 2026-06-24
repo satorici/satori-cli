@@ -11,7 +11,9 @@ settings:
   name: "Playbook Name"
   description: "What it tests"
   image: debian  # Docker base image
-  example: satori run whatever.yml -d PARAM=whatever --output [--report]
+  example: satori run whatever.yml -d PARAM=whatever -d KEY=$KEY --output [--report]
+  redacted:
+    - KEY
   # If required: files, timeout, cpu, memory, os, storag, ecron, rate
   # Not required: gallery
 
@@ -22,7 +24,7 @@ tool_name:
   install:
     - apt-get install -qy tool
   run:
-    - tool --target ${{PARAM}}
+    - tool --target ${{PARAM}} --api ${{KEY}}
   # if it is a test, use an assert from the Assertions section
   # if it is a test, use a setSeverity from 0 to 5
 ```
