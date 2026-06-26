@@ -60,7 +60,7 @@ Supports file-based inputs (`file: dict.txt, split: "\n"`) and mutations (`mutat
 - `satori run playbook.yml --output --report` — execute remotely (add `-d KEY=VAL` for params) and show the report and the output
 - `satori run playbook.yml --local` — execute locally
 - `satori run ./` — use the .satori.yml and upload the current directory
-- `satori run satori://code/semgrep.yml` — run a public playbook
+- `satori run satori://code/semgrep.yml --repo=satorici/satori-cli` — run a public playbook on a certain repo
 - `satori reports` - lists the executions
 - `satori report ID` - shows information about a report
 - `satori report ID stop` - stops an execution
