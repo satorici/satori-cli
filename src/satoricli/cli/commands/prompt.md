@@ -68,6 +68,7 @@ Supports file-based inputs (`file: dict.txt, split: "\n"`) and mutations (`mutat
 - `satori monitor` — manage scheduled executions
 - `satori scan` — scan repos across commits
 - `satori report <id>` — view execution results
+- `satori playbook satori://path` - shows the content of a playbook
 
 # Guidelines
 - Assertions are not required when the playbook is not testing anything
