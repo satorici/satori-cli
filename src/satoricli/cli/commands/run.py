@@ -34,6 +34,7 @@ from ..utils import (
     missing_ymls,
     print_output,
     print_summary,
+    resolve_visibility,
     tuple_to_dict,
     validate_config,
     wait,
@@ -127,7 +128,7 @@ def new_run(
     save_report: Union[str, bool, None] = None,
     save_output: Union[str, bool, None] = None,
     params: Union[str, None] = None,
-    visibility: Optional[VISIBILITY_VALUES] = None,
+    visibility: str,
     clone: Optional[str] = None,
     redacted: list[str] = [],
 ) -> list[str]:
@@ -143,7 +144,7 @@ def new_run(
             "save_output": save_output,
             "team": team,
             "run_params": " ".join(sys.argv[1:]),
-            "visibility": visibility.upper() if visibility else None,
+            "visibility": visibility.upper(),
             "clone": clone,
             "redacted": redacted,
         },
@@ -177,7 +178,7 @@ def new_monitor(
     *,
     packet: Optional[Path] = None,
     secrets: Optional[dict] = None,
-    visibility: Optional[VISIBILITY_VALUES] = None,
+    visibility: str,
 ) -> str:
     data = client.post(
         "/monitors",
@@ -186,7 +187,7 @@ def new_monitor(
             "settings": json.dumps(settings),
             "with_files": bool(packet),
             "team": team,
-            "visibility": visibility.upper() if visibility else "PRIVATE",
+            "visibility": visibility.upper(),
         },
         files={"bundle": bundle} if bundle else {"": ""},
     ).json()
@@ -335,10 +336,13 @@ class RunCommand(BaseCommand):
         redacted: list[str] = [],
         **kwargs,
     ):
+        resolved_visibility = resolve_visibility(
+            visibility, kwargs.get("default_visibility")
+        )
         cli_settings = get_cli_settings(kwargs)
 
         if path.endswith(".sh"):
-            run_script(path, team, visibility, stdout, cli_settings)
+            run_script(path, team, resolved_visibility, stdout, cli_settings)
             return
 
         for file in data_file:
@@ -383,7 +387,7 @@ class RunCommand(BaseCommand):
                 "team": team,
                 "run_params": " ".join(sys.argv[1:]),
                 "run_last": True,
-                "visibility": visibility.upper() if visibility else "PRIVATE",
+                "visibility": resolved_visibility.upper(),
             }
             info = client.post("/scan", json=params).json()
             report = sync if sync else report
@@ -412,7 +416,7 @@ class RunCommand(BaseCommand):
                 settings=cli_settings,
                 save_report=save_report,
                 save_output=save_output,
-                visibility=visibility,
+                visibility=resolved_visibility,
                 clone=clone,
                 packet=include_files(include_list),
                 redacted=redacted,
@@ -440,7 +444,7 @@ class RunCommand(BaseCommand):
 
             if is_monitor:
                 monitor_id = new_monitor(
-                    bundle, settings, team, secrets=secrets, visibility=visibility
+                    bundle, settings, team, secrets=secrets, visibility=resolved_visibility
                 )
             else:
                 ids = new_run(
@@ -452,7 +456,7 @@ class RunCommand(BaseCommand):
                     settings=settings,
                     save_report=save_report,
                     save_output=save_output,
-                    visibility=visibility,
+                    visibility=resolved_visibility,
                     clone=clone,
                     packet=include_files(include_list),
                     redacted=redacted,
@@ -508,7 +512,7 @@ class RunCommand(BaseCommand):
                     team,
                     packet=packet,
                     secrets=secrets or parsed_data,
-                    visibility=visibility,
+                    visibility=resolved_visibility,
                 )
             else:
                 ids = new_run(
@@ -521,7 +525,7 @@ class RunCommand(BaseCommand):
                     settings=settings,
                     save_report=save_report,
                     save_output=save_output,
-                    visibility=visibility,
+                    visibility=resolved_visibility,
                     clone=clone,
                     redacted=redacted,
                 )

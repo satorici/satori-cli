@@ -17,6 +17,7 @@ from ..utils import (
     execution_time,
     print_output,
     print_summary,
+    resolve_visibility,
     wait,
 )
 from .base import BaseCommand
@@ -71,7 +72,7 @@ class RepoCommand(BaseCommand):
         parser.add_argument("-o", "--output", action="store_true")
         parser.add_argument("-r", "--report", action="store_true")
         parser.add_argument(
-            "--visibility", choices=("public", "private", "unlisted"), type=str.lower, default="private"
+            "--visibility", choices=("public", "private", "unlisted"), type=str.lower, default=None
         )
 
     def __call__(
@@ -90,9 +91,12 @@ class RepoCommand(BaseCommand):
         fail: bool,
         playbook: Optional[str],
         pending: bool,
-        visibility: Literal["public", "private", "unlisted"],
+        visibility: Optional[Literal["public", "private", "unlisted"]] = None,
         **kwargs,
     ) -> int:
+        resolved_visibility = resolve_visibility(
+            visibility, kwargs.get("default_visibility")
+        )
         info = None
         if action == "tests":
             info = client.get(
@@ -115,7 +119,7 @@ class RepoCommand(BaseCommand):
                     "url": repository,
                     "data": data or "",
                     "playbook": playbook,
-                    "visibility": visibility.upper(),
+                    "visibility": resolved_visibility.upper(),
                 },
                 timeout=300,
             ).json()

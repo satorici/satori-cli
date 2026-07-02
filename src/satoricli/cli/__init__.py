@@ -18,6 +18,12 @@ from .utils import configure_console_width, console, error_console, log, logging
 
 VERSION = metadata.version("satori-ci")
 
+CLIENT_CONFIG_KEYS = frozenset({"token", "host", "timeout", "team", "default_team"})
+
+
+def _client_config(config: dict) -> dict:
+    return {k: v for k, v in config.items() if k in CLIENT_CONFIG_KEYS}
+
 
 def check_for_update():
     """Verify the current version and the latest version"""
@@ -84,9 +90,7 @@ def main():
 
     if config:
         try:
-            # Filter out width before passing to configure_client
-            client_config = {k: v for k, v in config.items() if k != "width"}
-            configure_client(**client_config)
+            configure_client(**_client_config(config))
         except Exception as e:
             error_console.print(
                 f"[error]ERROR:[/] Cannot find your profile in your .satori_credentials.yml file. Is it corrupted?"
@@ -116,10 +120,9 @@ def main():
 
     if config:
         config["team"] = args["team"]
+        args["default_visibility"] = config.get("default_visibility")
         try:
-            # Filter out width before passing to configure_client
-            client_config = {k: v for k, v in config.items() if k != "width"}
-            configure_client(**client_config)
+            configure_client(**_client_config(config))
         except Exception as e:
             error_console.print(
                 f"[error]ERROR:[/] Cannot find your profile in your .satori_credentials.yml file. Is it corrupted?"

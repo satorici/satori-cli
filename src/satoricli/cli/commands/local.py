@@ -37,6 +37,7 @@ from ..utils import (
     print_output,
     print_output_entry,
     print_summary,
+    resolve_visibility,
     run_test_filter,
     tuple_to_dict,
     validate_config,
@@ -82,11 +83,11 @@ def rebuild_arguments() -> str:
 
 def new_local_run(
     team: str,
+    visibility: str,
     bundle=None,
     playbook_uri: Optional[str] = None,
     secrets: Optional[dict] = None,
     name: Optional[str] = None,
-    visibility: Optional[VISIBILITY_VALUES] = None,
     redacted: list[str] = [],
     run_tests: list[str] = [],
 ) -> dict:
@@ -105,7 +106,7 @@ def new_local_run(
             "name": name,
             "team": team,
             "run_params": rebuild_arguments(),
-            "visibility": visibility.upper() if visibility else None,
+            "visibility": visibility.upper(),
             "redacted": redacted,
             "run_tests": run_tests,
         },
@@ -243,6 +244,9 @@ class LocalCommand(BaseCommand):
         repo: Optional[str] = None,
         **kwargs,
     ):
+        resolved_visibility = resolve_visibility(
+            visibility, kwargs.get("default_visibility")
+        )
         for file in data_file:
             data.append((file[0], f"read({file[1]})"))
         parsed_data = tuple_to_dict(data) if data else None
@@ -306,10 +310,10 @@ class LocalCommand(BaseCommand):
 
             local_run = new_local_run(
                 team,
+                resolved_visibility,
                 bundle,
                 secrets=parsed_data,
                 name=name,
-                visibility=visibility,
                 playbook_uri=playbook or target,
                 redacted=redacted,
                 run_tests=run_tests,

@@ -18,6 +18,7 @@ from satoricli.cli.utils import (
     get_report_output_cmd_index,
     print_output,
     remove_keys_list_dict,
+    resolve_visibility,
     wait,
 )
 
@@ -69,7 +70,7 @@ class ScanCommand(BaseCommand):
             "--visibility",
             choices=get_args(VISIBILITY_VALUES),
             type=str.lower,
-            default="private",
+            default=None,
         )
 
     def __call__(
@@ -100,9 +101,12 @@ class ScanCommand(BaseCommand):
         team: str,
         output: bool,
         report: bool,
-        visibility: VISIBILITY_VALUES = "private",
+        visibility: Optional[VISIBILITY_VALUES] = None,
         **kwargs,
     ):
+        resolved_visibility = resolve_visibility(
+            visibility, kwargs.get("default_visibility")
+        )
         if SCANID_REGEX.match(repository) and action == "new":
             # show scan status instead of trying to create a new scan if is a scan id
             action = "status"
@@ -130,7 +134,7 @@ class ScanCommand(BaseCommand):
                     "team": team,
                     "run_params": " ".join(sys.argv[1:]),
                     "run_last": coverage == 0.0,
-                    "visibility": visibility.upper(),
+                    "visibility": resolved_visibility.upper(),
                 },
             ).json()
             if sync or output or report:

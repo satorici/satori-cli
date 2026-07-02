@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Optional
 
-from satoricli.cli.utils import console, error_console
+from satoricli.cli.utils import VISIBILITY_VALUES, console, error_console
 from satoricli.utils import load_config, save_config
 
 from .base import BaseCommand
@@ -14,7 +14,14 @@ class ConfigCommand(BaseCommand):
         parser.add_argument(
             "key",
             metavar="KEY",
-            choices=("token", "host", "timeout", "default_team", "width"),
+            choices=(
+                "token",
+                "host",
+                "timeout",
+                "default_team",
+                "width",
+                "default_visibility",
+            ),
             nargs="?",
         )
         parser.add_argument("value", metavar="VALUE", nargs="?")
@@ -77,6 +84,16 @@ class ConfigCommand(BaseCommand):
                 else:
                     console.print("Error: width must be a valid integer")
                     return 1
+        elif key == "default_visibility":
+            if value.lower() not in VISIBILITY_VALUES:
+                error_console.print(
+                    f"ERROR: Allowed values for default_visibility: {VISIBILITY_VALUES}"
+                )
+                return 1
+            config.setdefault(kwargs["profile"], {})[key] = value.lower()
+            console.print(
+                f"{key} updated to {value.lower()} for profile {kwargs['profile']}"
+            )
         else:
             config.setdefault(kwargs["profile"], {})[key] = value
             console.print(f"{key} updated for profile {kwargs['profile']}")

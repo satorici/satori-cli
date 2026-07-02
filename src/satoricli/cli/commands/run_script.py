@@ -12,7 +12,7 @@ from ..utils import console, error_console, wait
 
 
 def run_script(
-    path: str, team: str, visibility: str | None, show_stdout: bool, settings: dict
+    path: str, team: str, visibility: str, show_stdout: bool, settings: dict
 ):
     with BytesIO() as bundle:
         with ZipFile(bundle, "x") as zf:
@@ -28,7 +28,7 @@ def run_script(
                 "save_report": True,
                 "save_output": True,
                 "team": team,
-                "visibility": visibility.upper() if visibility else None,
+                "visibility": visibility.upper(),
                 "settings": json.dumps(settings),
             },
             files={"bundle": bundle},

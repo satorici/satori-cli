@@ -42,6 +42,14 @@ __random_colors = ["green", "blue", "red"]
 VISIBILITY_VALUES = ("public", "private", "unlisted")
 
 
+def resolve_visibility(
+    cli_visibility: str | None,
+    default_visibility: str | None,
+    fallback: str = "private",
+) -> str:
+    return (cli_visibility or default_visibility or fallback).lower()
+
+
 @dataclass
 class BootstrapTable:
     """Based on https://bootstrap-table.com/docs/api/table-options/#url."""
