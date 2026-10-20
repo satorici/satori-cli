@@ -26,6 +26,9 @@ class WhoamiCommand(BaseCommand):
     ):
         if action == "show":
             info = client.get("/users/me").json()
+            if kwargs.get("json"):
+                console.print(info)
+                return
             console.print("Name:", info["name"])
             console.print("Display name:", info["display_name"])
             console.print("Email:", info["email"])
