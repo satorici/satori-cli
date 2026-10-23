@@ -148,9 +148,13 @@ class ShellCommand(BaseCommand):
                     res = client.get(f"/ssh_sessions/{id}")
                     res.raise_for_status()
                     session_data = res.json()
-                    break
+
+                    if session_data["host"] and session_data["token"]:
+                        break
                 except Exception:
-                    time.sleep(2)
+                    pass
+
+                time.sleep(2)
 
         console.print(f"Connecting to {session_data['host']}")
 
